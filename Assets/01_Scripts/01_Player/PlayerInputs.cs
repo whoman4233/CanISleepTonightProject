@@ -299,6 +299,85 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Inspection"",
+            ""id"": ""e2b804c8-e359-4edd-8eed-303df9a1b6ba"",
+            ""actions"": [
+                {
+                    ""name"": ""RotateHold"",
+                    ""type"": ""Button"",
+                    ""id"": ""c2b04376-4069-4244-9d77-878008f9145c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Rotate"",
+                    ""type"": ""Value"",
+                    ""id"": ""14192124-5cff-4856-9523-2b1a8af33cc5"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Exit"",
+                    ""type"": ""Button"",
+                    ""id"": ""4eb3ac7d-9745-4511-a069-51a4fd7e3415"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""a2b1cd27-f5a5-40a1-bd53-10691e75802f"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""62bf5394-b5d6-4892-9386-c2d4c98e7b38"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Exit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e0c05034-1e28-474b-b04f-2c90b22dac02"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Exit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5d467a8e-acb7-49ed-af62-0a3aaa6d9fa9"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RotateHold"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -313,11 +392,17 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Player_Interaction = m_Player.FindAction("Interaction", throwIfNotFound: true);
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
         m_Player_Setting = m_Player.FindAction("Setting", throwIfNotFound: true);
+        // Inspection
+        m_Inspection = asset.FindActionMap("Inspection", throwIfNotFound: true);
+        m_Inspection_RotateHold = m_Inspection.FindAction("RotateHold", throwIfNotFound: true);
+        m_Inspection_Rotate = m_Inspection.FindAction("Rotate", throwIfNotFound: true);
+        m_Inspection_Exit = m_Inspection.FindAction("Exit", throwIfNotFound: true);
     }
 
     ~@PlayerInputs()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, PlayerInputs.Player.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Inspection.enabled, "This will cause a leak and performance issues, PlayerInputs.Inspection.Disable() has not been called.");
     }
 
     /// <summary>
@@ -562,6 +647,124 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="PlayerActions" /> instance referencing this action map.
     /// </summary>
     public PlayerActions @Player => new PlayerActions(this);
+
+    // Inspection
+    private readonly InputActionMap m_Inspection;
+    private List<IInspectionActions> m_InspectionActionsCallbackInterfaces = new List<IInspectionActions>();
+    private readonly InputAction m_Inspection_RotateHold;
+    private readonly InputAction m_Inspection_Rotate;
+    private readonly InputAction m_Inspection_Exit;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "Inspection".
+    /// </summary>
+    public struct InspectionActions
+    {
+        private @PlayerInputs m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public InspectionActions(@PlayerInputs wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "Inspection/RotateHold".
+        /// </summary>
+        public InputAction @RotateHold => m_Wrapper.m_Inspection_RotateHold;
+        /// <summary>
+        /// Provides access to the underlying input action "Inspection/Rotate".
+        /// </summary>
+        public InputAction @Rotate => m_Wrapper.m_Inspection_Rotate;
+        /// <summary>
+        /// Provides access to the underlying input action "Inspection/Exit".
+        /// </summary>
+        public InputAction @Exit => m_Wrapper.m_Inspection_Exit;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_Inspection; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="InspectionActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(InspectionActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="InspectionActions" />
+        public void AddCallbacks(IInspectionActions instance)
+        {
+            if (instance == null || m_Wrapper.m_InspectionActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_InspectionActionsCallbackInterfaces.Add(instance);
+            @RotateHold.started += instance.OnRotateHold;
+            @RotateHold.performed += instance.OnRotateHold;
+            @RotateHold.canceled += instance.OnRotateHold;
+            @Rotate.started += instance.OnRotate;
+            @Rotate.performed += instance.OnRotate;
+            @Rotate.canceled += instance.OnRotate;
+            @Exit.started += instance.OnExit;
+            @Exit.performed += instance.OnExit;
+            @Exit.canceled += instance.OnExit;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="InspectionActions" />
+        private void UnregisterCallbacks(IInspectionActions instance)
+        {
+            @RotateHold.started -= instance.OnRotateHold;
+            @RotateHold.performed -= instance.OnRotateHold;
+            @RotateHold.canceled -= instance.OnRotateHold;
+            @Rotate.started -= instance.OnRotate;
+            @Rotate.performed -= instance.OnRotate;
+            @Rotate.canceled -= instance.OnRotate;
+            @Exit.started -= instance.OnExit;
+            @Exit.performed -= instance.OnExit;
+            @Exit.canceled -= instance.OnExit;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="InspectionActions.UnregisterCallbacks(IInspectionActions)" />.
+        /// </summary>
+        /// <seealso cref="InspectionActions.UnregisterCallbacks(IInspectionActions)" />
+        public void RemoveCallbacks(IInspectionActions instance)
+        {
+            if (m_Wrapper.m_InspectionActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="InspectionActions.AddCallbacks(IInspectionActions)" />
+        /// <seealso cref="InspectionActions.RemoveCallbacks(IInspectionActions)" />
+        /// <seealso cref="InspectionActions.UnregisterCallbacks(IInspectionActions)" />
+        public void SetCallbacks(IInspectionActions instance)
+        {
+            foreach (var item in m_Wrapper.m_InspectionActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_InspectionActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="InspectionActions" /> instance referencing this action map.
+    /// </summary>
+    public InspectionActions @Inspection => new InspectionActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Player" which allows adding and removing callbacks.
     /// </summary>
@@ -625,5 +828,34 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSetting(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Inspection" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="InspectionActions.AddCallbacks(IInspectionActions)" />
+    /// <seealso cref="InspectionActions.RemoveCallbacks(IInspectionActions)" />
+    public interface IInspectionActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "RotateHold" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRotateHold(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Rotate" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRotate(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Exit" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnExit(InputAction.CallbackContext context);
     }
 }
