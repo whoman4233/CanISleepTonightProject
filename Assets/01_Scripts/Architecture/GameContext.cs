@@ -29,8 +29,8 @@ public class GameContext : MonoBehaviour
             return; // 등록안하기
         }
         services.Add(type, service); // if문 통과했으면 추가해줌
-        Debug.Log($"{type.Name} 등록 성공");
-    }
+        Debug.Log($"{type.Name} 등록 성공"); //GameContext context = GameContext.Instance; context.RegisterService<PlayerManager>(playerManager); 으로 서비스 등록 //Key: typeof(PlayerManager), Value: playerManager 인스턴스
+    } 
 
     public T Get<T>() where T : class //GameContext.Instance.Get<PlayerManager>() 와 같은 방식으로 등록된 서비스를 참조
     {
