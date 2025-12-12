@@ -59,5 +59,4 @@ public class PlayerGroundState : PlayerBaseState
         base.OnJumpStarted(context);
         stateMachine.ChangeState(stateMachine.JumpState);
     }
-
 }
