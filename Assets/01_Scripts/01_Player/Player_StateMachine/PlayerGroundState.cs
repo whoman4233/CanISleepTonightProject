@@ -39,6 +39,8 @@ public class PlayerGroundState : PlayerBaseState
     {
         base.PhysicsUpdate();
 
+        RotateToCameraForward(Time.fixedDeltaTime);
+
         if (!stateMachine.Player.Controller.isGrounded
             && stateMachine.Player.Controller.velocity.y < Physics.gravity.y * Time.fixedDeltaTime)
         {
@@ -59,5 +61,23 @@ public class PlayerGroundState : PlayerBaseState
         base.OnJumpStarted(context);
         stateMachine.ChangeState(stateMachine.JumpState);
     }
+    private void RotateToCameraForward(float deltaTime)
+    {
+        Vector3 cameraForward = stateMachine.MainCameraTransform.forward;
+        cameraForward.y = 0f;
 
+        if (cameraForward.sqrMagnitude < 0.001f)
+            return;
+
+        cameraForward.Normalize();
+
+        Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
+        Transform playerTransform = stateMachine.Player.transform;
+
+        playerTransform.rotation = Quaternion.Slerp(
+            playerTransform.rotation,
+            targetRotation,
+            stateMachine.RotationDamping * deltaTime
+        );
+    }
 }

@@ -97,7 +97,7 @@ public class PlayerBaseState : IState
 
         Move(movementDirction);
 
-        Rotate(movementDirction);
+       // Rotate(movementDirction);
     }
     private Vector3 GetMovementDirection()
     {
@@ -130,7 +130,11 @@ public class PlayerBaseState : IState
         {
             Transform PlayerTransform = stateMachine.Player.transform;
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            PlayerTransform.rotation = Quaternion.Slerp(PlayerTransform.rotation, targetRotation, stateMachine.RotationDamping * Time.deltaTime);
+            PlayerTransform.rotation = Quaternion.Slerp(
+                PlayerTransform.rotation,
+                targetRotation,
+                stateMachine.RotationDamping * Time.deltaTime
+            );
         }
     }
     protected void ForceMove()
