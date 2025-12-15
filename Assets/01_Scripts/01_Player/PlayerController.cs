@@ -8,10 +8,29 @@ public class PlayerController : MonoBehaviour
     public PlayerInputs playerInput { get; private set; }
     public PlayerInputs.PlayerActions playerActions { get; private set; }
     private CinemachinePOV pov;
-    private void Awake()
+    public void Initialize()
     {
         playerInput = new PlayerInputs();
         playerActions = playerInput.Player;
+        SetMovementEnabled(false);
+    }
+    public void SetMovementEnabled(bool isEnabled)
+    {
+        if (playerInput == null)
+        {
+            Debug.LogError("playerInput이 Initialize되지 않았습니다. Bootstrap 순서 확인 필요.");
+            return;
+        }
+        if (isEnabled)
+        {
+            playerInput.Enable();
+            Debug.Log("PlayerController 입력 활성화");
+        }
+        else
+        {
+            playerInput.Disable();
+            Debug.Log("PlayerController입력 비활성화");
+        }
     }
 
     private void OnEnable()
