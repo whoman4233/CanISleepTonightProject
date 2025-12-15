@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -628,7 +628,7 @@ namespace ToonTown
         }
         void RandomizeGenericMaterials()
         {
-            // solo mira el primer material, no vale para materiales compuestos  ARREGLAR¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡
+            // solo mira el primer material, no vale para materiales compuestos  ARREGLARã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€?
             if (transform.childCount > 2)
             {
                 int coin = Random.Range(0, RandomGenericMaterials.Length);
