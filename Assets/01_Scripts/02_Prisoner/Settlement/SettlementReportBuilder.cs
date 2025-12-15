@@ -1,0 +1,73 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SettlementReportBuilder : MonoBehaviour
+{
+    [Header("Refs")]
+    [SerializeField] private PrisonCellManager cellManager;
+    [SerializeField] private InspectionStateMachine inspection;
+
+    private readonly List<ResolvedRecord> _resolved = new();
+    private readonly HashSet<string> _resolvedIds = new();
+
+    private void Awake()
+    {
+        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+        if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
+
+        if (inspection != null)
+            inspection.OnResolved += HandleResolved;
+    }
+
+    private void OnDestroy()
+    {
+        if (inspection != null)
+            inspection.OnResolved -= HandleResolved;
+    }
+
+    private void HandleResolved(string cellId, bool isSuspicious, bool didSuppress)
+    {
+        if (_resolvedIds.Contains(cellId)) return;
+        _resolvedIds.Add(cellId);
+        _resolved.Add(new ResolvedRecord(cellId, isSuspicious, didSuppress));
+    }
+
+    // 정산 페이즈 진입 순간 1회 호출
+    public void BuildSettlementReport(out List<ResolvedRecord> resolved, out List<UninspectedRecord> uninspected)
+    {
+        resolved = new List<ResolvedRecord>(_resolved);
+
+        uninspected = new List<UninspectedRecord>();
+        if (cellManager != null)
+        {
+            foreach (var cell in cellManager.Cells)
+            {
+                // 아직 ActiveToday가 남아있으면 "미점검"
+                if (cell.IsActiveToday)
+                    uninspected.Add(new UninspectedRecord(cell.CellId, cell.IsSuspicious));
+            }
+        }
+    }
+
+    // 다음날을 위해 초기화(필요 시 호출)
+    public void ClearResolvedCache()
+    {
+        _resolved.Clear();
+        _resolvedIds.Clear();
+    }
+
+    [SerializeField] private SettlementManager settlement;
+
+    public void RunSettlement()
+    {
+        BuildSettlementReport(out var resolved, out var uninspected);
+        settlement.ApplyDailyReport(resolved, uninspected);
+
+        if (settlement.IsRiotOver())
+        {
+            Debug.Log("[GameOver] Riot occurred");
+            // 엔딩 트리거
+        }
+    }
+
+}
