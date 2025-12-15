@@ -123,19 +123,6 @@ public class PlayerBaseState : IState
         return moveSpeed;
     }
 
-    private void Rotate(Vector3 direction)
-    {
-        if (direction != Vector3.zero)
-        {
-            Transform PlayerTransform = stateMachine.Player.transform;
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            PlayerTransform.rotation = Quaternion.Slerp(
-                PlayerTransform.rotation,
-                targetRotation,
-                stateMachine.RotationDamping * Time.deltaTime
-            );
-        }
-    }
     protected void ForceMove()
     {
         stateMachine.Player.Controller.Move(stateMachine.Player.ForceReceiver.Movement * Time.deltaTime);
