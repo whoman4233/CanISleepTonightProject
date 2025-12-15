@@ -14,13 +14,13 @@ public class ExitConfirmPopupController : MonoBehaviour
 
         btnYes.onClick.AddListener(OnClickYes);
         btnNo.onClick.AddListener(OnClickNo);
-
-        gameObject.SetActive(false);
     }
 
     public void Show()
     {
+        Debug.Log($"[Show] Target name = {gameObject.name}, instanceID = {gameObject.GetInstanceID()}");
         gameObject.SetActive(true);
+        Debug.Log($"[Show After] activeSelf = {gameObject.activeSelf}");
     }
 
     public void Hide()

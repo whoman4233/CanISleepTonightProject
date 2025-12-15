@@ -9,8 +9,6 @@ public class PopupCanvasRootController : MonoBehaviour
     private void Awake()
     {
         showExitHandler = OnShowExitConfirm;
-
-        exitConfirmPopup.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -23,10 +21,11 @@ public class PopupCanvasRootController : MonoBehaviour
         EventBus.Unsubscribe(showExitHandler);
     }
 
-    private void OnShowExitConfirm(ShowExitConfirmPopupEvent evt)
+    private void OnShowExitConfirm(ShowExitConfirmPopupEvent e)
     {
-        Debug.Log("ExitConfirmPopupEvent received");
         exitConfirmPopup.Show();
+        Debug.Log($"[Root] ref name = {exitConfirmPopup.gameObject.name}, instanceID = {exitConfirmPopup.gameObject.GetInstanceID()}");
+
     }
 
     public void CloseAllPopups()
