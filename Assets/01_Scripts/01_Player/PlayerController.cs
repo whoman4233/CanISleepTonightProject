@@ -14,10 +14,10 @@ public class PlayerController : MonoBehaviour
         playerInput = new PlayerInputs();
         playerActions = playerInput.Player;
     }
-    public void Initialize()
-    {
-        //SetMovementEnabled(false);
-    }
+    //public void Initialize()
+    //{
+    //    //SetMovementEnabled(false);
+    //}
     public void SetMovementEnabled(bool isEnabled)
     {
         if (playerInput == null)
@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         pov = virtualCamera.GetCinemachineComponent<CinemachinePOV>();
+        playerInput.Enable();
     }
 
     private void LateUpdate()
