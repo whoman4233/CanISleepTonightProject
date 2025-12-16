@@ -70,6 +70,10 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 //InGameMenu 이벤트 목록
 //==========================================
 
+public struct PauseGameRequestedEvent // 게임 일시정지
+{
+
+}
 public struct PauseMenuToggleRequestedEvent // 게임메뉴 켜졌을 때 게임매니저 참고용 이벤트(Toggle)
 {
 
@@ -84,3 +88,6 @@ public struct ReturnToTitleRequestedEvent //타이틀로 돌아가기
 {
 
 }
+
+
+
