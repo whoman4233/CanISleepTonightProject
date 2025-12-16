@@ -58,6 +58,12 @@ public class GameManager : MonoBehaviour
         Debug.Log($"{CurrentPhase} 에서 {newPhase}로 페이즈 전환이 이루어졌습니다.");
         currentPhase = newPhase;
         OnPhaseChanged?.Invoke(newPhase);
+
+        // =========================
+        // [추가] UI 및 외부 시스템 전파용
+        // =========================
+        EventBus.Publish(new GamePhaseChangedEvent(newPhase));
+
         switch (newPhase)
         {
             case GamePhase.Standby: 
