@@ -35,6 +35,11 @@ public class InspectionManager : MonoBehaviour
 
     private void Awake()
     {
+        
+    }
+
+    private void Start()
+    {
         InitializeInput();
         inspectionCamera.gameObject.SetActive(false);
     }
@@ -43,6 +48,16 @@ public class InspectionManager : MonoBehaviour
     {
         if (!isInspecting)
             return;
+
+        if (rotateHold.WasPressedThisFrame())
+        {
+            Debug.Log("[TEST] RotateHold pressed");
+        }
+
+        if (rotate.ReadValue<Vector2>() != Vector2.zero)
+        {
+            Debug.Log("[TEST] Rotate input detected");
+        }
 
         HandleRotationInput();
     }
@@ -75,7 +90,7 @@ public class InspectionManager : MonoBehaviour
 
     #endregion
 
-    #region Public API
+    #region Public API 
 
     /// <summary>
     /// Ray 기반 상호작용 시스템에서 호출
@@ -99,7 +114,7 @@ public class InspectionManager : MonoBehaviour
         Cursor.visible = true;
 
         ResetRotationInternal();
-        SpawnInspectObject(inspectable.GetInspectSource());
+        SpawnInspectObject(inspectable.GetInspectPrefab());
     }
 
     #endregion
