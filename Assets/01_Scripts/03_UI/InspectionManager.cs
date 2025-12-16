@@ -1,48 +1,42 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 
 public class InspectionManager : MonoBehaviour
 {
-    public static InspectionManager Instance { get; private set; }
+    [Header("Camera")]
+    [SerializeField] private Camera inspectionCamera;
 
-    [Header("요소")]
-    [SerializeField] private Transform inspectPivot; //회전 값
-    [SerializeField] private Volume inspectionVolume; // 블러처리
-    [SerializeField] private PlayerInput playerInput; // PlayerInput 참조
+    [Header("Inspect Space")]
+    [SerializeField] private Transform inspectPivot;
 
-    [Header("회전 세팅")]
-    [SerializeField] private float rotateSpeed = 0.1f; //회전 속도
-    [SerializeField] private float maxVerticalAngle = 80f; // 상하 회전 제한
+    [Header("Rotate")]
+    [SerializeField] private float rotateSpeed = 0.15f;
+    [SerializeField] private float pitchLimit = 80f;
 
-    private GameObject currentInspectObject;
     private bool isInspecting;
 
-    // Input Actions
-    private InputAction rotateDeltaAction;
-    private InputAction rotateHoldAction;
-    private InputAction exitAction;
+    private IInspectable currentInspectable;
+    private GameObject inspectInstance;
 
-    private float currentVerticalAngle = 0f; // 회전 누적 값
+    private float yaw;
+    private float pitch;
+
+    // Input
+    private PlayerInputs playerInputs;
+    private PlayerInputs.PlayerActions playerActions;
+    private PlayerInputs.InspectionActions inspectionActions;
+
+    private InputAction rotate;
+    private InputAction rotateHold;
+    private InputAction exit;
+    private InputAction reset;
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-
-        // Inspection Action Map 캐싱
-        var inspectionMap = playerInput.actions.FindActionMap("Inspection");
-
-        rotateDeltaAction = inspectionMap.FindAction("RotateDelta");
-        rotateHoldAction = inspectionMap.FindAction("RotateHold");
-        exitAction = inspectionMap.FindAction("Exit");
-
-        exitAction.performed += _ => ExitInspection();
+        InitializeInput();
+        inspectionCamera.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -50,97 +44,145 @@ public class InspectionManager : MonoBehaviour
         if (!isInspecting)
             return;
 
-        // 왼쪽 클릭을 누르고 있을 때만 회전
-        if (!rotateHoldAction.IsPressed())
-            return;
-
-        Vector2 delta = rotateDeltaAction.ReadValue<Vector2>();
-
-        if (delta.sqrMagnitude < 0.001f)
-            return;
-
-        RotateObject(delta);
+        HandleRotationInput();
     }
 
-    private void RotateObject(Vector2 delta)
+    #endregion
+
+    #region Initialization
+
+    private void InitializeInput()
     {
-        // 좌우 회전 (월드 기준 Y축)
-        inspectPivot.Rotate(Vector3.up, -delta.x * rotateSpeed, Space.World);
-
-        // 상하 회전 (로컬 기준 X축)
-        float verticalDelta = delta.y * rotateSpeed;
-        float nextAngle = currentVerticalAngle + verticalDelta;
-
-        if (Mathf.Abs(nextAngle) > maxVerticalAngle)
+        PlayerController player = GetComponentInParent<PlayerController>();
+        if (player == null)
+        {
+            Debug.LogError("[InspectionManager] PlayerController 찾을 수 없음.");
             return;
+        }
 
-        currentVerticalAngle = nextAngle;
-        inspectPivot.Rotate(Vector3.right, verticalDelta, Space.Self);
+        playerInputs = player.playerInput;
+        playerActions = playerInputs.Player;
+        inspectionActions = playerInputs.Inspection;
+
+        rotate = inspectionActions.Rotate;
+        rotateHold = inspectionActions.RotateHold;
+        exit = inspectionActions.Exit;
+        reset = inspectionActions.Reset;
+
+        exit.performed += _ => ExitInspection();
+        reset.performed += _ => ResetRotation();
     }
 
-    // ============================
-    // Inspection 진입
-    // ============================
-    public void EnterInspection(GameObject inspectPrefab)
+    #endregion
+
+    #region Public API
+
+    /// <summary>
+    /// Ray 기반 상호작용 시스템에서 호출
+    /// </summary>
+    public void EnterInspection(IInspectable inspectable)
     {
-        if (isInspecting)
+        if (isInspecting || inspectable == null)
             return;
 
         isInspecting = true;
+        currentInspectable = inspectable;
 
-        // Player 입력 비활성화 / Inspection 입력 활성화
-        playerInput.actions.FindActionMap("Player").Disable();
-        playerInput.actions.FindActionMap("Inspection").Enable();
+        currentInspectable.OnInspectionStart();
 
-        // 플레이어 조작 차단
-        //GameManager.Instance.SetCanMove(false);
-        //PlayerManager.Instance.Player.controller.canLook = false;
+        playerActions.Disable();
+        inspectionActions.Enable();
 
-        // 커서 활성화
+        inspectionCamera.gameObject.SetActive(true);
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // 회전 값 초기화
-        currentVerticalAngle = 0f;
-        inspectPivot.localRotation = Quaternion.identity;
-
-        // Inspect 오브젝트 생성
-        currentInspectObject = Instantiate(inspectPrefab, inspectPivot);
-        currentInspectObject.transform.localPosition = Vector3.zero;
-        currentInspectObject.transform.localRotation = Quaternion.identity;
-
-        // 블러 활성화
-        if (inspectionVolume != null)
-            inspectionVolume.weight = 1f;
+        ResetRotationInternal();
+        SpawnInspectObject(inspectable.GetInspectSource());
     }
 
-    // ============================
-    // Inspection 종료
-    // ============================
-    public void ExitInspection()
+    #endregion
+
+    #region Inspection Flow
+
+    private void ExitInspection()
     {
         if (!isInspecting)
             return;
 
         isInspecting = false;
 
-        if (currentInspectObject != null)
-            Destroy(currentInspectObject);
+        if (inspectInstance != null)
+            Destroy(inspectInstance);
 
-        // 블러 해제
-        if (inspectionVolume != null)
-            inspectionVolume.weight = 0f;
+        currentInspectable?.OnInspectionEnd();
+        currentInspectable = null;
 
-        // 입력 복구
-        playerInput.actions.FindActionMap("Inspection").Disable();
-        playerInput.actions.FindActionMap("Player").Enable();
+        inspectionActions.Disable();
+        playerActions.Enable();
 
-        // 플레이어 조작 복구
-        //GameManager.Instance.SetCanMove(true);
-        //PlayerManager.Instance.Player.controller.canLook = true;
+        inspectionCamera.gameObject.SetActive(false);
 
-        // 커서 복구
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
+
+    #endregion
+
+    #region Rotation
+
+    private void HandleRotationInput()
+    {
+        if (rotateHold.WasPressedThisFrame())
+            Cursor.visible = false;
+
+        if (rotateHold.WasReleasedThisFrame())
+            Cursor.visible = true;
+
+        if (!rotateHold.IsPressed())
+            return;
+
+        Vector2 delta = rotate.ReadValue<Vector2>();
+        if (delta.sqrMagnitude < 0.001f)
+            return;
+
+        yaw += delta.x * rotateSpeed;
+        pitch -= delta.y * rotateSpeed;
+        pitch = Mathf.Clamp(pitch, -pitchLimit, pitchLimit);
+
+        inspectPivot.localRotation = Quaternion.Euler(pitch, yaw, 0f);
+    }
+
+    private void ResetRotation()
+    {
+        ResetRotationInternal();
+    }
+
+    private void ResetRotationInternal()
+    {
+        yaw = 0f;
+        pitch = 0f;
+        inspectPivot.localRotation = Quaternion.identity;
+    }
+
+    #endregion
+
+    #region Inspect Object
+
+    private void SpawnInspectObject(GameObject source)
+    {
+        if (source == null)
+        {
+            Debug.LogWarning("[InspectionManager] Inspect source is null.");
+            return;
+        }
+
+        inspectInstance = Instantiate(source, inspectPivot);
+        inspectInstance.transform.localPosition = Vector3.zero;
+        inspectInstance.transform.localRotation = Quaternion.identity;
+        inspectInstance.transform.localScale = Vector3.one;
+    }
+
+    #endregion
 }
