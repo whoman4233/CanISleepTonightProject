@@ -17,9 +17,9 @@ public class GameManager : MonoBehaviour
     public event Action OnGameOver; // 게임오버 이벤트
 
     [Header("순찰 페이즈 타임어택")]
-    [SerializeField] private float patrolDurationSeconds = 480.0f; // 480초(현실)
+    [SerializeField] private float patrolDurationSeconds = 480f; // 480초(현실)
     private const float PatrolDisplayHours = 8.0f; // 8시간(인게임) 나중에 ui에 연결할 수 있게 수치 조정 및 시간 감소 로직 필요
-    private float currentInGameSeconds; // 현재 인게임 시간
+    private float currentInGameSeconds = 3600 * 8; // 현재 인게임 시간
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
     [Header("폭동 게이지 증감")]
@@ -102,6 +102,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterPatrol() // 순찰 페이즈
     {
+        StopAllCoroutines();
         playerManager.SetMovementState(true);
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
         StartCoroutine(AutoTransitionAfterDelay(patrolDurationSeconds, GamePhase.Settlement)); // 480초 후 자동으로 페이즈 종료 및 전환
@@ -111,13 +112,17 @@ public class GameManager : MonoBehaviour
     {
         playerManager.SetMovementState(false);
         //폭동게이지 계산 추가
-        StartCoroutine(AutoTransitionAfterDelay(3.0f, GamePhase.OffDuty));
+        StartCoroutine(AutoTransitionAfterDelay(3.0f, GamePhase.OffDuty)); //어떤식으로 페이즈 이동할것인가
     }
 
     private void OnEnterOffDuty() // 퇴근 페이즈
     {
         //오토세이브
-        //2일차 시작
+        //폭동게이지에 따라 n일차 시작 혹은 엔딩
+        if(currentDay == 7)
+        {
+            ChangePhase(GamePhase.Ending);
+        }
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -135,7 +140,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator UpdateTimer() // 타이머 코루틴
     {
         yield return new WaitForSeconds(1.0f);
-        while(CurrentPhase == GamePhase.Patrol && currentInGameSeconds > 0)
+        while(CurrentPhase == GamePhase.Patrol && currentInGameSeconds > 0 && patrolDurationSeconds > 0)
         {
             float minutesPerSecond = 1.0f; // 현실 1초당 인게임 1분
             currentInGameSeconds -= (minutesPerSecond * 60f); // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
@@ -145,6 +150,7 @@ public class GameManager : MonoBehaviour
         {
             currentInGameSeconds = 0;
         }
+        yield return null;
         OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
     }
 
@@ -168,6 +174,7 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("브리핑페이즈가 아닙니다");
             return;
         }
+        Debug.Log("순찰 시작");
         ChangePhase(GamePhase.Patrol);
     }
 
@@ -175,6 +182,7 @@ public class GameManager : MonoBehaviour
     {
         if (currentPhase == GamePhase.Patrol)
         {
+            Debug.Log("순찰 종료");
             ChangePhase(GamePhase.Settlement);
         }
     }
