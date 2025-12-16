@@ -39,13 +39,13 @@ public class PlayerManager : MonoBehaviour
             Debug.LogError("PlayerController 혹은 GameManager가 연결되지 않았습니다");
             return;
         }
-        SetMovementState(false);
+       // SetMovementState(false);
     }
 
-    public void SetMovementState(bool state) // 플레이어 이동 가능 상태
-    {
-        playerController.SetMovementEnabled(state);
-    }
+    //public void SetMovementState(bool state) // 플레이어 이동 가능 상태
+    //{
+    //    playerController.SetMovementEnabled(state);
+    //}
 
     public void ResetDailyRecoed() // 플레이어 상태 초기화
     {

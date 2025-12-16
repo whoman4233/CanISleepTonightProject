@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
 
-    private float riotGauge; // 폭동게이지 혹시몰라서 float로 해 놓음.
+    //private float riotGauge; // 폭동게이지 혹시몰라서 float로 해 놓음.
 
     public event Action<GamePhase> OnPhaseChanged; // 페이즈 변경 이벤트
     public event Action<float> OnRiotGaugeChanged; // 폭동게이지 변경 이벤트
@@ -21,19 +21,6 @@ public class GameManager : MonoBehaviour
     private const float PatrolDisplayHours = 8.0f; // 8시간(인게임) 나중에 ui에 연결할 수 있게 수치 조정 및 시간 감소 로직 필요
     private float currentInGameSeconds = 3600 * 8; // 현재 인게임 시간
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
-
-    [Header("폭동 게이지 증감")]
-    [SerializeField] private float initialRiotGauge = 30f; // 기본 폭동 게이지
-    [SerializeField] private float dailyRiotIncrease = 20f; // 폭동게이지 하루 기본 증가량
-    [SerializeField] private float maxRiotGauge = 100f; // max폭동게이지
-    [SerializeField] private float suppressSuccess_Down = 5f; // 수상한 방 진압 성공
-    [SerializeField] private float normalSuccess_Down = 5f; // 정상적 방 진압 X
-    [SerializeField] private float suppressFail_Up = 10f; // 수상한 방 진압 실패
-    [SerializeField] private float normalFail_Up = 10f; // 정상적 방 진압 O
-
-    [Header("미확인 감방 페널티")]
-    [SerializeField] private float uninspectedSuspicious_Up = 15f; // 미확인 수상한 방
-    [SerializeField] private float uninspectedNormal_Up = 5f; // 미확인 정상적 방
 
     private PlayerManager playerManager;
     private PrisonCellManager prisonCellManager;
@@ -46,9 +33,7 @@ public class GameManager : MonoBehaviour
         playerManager = context.Get<PlayerManager>();
         prisonCellManager = context.Get<PrisonCellManager>();
         settlementManager = context.Get<SettlementManager>();
-        riotGauge = initialRiotGauge;
-        OnRiotGaugeChanged?.Invoke(riotGauge);
-        Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{riotGauge}");
+        Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{settlementManager.RiotGauge}");
         currentInGameSeconds = PatrolDisplayHours * 3600f; // 3600을 곱하여 초 단위로 계산
         OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
     }
@@ -90,9 +75,11 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnterStandby() // 준비 페이즈
     {
+        settlementManager.ApplyDailyBaseIncrease(); // 일일 폭동게이지 증가
+        OnRiotGaugeChanged?.Invoke(settlementManager.RiotGauge);
         currentDay++;
         // 랜덤 감방
-        playerManager.SetMovementState(false);
+        //playerManager.SetMovementState(false);
         ChangePhase(GamePhase.Briefing);
     }
     private void OnEnterBriefing() // 브리핑 페이즈
@@ -103,14 +90,14 @@ public class GameManager : MonoBehaviour
     private void OnEnterPatrol() // 순찰 페이즈
     {
         StopAllCoroutines();
-        playerManager.SetMovementState(true);
+        //playerManager.SetMovementState(true);
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
         StartCoroutine(AutoTransitionAfterDelay(patrolDurationSeconds, GamePhase.Settlement)); // 480초 후 자동으로 페이즈 종료 및 전환
     }
 
     private void OnEnterSettlement() // 정산 페이즈
     {
-        playerManager.SetMovementState(false);
+        //playerManager.SetMovementState(false);
         //폭동게이지 계산 추가
         StartCoroutine(AutoTransitionAfterDelay(3.0f, GamePhase.OffDuty)); //어떤식으로 페이즈 이동할것인가
     }
@@ -144,13 +131,14 @@ public class GameManager : MonoBehaviour
         {
             float minutesPerSecond = 1.0f; // 현실 1초당 인게임 1분
             currentInGameSeconds -= (minutesPerSecond * 60f); // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
-            // 1시간 = 3600초 이니까 60 단위로 쪼개서 시, 분, 초 등으로 나눠서 활용 가능함.
+                                                              // 1시간 = 3600초 이니까 60 단위로 쪼개서 시, 분, 초 등으로 나눠서 활용 가능함.
+            if (currentInGameSeconds < 0)
+            {
+                currentInGameSeconds = 0;
+            }
+            yield return null;
         }
-        if(currentInGameSeconds < 0)
-        {
-            currentInGameSeconds = 0;
-        }
-        yield return null;
+
         OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
     }
 
