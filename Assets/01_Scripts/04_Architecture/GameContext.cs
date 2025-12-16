@@ -5,20 +5,39 @@ using UnityEngine;
 
 public class GameContext : MonoBehaviour
 {
-    public static GameContext Instance { get; private set; }
+    //public static GameContext Instance { get; private set; }
+
+    private static GameContext instance;
+    public static GameContext Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<GameContext>();
+                if (instance == null)
+                {
+                    GameObject contextObject = new GameObject("GameContext");
+                    instance = contextObject.AddComponent<GameContext>();
+                    DontDestroyOnLoad(contextObject);
+                }
+            }
+            return instance;
+        }
+    }
 
     private Dictionary<Type, object> services = new Dictionary<Type, object>(); // 딕셔너리로 저장
 
-    private void Awake()
-    {
-        if(Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    } 
+    //private void Awake()
+    //{
+    //    if(Instance != null && Instance != this)
+    //    {
+    //        Destroy(gameObject);
+    //        return;
+    //    }
+    //    Instance = this;
+    //    DontDestroyOnLoad(gameObject);
+    //} 
 
     public void RegisterService<T>(T service) where T : class //서비스 등록관련 // T는 참조 타입(클래스)이어야 함을 명시
     {
