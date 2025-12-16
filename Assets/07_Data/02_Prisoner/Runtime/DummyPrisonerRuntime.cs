@@ -1,16 +1,26 @@
-using UnityEngine;
-
 public class DummyPrisonerRuntime
 {
-    public string PrisonerId { get; }
+    public string InstanceId { get; }
+    public string TemplateId { get; }
+    public PrisonerType Type { get; }
+
     public int Hp { get; private set; }
+    public int Atk { get; }
+    public int Spd { get; }
 
     public bool IsAlive => Hp > 0;
 
-    public DummyPrisonerRuntime(string prisonerId, int hp)
+    public DummyPrisonerRuntime(
+        string instanceId,
+        PrisonerDefinition def)
     {
-        PrisonerId = prisonerId;
-        Hp = hp;
+        InstanceId = instanceId;
+        TemplateId = def.templateId;
+        Type = def.type;
+
+        Hp = def.hp;
+        Atk = def.atk;
+        Spd = def.spd;
     }
 
     public void TakeDamage(int dmg)
@@ -18,12 +28,12 @@ public class DummyPrisonerRuntime
         if (!IsAlive) return;
 
         Hp -= dmg;
-        PrisonerEventBus.RaisePrisonerHit(PrisonerId, dmg);
+        PrisonerEventBus.RaisePrisonerHit(InstanceId, dmg);
 
         if (Hp <= 0)
         {
             Hp = 0;
-            PrisonerEventBus.RaisePrisonerDown(PrisonerId);
+            PrisonerEventBus.RaisePrisonerDown(InstanceId);
         }
     }
 }
