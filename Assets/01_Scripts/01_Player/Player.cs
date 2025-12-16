@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     public CharacterController Controller { get; private set; }
     public ForceReceiver ForceReceiver { get; private set; }
 
-    public PlayerStateMachine stateMachine;
+    public PlayerStateMachine StateMachine { get; private set; }
     public Health health { get; private set; }
     private void Awake()
     {
@@ -21,30 +21,32 @@ public class Player : MonoBehaviour
         Input = GetComponent<PlayerController>();
         Controller = GetComponent<CharacterController>();
         ForceReceiver = GetComponent<ForceReceiver>();
-        stateMachine = new PlayerStateMachine(this);
+        StateMachine = new PlayerStateMachine(this);
         health = GetComponent<Health>();
     }
 
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-        // ★ 모든 컴포넌트의 Awake/OnEnable 이 끝난 뒤에 처음 상태로 진입
-        stateMachine.ChangeState(stateMachine.IdleState);
         health.OnDie += OnDie;
     }
     private void Update()
     {
-        stateMachine.HandleInput();
-        stateMachine.Update();
+        StateMachine.HandleInput();
+        StateMachine.Update();
     }
 
     private void FixedUpdate()
     {
-        stateMachine.PhysicsUpdate();
+        StateMachine.PhysicsUpdate();
     }
     void OnDie()
     {
         Animator.SetTrigger("Die");
         enabled = false;
+    }
+    public void StartStateMachine()
+    {
+        StateMachine.ChangeState(StateMachine.IdleState);
     }
 }

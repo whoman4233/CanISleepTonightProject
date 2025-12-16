@@ -9,6 +9,8 @@ public class LSGBootstrap : MonoBehaviour
     [SerializeField] PlayerManager playerManager;
     [SerializeField] PlayerController playerController;
 
+    [Header("플레이어 연결")]
+    [SerializeField] private Player player;
 
     private void Awake()
     {
@@ -19,7 +21,7 @@ public class LSGBootstrap : MonoBehaviour
         }
         RegisterAllServices();
         InitializeAllServices();
-        gameManager.ChangePhase(GamePhase.Standby); // 스탠바이페이즈로 시작
+        //gameManager.ChangePhase(GamePhase.Standby); // 스탠바이페이즈로 시작
 
         Debug.Log("BootStrap.게임시스템 초기화 완료");
     }
@@ -34,8 +36,11 @@ public class LSGBootstrap : MonoBehaviour
 
     private void InitializeAllServices() // 초기화 순서(의존성이 낮은 순서대로 초기화)
     {
-        playerController.Initialize();
+       // playerController.Initialize();
         playerManager.Initialize();
         gameManager.Initialize();
+
+        player.StartStateMachine();
+        playerController.SetMovementEnabled(true);
     }
 }

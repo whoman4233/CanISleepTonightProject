@@ -26,6 +26,7 @@ public class CinemachinePOVInput : MonoBehaviour
     private void Update()
     {
         if (pov == null || playerController == null) return;
+        if (playerController.playerInput == null) return;
 
         Vector2 look = playerController.playerActions.Look.ReadValue<Vector2>();
 

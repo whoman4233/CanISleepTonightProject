@@ -35,12 +35,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable()
     {
-        playerInput.Enable();
+
     }
 
     private void OnDisable()
     {
-        playerInput.Disable();
+
     }
     private void Start()
     {
