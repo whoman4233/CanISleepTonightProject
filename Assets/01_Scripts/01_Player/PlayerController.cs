@@ -8,11 +8,15 @@ public class PlayerController : MonoBehaviour
     public PlayerInputs playerInput { get; private set; }
     public PlayerInputs.PlayerActions playerActions { get; private set; }
     private CinemachinePOV pov;
-    public void Initialize()
+
+    private void Awake()
     {
         playerInput = new PlayerInputs();
         playerActions = playerInput.Player;
-        SetMovementEnabled(false);
+    }
+    public void Initialize()
+    {
+        //SetMovementEnabled(false);
     }
     public void SetMovementEnabled(bool isEnabled)
     {

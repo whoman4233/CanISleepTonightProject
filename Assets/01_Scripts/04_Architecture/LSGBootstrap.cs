@@ -8,9 +8,9 @@ public class LSGBootstrap : MonoBehaviour
     [SerializeField] GameManager gameManager;
     [SerializeField] PlayerManager playerManager;
     [SerializeField] PlayerController playerController;
+    [SerializeField] PrisonCellManager prisonCellManager;
+    [SerializeField] SettlementManager settlementManager;
 
-    [Header("플레이어 연결")]
-    [SerializeField] private Player player;
 
     private void Awake()
     {
@@ -25,6 +25,10 @@ public class LSGBootstrap : MonoBehaviour
 
         Debug.Log("BootStrap.게임시스템 초기화 완료");
     }
+    private void Start()
+    {
+        gameManager.ChangePhase(GamePhase.Standby); // 스탠바이페이즈로 시작
+    }
 
     private void RegisterAllServices() //서비스 등록
     {
@@ -32,15 +36,14 @@ public class LSGBootstrap : MonoBehaviour
         context.RegisterService<PlayerController>(playerController);
         context.RegisterService<GameManager>(gameManager);
         context.RegisterService<PlayerManager>(playerManager);
+        context.RegisterService<PrisonCellManager>(prisonCellManager);
+        context.RegisterService<SettlementManager>(settlementManager);
     }
 
     private void InitializeAllServices() // 초기화 순서(의존성이 낮은 순서대로 초기화)
     {
-       // playerController.Initialize();
+        //playerController.Initialize();
         playerManager.Initialize();
         gameManager.Initialize();
-
-        player.StartStateMachine();
-        playerController.SetMovementEnabled(true);
     }
 }

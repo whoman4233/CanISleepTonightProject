@@ -35,8 +35,17 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float uninspectedSuspicious_Up = 15f; // 미확인 수상한 방
     [SerializeField] private float uninspectedNormal_Up = 5f; // 미확인 정상적 방
 
+    private PlayerManager playerManager;
+    private PrisonCellManager prisonCellManager;
+    private SettlementManager settlementManager;
+
     public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
     {
+        GameContext context = GameContext.Instance;
+
+        playerManager = context.Get<PlayerManager>();
+        prisonCellManager = context.Get<PrisonCellManager>();
+        settlementManager = context.Get<SettlementManager>();
         riotGauge = initialRiotGauge;
         OnRiotGaugeChanged?.Invoke(riotGauge);
         Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{riotGauge}");
@@ -49,6 +58,12 @@ public class GameManager : MonoBehaviour
         Debug.Log($"{CurrentPhase} 에서 {newPhase}로 페이즈 전환이 이루어졌습니다.");
         currentPhase = newPhase;
         OnPhaseChanged?.Invoke(newPhase);
+
+        // =========================
+        // [추가] UI 및 외부 시스템 전파용
+        // =========================
+        EventBus.Publish(new GamePhaseChangedEvent(newPhase));
+
         switch (newPhase)
         {
             case GamePhase.Standby: 
@@ -77,29 +92,32 @@ public class GameManager : MonoBehaviour
     {
         currentDay++;
         // 랜덤 감방
+        playerManager.SetMovementState(false);
         ChangePhase(GamePhase.Briefing);
     }
     private void OnEnterBriefing() // 브리핑 페이즈
     {
-        //사무실 문을 나서면 순찰 페이즈 시작 나중에 문 앞에 빈 오브젝트 설치 후 검사로 해야 될 것인가. door 상호작용으로 빼는게 맞을듯?
-        StartCoroutine(AutoTransitionAfterDelay(3.0f, GamePhase.Patrol)); // 3초 후 순찰 페이즈로 전환
+        ChangePhase(GamePhase.Patrol); // 임시조치
     }
 
     private void OnEnterPatrol() // 순찰 페이즈
     {
+        playerManager.SetMovementState(true);
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
         StartCoroutine(AutoTransitionAfterDelay(patrolDurationSeconds, GamePhase.Settlement)); // 480초 후 자동으로 페이즈 종료 및 전환
     }
 
     private void OnEnterSettlement() // 정산 페이즈
     {
+        playerManager.SetMovementState(false);
         //폭동게이지 계산 추가
         StartCoroutine(AutoTransitionAfterDelay(3.0f, GamePhase.OffDuty));
     }
 
     private void OnEnterOffDuty() // 퇴근 페이즈
     {
-
+        //오토세이브
+        //2일차 시작
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -128,5 +146,36 @@ public class GameManager : MonoBehaviour
             currentInGameSeconds = 0;
         }
         OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
+    }
+
+    public void StartDayLogic() // 일일 초기화
+    {
+        if(currentPhase == GamePhase.Ending)
+        {
+            return;
+        }
+        playerManager.ResetDailyRecoed(); // 플레이어 상태 초기화 추후 스크립트 따로 빼서 변경 가능.
+        prisonCellManager.RunStandbySetup(); // 감방 배치 초기화
+        ChangePhase(GamePhase.Standby);
+        Debug.Log("일일 초기화 완료");
+    }
+
+
+    public void StartPatrolLogic() 
+    {
+        if(currentPhase != GamePhase.Briefing)
+        {
+            Debug.LogWarning("브리핑페이즈가 아닙니다");
+            return;
+        }
+        ChangePhase(GamePhase.Patrol);
+    }
+
+    public void EndPatrolLogic()
+    {
+        if (currentPhase == GamePhase.Patrol)
+        {
+            ChangePhase(GamePhase.Settlement);
+        }
     }
 }

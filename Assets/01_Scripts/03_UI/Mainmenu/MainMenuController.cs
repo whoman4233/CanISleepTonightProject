@@ -6,7 +6,6 @@ public class MainMenuController : MonoBehaviour
     [Header("Button Groups")]
     [SerializeField] private GameObject mainButtonGroup; //메인메뉴 버튼
     [SerializeField] private GameObject startButtonGroup; // 시작버튼 뒤에 나오는 버튼
-    [SerializeField] private GameObject settingsPanel; // 세팅 버튼용 패널(사운드)
 
     [Header("Main Buttons")]
     [SerializeField] private Button btnStart; // 시작버튼
@@ -47,7 +46,7 @@ public class MainMenuController : MonoBehaviour
     {
         mainButtonGroup.SetActive(true);
         startButtonGroup.SetActive(false);
-        settingsPanel.SetActive(false);
+
     }
 
     // ---------- Button Callbacks ----------
@@ -56,14 +55,11 @@ public class MainMenuController : MonoBehaviour
     {
         mainButtonGroup.SetActive(false);
         startButtonGroup.SetActive(true);
-        settingsPanel.SetActive(false);
     }
 
     private void OnClickSettings()
     {
-        mainButtonGroup.SetActive(false);
-        startButtonGroup.SetActive(false);
-        settingsPanel.SetActive(true);
+        EventBus.Publish(new ShowSettingsPopupEvent());
     }
 
     private void OnClickBackToMain()
