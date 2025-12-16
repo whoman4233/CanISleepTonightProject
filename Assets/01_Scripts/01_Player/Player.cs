@@ -29,6 +29,7 @@ public class Player : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         health.OnDie += OnDie;
+        StartStateMachine();
     }
     private void Update()
     {
