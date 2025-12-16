@@ -30,3 +30,13 @@ public struct LoadGameEvent
 {
 
 }
+
+public struct ShowSettingsPopupEvent
+{
+
+}
+
+public struct HideSettingsPopupEvent
+{
+
+}
