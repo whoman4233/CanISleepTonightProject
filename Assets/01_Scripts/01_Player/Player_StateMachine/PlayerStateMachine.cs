@@ -9,7 +9,7 @@ public class PlayerStateMachine : StateMachine
     public float RotationDamping { get; private set; }
     public float MovementSpeedModifier { get; set; } = 1f;
     public float JumpForce { get; set; }
-    public bool IsAttacking { get; set; }
+    public bool AttackRequested { get; private set; }
     public int ComboIndex { get; set; }
 
     public Transform MainCameraTransform { get; set; }
@@ -36,5 +36,19 @@ public class PlayerStateMachine : StateMachine
 
         MovementSpeed = player.Data.GroundData.BaseSpeed;
         RotationDamping = player.Data.GroundData.BaseRotationDamping;
+    }
+    public void RequestAttack()
+    {
+        AttackRequested = true;
+    }
+    public bool ConsumeAttack()
+    {
+        if (!AttackRequested) return false;
+        AttackRequested = false;
+        return true;
+    }
+    public void ClearAttackRequest()
+    {
+        AttackRequested = false;
     }
 }

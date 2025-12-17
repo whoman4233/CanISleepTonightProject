@@ -36,16 +36,6 @@ public class PlayerController : MonoBehaviour
             Debug.Log("PlayerController입력 비활성화");
         }
     }
-
-    private void OnEnable()
-    {
-
-    }
-
-    private void OnDisable()
-    {
-
-    }
     private void Start()
     {
         pov = virtualCamera.GetCinemachineComponent<CinemachinePOV>();

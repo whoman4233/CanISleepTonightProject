@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class DayDebugConsole : MonoBehaviour
@@ -7,8 +7,10 @@ public class DayDebugConsole : MonoBehaviour
     [SerializeField] private PrisonCellManager cellManager;
     [SerializeField] private InspectionStateMachine inspection;
     [SerializeField] private SettlementReportBuilder report;
+    [SerializeField] private GameBootstrap bootstrap; // ✅ 추가(자동 대상)
 
     [Header("Debug Target")]
+    [SerializeField] private bool followBootstrapTarget = true;
     [SerializeField] private string testCellId = "C_1F_01";
 
     private void Awake()
@@ -16,6 +18,7 @@ public class DayDebugConsole : MonoBehaviour
         if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
         if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
         if (report == null) report = FindObjectOfType<SettlementReportBuilder>();
+        if (bootstrap == null) bootstrap = FindObjectOfType<GameBootstrap>();
 
         if (cellManager != null)
         {
@@ -38,46 +41,42 @@ public class DayDebugConsole : MonoBehaviour
 
     private void Update()
     {
-        // F1: Standby �¾�
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            cellManager.RunStandbySetup();
-            DumpToday();
-        }
+        var target = ResolveTargetCellId();
+        if (string.IsNullOrWhiteSpace(target)) return;
 
         // F2: Enter
         if (Input.GetKeyDown(KeyCode.F2))
         {
-            bool ok = inspection.TryEnterCell(testCellId);
-            Debug.Log($"[TryEnter] {testCellId} => {ok}");
+            bool ok = inspection.TryEnterCell(target);
+            Debug.Log($"[TryEnter] {target} => {ok}");
         }
 
         // F3: Warning(NonSuppress)
         if (Input.GetKeyDown(KeyCode.F3))
         {
-            bool ok = inspection.SelectWarning(testCellId);
-            Debug.Log($"[SelectWarning] {testCellId} => {ok}");
+            bool ok = inspection.SelectWarning(target);
+            Debug.Log($"[SelectWarning] {target} => {ok}");
         }
 
         // F4: Suppress start (Lock)
         if (Input.GetKeyDown(KeyCode.F4))
         {
-            bool ok = inspection.SelectSuppress(testCellId);
-            Debug.Log($"[SelectSuppress] {testCellId} => {ok}");
+            bool ok = inspection.SelectSuppress(target);
+            Debug.Log($"[SelectSuppress] {target} => {ok}");
         }
 
         // F5: Suppress success signal
         if (Input.GetKeyDown(KeyCode.F5))
         {
-            bool ok = inspection.NotifySuppressSuccess(testCellId);
-            Debug.Log($"[NotifySuppressSuccess] {testCellId} => {ok}");
+            bool ok = inspection.NotifySuppressSuccess(target);
+            Debug.Log($"[NotifySuppressSuccess] {target} => {ok}");
         }
 
         // F6: Exit request
         if (Input.GetKeyDown(KeyCode.F6))
         {
-            bool ok = inspection.RequestExitCell(testCellId);
-            Debug.Log($"[RequestExit] {testCellId} => {ok}");
+            bool ok = inspection.RequestExitCell(target);
+            Debug.Log($"[RequestExit] {target} => {ok}");
         }
 
         // F7: Time Expired (Force release, no resolve)
@@ -87,12 +86,12 @@ public class DayDebugConsole : MonoBehaviour
             Debug.Log("[TimeExpired] ForceReleaseOnTimeExpired()");
         }
 
-        // F8: Settlement Report build (1ȸ ��Ŷ)
-        if (Input.GetKeyDown(KeyCode.F8))
+        // (선택) 리포트만 확인하고 싶으면 F9 같은 남는 키로
+        if (Input.GetKeyDown(KeyCode.F9))
         {
             report.BuildSettlementReport(out List<ResolvedRecord> resolved, out List<UninspectedRecord> uninspected);
 
-            Debug.Log($"[SettlementReport] Resolved={resolved.Count}, Uninspected={uninspected.Count}");
+            Debug.Log($"[SettlementReport-Preview] Resolved={resolved.Count}, Uninspected={uninspected.Count}");
             foreach (var r in resolved)
                 Debug.Log($"  - RESOLVED: {r.cellId} susp={r.isSuspicious} didSuppress={r.didSuppress}");
             foreach (var u in uninspected)
@@ -100,13 +99,12 @@ public class DayDebugConsole : MonoBehaviour
         }
     }
 
-    private void DumpToday()
+    private string ResolveTargetCellId()
     {
-        Debug.Log("=== Today Active Cells ===");
-        foreach (var id in cellManager.GetActiveCellIds())
-        {
-            var c = cellManager.GetCell(id);
-            Debug.Log($"  - {c}");
-        }
+        if (!followBootstrapTarget) return testCellId;
+        if (bootstrap == null) return testCellId;
+
+        var id = bootstrap.CurrentTestCellId;
+        return string.IsNullOrWhiteSpace(id) ? testCellId : id;
     }
 }
