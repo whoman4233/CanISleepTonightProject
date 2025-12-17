@@ -7,24 +7,9 @@ public class PlayerManager : MonoBehaviour
     private PlayerController playerController;
     private GameManager gameManager;
     private PrisonCellManager prisonCellManager;
-    public struct InspectionRecord
-    {
-        public bool IsInspected { get; private set; }      // 입장했는지 (미확인 방 페널티 체크용)     //순찰 관련 다른 스크립트로 싹 빼는게 좋을듯
-        public bool WasSuppressed { get; private set; }    // 진압을 시도했는지 (게이지 증감 규칙 체크용)
 
-        public InspectionRecord(bool inspected, bool suppressed)
-        {
-            IsInspected = inspected;
-            WasSuppressed = suppressed;
-        }
-    }
-
-    [Header("순찰 및 점검 상태")]  // Key: 감방 ID, Value: 플레이어의 행동 기록
-
-    private Dictionary<int, InspectionRecord> dailyInspectionRecords = new Dictionary<int, InspectionRecord>();
-
-    public int CurrentInspectingCellID { get; private set; } = 0; // 0이면 점검 중인 방 없음
-    public bool IsObserving { get; private set; } = false;      // 관찰 중 상태 (판단 대기)
+    public string CurrentCellID { get; private set; } = string.Empty; // ID = 감방 id, 플레이어가 어느 감방에 있는지, 감방id에 따라 int나 string로 변경
+    public bool IsObserving { get; private set; } = false;      // 관찰 중 상태
     public bool IsEngagingInAction { get; private set; } = false; // 진압 액션 중
 
     public void Initialize()
@@ -33,6 +18,7 @@ public class PlayerManager : MonoBehaviour
         playerController = context.Get<PlayerController>();
         gameManager = context.Get<GameManager>();
         prisonCellManager = context.Get<PrisonCellManager>();
+        
 
         if(gameManager == null || prisonCellManager == null)
         {
@@ -49,8 +35,7 @@ public class PlayerManager : MonoBehaviour
 
     public void ResetDailyRecoed() // 플레이어 상태 초기화
     {
-        dailyInspectionRecords.Clear();
-        CurrentInspectingCellID = 0;
+        CurrentCellID = string.Empty;
         IsObserving = false;
         IsEngagingInAction = false;
         Debug.Log("플레이어 순찰 상태 초기화 완료");
@@ -65,4 +50,8 @@ public class PlayerManager : MonoBehaviour
     {
         gameManager.EndPatrolLogic();
     }
+    public void SetInspectingCell(string cellID) => CurrentCellID = cellID;
+    public void SetObserving(bool state) => IsObserving = state;
+    public string GetCurrentCellID() => CurrentCellID;
+
 }

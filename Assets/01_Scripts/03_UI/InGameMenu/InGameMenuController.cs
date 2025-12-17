@@ -17,15 +17,17 @@ public class InGameMenuController : MonoBehaviour
     private void OnEnable()
     {
         ShowCursor();
+        EventBus.Publish(new PauseGameRequestedEvent()); //GameManager에 요청(시간 일시정지용)
     }
 
     private void OnDisable()
     {
         HideCursor();
+        EventBus.Publish(new ResumeGameRequestedEvent());
     }
     private void OnClickResume()
     {
-        EventBus.Publish(new ResumeGameRequestedEvent());
+        gameObject.SetActive(false);
     }
 
     private void OnClickReturnToTitle()

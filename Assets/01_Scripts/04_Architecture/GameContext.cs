@@ -7,22 +7,22 @@ public class GameContext : MonoBehaviour
 {
     //public static GameContext Instance { get; private set; }
 
-    private static GameContext instance;
+    private static GameContext _instance;
     public static GameContext Instance
     {
         get
         {
-            if (instance == null)
+            if (_instance == null)
             {
-                instance = FindObjectOfType<GameContext>();
-                if (instance == null)
+                _instance = FindObjectOfType<GameContext>();
+                if (_instance == null)
                 {
                     GameObject contextObject = new GameObject("GameContext");
-                    instance = contextObject.AddComponent<GameContext>();
+                    _instance = contextObject.AddComponent<GameContext>();
                     DontDestroyOnLoad(contextObject);
                 }
             }
-            return instance;
+            return _instance;
         }
     }
 
