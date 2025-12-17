@@ -33,31 +33,15 @@ public class InspectionManager : MonoBehaviour
 
     #region Unity Lifecycle
 
-    private void Awake()
-    {
-        
-    }
-
     private void Start()
     {
         InitializeInput();
-        inspectionCamera.gameObject.SetActive(false);
     }
 
     private void Update()
     {
         if (!isInspecting)
             return;
-
-        if (rotateHold.WasPressedThisFrame())
-        {
-            Debug.Log("[TEST] RotateHold pressed");
-        }
-
-        if (rotate.ReadValue<Vector2>() != Vector2.zero)
-        {
-            Debug.Log("[TEST] Rotate input detected");
-        }
 
         HandleRotationInput();
     }
@@ -71,7 +55,7 @@ public class InspectionManager : MonoBehaviour
         PlayerController player = GetComponentInParent<PlayerController>();
         if (player == null)
         {
-            Debug.LogError("[InspectionManager] PlayerController 찾을 수 없음.");
+            Debug.LogError("[InspectionManager] PlayerController not found.");
             return;
         }
 
@@ -90,7 +74,7 @@ public class InspectionManager : MonoBehaviour
 
     #endregion
 
-    #region Public API 
+    #region Public API
 
     /// <summary>
     /// Ray 기반 상호작용 시스템에서 호출
@@ -105,9 +89,11 @@ public class InspectionManager : MonoBehaviour
 
         currentInspectable.OnInspectionStart();
 
+        // 입력 전환
         playerActions.Disable();
         inspectionActions.Enable();
 
+        // 카메라 활성
         inspectionCamera.gameObject.SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
@@ -115,6 +101,14 @@ public class InspectionManager : MonoBehaviour
 
         ResetRotationInternal();
         SpawnInspectObject(inspectable.GetInspectPrefab());
+
+        // =========================
+        // UI / 연출 알림
+        // =========================
+        EventBus.Publish(new InspectionStartedEvent
+        {
+            Target = inspectable
+        });
     }
 
     #endregion
@@ -141,6 +135,11 @@ public class InspectionManager : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // =========================
+        // UI / 연출 종료 알림
+        // =========================
+        EventBus.Publish(new InspectionEndedEvent());
     }
 
     #endregion
@@ -149,12 +148,6 @@ public class InspectionManager : MonoBehaviour
 
     private void HandleRotationInput()
     {
-        if (rotateHold.WasPressedThisFrame())
-            Cursor.visible = false;
-
-        if (rotateHold.WasReleasedThisFrame())
-            Cursor.visible = true;
-
         if (!rotateHold.IsPressed())
             return;
 
@@ -201,3 +194,4 @@ public class InspectionManager : MonoBehaviour
 
     #endregion
 }
+

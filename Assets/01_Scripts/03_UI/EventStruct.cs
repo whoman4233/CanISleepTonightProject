@@ -89,5 +89,16 @@ public struct ReturnToTitleRequestedEvent //타이틀로 돌아가기
 
 }
 
+//==========================================
+//Inspection(상세보기) 이벤트 목록
+//==========================================
 
+public struct InspectionStartedEvent // 상세보기 시작
+{
+    public IInspectable Target;
+}
 
+public struct InspectionEndedEvent // 상세보기 종료
+{
+
+}
