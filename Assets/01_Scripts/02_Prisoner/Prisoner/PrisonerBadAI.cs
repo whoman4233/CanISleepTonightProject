@@ -24,7 +24,7 @@ public class PrisonerBadAI : MonoBehaviour
     {
         if (_player == null) return;
         if (!_actor.IsAlive) return;
-        if (_actor.type != PrisonerType.Bad) return;
+        if (_actor.Type != PrisonerType.Bad) return;
 
         // 이동(직선)
         var dir = (_player.position - transform.position);
@@ -33,7 +33,7 @@ public class PrisonerBadAI : MonoBehaviour
 
         if (dist > attackRange)
         {
-            var move = dir.normalized * Mathf.Max(0, _actor.spd) * Time.deltaTime;
+            var move = dir.normalized * Mathf.Max(0, _actor.Spd) * Time.deltaTime;
             transform.position += move;
             return;
         }

@@ -1,23 +1,31 @@
-using System;
-using UnityEngine;
+ï»¿using System;
 
 [Serializable]
 public class CellRuntime
 {
     public string CellId;
-    public int Floor;   // 1 or 2
-    public int Number;  // 1..8
+    public int Floor;
+    public int Number;
 
+    // ì˜¤ëŠ˜ í™œì„± ì •ë³´
     public bool IsActiveToday;
     public bool IsNoisy;
     public bool IsSuspicious;
 
+    // ì ê²€ íë¦„
     public bool IsInspectingNow;
 
-    // Suppress Èå¸§ Á¦¾î
-    public bool IsSuppressing;          // Áø¾Ğ ÁøÇà Áß(ÅğÀå Àá±è)
-    public bool SuppressSuccess;        // Áø¾Ğ ¼º°ø È®Á¤(NotifySuppressSuccess È£Ãâ·Î true)
-    public bool NonSuppressChosen;      // "°æ°í" ¹öÆ°À» ´­·¶´ÂÁö(¼±ÅÃÀûÀ¸·Î ·Î±×¿ë)
+    // Suppress íë¦„
+    public bool IsSuppressing;
+    public bool SuppressSuccess;
+    public bool NonSuppressChosen;
+
+    // âœ… ì˜¤ëŠ˜ ê²°ê³¼
+    public bool WasResolvedToday;
+    public bool DidSuppress;
+
+    // âœ… ì˜¤ëŠ˜ ì ê¸ˆ
+    public bool IsLockedForDay;
 
     public CellState State;
 
@@ -32,11 +40,10 @@ public class CellRuntime
         SuppressSuccess = false;
         NonSuppressChosen = false;
 
-        State = CellState.Inactive;
-    }
+        WasResolvedToday = false;
+        DidSuppress = false;
+        IsLockedForDay = false;
 
-    public override string ToString()
-    {
-        return $"{CellId} (F{Floor},#{Number}) Active={IsActiveToday} Noisy={IsNoisy} Susp={IsSuspicious} State={State}";
+        State = CellState.Inactive;
     }
 }
