@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
 public class InspectionStateMachine : MonoBehaviour
@@ -8,7 +8,7 @@ public class InspectionStateMachine : MonoBehaviour
 
     public string CurrentInspectingCellId { get; private set; }
 
-    // ¿ÜºÎ(UI/½Ã½ºÅÛ/Á¤»ê) ¿¬µ¿ ÀÌº¥Æ®
+    // ì™¸ë¶€(UI/ì‹œìŠ¤í…œ/ì •ì‚°) ì—°ë™ ì´ë²¤íŠ¸
     public event Action<string> OnEnteredCell;                         // cellId
     public event Action<string> OnExitBlocked;                         // cellId
     public event Action<string, bool, bool> OnResolved;                // cellId, isSuspicious, didSuppress
@@ -25,14 +25,14 @@ public class InspectionStateMachine : MonoBehaviour
     {
         if (cellManager == null) return false;
 
-        // ÇÑ ¹ø¿¡ ÇÑ ¹æ¸¸ Á¡°Ë
+        // í•œ ë²ˆì— í•œ ë°©ë§Œ ì ê²€
         if (!string.IsNullOrEmpty(CurrentInspectingCellId))
             return false;
 
         var cell = cellManager.GetCell(cellId);
         if (cell == null) return false;
 
-        // ¿À´Ã È°¼º(¼ÒÀ½) ¹æ¸¸ Á¡°Ë °¡´É
+        // ì˜¤ëŠ˜ í™œì„±(ì†ŒìŒ) ë°©ë§Œ ì ê²€ ê°€ëŠ¥
         if (!cell.IsActiveToday || !cell.IsNoisy)
             return false;
 
@@ -44,13 +44,13 @@ public class InspectionStateMachine : MonoBehaviour
         return true;
     }
 
-    // UI»ó "°æ°í" ¹öÆ°. ³»ºÎ´Â NonSuppress.
+    // UIìƒ "ê²½ê³ " ë²„íŠ¼. ë‚´ë¶€ëŠ” NonSuppress.
     public bool SelectWarning(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
         if (cell == null) return false;
 
-        // Áø¾Ğ Áß¿¡´Â °æ°í ¼±ÅÃ ºÒ°¡
+        // ì§„ì•• ì¤‘ì—ëŠ” ê²½ê³  ì„ íƒ ë¶ˆê°€
         if (cell.State == CellState.Suppressing || cell.IsSuppressing)
             return false;
 
@@ -58,7 +58,7 @@ public class InspectionStateMachine : MonoBehaviour
         return true;
     }
 
-    // Áø¾Ğ ¼±ÅÃ: Áï½Ã ÅğÀå/¹® »óÈ£ÀÛ¿ë Àá±İ
+    // ì§„ì•• ì„ íƒ: ì¦‰ì‹œ í‡´ì¥/ë¬¸ ìƒí˜¸ì‘ìš© ì ê¸ˆ
     public bool SelectSuppress(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
@@ -76,7 +76,7 @@ public class InspectionStateMachine : MonoBehaviour
         return true;
     }
 
-    // ÁË¼ö ÆÄÆ®°¡ "Áø¾Ğ ¼º°ø" ½Ã È£Ãâ
+    // ì£„ìˆ˜ íŒŒíŠ¸ê°€ "ì§„ì•• ì„±ê³µ" ì‹œ í˜¸ì¶œ
     public bool NotifySuppressSuccess(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
@@ -89,13 +89,13 @@ public class InspectionStateMachine : MonoBehaviour
         return true;
     }
 
-    // ÅğÀå ¿äÃ»: ±ÔÄ¢¿¡ µû¶ó Çã¿ë/Â÷´Ü
+    // í‡´ì¥ ìš”ì²­: ê·œì¹™ì— ë”°ë¼ í—ˆìš©/ì°¨ë‹¨
     public bool RequestExitCell(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
         if (cell == null) return false;
 
-        // Áø¾Ğ ÁßÀÌ¸é ÅğÀå Àá±è (¼º°ø Àü±îÁö)
+        // ì§„ì•• ì¤‘ì´ë©´ í‡´ì¥ ì ê¹€ (ì„±ê³µ ì „ê¹Œì§€)
         if (cell.State == CellState.Suppressing)
         {
             if (!cell.SuppressSuccess)
@@ -103,17 +103,17 @@ public class InspectionStateMachine : MonoBehaviour
                 OnExitBlocked?.Invoke(cellId);
                 return false;
             }
-            // ¼º°øÀÌ¸é ÅğÀå Çã¿ë (ÀÌ ¼ø°£ Resolved Ã³¸®)
+            // ì„±ê³µì´ë©´ í‡´ì¥ í—ˆìš© (ì´ ìˆœê°„ Resolved ì²˜ë¦¬)
             Resolve(cell, didSuppress: true);
             return true;
         }
 
-        // Inspecting »óÅÂ¿¡¼­ °æ°í/¹«½Ã·Î ³ª°¡´Â °æ¿ì: Áï½Ã Resolved
+        // Inspecting ìƒíƒœì—ì„œ ê²½ê³ /ë¬´ì‹œë¡œ ë‚˜ê°€ëŠ” ê²½ìš°: ì¦‰ì‹œ Resolved
         Resolve(cell, didSuppress: false);
         return true;
     }
 
-    // ½Ã°£ ÃÊ°ú: Exit È£Ãâ X, ¿Ï·áÃ³¸® X, ¶ô¸¸ ÇØÁ¦ÇÏ°í ActiveNoisy À¯Áö
+    // ì‹œê°„ ì´ˆê³¼: Exit í˜¸ì¶œ X, ì™„ë£Œì²˜ë¦¬ X, ë½ë§Œ í•´ì œí•˜ê³  ActiveNoisy ìœ ì§€
     public void ForceReleaseOnTimeExpired()
     {
         if (cellManager == null) return;
@@ -133,13 +133,14 @@ public class InspectionStateMachine : MonoBehaviour
 
     private void Resolve(CellRuntime cell, bool didSuppress)
     {
-        // Resolved ±â·Ï ÀÌº¥Æ® ¸ÕÀú ¹ßÇà(¿ÜºÎ Á¤»ê¿ë)
+        // ì •ì‚° ê¸°ë¡ ì´ë²¤íŠ¸(ReportBuilderê°€ ë°›ìŒ)
         OnResolved?.Invoke(cell.CellId, cell.IsSuspicious, didSuppress);
 
-        // »óÅÂ Á¤¸® ¹× ºñÈ°¼º
-        cellManager.ResolveAndDeactivateCell(cell.CellId);
+        // âœ… ì¦‰ì‹œ ë¹„í™œì„±í™” X
+        // âœ… ì˜¤ëŠ˜ì€ ì ê¸ˆ + ì†ŒìŒ OFF + í•´ê²° ê¸°ë¡ë§Œ ë‚¨ê¹€
+        cellManager.MarkResolvedAndLockForDay(cell.CellId, didSuppress);
 
-        // Á¡°Ë ¶ô ÇØÁ¦
+        // ì ê²€ ë½ í•´ì œ(ë‹¤ë¥¸ ë°© ì ê²€ ê°€ëŠ¥)
         CurrentInspectingCellId = null;
     }
 

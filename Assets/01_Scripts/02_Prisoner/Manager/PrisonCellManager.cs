@@ -141,4 +141,26 @@ public class PrisonCellManager : MonoBehaviour
         cell.IsNoisy = noisy;
         OnNoiseChanged?.Invoke(cell.CellId, noisy);
     }
+
+    public void MarkResolvedAndLockForDay(string cellId, bool didSuppress)
+    {
+        var cell = GetCell(cellId);
+        if (cell == null) return;
+
+        cell.WasResolvedToday = true;
+        cell.DidSuppress = didSuppress;
+
+        // 점검 완료 시 소음은 꺼짐(파동/Wave 제거 트리거)
+        cell.IsNoisy = false;
+
+        // 오늘 재입장 금지(문 잠금)
+        cell.IsLockedForDay = true;
+
+        cell.IsInspectingNow = false;
+        cell.IsSuppressing = false;
+        cell.State = CellState.LockedForDay;
+
+        // 필요하면 여기서 OnNoiseChanged(cellId,false) 같은 이벤트도 발행
+    }
+
 }
