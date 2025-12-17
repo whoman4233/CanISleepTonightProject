@@ -52,6 +52,19 @@ public class PatrolInteractor : MonoBehaviour
         playerManager.SetObserving(true); // 점검 끝나면 둘 다 false로 돌려줄것
     }
 
+    public void EndInspection() // 점검 끝나는 시점에 호출
+    {
+        string currentId = playerManager.CurrentCellID;
+        if (string.IsNullOrEmpty(currentId)) return;
+
+        CellRuntime data = cellManager.GetCell(currentId);
+        if (data != null)
+        {
+            data.IsInspectingNow = false;
+        }
+        playerManager.SetObserving(false);
+    }
+
     private void OnTriggerEnter(Collider other) // 어느 감방 앞에 있는지 체크. 추후 확인방식 변경 가능.
     {
         if (other.CompareTag("PrisonCell"))
