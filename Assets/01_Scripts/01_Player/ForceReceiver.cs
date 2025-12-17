@@ -1,97 +1,47 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// 외력(넉백 등) + 중력/점프를 한 곳에서 관리.
+/// CharacterController.Move에 더할 이동량(Vector3)을 제공한다.
+/// </summary>
 public class ForceReceiver : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private CharacterController controller;
+    [Header("Gravity")]
+    [SerializeField] private float gravity = -25f;
+    [SerializeField] private float groundedGravity = -2f;
+    [SerializeField] private float maxFallSpeed = -40f;
 
-    [Header("Drag Settings")]
-    [SerializeField] private float drag = 0.3f;
+    [Header("External Force")]
+    [SerializeField] private float drag = 6f;
 
-    [Header("Gravity Settings")]
-    [SerializeField] private float gravity = -9.81f;      // 일반 중력
-    [SerializeField] private float groundedGravity = -0.5f; // 땅에 붙잡아 두는 약한 중력
-    [SerializeField] private float maxFallSpeed = -25f;     // 최대 낙하 속도
-
-    private float verticalVelocity;
-    private Vector3 dampingVelocity;
-    private Vector3 impact;
-
-    /// <summary>
-    /// 최종 이동 벡터(위쪽 속도 + 외부 힘)
-    /// </summary>
-    public Vector3 Movement => impact + Vector3.up * verticalVelocity;
-
-    private void Start()
-    {
-        // 인스펙터에 안 넣어도 자동으로 찾아오도록
-        if (controller == null)
-        {
-            controller = GetComponent<CharacterController>();
-        }
-    }
-
-    private void Update()
-    {
-        HandleGravity();
-        HandleImpact();
-    }
-
-    private void HandleGravity()
-    {
-        bool isGrounded = controller != null && controller.isGrounded;
-
-        if (isGrounded)
-        {
-            // 지면에 닿아있다면 항상 작고 일정한 음수값으로 고정
-            if (verticalVelocity < groundedGravity)
-            {
-                verticalVelocity = groundedGravity;
-            }
-            else if (verticalVelocity > groundedGravity)
-            {
-                // 점프 직후 바로 isGrounded가 들어오는 경우를 대비해서
-                verticalVelocity = groundedGravity;
-            }
-        }
-        else
-        {
-            // 공중일 때만 중력을 계속 누적
-            verticalVelocity += gravity * Time.deltaTime;
-
-            // 너무 빠르게 떨어지지 않도록 하드 클램프
-            if (verticalVelocity < maxFallSpeed)
-            {
-                verticalVelocity = maxFallSpeed;
-            }
-        }
-    }
-
-    private void HandleImpact()
-    {
-        // 넉백 등 감쇠
-        impact = Vector3.SmoothDamp(
-            current: impact,
-            target: Vector3.zero,
-            currentVelocity: ref dampingVelocity,
-            smoothTime: drag
-        );
-    }
-
-    public void Reset()
-    {
-        verticalVelocity = 0f;
-        impact = Vector3.zero;
-    }
+    private Vector3 impact;          // 수평 외력 누적
+    public float VerticalVelocity { get; private set; }
 
     public void AddForce(Vector3 force)
     {
+        // 점프력은 PlayerController에서 VerticalVelocity로 주고,
+        // 여기서는 넉백 같은 외력을 주로 처리한다고 가정
         impact += force;
     }
 
-    public void Jump(float jumpForce)
+    public void SetJumpVelocity(float jumpVelocity)
     {
-        // 점프는 무조건 위 방향 속도로 세팅
-        verticalVelocity = jumpForce;
+        VerticalVelocity = jumpVelocity;
+    }
+
+    public Vector3 ConsumeMove(float deltaTime, bool isGrounded)
+    {
+        // 중력 처리
+        if (isGrounded && VerticalVelocity < 0f)
+            VerticalVelocity = groundedGravity;
+        else
+            VerticalVelocity += gravity * deltaTime;
+
+        VerticalVelocity = Mathf.Max(VerticalVelocity, maxFallSpeed);
+
+        // 외력 감쇠
+        impact = Vector3.Lerp(impact, Vector3.zero, drag * deltaTime);
+
+        return impact * deltaTime + Vector3.up * (VerticalVelocity * deltaTime);
     }
 }
