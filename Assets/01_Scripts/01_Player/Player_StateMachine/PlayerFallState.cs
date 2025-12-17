@@ -1,29 +1,18 @@
-﻿public class PlayerFallState : PlayerAirState
+﻿public sealed class PlayerFallState : PlayerState
 {
-    public PlayerFallState(PlayerStateMachine playerStateMachine) : base(playerStateMachine)
-    {
-    }
+    public PlayerFallState(PlayerStateMachine sm) : base(sm) { }
 
     public override void Enter()
     {
-        base.Enter();
-        StartAnimation(stateMachine.Player.AnimationData.FallParameterHash);
+        P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
     }
 
-    public override void Exit()
+    public override void Tick(float dt)
     {
-        base.Exit();
-        StopAnimation(stateMachine.Player.AnimationData.FallParameterHash);
-    }
-
-    public override void Update()
-    {
-        base.Update();
-
-        if (stateMachine.Player.Controller.isGrounded)
+        if (IsGrounded)
         {
-            stateMachine.ChangeState(stateMachine.IdleState);
-            return;
+            P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, false);
+            SM.ChangeState(SM.Locomotion);
         }
     }
 }
