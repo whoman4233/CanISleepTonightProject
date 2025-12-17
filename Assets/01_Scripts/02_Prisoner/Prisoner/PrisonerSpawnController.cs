@@ -20,15 +20,15 @@ public class PrisonerSpawnController : MonoBehaviour
     [SerializeField] private string defaultGoodTemplateId = "P_01";
     [SerializeField] private string defaultBadTemplateId = "P_02";
 
-    private void OnEnable()
-    {
-        PrisonerEventBus.OnSuppressSessionStarted += HandleSuppressStart;
-    }
+    //private void OnEnable()
+    //{
+    //    PrisonerEventBus.OnSuppressSessionStarted += HandleSuppressStart;
+    //}
 
-    private void OnDisable()
-    {
-        PrisonerEventBus.OnSuppressSessionStarted -= HandleSuppressStart;
-    }
+    //private void OnDisable()
+    //{
+    //    PrisonerEventBus.OnSuppressSessionStarted -= HandleSuppressStart;
+    //}
 
     /// <summary>
     /// Standby 직후: 오늘 활성 방들에 죄수/이상현상 요소를 미리 생성
@@ -95,13 +95,13 @@ public class PrisonerSpawnController : MonoBehaviour
             prisonerInstanceId = instanceId
         };
 
-        if (isSuspicious && anomalyPrefab != null)
-        {
-            var root = anchor.anomalyRoot != null ? anchor.anomalyRoot : anchor.transform;
-            var aGo = Instantiate(anomalyPrefab, root.position, root.rotation, root);
-            aGo.name = $"Anomaly_{cellId}_01";
-            content.anomalies.Add(aGo);
-        }
+        //if (isSuspicious && anomalyPrefab != null)
+        //{
+        //    var root = anchor.anomalyRoot != null ? anchor.anomalyRoot : anchor.transform;
+        //    var aGo = Instantiate(anomalyPrefab, root.position, root.rotation, root);
+        //    aGo.name = $"Anomaly_{cellId}_01";
+        //    content.anomalies.Add(aGo);
+        //}
 
         contentRegistry.Set(cellId, content);
 
@@ -111,17 +111,17 @@ public class PrisonerSpawnController : MonoBehaviour
     /// <summary>
     /// 진압 시작: 이미 생성된 죄수를 전투 모드로 전환
     /// </summary>
-    private void HandleSuppressStart(string cellId)
-    {
-        if (!contentRegistry.TryGet(cellId, out var content) || content.prisoner == null)
-        {
-            Debug.LogError($"[Spawn] No prisoner content for cell={cellId} (Did you spawn at Standby?)");
-            return;
-        }
+    //private void HandleSuppressStart(string cellId)
+    //{
+    //    if (!contentRegistry.TryGet(cellId, out var content) || content.prisoner == null)
+    //    {
+    //        Debug.LogError($"[Spawn] No prisoner content for cell={cellId} (Did you spawn at Standby?)");
+    //        return;
+    //    }
 
-        content.prisoner.SetCombatEnabled(true);
-        Debug.Log($"[Combat] Enabled cell={cellId} prisoner={content.prisoner.InstanceId}");
-    }
+    //    content.prisoner.SetCombatEnabled(true);
+    //    Debug.Log($"[Combat] Enabled cell={cellId} prisoner={content.prisoner.InstanceId}");
+    //}
 
     /// <summary>
     /// 점검 완료(퇴장) 시 호출해서 해당 방 콘텐츠 정리하고 싶으면 이 메서드 사용
