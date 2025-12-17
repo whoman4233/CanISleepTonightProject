@@ -19,8 +19,10 @@ public sealed class PlayerJumpState : PlayerState
 
     public override void Tick(float dt)
     {
+        _timer += dt;
         if (_timer >= MinAirTime &&
             !IsGrounded &&
+            P.ForceReceiver != null &&
             P.ForceReceiver.VerticalVelocity < 0f)
         {
             P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
@@ -32,5 +34,17 @@ public sealed class PlayerJumpState : PlayerState
         {
             SM.ChangeState(SM.Locomotion);
         }
+    }
+
+    public override void FixedTick(float fdt)
+    {
+        if (P.Controller == null) return;
+
+        Vector3 verticalMove = Vector3.zero;
+
+        if (P.ForceReceiver != null)
+            verticalMove = P.ForceReceiver.ConsumeMove(fdt, IsGrounded);
+
+        P.Controller.Move(verticalMove);
     }
 }

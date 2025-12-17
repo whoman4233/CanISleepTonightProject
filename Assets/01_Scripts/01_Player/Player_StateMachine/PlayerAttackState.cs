@@ -18,8 +18,6 @@ public sealed class PlayerAttackState : PlayerState
     {
         _timer += dt;
 
-        // 공격은 Attack Layer에서 알아서 Empty로 돌아가니까,
-        // “게임플레이 로직상” 잠깐만 락 걸고 Locomotion으로 복귀
         if (_timer >= AttackLockTime)
             SM.ChangeState(SM.Locomotion);
     }
