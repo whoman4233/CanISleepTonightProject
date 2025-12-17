@@ -1,35 +1,50 @@
-﻿public class PlayerJumpState : PlayerAirState
+﻿using UnityEngine;
+
+public sealed class PlayerJumpState : PlayerState
 {
-    public PlayerJumpState(PlayerStateMachine playerStateMachine) : base(playerStateMachine)
-    {
-    }
+    private const float MinAirTime = 0.05f;
+    private float _timer;
+
+    public PlayerJumpState(PlayerStateMachine sm) : base(sm) { }
 
     public override void Enter()
     {
-        stateMachine.JumpForce = stateMachine.Player.Data.AirData.JumpForce;
-        stateMachine.Player.ForceReceiver.Jump(stateMachine.JumpForce);
+        _timer = 0f;
 
-        base.Enter();
+        P.Animator.SetTrigger(P.AnimationData.JumpParameterHash);
 
-        StartAnimation(stateMachine.Player.AnimationData.JumpParameterHash);
+        if (P.ForceReceiver != null)
+            P.ForceReceiver.SetJumpVelocity(P.Data.AirData.JumpForce);
     }
 
-    public override void Exit()
+    public override void Tick(float dt)
     {
-        base.Exit();
-        StopAnimation(stateMachine.Player.AnimationData.JumpParameterHash);
-    }
-    // Animator Controller 수정하고 돌아오기
-
-    public override void Update()
-    {
-        base.Update();
-
-        if (stateMachine.Player.Controller.velocity.y <= 0)
+        _timer += dt;
+        if (_timer >= MinAirTime &&
+            !IsGrounded &&
+            P.ForceReceiver != null &&
+            P.ForceReceiver.VerticalVelocity < 0f)
         {
-            // 추후 Fall 상태로 전환 수정 예정
-            stateMachine.ChangeState(stateMachine.IdleState);
+            P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
+            SM.ChangeState(SM.Fall);
             return;
         }
+
+        if (IsGrounded && _timer >= MinAirTime)
+        {
+            SM.ChangeState(SM.Locomotion);
+        }
+    }
+
+    public override void FixedTick(float fdt)
+    {
+        if (P.Controller == null) return;
+
+        Vector3 verticalMove = Vector3.zero;
+
+        if (P.ForceReceiver != null)
+            verticalMove = P.ForceReceiver.ConsumeMove(fdt, IsGrounded);
+
+        P.Controller.Move(verticalMove);
     }
 }

@@ -1,19 +1,24 @@
-﻿public class PlayerAttackState : PlayerBaseState
+﻿using UnityEngine;
+
+public sealed class PlayerAttackState : PlayerState
 {
-    public PlayerAttackState(PlayerStateMachine playerStateMachine) : base(playerStateMachine)
-    {
-    }
+    // 공격 입력 연타 방지(원하면 PlayerSO로)
+    private const float AttackLockTime = 0.15f;
+    private float _timer;
+
+    public PlayerAttackState(PlayerStateMachine sm) : base(sm) { }
 
     public override void Enter()
     {
-        stateMachine.MovementSpeedModifier = 0;
-        base.Enter();
-        StartAnimation(stateMachine.Player.AnimationData.AttackParameterHash);
+        _timer = 0f;
+        P.Animator.SetTrigger(P.AnimationData.AttackParameterHash);
     }
 
-    public override void Exit()
+    public override void Tick(float dt)
     {
-        base.Exit();
-        StopAnimation(stateMachine.Player.AnimationData.AttackParameterHash);
+        _timer += dt;
+
+        if (_timer >= AttackLockTime)
+            SM.ChangeState(SM.Locomotion);
     }
 }

@@ -1,29 +1,31 @@
-﻿public class PlayerFallState : PlayerAirState
+﻿using UnityEngine;
+public sealed class PlayerFallState : PlayerState
 {
-    public PlayerFallState(PlayerStateMachine playerStateMachine) : base(playerStateMachine)
-    {
-    }
+    public PlayerFallState(PlayerStateMachine sm) : base(sm) { }
 
     public override void Enter()
     {
-        base.Enter();
-        StartAnimation(stateMachine.Player.AnimationData.FallParameterHash);
+        P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
     }
 
-    public override void Exit()
+    public override void FixedTick(float fdt)
     {
-        base.Exit();
-        StopAnimation(stateMachine.Player.AnimationData.FallParameterHash);
+        if (P.Controller == null) return;
+
+        Vector3 forceMove = Vector3.zero;
+
+        if (P.ForceReceiver != null)
+            forceMove = P.ForceReceiver.ConsumeMove(fdt, false);
+
+        // Fall 상태에서도 Move 호출
+        P.Controller.Move(forceMove);
     }
-
-    public override void Update()
+    public override void Tick(float dt)
     {
-        base.Update();
-
-        if (stateMachine.Player.Controller.isGrounded)
+        if (IsGrounded)
         {
-            stateMachine.ChangeState(stateMachine.IdleState);
-            return;
+            P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, false);
+            SM.ChangeState(SM.Locomotion);
         }
     }
 }
