@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     private PlayerManager playerManager;
     private PrisonCellManager prisonCellManager;
     private SettlementManager settlementManager;
+    private SettlementReportBuilder settlementReportBuilder;
 
     public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
     {
@@ -33,6 +34,7 @@ public class GameManager : MonoBehaviour
         playerManager = context.Get<PlayerManager>();
         prisonCellManager = context.Get<PrisonCellManager>();
         settlementManager = context.Get<SettlementManager>();
+        settlementReportBuilder = context.Get<SettlementReportBuilder>();
         Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{settlementManager.RiotGauge}");
         currentInGameSeconds = PatrolDisplayHours * 3600f; // 3600을 곱하여 초 단위로 계산
         OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
@@ -75,6 +77,13 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnterStandby() // 준비 페이즈
     {
+        if(currentPhase == GamePhase.Ending)
+        {
+            return;
+        }
+        playerManager.ResetDailyRecoed(); // 상태
+        prisonCellManager.RunStandbySetup(); // 죄수 초기화
+        settlementReportBuilder.ClearResolvedCache(); // 점검 기록 초기화
         settlementManager.ApplyDailyBaseIncrease(); // 일일 폭동게이지 증가
         OnRiotGaugeChanged?.Invoke(settlementManager.RiotGauge);
         currentDay++;
@@ -99,6 +108,9 @@ public class GameManager : MonoBehaviour
     {
         //playerManager.SetMovementState(false);
         //폭동게이지 계산 추가
+        settlementReportBuilder.RunSettlement();
+        OnRiotGaugeChanged?.Invoke(settlementManager.RiotGauge);
+        Debug.Log($"현재 폭동 수치 {settlementManager.RiotGauge}");
         StartCoroutine(AutoTransitionAfterDelay(3.0f, GamePhase.OffDuty)); //어떤식으로 페이즈 이동할것인가
     }
 
@@ -129,17 +141,16 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
         while(CurrentPhase == GamePhase.Patrol && currentInGameSeconds > 0 && patrolDurationSeconds > 0)
         {
-            float minutesPerSecond = 1.0f; // 현실 1초당 인게임 1분
-            currentInGameSeconds -= (minutesPerSecond * 60f); // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
+            float realSeconds = 1.0f; // 현실 1초당 인게임 1분
+            currentInGameSeconds -= (realSeconds * 60f); // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
                                                               // 1시간 = 3600초 이니까 60 단위로 쪼개서 시, 분, 초 등으로 나눠서 활용 가능함.
             if (currentInGameSeconds < 0)
             {
                 currentInGameSeconds = 0;
             }
+            OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
             yield return null;
         }
-
-        OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
     }
 
     public void StartDayLogic() // 일일 초기화
@@ -148,8 +159,6 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-        playerManager.ResetDailyRecoed(); // 플레이어 상태 초기화 추후 스크립트 따로 빼서 변경 가능.
-        prisonCellManager.RunStandbySetup(); // 감방 배치 초기화
         ChangePhase(GamePhase.Standby);
         Debug.Log("일일 초기화 완료");
     }

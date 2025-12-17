@@ -10,6 +10,7 @@ public class LSGBootstrap : MonoBehaviour
     //[SerializeField] PlayerController playerController;
     [SerializeField] PrisonCellManager prisonCellManager;
     [SerializeField] SettlementManager settlementManager;
+    [SerializeField] SettlementReportBuilder settlementReportBuilder;
 
 
     private void Awake()
@@ -34,6 +35,7 @@ public class LSGBootstrap : MonoBehaviour
     {
         GameContext context = GameContext.Instance; // 나중에 추가 등록 시 불편하지 않기 위해 context로 함축
         //context.RegisterService<PlayerController>(playerController);
+        context.RegisterService<SettlementReportBuilder>(settlementReportBuilder);
         context.RegisterService<GameManager>(gameManager);
         context.RegisterService<PlayerManager>(playerManager);
         context.RegisterService<PrisonCellManager>(prisonCellManager);
