@@ -34,20 +34,40 @@ public sealed class PlayerLocomotionState : PlayerState
     {
         if (P.Controller == null) return;
 
-        Vector3 input = new Vector3(P.MoveInput.x, 0f, P.MoveInput.y);
-
-        float baseSpeed = P.Data.GroundData.BaseSpeed;
-        float modifier = P.RunHeld
-            ? P.Data.GroundData.RunSpeedModifier
-            : P.Data.GroundData.WalkSpeedModifier;
-
-        float moveSpeed = baseSpeed * modifier;
-
-        Vector3 horizontal = input * moveSpeed;
-
-        Vector3 forceMove = Vector3.zero;
+        // ✅ 수직(중력/groundedGravity/외력)은 입력이 없어도 항상 적용
+        Vector3 verticalMove = Vector3.zero;
         if (P.ForceReceiver != null)
+            verticalMove = P.ForceReceiver.ConsumeMove(fdt, IsGrounded);
 
-        P.Controller.Move(horizontal * fdt);
+        Vector3 horizontalMove = Vector3.zero;
+
+        Vector3 input = new Vector3(P.MoveInput.x, 0f, P.MoveInput.y);
+        if (input.sqrMagnitude >= 0.0001f)
+        {
+            Transform cam = Camera.main.transform;
+
+            Vector3 forward = cam.forward;
+            Vector3 right = cam.right;
+            forward.y = 0f;
+            right.y = 0f;
+            forward.Normalize();
+            right.Normalize();
+
+            Vector3 moveDir = forward * input.z + right * input.x;
+
+            Quaternion targetRot = Quaternion.LookRotation(moveDir);
+            P.transform.rotation = Quaternion.Slerp(P.transform.rotation, targetRot, fdt * 10f);
+
+            float baseSpeed = P.Data.GroundData.BaseSpeed;
+            float modifier = P.RunHeld
+                ? P.Data.GroundData.RunSpeedModifier
+                : P.Data.GroundData.WalkSpeedModifier;
+
+            float moveSpeed = baseSpeed * modifier;
+
+            horizontalMove = moveDir * moveSpeed * fdt;
+        }
+
+        P.Controller.Move(horizontalMove + verticalMove);
     }
 }

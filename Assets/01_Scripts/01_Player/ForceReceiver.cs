@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// 외력(넉백 등) + 중력/점프를 한 곳에서 관리.
-/// CharacterController.Move에 더할 이동량(Vector3)을 제공한다.
+/// 외력(넉백 등) + 중력/점프를 한 곳에서 관리
+/// CharacterController.Move에 더할 이동량(Vector3)을 제공
 /// </summary>
 public class ForceReceiver : MonoBehaviour
 {
@@ -19,8 +19,8 @@ public class ForceReceiver : MonoBehaviour
 
     public void AddForce(Vector3 force)
     {
-        // 점프력은 PlayerController에서 VerticalVelocity로 주고,
-        // 여기서는 넉백 같은 외력을 주로 처리한다고 가정
+        // 점프력은 PlayerController에서 VerticalVelocity로 줌
+        // 여기서는 넉백 같은 외력을 주로 처리
         impact += force;
     }
 
