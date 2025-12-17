@@ -8,12 +8,16 @@ public class PlayerController : MonoBehaviour
     public PlayerInputs playerInput { get; private set; }
     public PlayerInputs.PlayerActions playerActions { get; private set; }
     private CinemachinePOV pov;
-    public void Initialize()
+
+    private void Awake()
     {
         playerInput = new PlayerInputs();
         playerActions = playerInput.Player;
-        SetMovementEnabled(false);
     }
+    //public void Initialize()
+    //{
+    //    //SetMovementEnabled(false);
+    //}
     public void SetMovementEnabled(bool isEnabled)
     {
         if (playerInput == null)
@@ -35,16 +39,17 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable()
     {
-        playerInput.Enable();
+
     }
 
     private void OnDisable()
     {
-        playerInput.Disable();
+
     }
     private void Start()
     {
         pov = virtualCamera.GetCinemachineComponent<CinemachinePOV>();
+        playerInput.Enable();
     }
 
     private void LateUpdate()
