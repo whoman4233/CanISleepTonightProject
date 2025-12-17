@@ -1,8 +1,16 @@
 ﻿using UnityEngine;
 
-public interface IInspectable
+//상세보기용 인터페이스
+public interface IInspectable 
 {
     GameObject GetInspectPrefab();   // 시각용 프리팹
     void OnInspectionStart();         // 필드 비활성화
     void OnInspectionEnd();           // 필드 복구
+}
+
+//상호작용 인터페이스
+
+public interface IInteractable
+{
+    bool CanInteract { get; }
 }

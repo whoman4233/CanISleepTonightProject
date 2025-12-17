@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 
-public class TestInspectable : MonoBehaviour, IInspectable
+public class TestInspectable : MonoBehaviour, IInspectable, IInteractable
 {
     [SerializeField] private GameObject inspectPrefab;
+
+    [SerializeField] private bool canInteract = true;
+    public bool CanInteract => canInteract;
 
     public GameObject GetInspectPrefab()
     {
