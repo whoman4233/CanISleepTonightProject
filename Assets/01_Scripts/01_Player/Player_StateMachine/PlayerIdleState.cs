@@ -24,7 +24,14 @@ public class PlayerIdleState : PlayerGroundState
     {
         base.Update();
 
-        if(stateMachine.MovementInput != Vector2.zero)
+        if (stateMachine.ConsumeAttack())
+        {
+            stateMachine.ComboIndex = 0;
+            stateMachine.ChangeState(stateMachine.ComboAttackState);
+            return;
+        }
+
+        if (stateMachine.MovementInput != Vector2.zero)
         {
             stateMachine.ChangeState(stateMachine.WalkState);
             return;
