@@ -20,7 +20,7 @@ public sealed class PlayerLocomotionState : PlayerState
             return;
         }
 
-        if (!IsGrounded)
+        if (!IsGrounded && P.ForceReceiver != null && P.ForceReceiver.VerticalVelocity < 0f)
         {
             SM.ChangeState(SM.Fall);
             return;
@@ -47,8 +47,7 @@ public sealed class PlayerLocomotionState : PlayerState
 
         Vector3 forceMove = Vector3.zero;
         if (P.ForceReceiver != null)
-            forceMove = P.ForceReceiver.ConsumeMove(fdt, IsGrounded);
 
-        P.Controller.Move((horizontal * fdt) + forceMove);
+        P.Controller.Move(horizontal * fdt);
     }
 }

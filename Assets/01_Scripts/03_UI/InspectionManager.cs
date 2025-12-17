@@ -52,14 +52,14 @@ public class InspectionManager : MonoBehaviour
 
     private void InitializeInput()
     {
-        PlayerController player = GetComponentInParent<PlayerController>();
+        Player player = GetComponentInParent<Player>();
         if (player == null)
         {
-            Debug.LogError("[InspectionManager] PlayerController not found.");
+            Debug.LogError("[InspectionManager] Player not found.");
             return;
         }
 
-        playerInputs = player.playerInput;
+        playerInputs = player.Inputs;
         playerActions = playerInputs.Player;
         inspectionActions = playerInputs.Inspection;
 

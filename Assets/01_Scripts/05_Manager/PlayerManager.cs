@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
-    private PlayerController playerController;
+    private Player Player;
     private GameManager gameManager;
     private PrisonCellManager prisonCellManager;
 
@@ -15,14 +15,14 @@ public class PlayerManager : MonoBehaviour
     public void Initialize()
     {
         GameContext context = GameContext.Instance;
-        playerController = context.Get<PlayerController>();
+        Player = context.Get<Player>();
         gameManager = context.Get<GameManager>();
         prisonCellManager = context.Get<PrisonCellManager>();
         
 
         if(gameManager == null || prisonCellManager == null)
         {
-            Debug.LogError("PlayerController 혹은 GameManager가 연결되지 않았습니다");
+            Debug.LogError("Player 혹은 GameManager가 연결되지 않았습니다");
             return;
         }
        // SetMovementState(false);
@@ -30,7 +30,7 @@ public class PlayerManager : MonoBehaviour
 
     //public void SetMovementState(bool state) // 플레이어 이동 가능 상태
     //{
-    //    playerController.SetMovementEnabled(state);
+    //    Player.SetMovementEnabled(state);
     //}
 
     public void ResetDailyRecoed() // 플레이어 상태 초기화

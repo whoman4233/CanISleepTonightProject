@@ -19,9 +19,9 @@ public sealed class PlayerJumpState : PlayerState
 
     public override void Tick(float dt)
     {
-        _timer += dt;
-
-        if (_timer >= MinAirTime && !IsGrounded)
+        if (_timer >= MinAirTime &&
+            !IsGrounded &&
+            P.ForceReceiver.VerticalVelocity < 0f)
         {
             P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
             SM.ChangeState(SM.Fall);

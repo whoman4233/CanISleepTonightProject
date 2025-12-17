@@ -22,12 +22,20 @@ public class Player : MonoBehaviour
 
     private PlayerInputs _inputs;
     private PlayerInputs.PlayerActions _playerActions;
+    public PlayerInputs Inputs => _inputs;
 
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
         Controller = GetComponent<CharacterController>();
         ForceReceiver = GetComponent<ForceReceiver>();
+
+        if (AnimationData == null)
+        {
+            Debug.LogError("[Player] AnimationData가 비어있습니다. Inspector에서 할당하세요.", this);
+            enabled = false;
+            return;
+        }
 
         AnimationData.Initialize();
 
@@ -36,12 +44,12 @@ public class Player : MonoBehaviour
 
         StateMachine = new PlayerStateMachine(this);
     }
-
     private void OnEnable()
     {
         _inputs.Enable();
+        _inputs.Player.Enable();
+        _inputs.Inspection.Disable();
     }
-
     private void OnDisable()
     {
         _inputs.Disable();
