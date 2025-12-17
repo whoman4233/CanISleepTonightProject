@@ -216,7 +216,7 @@ public class PrisonerSpawnController : MonoBehaviour
 
         actor = pGo.GetComponent<PrisonerActor>();
         if (actor == null) actor = pGo.AddComponent<PrisonerActor>();
-        actor.Init(instanceId, def);
+        actor.Init(anchor.cellId, instanceId, def);
 
         // Bad AI는 전투 때만 켜짐(Actor.SetCombatEnabled에서 토글)
         if (def.type == PrisonerType.Bad)

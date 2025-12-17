@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
@@ -8,14 +8,15 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private InspectionStateMachine inspection;
     [SerializeField] private SettlementReportBuilder reportBuilder;
     [SerializeField] private SettlementManager settlement;
+    [SerializeField] private PrisonerSpawnController spawner; // âœ… ì¶”ê°€
 
     [Header("Day Config")]
     [SerializeField] private int day = 0;
     [SerializeField] private int maxDays = 7;
 
     [Header("Debug Keys")]
-    [SerializeField] private KeyCode nextDayKey = KeyCode.F1;       // ÇÏ·ç ½ÃÀÛ(Standby)
-    [SerializeField] private KeyCode settlementKey = KeyCode.F8;     // Á¤»ê ½ÇÇà(¸®Æ÷Æ® »ı¼º+°ÔÀÌÁö ¹İ¿µ)
+    [SerializeField] private KeyCode nextDayKey = KeyCode.F1;
+    [SerializeField] private KeyCode settlementKey = KeyCode.F8;
 
     [Header("Auto Select Test Cell")]
     [SerializeField] private bool autoPickFirstActiveCell = true;
@@ -32,21 +33,15 @@ public class GameBootstrap : MonoBehaviour
         if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
         if (reportBuilder == null) reportBuilder = FindObjectOfType<SettlementReportBuilder>();
         if (settlement == null) settlement = FindObjectOfType<SettlementManager>();
+        if (spawner == null) spawner = FindObjectOfType<PrisonerSpawnController>(); // âœ… ì¶”ê°€
 
         cellManager?.BuildCellsIfNeeded();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(nextDayKey))
-        {
-            StartNextDay();
-        }
-
-        if (Input.GetKeyDown(settlementKey))
-        {
-            RunSettlement();
-        }
+        if (Input.GetKeyDown(nextDayKey)) StartNextDay();
+        if (Input.GetKeyDown(settlementKey)) RunSettlement();
     }
 
     public void StartNextDay()
@@ -74,24 +69,28 @@ public class GameBootstrap : MonoBehaviour
 
         settlement.ApplyDailyBaseIncrease();
 
-        // »ó½Â Á÷ÈÄ Æøµ¿ Ã¼Å© (100 µµ´Ş Áï½Ã °ÔÀÓ¿À¹ö ±ÔÄ¢)
         if (settlement.IsRiotOver())
         {
-            Debug.LogWarning("[Ending] Bad Ending_»ê¾÷ ÀçÇØ (Standby Riot Over)");
+            Debug.LogWarning("[Ending] Bad Ending_ì‚°ì—… ì¬í•´ (Standby Riot Over)");
             _ended = true;
             return;
         }
 
-            // Standby
-            cellManager.RunStandbySetup();
+        // âœ… í•˜ë£¨ ì‹œì‘ ì „: ê¸°ì¡´ ìŠ¤í° ì‹¹ ì •ë¦¬
+        spawner?.ClearAllForNewDay();
 
-        // ¸®Æ÷Æ® Ä³½Ã(Resolved ´©Àû) ÃÊ±âÈ­: "ÇÏ·ç ´ÜÀ§"·Î ¾²·Á¸é ÀÌ°Ô ¸Â½À´Ï´Ù.
+        // Standby
+        cellManager.RunStandbySetup();
+
+        // âœ… Standby ê²°ê³¼ë¡œ ìŠ¤í°
+        var activeIds = cellManager.GetActiveCellIds();
+        spawner?.SpawnForToday(activeIds, id => cellManager.GetCell(id).IsSuspicious);
+
+        // ë¦¬í¬íŠ¸ ìºì‹œ(Resolved ëˆ„ì ) ì´ˆê¸°í™”
         reportBuilder.ClearResolvedCache();
 
-        // Å×½ºÆ® ÆíÀÇ: Ã¹ Active ¹æÀ» ÀÚµ¿ ¼±ÅÃ
         if (autoPickFirstActiveCell)
         {
-            var activeIds = cellManager.GetActiveCellIds();
             CurrentTestCellId = (activeIds.Count > 0) ? activeIds[0] : null;
             Debug.Log($"[Bootstrap] CurrentTestCellId = {CurrentTestCellId}");
         }
@@ -114,20 +113,14 @@ public class GameBootstrap : MonoBehaviour
 
         if (settlement.IsRiotOver())
         {
-            Debug.LogWarning("[Bootstrap] GAME OVER: RiotGauge reached max.");
-        }
-
-        if (settlement.IsRiotOver())
-        {
-            Debug.LogWarning("[Ending] Bad Ending_»ê¾÷ ÀçÇØ (Settlement Riot Over)");
+            Debug.LogWarning("[Ending] Bad Ending_ì‚°ì—… ì¬í•´ (Settlement Riot Over)");
             _ended = true;
             return;
         }
 
         if (day >= maxDays)
         {
-            // 7ÀÏÂ÷ Á¤»ê ÈÄ Æøµ¿ÀÌ ¾È ³µÀ¸¸é ¿£µù
-            Debug.Log("[Ending] Happy Ending_»óÅÂ À¯Áö (7 days survived)");
+            Debug.Log("[Ending] Happy Ending_ìƒíƒœ ìœ ì§€ (7 days survived)");
             _ended = true;
             return;
         }

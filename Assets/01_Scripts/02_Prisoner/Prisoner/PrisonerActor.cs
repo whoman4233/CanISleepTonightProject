@@ -1,66 +1,56 @@
-using UnityEngine;
+癤퓎sing UnityEngine;
 
 public class PrisonerActor : MonoBehaviour
 {
-    // 내부 보관(기존 유지)
-    public string instanceId { get; private set; }
-    public string templateId { get; private set; }
-    public PrisonerType type { get; private set; }
+    public string InstanceId { get; private set; }
+    public string CellId { get; private set; } 
+    public PrisonerType Type { get; private set; }
 
-    public int hp { get; private set; }
-    public int atk { get; private set; }
-    public int spd { get; private set; }
+    public int Hp { get; private set; }
+    public int Atk { get; private set; }
+    public int Spd { get; private set; }
 
-    public bool IsAlive => hp > 0;
+    public bool IsAlive => Hp > 0;
 
     private bool _combatEnabled;
 
-    //SpawnController/다른 코드들이 기대하는 "PascalCase 호환 프로퍼티"
-    public string InstanceId => instanceId;
-    public string TemplateId => templateId;
-    public PrisonerType Type => type;
-
-    public int Hp => hp;
-    public int Atk => atk;
-    public int Spd => spd;
-
-    public void Init(string instanceId, PrisonerDefinition def)
+    public void Init(string cellId, string instanceId, PrisonerDefinition def)
     {
-        this.instanceId = instanceId;
-        templateId = def.templateId;
-        type = def.type;
+        CellId = cellId;
+        InstanceId = instanceId;
 
-        hp = def.hp;
-        atk = def.atk;
-        spd = def.spd;
+        Type = def.type;
+        Hp = def.hp;
+        Atk = def.atk;
+        Spd = def.spd;
 
-        // 기본은 관찰 상태
         SetCombatEnabled(false);
     }
 
-    public void TakeDamage(int dmg)
+    public bool ApplyDamage(int dmg)
     {
-        if (!IsAlive) return;
-        if (!_combatEnabled) return;
+        if (!IsAlive) return false;
+        if (!_combatEnabled) return false;
 
-        hp -= dmg;
-        PrisonerEventBus.RaisePrisonerHit(instanceId, dmg);
+        Hp -= dmg;
+        PrisonerEventBus.RaisePrisonerHit(InstanceId, dmg);
 
-        if (hp <= 0)
+        if (Hp <= 0)
         {
-            hp = 0;
-            PrisonerEventBus.RaisePrisonerDown(instanceId);
+            Hp = 0;
+            PrisonerEventBus.RaisePrisonerDown(InstanceId);
             gameObject.SetActive(false);
         }
+
+        return true;
     }
 
     public void SetCombatEnabled(bool enabled)
     {
         _combatEnabled = enabled;
 
-        // Bad AI는 전투 때만 활성
         var badAi = GetComponent<PrisonerBadAI>();
         if (badAi != null)
-            badAi.enabled = enabled && type == PrisonerType.Bad;
+            badAi.enabled = enabled;
     }
 }
