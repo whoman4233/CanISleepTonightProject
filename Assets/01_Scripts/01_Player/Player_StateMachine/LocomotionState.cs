@@ -35,7 +35,30 @@ public sealed class PlayerLocomotionState : PlayerState
         if (P.Controller == null) return;
 
         Vector3 input = new Vector3(P.MoveInput.x, 0f, P.MoveInput.y);
+        if (input.sqrMagnitude < 0.0001f)
+            return;
 
+        // 1️⃣ 카메라 기준 방향으로 변환
+        Transform cam = Camera.main.transform;
+
+        Vector3 forward = cam.forward;
+        Vector3 right = cam.right;
+        forward.y = 0f;
+        right.y = 0f;
+        forward.Normalize();
+        right.Normalize();
+
+        Vector3 moveDir = forward * input.z + right * input.x;
+
+        // 2️⃣ Player 회전
+        Quaternion targetRot = Quaternion.LookRotation(moveDir);
+        P.transform.rotation = Quaternion.Slerp(
+            P.transform.rotation,
+            targetRot,
+            fdt * 10f // 회전 속도
+        );
+
+        // 3️⃣ 이동
         float baseSpeed = P.Data.GroundData.BaseSpeed;
         float modifier = P.RunHeld
             ? P.Data.GroundData.RunSpeedModifier
@@ -43,11 +66,6 @@ public sealed class PlayerLocomotionState : PlayerState
 
         float moveSpeed = baseSpeed * modifier;
 
-        Vector3 horizontal = input * moveSpeed;
-
-        Vector3 forceMove = Vector3.zero;
-        if (P.ForceReceiver != null)
-
-        P.Controller.Move(horizontal * fdt);
+        P.Controller.Move(moveDir * moveSpeed * fdt);
     }
 }
