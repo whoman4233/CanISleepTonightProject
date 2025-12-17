@@ -21,20 +21,7 @@ public class PlayerGroundState : PlayerBaseState
         base.Exit();
         StopAnimation(stateMachine.Player.AnimationData.GroundParameterHash);
     }
-    public override void Update()
-    {
-        base.Update();
 
-        if (stateMachine.IsAttacking)
-        {
-            OnAttack();
-            return;
-        }
-    }
-    protected virtual void OnAttack()
-    {
-        stateMachine.ChangeState(stateMachine.ComboAttackState);
-    }
     public override void PhysicsUpdate()
     {
         base.PhysicsUpdate();

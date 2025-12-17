@@ -31,8 +31,7 @@ public class PlayerBaseState : IState
         input.playerActions.Walk.canceled += OnMovementCanceled;
         input.playerActions.Run.started += OnRunStarted;
         input.playerActions.Jump.started += OnJumpStarted;
-        input.playerActions.Attack.performed += OnAttackPerformed;
-        input.playerActions.Attack.canceled += OnAttackCanceled;
+        input.playerActions.Attack.started += OnAttackStarted;
     }
     protected virtual void RemoveInputActionsCallbacks()
     {
@@ -40,8 +39,7 @@ public class PlayerBaseState : IState
         input.playerActions.Walk.canceled -= OnMovementCanceled;
         input.playerActions.Run.started -= OnRunStarted;
         input.playerActions.Jump.started -= OnJumpStarted;
-        input.playerActions.Attack.performed -= OnAttackPerformed;
-        input.playerActions.Attack.canceled -= OnAttackCanceled;
+        input.playerActions.Attack.started -= OnAttackStarted;
     }
 
     public virtual void HandleInput()
@@ -70,14 +68,9 @@ public class PlayerBaseState : IState
     {
 
     }
-    protected virtual void OnAttackPerformed(InputAction.CallbackContext obj)
+    protected virtual void OnAttackStarted(InputAction.CallbackContext context)
     {
-        stateMachine.IsAttacking = true;
-    }
-
-    protected virtual void OnAttackCanceled(InputAction.CallbackContext obj)
-    {
-        stateMachine.IsAttacking = false;
+        stateMachine.RequestAttack();
     }
     protected void StartAnimation(int animatorHash)
     {
@@ -127,7 +120,7 @@ public class PlayerBaseState : IState
     {
         stateMachine.Player.Controller.Move(stateMachine.Player.ForceReceiver.Movement * Time.deltaTime);
     }
-    protected float GetNormalizedTime(Animator animator, string tag)
+    protected float GetNormalizedTime(Animator animator, int layerIndex, string tag)
     {
         AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
         AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
