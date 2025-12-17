@@ -61,11 +61,9 @@ public class InspectionStateMachine : MonoBehaviour
     // 진압 선택: 즉시 퇴장/문 상호작용 잠금
     public bool SelectSuppress(string cellId)
     {
-        PrisonerEventBus.RaiseSuppressSessionStarted(cellId);
         var cell = GetCurrentCellOrNull(cellId);
         if (cell == null) return false;
 
-        // 이미 진압 중이면 중복 방지
         if (cell.State == CellState.Suppressing) return false;
 
         cell.IsSuppressing = true;
@@ -73,6 +71,8 @@ public class InspectionStateMachine : MonoBehaviour
         cell.State = CellState.Suppressing;
 
         OnSuppressStarted?.Invoke(cellId);
+        PrisonerEventBus.RaiseSuppressSessionStarted(cellId);
+
         return true;
     }
 
