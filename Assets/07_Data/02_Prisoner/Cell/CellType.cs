@@ -12,7 +12,8 @@ public enum CellState
     Inactive = 0,
     ActiveNoisy = 1,
     Inspecting = 2,
-    Suppressing = 3
+    Suppressing = 3,
+    LockedForDay = 4
 }
 
 [Serializable]
