@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PrisonerActor : MonoBehaviour
 {
+    // 내부 보관(기존 유지)
     public string instanceId { get; private set; }
     public string templateId { get; private set; }
     public PrisonerType type { get; private set; }
@@ -12,6 +13,17 @@ public class PrisonerActor : MonoBehaviour
 
     public bool IsAlive => hp > 0;
 
+    private bool _combatEnabled;
+
+    //SpawnController/다른 코드들이 기대하는 "PascalCase 호환 프로퍼티"
+    public string InstanceId => instanceId;
+    public string TemplateId => templateId;
+    public PrisonerType Type => type;
+
+    public int Hp => hp;
+    public int Atk => atk;
+    public int Spd => spd;
+
     public void Init(string instanceId, PrisonerDefinition def)
     {
         this.instanceId = instanceId;
@@ -21,11 +33,15 @@ public class PrisonerActor : MonoBehaviour
         hp = def.hp;
         atk = def.atk;
         spd = def.spd;
+
+        // 기본은 관찰 상태
+        SetCombatEnabled(false);
     }
 
     public void TakeDamage(int dmg)
     {
         if (!IsAlive) return;
+        if (!_combatEnabled) return;
 
         hp -= dmg;
         PrisonerEventBus.RaisePrisonerHit(instanceId, dmg);
@@ -34,21 +50,17 @@ public class PrisonerActor : MonoBehaviour
         {
             hp = 0;
             PrisonerEventBus.RaisePrisonerDown(instanceId);
-
-            // MVP: 바로 비활성 처리(나중에 래그돌/애니메이션)
             gameObject.SetActive(false);
         }
     }
 
-    // 이런 느낌으로 사용
-    //var ray = new Ray(cam.transform.position, cam.transform.forward);
-    //    if (Physics.Raycast(ray, out var hit, range))
-    //    {
-    //        var actor = hit.collider.GetComponentInParent<PrisonerActor>();
-    //        if (actor != null)
-    //        {
-    //            actor.TakeDamage(damage);
-    //            Debug.Log($"[Baton] HIT {actor.instanceId} dmg={damage} hp={actor.hp}");
-    //        }
-    //    }
+    public void SetCombatEnabled(bool enabled)
+    {
+        _combatEnabled = enabled;
+
+        // Bad AI는 전투 때만 활성
+        var badAi = GetComponent<PrisonerBadAI>();
+        if (badAi != null)
+            badAi.enabled = enabled && type == PrisonerType.Bad;
+    }
 }

@@ -5,14 +5,15 @@ public class PlayerComboAttackState : PlayerAttackState
 {
     private bool alreadyAppliedCombo;
     private bool alreadyApplyForce;
-
+    private const int AttackLayerIndex = 1;
     AttackInfoData attackInfoData;
     public PlayerComboAttackState(PlayerStateMachine playerStateMachine) : base(playerStateMachine)
     {
     }
     public override void Enter()
     {
-        stateMachine.IsAttacking = false;
+        stateMachine.ClearAttackRequest();
+
         base.Enter();
         StartAnimation(stateMachine.Player.AnimationData.ComboAttackParameterHash);
 
@@ -21,6 +22,7 @@ public class PlayerComboAttackState : PlayerAttackState
 
         int comboIndex = stateMachine.ComboIndex;
         attackInfoData = stateMachine.Player.Data.AttakData.GetAttackInfoData(comboIndex);
+
         stateMachine.Player.Animator.SetInteger("Combo", comboIndex);
     }
 
@@ -41,7 +43,7 @@ public class PlayerComboAttackState : PlayerAttackState
 
         ForceMove();
 
-        float normalizedTime = GetNormalizedTime(stateMachine.Player.Animator, "Attack");
+        float normalizedTime = GetNormalizedTime(stateMachine.Player.Animator, AttackLayerIndex, "Attack");
         if (normalizedTime < 1f)
         {
             if (normalizedTime >= attackInfoData.ForceTransitionTime)
@@ -67,14 +69,11 @@ public class PlayerComboAttackState : PlayerAttackState
     private void TryComboAttack()
     {
         if (alreadyAppliedCombo) return;
-
         if (attackInfoData.ComboStateIndex == -1) return;
 
-        if (!stateMachine.IsAttacking) return;
+        if (!stateMachine.ConsumeAttack()) return;
 
         alreadyAppliedCombo = true;
-
-        stateMachine.IsAttacking = false;
     }
 
     private void TryApplyForce()
