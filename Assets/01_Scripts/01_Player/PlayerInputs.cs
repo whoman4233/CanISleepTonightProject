@@ -332,7 +332,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Reset"",
+                    ""name"": ""InspectClick"",
                     ""type"": ""Button"",
                     ""id"": ""5a20c5ea-406d-4fdf-bd3a-c7cd6470062e"",
                     ""expectedControlType"": """",
@@ -367,7 +367,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""5d467a8e-acb7-49ed-af62-0a3aaa6d9fa9"",
-                    ""path"": ""<Mouse>/leftButton"",
+                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -378,11 +378,11 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e5d373a6-8d93-4f08-8f94-77214b09e569"",
-                    ""path"": ""<Mouse>/rightButton"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Reset"",
+                    ""action"": ""InspectClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -406,7 +406,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Inspection_RotateHold = m_Inspection.FindAction("RotateHold", throwIfNotFound: true);
         m_Inspection_Rotate = m_Inspection.FindAction("Rotate", throwIfNotFound: true);
         m_Inspection_Exit = m_Inspection.FindAction("Exit", throwIfNotFound: true);
-        m_Inspection_Reset = m_Inspection.FindAction("Reset", throwIfNotFound: true);
+        m_Inspection_InspectClick = m_Inspection.FindAction("InspectClick", throwIfNotFound: true);
     }
 
     ~@PlayerInputs()
@@ -664,7 +664,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Inspection_RotateHold;
     private readonly InputAction m_Inspection_Rotate;
     private readonly InputAction m_Inspection_Exit;
-    private readonly InputAction m_Inspection_Reset;
+    private readonly InputAction m_Inspection_InspectClick;
     /// <summary>
     /// Provides access to input actions defined in input action map "Inspection".
     /// </summary>
@@ -689,9 +689,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Exit => m_Wrapper.m_Inspection_Exit;
         /// <summary>
-        /// Provides access to the underlying input action "Inspection/Reset".
+        /// Provides access to the underlying input action "Inspection/InspectClick".
         /// </summary>
-        public InputAction @Reset => m_Wrapper.m_Inspection_Reset;
+        public InputAction @InspectClick => m_Wrapper.m_Inspection_InspectClick;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -727,9 +727,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Exit.started += instance.OnExit;
             @Exit.performed += instance.OnExit;
             @Exit.canceled += instance.OnExit;
-            @Reset.started += instance.OnReset;
-            @Reset.performed += instance.OnReset;
-            @Reset.canceled += instance.OnReset;
+            @InspectClick.started += instance.OnInspectClick;
+            @InspectClick.performed += instance.OnInspectClick;
+            @InspectClick.canceled += instance.OnInspectClick;
         }
 
         /// <summary>
@@ -750,9 +750,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Exit.started -= instance.OnExit;
             @Exit.performed -= instance.OnExit;
             @Exit.canceled -= instance.OnExit;
-            @Reset.started -= instance.OnReset;
-            @Reset.performed -= instance.OnReset;
-            @Reset.canceled -= instance.OnReset;
+            @InspectClick.started -= instance.OnInspectClick;
+            @InspectClick.performed -= instance.OnInspectClick;
+            @InspectClick.canceled -= instance.OnInspectClick;
         }
 
         /// <summary>
@@ -879,11 +879,11 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnExit(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Reset" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "InspectClick" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnReset(InputAction.CallbackContext context);
+        void OnInspectClick(InputAction.CallbackContext context);
     }
 }
