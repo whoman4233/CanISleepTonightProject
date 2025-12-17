@@ -88,12 +88,13 @@ public class GameManager : MonoBehaviour
         OnRiotGaugeChanged?.Invoke(settlementManager.RiotGauge);
         currentDay++;
         // 랜덤 감방
+        //소음 ON
         //playerManager.SetMovementState(false);
         ChangePhase(GamePhase.Briefing);
     }
     private void OnEnterBriefing() // 브리핑 페이즈
     {
-        ChangePhase(GamePhase.Patrol); // 임시조치
+        ChangePhase(GamePhase.Patrol); // 임시조치. 추후 문 상호작용으로 페이즈 전환하게 해야함. StartPatrolLogic() 호출해서.
     }
 
     private void OnEnterPatrol() // 순찰 페이즈
@@ -108,6 +109,7 @@ public class GameManager : MonoBehaviour
     {
         //playerManager.SetMovementState(false);
         //폭동게이지 계산 추가
+        //타임오버로 강제 페이즈 전환되었을 경우 점검ui 등 강제 해제 시켜줘야함.
         settlementReportBuilder.RunSettlement();
         OnRiotGaugeChanged?.Invoke(settlementManager.RiotGauge);
         Debug.Log($"현재 폭동 수치 {settlementManager.RiotGauge}");
