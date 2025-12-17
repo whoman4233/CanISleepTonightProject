@@ -6,7 +6,7 @@ public class CinemachinePOVInput : MonoBehaviour
 {
     private const float DefaultSensitivity = 0.1f;
 
-    [SerializeField] private PlayerController playerController;
+    [SerializeField] private Player player; // PlayerController -> Player
 
     [SerializeField] private float horizontalSensitivity = DefaultSensitivity;
     [SerializeField] private float verticalSensitivity = DefaultSensitivity;
@@ -19,23 +19,23 @@ public class CinemachinePOVInput : MonoBehaviour
         vcam = GetComponent<CinemachineVirtualCamera>();
         pov = vcam.GetCinemachineComponent<CinemachinePOV>();
 
-        if (playerController == null)
-            playerController = FindObjectOfType<PlayerController>();
+        if (player == null)
+            player = FindObjectOfType<Player>();
     }
 
     private void Update()
     {
-        if (pov == null || playerController == null) return;
-        if (playerController.playerInput == null) return;
+        if (pov == null || player == null) return;
 
-        Vector2 look = playerController.playerActions.Look.ReadValue<Vector2>();
+        // Player가 PlayerInputs에서 읽어 캐싱해둔 LookInput 사용
+        Vector2 look = player.LookInput;
 
-        // 1) 좌우(Yaw): Player 루트 회전 (무한)
+        // 1) 좌우(Yaw): 플레이어 루트 회전
         float yawDelta = look.x * horizontalSensitivity;
-        playerController.transform.Rotate(Vector3.up, yawDelta, Space.World);
+        player.transform.Rotate(Vector3.up, yawDelta, Space.World);
 
-        // 2) 상하(Pitch): POV Vertical로만
-        pov.m_HorizontalAxis.m_InputAxisValue = 0f; // 수평 POV 비활성화
+        // 2) 상하(Pitch): POV Vertical만 사용
+        pov.m_HorizontalAxis.m_InputAxisValue = 0f;
         pov.m_VerticalAxis.m_InputAxisValue = look.y * verticalSensitivity;
     }
 }

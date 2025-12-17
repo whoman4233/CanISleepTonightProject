@@ -1,54 +1,38 @@
-﻿using UnityEngine;
+﻿using UnityEngine.Playables;
 
-public class PlayerStateMachine : StateMachine
+public class PlayerStateMachine
 {
     public Player Player { get; }
 
-    public Vector2 MovementInput { get; set; }
-    public float MovementSpeed { get; private set; }
-    public float RotationDamping { get; private set; }
-    public float MovementSpeedModifier { get; set; } = 1f;
-    public float JumpForce { get; set; }
-    public bool AttackRequested { get; private set; }
-    public int ComboIndex { get; set; }
+    public PlayerLocomotionState Locomotion { get; }
+    public PlayerJumpState Jump { get; }
+    public PlayerFallState Fall { get; }
+    public PlayerAttackState Attack { get; }
+    public PlayerDeadState Dead { get; }
 
-    public Transform MainCameraTransform { get; set; }
-
-    public PlayerIdleState IdleState { get; private set; }
-    public PlayerWalkState WalkState { get; private set; }
-    public PlayerRunState RunState { get; private set; }
-    public PlayerJumpState JumpState { get; private set; }
-    public PlayerFallState FallState { get; private set; }
-    public PlayerComboAttackState ComboAttackState { get; private set; }
+    private PlayerState _current;
 
     public PlayerStateMachine(Player player)
     {
-        this.Player = player;
+        Player = player;
 
-        MainCameraTransform = Camera.main.transform;
+        Locomotion = new PlayerLocomotionState(this);
+        Jump = new PlayerJumpState(this);
+        Fall = new PlayerFallState(this);
+        Attack = new PlayerAttackState(this);
+        Dead = new PlayerDeadState(this);
+    }
 
-        IdleState = new PlayerIdleState(this);
-        WalkState = new PlayerWalkState(this);
-        RunState = new PlayerRunState(this);
-        JumpState = new PlayerJumpState(this);
-        FallState = new PlayerFallState(this);
-        ComboAttackState = new PlayerComboAttackState(this);
+    public void ChangeState(PlayerState next)
+    {
+        if (_current == next) return;
 
-        MovementSpeed = player.Data.GroundData.BaseSpeed;
-        RotationDamping = player.Data.GroundData.BaseRotationDamping;
+        _current?.Exit();
+        _current = next;
+        _current.Enter();
     }
-    public void RequestAttack()
-    {
-        AttackRequested = true;
-    }
-    public bool ConsumeAttack()
-    {
-        if (!AttackRequested) return false;
-        AttackRequested = false;
-        return true;
-    }
-    public void ClearAttackRequest()
-    {
-        AttackRequested = false;
-    }
+
+    public void HandleInput() => _current?.HandleInput();
+    public void Tick(float dt) => _current?.Tick(dt);
+    public void FixedTick(float fdt) => _current?.FixedTick(fdt);
 }
