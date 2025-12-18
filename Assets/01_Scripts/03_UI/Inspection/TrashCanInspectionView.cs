@@ -2,14 +2,30 @@
 
 public class TrashCanInspectionView : MonoBehaviour, IInspectionView
 {
-    [SerializeField] private GameObject knifeObject;
+    [SerializeField] private GameObject knifeInspectionVisual;
 
-    public void Bind(IInspectable owner)
+    private KnifeStateSO knifeState;
+
+    public void Bind(IInspectable inspectable)
     {
-        if (owner is TrashCan trashCan)
+        if (inspectable is Component component)
         {
-            knifeObject.SetActive(!trashCan.IsKnifeTaken);
+            var holder = component.GetComponent<HiddenItemHolder>();
+            if (holder != null)
+                knifeState = holder.GetItem<KnifeStateSO>();
         }
+
+        Refresh();
+    }
+
+    private void Update()
+    {
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (knifeInspectionVisual != null && knifeState != null)
+            knifeInspectionVisual.SetActive(!knifeState.IsFound);
     }
 }
-

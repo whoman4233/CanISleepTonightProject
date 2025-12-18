@@ -16,7 +16,9 @@ public class InspectionManager : MonoBehaviour
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private float inspectRayDistance = 5f;
 
-    private Action<InspectionViewReadyEvent> _onViewReady;
+    private Action<InspectionViewReadyEvent> _onViewReady; // view 전용 이벤트
+
+    private InteractableOutliner _currentOutlined; //아웃라인용
 
     private RectTransform inspectionViewRect;
 
@@ -57,6 +59,7 @@ public class InspectionManager : MonoBehaviour
             return;
         }
 
+        HandleHoverOutline(); //아웃라인
         HandleRotation();
         HandleInspectClick();
     }
@@ -100,7 +103,6 @@ public class InspectionManager : MonoBehaviour
         _inputs.Inspection.Disable();
         _inputs.Player.Enable();
 
-        currentInspectable?.OnInspectionEnd();
         currentInspectable = null;
 
         inspectionCamera.gameObject.SetActive(false);
@@ -154,17 +156,15 @@ public class InspectionManager : MonoBehaviour
 
     private void HandleInspectClick()
     {
-        Debug.Log("A: HandleInspectClick 진입");
-
+        // 1. Inspection View 준비 여부
         if (inspectionViewRect == null)
-        {
-            Debug.Log(" inspectionViewRect == null");
             return;
-        }
 
+        // 2. 클릭 입력 확인
         if (!_inputs.Inspection.InspectClick.WasPressedThisFrame())
             return;
 
+        // 3. 마우스 위치가 Inspection 영역 안인지 확인
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
         if (!RectTransformUtility.RectangleContainsScreenPoint(
@@ -173,6 +173,7 @@ public class InspectionManager : MonoBehaviour
                 null))
             return;
 
+        // 4. Viewport 좌표 계산
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             inspectionViewRect,
             screenPos,
@@ -187,18 +188,96 @@ public class InspectionManager : MonoBehaviour
         if (u < 0f || u > 1f || v < 0f || v > 1f)
             return;
 
+        // 5. Inspection Camera 기준 Ray 생성
         Ray ray = inspectionCamera.ViewportPointToRay(
             new Vector3(u, v, 0f)
         );
 
         Debug.DrawRay(ray.origin, ray.direction * inspectRayDistance, Color.green, 1.5f);
 
+        // 6. Raycast
+        if (!Physics.Raycast(ray, out RaycastHit hit, inspectRayDistance, inspectLayerMask))
+        {
+            Debug.Log("[InspectClick] Raycast 실패");
+            return;
+        }
+        Debug.Log($"[InspectClick] Hit: {hit.collider.name}");
+        // 7. InspectTarget 처리
+        if (!hit.collider.TryGetComponent<IInspectTarget>(out var target))
+        {
+            Debug.Log($"[InspectClick] IInspectTarget 없음: {hit.collider.name}");
+            return;
+        }
+        Debug.Log($"[InspectClick] IInspectTarget 발견: {hit.collider.name}");
+        // 8. 실제 Inspect 실행
+        target.OnInspect(currentInspectable);
+
+        // 9. UX 정리 (클릭 성공 시에만)
+        ClearOutline();
+    }
+
+    // =========================
+    // Inspect Outline
+    // =========================
+    private void HandleHoverOutline()
+    {
+        if (inspectionViewRect == null)
+            return;
+
+        Vector2 screenPos = Mouse.current.position.ReadValue();
+
+        if (!RectTransformUtility.RectangleContainsScreenPoint(
+                inspectionViewRect,
+                screenPos,
+                null))
+        {
+            ClearOutline();
+            return;
+        }
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            inspectionViewRect,
+            screenPos,
+            null,
+            out Vector2 localPoint);
+
+        Rect rect = inspectionViewRect.rect;
+
+        float u = (localPoint.x - rect.xMin) / rect.width;
+        float v = (localPoint.y - rect.yMin) / rect.height;
+
+        if (u < 0f || u > 1f || v < 0f || v > 1f)
+        {
+            ClearOutline();
+            return;
+        }
+
+        Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
+
         if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
         {
-            if (hit.collider.TryGetComponent<IInspectTarget>(out var target))
+            var outliner = hit.collider.GetComponent<InteractableOutliner>();
+            if (outliner != null)
             {
-                target.OnInspect(currentInspectable);
+                if (_currentOutlined != outliner)
+                {
+                    ClearOutline();
+                    _currentOutlined = outliner;
+                    _currentOutlined.SetHighlight(true);
+                }
+                return;
             }
+        }
+
+        ClearOutline();
+    }
+
+    private void ClearOutline()
+    {
+        if (_currentOutlined != null)
+        {
+            _currentOutlined.SetHighlight(false);
+            _currentOutlined = null;
         }
     }
 

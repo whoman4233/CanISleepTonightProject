@@ -2,18 +2,28 @@
 
 public class InspectKnifeTarget : MonoBehaviour, IInspectTarget
 {
-    public void OnInspect(IInspectable owner)
+    [SerializeField] private GameObject knifeVisual;
+
+    public void OnInspect(IInspectable inspectable)
     {
-        Debug.Log("InspectKnifeTarget.OnInspect CALLED");
-
-        if (owner is not TrashCan trashCan)
-        {
-            Debug.Log("Owner is not TrashCan");
+        if (inspectable is not Component component)
             return;
-        }
 
-        trashCan.TakeKnife();
-        gameObject.SetActive(false);
+        var holder = component.GetComponentInParent<HiddenItemHolder>();
+        if (holder == null)
+            return;
+
+        var knifeState = holder.GetItem<KnifeStateSO>();
+        if (knifeState == null)
+            return;
+
+        Debug.Log($"[Inspect] KnifeState ID={knifeState.GetInstanceID()}");
+
+        knifeState.OnFound();
+
+        if (knifeVisual != null)
+            knifeVisual.SetActive(false);
     }
 }
+
 
