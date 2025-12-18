@@ -107,11 +107,11 @@ public class InspectionManager : MonoBehaviour
 
         inspectionCamera.gameObject.SetActive(false);
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
         inspectionViewRect = null;
         EventBus.Publish(new InspectionViewReleasedEvent());
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     // =========================
