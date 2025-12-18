@@ -14,3 +14,9 @@ public interface IInteractable
 {
     bool CanInteract { get; }
 }
+
+//상세보기 프리펩 클릭 가능한 검사 대상
+public interface IInspectTarget
+{
+    void OnInspect(IInspectable owner);
+}
