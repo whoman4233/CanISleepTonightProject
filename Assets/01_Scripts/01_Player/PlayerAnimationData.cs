@@ -9,13 +9,17 @@ public class PlayerAnimationData
     [SerializeField] private string isFallingParameterName = "IsFalling";
     [SerializeField] private string attackParameterName = "Attack";
     [SerializeField] private string dieParameterName = "Die";
+    [SerializeField] private string moveXParameterName = "MoveX";
+    [SerializeField] private string moveYParameterName = "MoveY";
+
 
     public int SpeedParameterHash { get; private set; }
     public int JumpParameterHash { get; private set; }
     public int IsFallingParameterHash { get; private set; }
     public int AttackParameterHash { get; private set; }
     public int DieParameterHash { get; private set; }
-
+    public int MoveXParameterHash { get; private set; }
+    public int MoveYParameterHash { get; private set; }
     public void Initialize()
     {
         SpeedParameterHash = Animator.StringToHash(speedParameterName);
@@ -23,5 +27,7 @@ public class PlayerAnimationData
         IsFallingParameterHash = Animator.StringToHash(isFallingParameterName);
         AttackParameterHash = Animator.StringToHash(attackParameterName);
         DieParameterHash = Animator.StringToHash(dieParameterName);
+        MoveXParameterHash = Animator.StringToHash(moveXParameterName);
+        MoveYParameterHash = Animator.StringToHash(moveYParameterName);
     }
 }
