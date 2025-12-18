@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class InspectionManager : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class InspectionManager : MonoBehaviour
     // =========================
     // Input
     // =========================
-    private PlayerInputs inspectionInputs;
+    private PlayerInputs _inputs;
 
     // =========================
     // State
@@ -41,8 +42,7 @@ public class InspectionManager : MonoBehaviour
         // TEST Inspectable
         testInspectable = testInspectableMono as IInspectable;
 
-        inspectionInputs = new PlayerInputs();
-        inspectionInputs.Inspection.Enable();
+        _inputs = GetComponentInParent<Player>().Inputs;
 
         inspectionCamera.gameObject.SetActive(false);
     }
@@ -72,11 +72,6 @@ public class InspectionManager : MonoBehaviour
         HandleInspectClick();
     }
 
-    private void OnDestroy()
-    {
-        inspectionInputs?.Dispose();
-    }
-
     // =========================
     // Public API (유지 대상)
     // =========================
@@ -85,6 +80,9 @@ public class InspectionManager : MonoBehaviour
     {
         if (inspectable == null)
             return;
+
+        _inputs.Player.Disable();
+        _inputs.Inspection.Enable();
 
         isInspecting = true;
         currentInspectable = inspectable;
@@ -107,7 +105,7 @@ public class InspectionManager : MonoBehaviour
 
     public void ExitInspection()
     {
-        // ❗ 여러 번 불려도 안전해야 함
+        // 여러 번 불려도 안전해야 함
         isInspecting = false;
 
         if (inspectInstance != null)
@@ -115,6 +113,9 @@ public class InspectionManager : MonoBehaviour
             Destroy(inspectInstance);
             inspectInstance = null;
         }
+
+        _inputs.Inspection.Disable();
+        _inputs.Player.Enable();
 
         currentInspectable?.OnInspectionEnd();
         currentInspectable = null;
@@ -133,10 +134,10 @@ public class InspectionManager : MonoBehaviour
 
     private void HandleRotation()
     {
-        if (!inspectionInputs.Inspection.RotateHold.IsPressed())
+        if (!_inputs.Inspection.RotateHold.IsPressed())
             return;
 
-        Vector2 delta = inspectionInputs.Inspection.Rotate.ReadValue<Vector2>();
+        Vector2 delta = _inputs.Inspection.Rotate.ReadValue<Vector2>();
         if (delta.sqrMagnitude < 0.001f)
             return;
 
@@ -160,7 +161,7 @@ public class InspectionManager : MonoBehaviour
 
     private void HandleInspectClick()
     {
-        if (!inspectionInputs.Inspection.InspectClick.WasPressedThisFrame())
+        if (!_inputs.Inspection.InspectClick.WasPressedThisFrame())
             return;
 
         Ray ray = inspectionCamera.ScreenPointToRay(Mouse.current.position.ReadValue());

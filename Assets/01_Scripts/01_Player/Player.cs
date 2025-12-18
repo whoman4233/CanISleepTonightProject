@@ -113,17 +113,7 @@ public class Player : MonoBehaviour
     private void OnInspectionStarted(InspectionStartedEvent evt) // 상세보기 이벤트 진입 핸들러
     {
         _isInspectionLocked = true;
-
         _inputs.Player.Disable();
-
-        //이미 입력된 잔상 제거
-        MoveInput = Vector2.zero;
-        LookInput = Vector2.zero;
-        RunHeld = false;
-        JumpPressedThisFrame = false;
-        AttackPressedThisFrame = false;
-
-        StateMachine.ChangeState(StateMachine.Locomotion);
     }
 
     private void OnInspectionEnded(InspectionEndedEvent evt) // 상세보기 이벤트 종료 핸들러
