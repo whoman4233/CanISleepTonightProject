@@ -10,6 +10,13 @@ public sealed class PlayerLocomotionState : PlayerState
 
     public override void Tick(float dt)
     {
+        if (P.Interaction)
+        {
+            var interactor = P.GetComponent<PlayerInteractor>();
+            if (interactor != null)
+                interactor.TryInteract();
+        }
+
         if (P.AttackPressedThisFrame)
         {
             SM.ChangeState(SM.Attack);
@@ -18,19 +25,27 @@ public sealed class PlayerLocomotionState : PlayerState
 
         if (P.JumpPressedThisFrame && IsGrounded)
         {
+            P.JumpLocked = true;
+            P.AirFromJump = true;
+            P.AirStartY = P.transform.position.y;
+            P.AirApexY = P.AirStartY;
             SM.ChangeState(SM.Jump);
             return;
         }
 
-        if (!IsGrounded && P.ForceReceiver != null && P.ForceReceiver.VerticalVelocity < 0f)
+        // 발이 떨어졌는데 점프가 아닌 경우 (계단 끝/낭떠러지)
+        if (!IsGrounded)
         {
-            SM.ChangeState(SM.Fall);
+            P.JumpLocked = true;
+            P.AirFromJump = false;
+            P.AirStartY = P.transform.position.y;
+            P.AirApexY = P.AirStartY;
+            SM.ChangeState(SM.Jump);
             return;
         }
 
-        // "걷는데도 뛰는 애니" 방지용: RunHeld에 따라 스케일을 바꿔서 Animator에 전달
         float inputMag = Mathf.Clamp01(P.MoveInput.magnitude);
-        float speedScale = P.RunHeld ? 1f : 0.5f;   // 필요하면 Data로 빼도 됨
+        float speedScale = P.RunHeld ? 1f : 0.5f;
         float speedParam = inputMag * speedScale;
 
         P.Animator.SetFloat(P.AnimationData.SpeedParameterHash, speedParam, SpeedDampTime, dt);
@@ -69,13 +84,13 @@ public sealed class PlayerLocomotionState : PlayerState
 
             horizontalMove = moveDirWorld * moveSpeed * fdt;
 
-            // ✅ 애니메이션용 방향: 플레이어 로컬 기준으로 변환해서 MoveX/MoveY로 보냄
+            // 애니메이션용 방향: 플레이어 로컬 기준으로 변환해서 MoveX/MoveY로 보냄
             Vector3 moveDirLocal = P.transform.InverseTransformDirection(moveDirWorld);
             moveX = moveDirLocal.x;
             moveY = moveDirLocal.z;
         }
 
-        // ✅ LocomotionState에서 회전은 하지 않는다 (360도/덜덜의 핵심 제거)
+        // LocomotionState에서 회전은 방지
         P.Controller.Move(horizontalMove + verticalMove);
 
         // 애니메이터 방향 파라미터 업데이트

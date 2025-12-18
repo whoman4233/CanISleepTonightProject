@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 
-public class TestInspectable : MonoBehaviour, IInspectable, IInteractable
+public class TestInspectable : MonoBehaviour, IInspectable
 {
     [SerializeField] private GameObject inspectPrefab;
+    [SerializeField] private GameObject visualRoot;
 
     [SerializeField] private bool canInteract = true;
     public bool CanInteract => canInteract;
@@ -14,11 +15,14 @@ public class TestInspectable : MonoBehaviour, IInspectable, IInteractable
 
     public void OnInspectionStart()
     {
-        gameObject.SetActive(false);
+        // 필드에서는 안 보이게만
+        if (visualRoot != null)
+            visualRoot.SetActive(false);
     }
 
     public void OnInspectionEnd()
     {
-        gameObject.SetActive(true);
+        if (visualRoot != null)
+            visualRoot.SetActive(true);
     }
 }

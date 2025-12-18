@@ -10,6 +10,7 @@ public class InspectionUIController : MonoBehaviour
     {
         // 기본 상태: 블러 꺼짐
         inspectionBlurVolume.weight = 0f;
+        inspectionRoot.SetActive(false);
     }
 
     private void OnEnable()

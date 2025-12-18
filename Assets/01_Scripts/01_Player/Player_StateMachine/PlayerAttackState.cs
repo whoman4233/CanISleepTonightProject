@@ -2,7 +2,7 @@
 
 public sealed class PlayerAttackState : PlayerState
 {
-    // 공격 입력 연타 방지(원하면 PlayerSO로)
+    // 공격 입력 연타 방지
     private const float AttackLockTime = 0.7f;
     private float _timer;
 
@@ -48,14 +48,10 @@ public sealed class PlayerAttackState : PlayerState
 
             Vector3 moveDir = forward * input.z + right * input.x;
 
-            // 공격 중에는 회전이 과하면 어색할 수 있어서 옵션
-            // const float AttackTurnSpeed = 10f;
-            // P.transform.rotation = Quaternion.Slerp(P.transform.rotation, Quaternion.LookRotation(moveDir), fdt * AttackTurnSpeed);
-
             float baseSpeed = P.Data.GroundData.BaseSpeed;
             float modifier = P.RunHeld ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier;
 
-            const float AttackMoveMultiplier = 0.6f; // 공격 중 이동감(원하는 값)
+            const float AttackMoveMultiplier = 0.6f; // 공격 중 이동감
             float moveSpeed = baseSpeed * modifier * AttackMoveMultiplier;
 
             horizontalMove = moveDir * moveSpeed * fdt;

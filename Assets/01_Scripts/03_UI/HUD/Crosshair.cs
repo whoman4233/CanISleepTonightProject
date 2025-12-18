@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class CrosshairController : MonoBehaviour
+public class Crosshair : MonoBehaviour
 {
     [SerializeField] private RectTransform crosshair;
     [SerializeField] private Color normalColor = Color.white;
