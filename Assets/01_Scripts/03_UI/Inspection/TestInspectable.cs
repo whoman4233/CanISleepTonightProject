@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class TestInspectable : MonoBehaviour, IInspectable, IInteractable
+public class TestInspectable : MonoBehaviour, IInspectable
 {
     [SerializeField] private GameObject inspectPrefab;
     [SerializeField] private GameObject visualRoot;
