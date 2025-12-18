@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class CellDoorController : MonoBehaviour
 {
@@ -16,7 +16,10 @@ public class CellDoorController : MonoBehaviour
     [Header("Door Feedback")]
     [SerializeField] private bool verboseLog = true;
 
-    // °¨¹æ ³»ºÎ/¿ÜºÎ ÆÇÁ¤¿ë(°£´Ü ±¸Çö)
+    [Header("Debug")]
+    [SerializeField] private bool animationTestOnly = true;
+
+    // ê°ë°© ë‚´ë¶€/ì™¸ë¶€ íŒì •ìš©(ê°„ë‹¨ êµ¬í˜„)
     private bool _playerInsideThisCell;
 
     private void Awake()
@@ -26,14 +29,17 @@ public class CellDoorController : MonoBehaviour
         if (anchorRegistry == null) anchorRegistry = FindObjectOfType<CellAnchorRegistry>();
     }
 
-    // °¨¹æ ³»ºÎ Æ®¸®°Å(°¨¹æ ÇÁ¸®ÆÕ ¾È¿¡ BoxCollider IsTrigger 1°³ µÎ°í ¿¬°á)
+    // ê°ë°© ë‚´ë¶€ íŠ¸ë¦¬ê±°(ê°ë°© í”„ë¦¬íŒ¹ ì•ˆì— BoxCollider IsTrigger 1ê°œ ë‘ê³  ì—°ê²°)
     public void SetPlayerInside(bool inside) => _playerInsideThisCell = inside;
 
     /// <summary>
-    /// »óÈ£ÀÛ¿ë Å°(E µî)¿¡¼­ È£ÃâÇÏ¼¼¿ä.
+    /// ìƒí˜¸ì‘ìš© í‚¤(E ë“±)ì—ì„œ í˜¸ì¶œí•˜ì„¸ìš”.
     /// </summary>
     public void Interact()
     {
+        if (animationTestOnly)
+            return;
+
         if (inspection == null || cellManager == null || anchorRegistry == null || playerRoot == null)
         {
             Debug.LogWarning("[Door] Missing refs.");
@@ -55,11 +61,11 @@ public class CellDoorController : MonoBehaviour
         var cell = cellManager.GetCell(cellId);
         if (cell == null) return;
 
-        // ¿À´Ã Àá±ä ¹æÀÌ¸é ÀÔÀå ºÒ°¡
+        // ì˜¤ëŠ˜ ì ê¸´ ë°©ì´ë©´ ì…ì¥ ë¶ˆê°€
         if (cell.IsLockedForDay)
         {
             if (verboseLog) Debug.Log($"[Door] Enter blocked (LockedForDay) cell={cellId}");
-            // TODO: Àá±è UI/SFX
+            // TODO: ì ê¹€ UI/SFX
             return;
         }
 
@@ -76,7 +82,7 @@ public class CellDoorController : MonoBehaviour
         }
 
         if (verboseLog) Debug.Log($"[Door] Enter SUCCESS cell={cellId}");
-        // TODO: ¹® ¿­¸²/´İÈû ¿¬Ãâ, Ã¶Ã¢ SFX
+        // TODO: ë¬¸ ì—´ë¦¼/ë‹«í˜ ì—°ì¶œ, ì² ì°½ SFX
     }
 
     private void TryExit()
@@ -85,7 +91,7 @@ public class CellDoorController : MonoBehaviour
         if (!ok)
         {
             if (verboseLog) Debug.Log($"[Door] Exit blocked cell={cellId}");
-            // TODO: Àá±è UI/SFX (Áø¾Ğ Áß ¼º°ø Àü)
+            // TODO: ì ê¹€ UI/SFX (ì§„ì•• ì¤‘ ì„±ê³µ ì „)
             return;
         }
 
@@ -95,6 +101,6 @@ public class CellDoorController : MonoBehaviour
         }
 
         if (verboseLog) Debug.Log($"[Door] Exit SUCCESS cell={cellId}");
-        // TODO: ¹® ¿¬Ãâ, Ã¶Ã¢ SFX
+        // TODO: ë¬¸ ì—°ì¶œ, ì² ì°½ SFX
     }
 }
