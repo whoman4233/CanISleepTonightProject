@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
-    private Player Player;
+    //private Player Player;
     private GameManager gameManager;
     private PrisonCellManager prisonCellManager;
 
@@ -15,7 +15,7 @@ public class PlayerManager : MonoBehaviour
     public void Initialize()
     {
         GameContext context = GameContext.Instance;
-        Player = context.Get<Player>();
+        //Player = context.Get<Player>();
         gameManager = context.Get<GameManager>();
         prisonCellManager = context.Get<PrisonCellManager>();
         

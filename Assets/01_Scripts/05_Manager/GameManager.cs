@@ -10,11 +10,14 @@ public class GameManager : MonoBehaviour
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
 
+    [Header("엔딩 설정")]
+    private GameEndingType finalEnding = GameEndingType.None;
+
     //private float riotGauge; // 폭동게이지 혹시몰라서 float로 해 놓음.
 
     public event Action<GamePhase> OnPhaseChanged; // 페이즈 변경 이벤트
     public event Action<float> OnRiotGaugeChanged; // 폭동게이지 변경 이벤트
-    public event Action OnGameOver; // 게임오버 이벤트
+    public event Action<GameEndingType> OnGameEnded; // 게임엔딩 이벤트
 
     [Header("순찰 페이즈 타임어택")]
     [SerializeField] private float patrolDurationSeconds = 480f; // 480초(현실)
@@ -109,7 +112,11 @@ public class GameManager : MonoBehaviour
     {
         //playerManager.SetMovementState(false);
         //폭동게이지 계산 추가
-        //타임오버로 강제 페이즈 전환되었을 경우 점검ui 등 강제 해제 시켜줘야함.
+        var interactor = FindObjectOfType<PatrolInteractor>();
+        if( interactor != null)
+        {
+            interactor.EndInspection(); // 타임오버로 강제 전환 시 점검중 해제
+        }
         settlementReportBuilder.RunSettlement();
         OnRiotGaugeChanged?.Invoke(settlementManager.RiotGauge);
         Debug.Log($"현재 폭동 수치 {settlementManager.RiotGauge}");
@@ -118,18 +125,41 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterOffDuty() // 퇴근 페이즈
     {
-        //오토세이브
-        //폭동게이지에 따라 n일차 시작 혹은 엔딩
-        if(currentDay == 7)
+        //추후 전투 추가되면 BadEnding1 순직처리도 넣어줘야함.
+        float currentRiot = settlementManager.RiotGauge;
+        if( currentRiot >= 100) // 폭동치가 100 이상인 경우 엔딩
         {
+            if(currentDay < 7)
+            {
+                finalEnding = GameEndingType.BadEnding2; // 7일 이전에 폭동치 100 이상
+            }
+            else 
+            {
+                finalEnding = GameEndingType.BadEnding3; // 7일차에 폭동 100
+            }
             ChangePhase(GamePhase.Ending);
+            return;
+        }
+        if (currentRiot < 100) // 폭동치가 100 미만
+        {
+            if (currentDay < 7) // 7일 이전에 폭동치 100미만
+            {
+                StartDayLogic(); // 다음날로
+            }
+            else
+            {
+                finalEnding = GameEndingType.HappyEnding1; // 7일차까지 폭동치 100미만 유지하면 해피엔딩
+                ChangePhase(GamePhase.Ending);
+            }
         }
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
     {
+        //추후 엔딩 연출 추가
         Debug.Log("엔딩 페이즈 진입");
-
+        Debug.Log($"{finalEnding}에 진입하였습니다.");
+        OnGameEnded?.Invoke(finalEnding);
     }
 
     private IEnumerator AutoTransitionAfterDelay(float delay, GamePhase nextPhase)
