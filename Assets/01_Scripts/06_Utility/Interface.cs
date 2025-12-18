@@ -13,3 +13,9 @@ public interface IInspectTarget
 {
     void OnInspect(IInspectable owner);
 }
+
+//상세보기 상호작용 후 월드 오브젝트 적용
+public interface IInspectionView
+{
+    void Bind(IInspectable owner);
+}

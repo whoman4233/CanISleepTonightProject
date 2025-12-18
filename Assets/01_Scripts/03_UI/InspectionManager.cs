@@ -164,13 +164,29 @@ public class InspectionManager : MonoBehaviour
         if (!_inputs.Inspection.InspectClick.WasPressedThisFrame())
             return;
 
-        Ray ray = inspectionCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
+        Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+
+        Debug.DrawRay(
+            ray.origin,
+            ray.direction * inspectRayDistance,
+            Color.red,
+            2.0f
+        );
+
+        Debug.Log($"Ray Origin: {ray.origin}, Dir: {ray.direction}");
+
+        if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask, QueryTriggerInteraction.Collide))
         {
+            Debug.Log($"Hit: {hit.collider.name}");
+
             if (hit.collider.TryGetComponent<IInspectTarget>(out var target))
             {
                 target.OnInspect(currentInspectable);
             }
+        }
+        else
+        {
+            Debug.Log("Inspection Ray MISS");
         }
     }
 
@@ -187,6 +203,11 @@ public class InspectionManager : MonoBehaviour
         inspectInstance.transform.localPosition = Vector3.zero;
         inspectInstance.transform.localRotation = Quaternion.identity;
         inspectInstance.transform.localScale = Vector3.one;
+
+        if (inspectInstance.TryGetComponent<IInspectionView>(out var view))
+        {
+            view.Bind(currentInspectable);
+        }
     }
 }
 
