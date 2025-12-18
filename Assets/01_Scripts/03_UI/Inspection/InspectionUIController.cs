@@ -1,40 +1,65 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class InspectionUIController : MonoBehaviour
 {
     [SerializeField] private GameObject inspectionRoot;
     [SerializeField] private Volume inspectionBlurVolume;
+    [SerializeField] private RawImage inspectionRawImage;
+
+    private Action<InspectionViewRequestedEvent> _onViewRequested;
+    private Action<InspectionViewReleasedEvent> _onViewReleased;
 
     private void Awake()
     {
-        // 기본 상태: 블러 꺼짐
-        inspectionBlurVolume.weight = 0f;
         inspectionRoot.SetActive(false);
+        inspectionBlurVolume.weight = 0f;
+
+        _onViewRequested = OnViewRequested;
+        _onViewReleased = OnViewReleased;
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted);
-        EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
+        EventBus.Subscribe(_onViewRequested);
+        EventBus.Subscribe(_onViewReleased);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<InspectionStartedEvent>(OnInspectionStarted);
-        EventBus.Unsubscribe<InspectionEndedEvent>(OnInspectionEnded);
+        EventBus.Unsubscribe(_onViewRequested);
+        EventBus.Unsubscribe(_onViewReleased);
     }
 
-    private void OnInspectionStarted(InspectionStartedEvent e)
+    private void OnViewRequested(InspectionViewRequestedEvent e)
     {
         inspectionRoot.SetActive(true);
         inspectionBlurVolume.weight = 1f;
+
+        // 즉시 보내지 말고
+        StartCoroutine(NotifyViewReadyNextFrame());
     }
 
-    private void OnInspectionEnded(InspectionEndedEvent e)
+    private IEnumerator NotifyViewReadyNextFrame()
     {
-        inspectionBlurVolume.weight = 0f;
+        yield return null; // 다음 프레임 보장
+
+        EventBus.Publish(new InspectionViewReadyEvent
+        {
+            ViewRect = inspectionRawImage.rectTransform
+        });
+    }
+
+
+    private void OnViewReleased(InspectionViewReleasedEvent e)
+    {
         inspectionRoot.SetActive(false);
+        inspectionBlurVolume.weight = 0f;
     }
 }
+
+
 

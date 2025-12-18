@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 
 public class InspectionManager : MonoBehaviour
 {
@@ -16,14 +16,12 @@ public class InspectionManager : MonoBehaviour
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private float inspectRayDistance = 5f;
 
-    // =========================
-    // Input
-    // =========================
+    private Action<InspectionViewReadyEvent> _onViewReady;
+
+    private RectTransform inspectionViewRect;
+
     private PlayerInputs _inputs;
 
-    // =========================
-    // State
-    // =========================
     private bool isInspecting;
     private float yaw;
     private float pitch;
@@ -31,49 +29,40 @@ public class InspectionManager : MonoBehaviour
     private IInspectable currentInspectable;
     private GameObject inspectInstance;
 
-    // =========================
-    // [TEST ONLY]
-    // =========================
-    [SerializeField] private MonoBehaviour testInspectableMono;
-    private IInspectable testInspectable;
-
     private void Awake()
     {
-        // TEST Inspectable
-        testInspectable = testInspectableMono as IInspectable;
-
         _inputs = GetComponentInParent<Player>().Inputs;
-
         inspectionCamera.gameObject.SetActive(false);
+        _onViewReady = OnViewReady;
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onViewReady);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onViewReady);
     }
 
     private void Update()
     {
-        // =========================
-        // TEST ONLY : 강제 진입
-        // =========================
-        if (!isInspecting && Keyboard.current.iKey.wasPressedThisFrame)
-        {
-            EnterInspection(testInspectable);
-        }
-
-        // =========================
-        // TEST ONLY : 강제 종료
-        // =========================
-        if (isInspecting && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            ExitInspection();
-        }
-
         if (!isInspecting)
             return;
+
+        if (_inputs.Inspection.Exit.WasPressedThisFrame())
+        {
+            ExitInspection();
+            return;
+        }
 
         HandleRotation();
         HandleInspectClick();
     }
 
     // =========================
-    // Public API (유지 대상)
+    // Inspection Lifecycle
     // =========================
 
     public void EnterInspection(IInspectable inspectable)
@@ -81,18 +70,11 @@ public class InspectionManager : MonoBehaviour
         if (inspectable == null)
             return;
 
-        _inputs.Player.Disable();
-        _inputs.Inspection.Enable();
-
         isInspecting = true;
         currentInspectable = inspectable;
 
-        currentInspectable.OnInspectionStart();
-
-        EventBus.Publish(new InspectionStartedEvent
-        {
-            Target = inspectable
-        });
+        _inputs.Player.Disable();
+        _inputs.Inspection.Enable();
 
         inspectionCamera.gameObject.SetActive(true);
 
@@ -101,11 +83,12 @@ public class InspectionManager : MonoBehaviour
 
         ResetRotation();
         SpawnInspectObject(inspectable.GetInspectPrefab());
+
+        EventBus.Publish(new InspectionViewRequestedEvent());
     }
 
     public void ExitInspection()
     {
-        // 여러 번 불려도 안전해야 함
         isInspecting = false;
 
         if (inspectInstance != null)
@@ -120,12 +103,22 @@ public class InspectionManager : MonoBehaviour
         currentInspectable?.OnInspectionEnd();
         currentInspectable = null;
 
-        EventBus.Publish(new InspectionEndedEvent());
-
         inspectionCamera.gameObject.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        inspectionViewRect = null;
+        EventBus.Publish(new InspectionViewReleasedEvent());
+    }
+
+    // =========================
+    // View Binding
+    // =========================
+
+    private void OnViewReady(InspectionViewReadyEvent e)
+    {
+        inspectionViewRect = e.ViewRect;
     }
 
     // =========================
@@ -148,7 +141,7 @@ public class InspectionManager : MonoBehaviour
         inspectPivot.localRotation = Quaternion.Euler(pitch, yaw, 0f);
     }
 
-    public void ResetRotation()
+    private void ResetRotation()
     {
         yaw = 0f;
         pitch = 0f;
@@ -156,37 +149,56 @@ public class InspectionManager : MonoBehaviour
     }
 
     // =========================
-    // Inspect Click
+    // Inspect Click (Ray)
     // =========================
 
     private void HandleInspectClick()
     {
+        Debug.Log("A: HandleInspectClick 진입");
+
+        if (inspectionViewRect == null)
+        {
+            Debug.Log(" inspectionViewRect == null");
+            return;
+        }
+
         if (!_inputs.Inspection.InspectClick.WasPressedThisFrame())
             return;
 
-        Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+        Vector2 screenPos = Mouse.current.position.ReadValue();
 
-        Debug.DrawRay(
-            ray.origin,
-            ray.direction * inspectRayDistance,
-            Color.red,
-            2.0f
+        if (!RectTransformUtility.RectangleContainsScreenPoint(
+                inspectionViewRect,
+                screenPos,
+                null))
+            return;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            inspectionViewRect,
+            screenPos,
+            null,
+            out Vector2 localPoint);
+
+        Rect rect = inspectionViewRect.rect;
+
+        float u = (localPoint.x - rect.xMin) / rect.width;
+        float v = (localPoint.y - rect.yMin) / rect.height;
+
+        if (u < 0f || u > 1f || v < 0f || v > 1f)
+            return;
+
+        Ray ray = inspectionCamera.ViewportPointToRay(
+            new Vector3(u, v, 0f)
         );
 
-        Debug.Log($"Ray Origin: {ray.origin}, Dir: {ray.direction}");
+        Debug.DrawRay(ray.origin, ray.direction * inspectRayDistance, Color.green, 1.5f);
 
-        if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask, QueryTriggerInteraction.Collide))
+        if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
         {
-            Debug.Log($"Hit: {hit.collider.name}");
-
             if (hit.collider.TryGetComponent<IInspectTarget>(out var target))
             {
                 target.OnInspect(currentInspectable);
             }
-        }
-        else
-        {
-            Debug.Log("Inspection Ray MISS");
         }
     }
 
@@ -210,6 +222,8 @@ public class InspectionManager : MonoBehaviour
         }
     }
 }
+
+
 
 
 
