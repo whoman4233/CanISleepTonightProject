@@ -15,32 +15,56 @@ public class InspectionManager : MonoBehaviour
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private float inspectRayDistance = 5f;
 
-    private PlayerInputs inspectionInputs;   // ★ PlayerInputs 사용
-    private bool isInspecting;
+    // =========================
+    // Input
+    // =========================
+    private PlayerInputs inspectionInputs;
 
+    // =========================
+    // State
+    // =========================
+    private bool isInspecting;
     private float yaw;
     private float pitch;
 
     private IInspectable currentInspectable;
     private GameObject inspectInstance;
 
-    #region Unity Lifecycle
+    // =========================
+    // [TEST ONLY]
+    // =========================
+    [SerializeField] private MonoBehaviour testInspectableMono;
+    private IInspectable testInspectable;
 
     private void Awake()
     {
+        // TEST Inspectable
+        testInspectable = testInspectableMono as IInspectable;
+
         inspectionInputs = new PlayerInputs();
-
-        // Inspection ActionMap만 사용
         inspectionInputs.Inspection.Enable();
-        inspectionInputs.Inspection.Disable();
-
-        inspectionInputs.Inspection.Exit.performed += _ => ExitInspection();
 
         inspectionCamera.gameObject.SetActive(false);
     }
 
     private void Update()
     {
+        // =========================
+        // TEST ONLY : 강제 진입
+        // =========================
+        if (!isInspecting && Keyboard.current.iKey.wasPressedThisFrame)
+        {
+            EnterInspection(testInspectable);
+        }
+
+        // =========================
+        // TEST ONLY : 강제 종료
+        // =========================
+        if (isInspecting && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            ExitInspection();
+        }
+
         if (!isInspecting)
             return;
 
@@ -53,16 +77,13 @@ public class InspectionManager : MonoBehaviour
         inspectionInputs?.Dispose();
     }
 
-    #endregion
+    // =========================
+    // Public API (유지 대상)
+    // =========================
 
-    #region Public API
-
-    /// <summary>
-    /// 상호작용 시스템에서 호출
-    /// </summary>
     public void EnterInspection(IInspectable inspectable)
     {
-        if (isInspecting || inspectable == null)
+        if (inspectable == null)
             return;
 
         isInspecting = true;
@@ -70,10 +91,10 @@ public class InspectionManager : MonoBehaviour
 
         currentInspectable.OnInspectionStart();
 
-        // Player 입력 차단 요청
-        EventBus.Publish(new InspectionStartedEvent());
-
-        inspectionInputs.Inspection.Enable();
+        EventBus.Publish(new InspectionStartedEvent
+        {
+            Target = inspectable
+        });
 
         inspectionCamera.gameObject.SetActive(true);
 
@@ -84,15 +105,9 @@ public class InspectionManager : MonoBehaviour
         SpawnInspectObject(inspectable.GetInspectPrefab());
     }
 
-    #endregion
-
-    #region Exit
-
-    private void ExitInspection()
+    public void ExitInspection()
     {
-        if (!isInspecting)
-            return;
-
+        // ❗ 여러 번 불려도 안전해야 함
         isInspecting = false;
 
         if (inspectInstance != null)
@@ -104,9 +119,6 @@ public class InspectionManager : MonoBehaviour
         currentInspectable?.OnInspectionEnd();
         currentInspectable = null;
 
-        inspectionInputs.Inspection.Disable();
-
-        // Player 입력 복구 요청
         EventBus.Publish(new InspectionEndedEvent());
 
         inspectionCamera.gameObject.SetActive(false);
@@ -115,9 +127,9 @@ public class InspectionManager : MonoBehaviour
         Cursor.visible = false;
     }
 
-    #endregion
-
-    #region Rotation
+    // =========================
+    // Rotation
+    // =========================
 
     private void HandleRotation()
     {
@@ -135,16 +147,16 @@ public class InspectionManager : MonoBehaviour
         inspectPivot.localRotation = Quaternion.Euler(pitch, yaw, 0f);
     }
 
-    public void ResetRotation()   // UI 버튼용
+    public void ResetRotation()
     {
         yaw = 0f;
         pitch = 0f;
         inspectPivot.localRotation = Quaternion.identity;
     }
 
-    #endregion
-
-    #region Inspect Click
+    // =========================
+    // Inspect Click
+    // =========================
 
     private void HandleInspectClick()
     {
@@ -152,7 +164,6 @@ public class InspectionManager : MonoBehaviour
             return;
 
         Ray ray = inspectionCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-
         if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
         {
             if (hit.collider.TryGetComponent<IInspectTarget>(out var target))
@@ -162,26 +173,22 @@ public class InspectionManager : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region Spawn
+    // =========================
+    // Spawn
+    // =========================
 
     private void SpawnInspectObject(GameObject prefab)
     {
         if (prefab == null)
-        {
-            Debug.LogWarning("[InspectionManager] Inspect prefab is null.");
             return;
-        }
 
         inspectInstance = Instantiate(prefab, inspectPivot);
         inspectInstance.transform.localPosition = Vector3.zero;
         inspectInstance.transform.localRotation = Quaternion.identity;
         inspectInstance.transform.localScale = Vector3.one;
     }
-
-    #endregion
 }
+
 
 
 

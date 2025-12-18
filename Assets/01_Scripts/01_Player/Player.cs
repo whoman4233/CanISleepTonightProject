@@ -24,6 +24,8 @@ public class Player : MonoBehaviour
     private PlayerInputs.PlayerActions _playerActions;
     public PlayerInputs Inputs => _inputs;
 
+    private bool _isInspectionLocked; // Inspection(상세보기) 중 플레이어 입력 차단 플래그
+
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -49,10 +51,18 @@ public class Player : MonoBehaviour
         _inputs.Enable();
         _inputs.Player.Enable();
         _inputs.Inspection.Disable();
+
+        //상세보기 진입 구독
+        EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted); 
+        EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
     }
     private void OnDisable()
     {
         _inputs.Disable();
+
+        //상세보기 진입 구독해지
+        EventBus.Unsubscribe<InspectionStartedEvent>(OnInspectionStarted);
+        EventBus.Unsubscribe<InspectionEndedEvent>(OnInspectionEnded);
     }
 
     private void OnDestroy()
@@ -68,6 +78,9 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        if (_isInspectionLocked) // 상세보기 진입시 플레이어 입력 잠그기
+            return;
+
         ReadInputs();
 
         StateMachine.HandleInput();
@@ -76,6 +89,9 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (_isInspectionLocked) // 상세보기 진입시 플레이어 입력 잠그기
+            return;
+
         StateMachine.FixedTick(Time.fixedDeltaTime);
     }
 
@@ -88,5 +104,27 @@ public class Player : MonoBehaviour
 
         JumpPressedThisFrame = _playerActions.Jump.WasPressedThisFrame();
         AttackPressedThisFrame = _playerActions.Attack.WasPressedThisFrame();
+    }
+
+    private void OnInspectionStarted(InspectionStartedEvent evt) // 상세보기 이벤트 진입 핸들러
+    {
+        _isInspectionLocked = true;
+
+        _inputs.Player.Disable();
+
+        //이미 입력된 잔상 제거
+        MoveInput = Vector2.zero;
+        LookInput = Vector2.zero;
+        RunHeld = false;
+        JumpPressedThisFrame = false;
+        AttackPressedThisFrame = false;
+
+        StateMachine.ChangeState(StateMachine.Locomotion);
+    }
+
+    private void OnInspectionEnded(InspectionEndedEvent evt) // 상세보기 이벤트 종료 핸들러
+    {
+        _isInspectionLocked = false;
+        _inputs.Player.Enable();
     }
 }

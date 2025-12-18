@@ -339,6 +339,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ForceInspect"",
+                    ""type"": ""Button"",
+                    ""id"": ""66dbad81-84a4-47f7-9159-0e4d99ebbee7"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -385,6 +394,17 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""action"": ""InspectClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""39a143a9-ca60-4302-b396-5c1967a1792c"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ForceInspect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -407,6 +427,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Inspection_Rotate = m_Inspection.FindAction("Rotate", throwIfNotFound: true);
         m_Inspection_Exit = m_Inspection.FindAction("Exit", throwIfNotFound: true);
         m_Inspection_InspectClick = m_Inspection.FindAction("InspectClick", throwIfNotFound: true);
+        m_Inspection_ForceInspect = m_Inspection.FindAction("ForceInspect", throwIfNotFound: true);
     }
 
     ~@PlayerInputs()
@@ -665,6 +686,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Inspection_Rotate;
     private readonly InputAction m_Inspection_Exit;
     private readonly InputAction m_Inspection_InspectClick;
+    private readonly InputAction m_Inspection_ForceInspect;
     /// <summary>
     /// Provides access to input actions defined in input action map "Inspection".
     /// </summary>
@@ -692,6 +714,10 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Inspection/InspectClick".
         /// </summary>
         public InputAction @InspectClick => m_Wrapper.m_Inspection_InspectClick;
+        /// <summary>
+        /// Provides access to the underlying input action "Inspection/ForceInspect".
+        /// </summary>
+        public InputAction @ForceInspect => m_Wrapper.m_Inspection_ForceInspect;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -730,6 +756,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @InspectClick.started += instance.OnInspectClick;
             @InspectClick.performed += instance.OnInspectClick;
             @InspectClick.canceled += instance.OnInspectClick;
+            @ForceInspect.started += instance.OnForceInspect;
+            @ForceInspect.performed += instance.OnForceInspect;
+            @ForceInspect.canceled += instance.OnForceInspect;
         }
 
         /// <summary>
@@ -753,6 +782,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @InspectClick.started -= instance.OnInspectClick;
             @InspectClick.performed -= instance.OnInspectClick;
             @InspectClick.canceled -= instance.OnInspectClick;
+            @ForceInspect.started -= instance.OnForceInspect;
+            @ForceInspect.performed -= instance.OnForceInspect;
+            @ForceInspect.canceled -= instance.OnForceInspect;
         }
 
         /// <summary>
@@ -885,5 +917,12 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInspectClick(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ForceInspect" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnForceInspect(InputAction.CallbackContext context);
     }
 }
