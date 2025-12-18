@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÇÏ·ç Á¤»ê ´ã´ç
-/// - Á¡°Ë °á°ú¸¦ ¹Ş¾Æ Æøµ¿ °ÔÀÌÁö Áõ°¨ Ã³¸®
-/// - ¼öÄ¡´Â ÀüºÎ SerializeField·Î ºĞ¸®
+/// í•˜ë£¨ ì •ì‚° ë‹´ë‹¹
+/// - ì ê²€ ê²°ê³¼ë¥¼ ë°›ì•„ í­ë™ ê²Œì´ì§€ ì¦ê° ì²˜ë¦¬
+/// - ìˆ˜ì¹˜ëŠ” ì „ë¶€ SerializeFieldë¡œ ë¶„ë¦¬
 /// </summary>
 public class SettlementManager : MonoBehaviour
 {
@@ -13,22 +13,22 @@ public class SettlementManager : MonoBehaviour
     [SerializeField] private int maxRiotGauge = 100;
 
     [Header("Gauge Change Values")]
-    [Tooltip("¼ö»óÇÑ ¹æ Áø¾Ğ ¼º°ø")]
+    [Tooltip("ìˆ˜ìƒí•œ ë°© ì§„ì•• ì„±ê³µ")]
     [SerializeField] private int suspiciousSuppressSuccessDelta = -5;
 
-    [Tooltip("Á¤»ó ¹æ °æ°í/¹«½Ã ¼º°ø")]
+    [Tooltip("ì •ìƒ ë°© ê²½ê³ /ë¬´ì‹œ ì„±ê³µ")]
     [SerializeField] private int normalIgnoreSuccessDelta = -5;
 
-    [Tooltip("¼ö»óÇÑ ¹æ °æ°í/¹«½Ã ½ÇÆĞ")]
+    [Tooltip("ìˆ˜ìƒí•œ ë°© ê²½ê³ /ë¬´ì‹œ ì‹¤íŒ¨")]
     [SerializeField] private int suspiciousIgnoreFailDelta = +10;
 
-    [Tooltip("Á¤»ó ¹æ °úÀ× Áø¾Ğ ½ÇÆĞ")]
+    [Tooltip("ì •ìƒ ë°© ê³¼ì‰ ì§„ì•• ì‹¤íŒ¨")]
     [SerializeField] private int normalSuppressFailDelta = +10;
 
     public int RiotGauge => riotGauge;
 
     /// <summary>
-    /// ÇÏ·ç Á¤»ê Àû¿ë
+    /// í•˜ë£¨ ì •ì‚° ì ìš©
     /// </summary>
     public void ApplyDailyReport(
         List<ResolvedRecord> resolved,
@@ -36,19 +36,19 @@ public class SettlementManager : MonoBehaviour
     {
         int delta = 0;
 
-        // 1. Á¡°Ë ¿Ï·áµÈ ¹æ Ã³¸®
+        // 1. ì ê²€ ì™„ë£Œëœ ë°© ì²˜ë¦¬
         foreach (var r in resolved)
         {
             if (r.isSuspicious)
             {
                 if (r.didSuppress)
                 {
-                    // ¼ö»ó + Áø¾Ğ ¼º°ø
+                    // ìˆ˜ìƒ + ì§„ì•• ì„±ê³µ
                     delta += suspiciousSuppressSuccessDelta;
                 }
                 else
                 {
-                    // ¼ö»ó + °æ°í(½ÇÆĞ)
+                    // ìˆ˜ìƒ + ê²½ê³ (ì‹¤íŒ¨)
                     delta += suspiciousIgnoreFailDelta;
                 }
             }
@@ -56,37 +56,37 @@ public class SettlementManager : MonoBehaviour
             {
                 if (r.didSuppress)
                 {
-                    // Á¤»ó + °úÀ× Áø¾Ğ
+                    // ì •ìƒ + ê³¼ì‰ ì§„ì••
                     delta += normalSuppressFailDelta;
                 }
                 else
                 {
-                    // Á¤»ó + °æ°í ¼º°ø
+                    // ì •ìƒ + ê²½ê³  ì„±ê³µ
                     delta += normalIgnoreSuccessDelta;
                 }
             }
         }
 
-        // 2. ¹ÌÁ¡°Ë ¹æ Ã³¸® (ÀüºÎ ½ÇÆĞ Ãë±Ş)
+        // 2. ë¯¸ì ê²€ ë°© ì²˜ë¦¬ (ì „ë¶€ ì‹¤íŒ¨ ì·¨ê¸‰)
         foreach (var u in uninspected)
         {
             if (u.isSuspicious)
             {
-                // ¼ö»ó + ¹ÌÁ¡°Ë
+                // ìˆ˜ìƒ + ë¯¸ì ê²€
                 delta += suspiciousIgnoreFailDelta;
             }
             else
             {
-                // Á¤»ó + ¹ÌÁ¡°Ë
+                // ì •ìƒ + ë¯¸ì ê²€
                 delta += normalSuppressFailDelta;
             }
         }
 
-        // 3. °ÔÀÌÁö Àû¿ë
+        // 3. ê²Œì´ì§€ ì ìš©
         riotGauge += delta;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
-        Debug.Log($"[Settlement] RiotGauge ¥Ä={delta}, Result={riotGauge}/{maxRiotGauge}");
+        Debug.Log($"[Settlement] RiotGauge Î”={delta}, Result={riotGauge}/{maxRiotGauge}");
     }
 
     public bool IsRiotOver()
@@ -107,5 +107,10 @@ public class SettlementManager : MonoBehaviour
         riotGauge += dailyBaseIncrease;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
         Debug.Log($"[Standby] RiotGauge +{dailyBaseIncrease} => {riotGauge}/{maxRiotGauge}");
+    }
+    public void SetRiotGauge(int value)
+    {
+        riotGauge = value; // ë‚´ë¶€ ë³€ìˆ˜ì— ë¡œë“œëœ ê°’ í• ë‹¹
+        Debug.Log($"í­ë™ ê²Œì´ì§€ê°€ ë¡œë“œëœ ê°’ìœ¼ë¡œ ì„¤ì •ë¨: {value}");
     }
 }

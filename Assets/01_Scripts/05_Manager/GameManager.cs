@@ -34,10 +34,23 @@ public class GameManager : MonoBehaviour
     {
         GameContext context = GameContext.Instance;
 
+        var saveManager = context.Get<SaveManager>();
+        settlementManager = context.Get<SettlementManager>();
         playerManager = context.Get<PlayerManager>();
         prisonCellManager = context.Get<PrisonCellManager>();
-        settlementManager = context.Get<SettlementManager>();
         settlementReportBuilder = context.Get<SettlementReportBuilder>();
+        var loadedData = saveManager.LoadGame();
+        if (loadedData != null)
+        {
+            this.currentDay = loadedData.currentDay;
+            this.currentPhase = loadedData.currentPhase;
+            settlementManager.SetRiotGauge(loadedData.riotGauge);
+        }
+        else
+        {
+            this.currentDay = 1;
+            Debug.Log("새로운 게임을 시작합니다");
+        }
         Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{settlementManager.RiotGauge}");
         currentInGameSeconds = PatrolDisplayHours * 3600f; // 3600을 곱하여 초 단위로 계산
         OnInGameTimeUpdated?.Invoke(currentInGameSeconds);
@@ -125,33 +138,16 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterOffDuty() // 퇴근 페이즈
     {
+        GameSaveData snapshot = new GameSaveData() // 오토세이브
+        {
+            currentDay = this.currentDay,
+            currentPhase = this.currentPhase,
+            riotGauge = GameContext.Instance.Get<SettlementManager>().RiotGauge
+        };
+        var saveManager = GameContext.Instance.Get<SaveManager>();
+        saveManager.SaveGame(snapshot);
         //추후 전투 추가되면 BadEnding1 순직처리도 넣어줘야함.
-        float currentRiot = settlementManager.RiotGauge;
-        if( currentRiot >= 100) // 폭동치가 100 이상인 경우 엔딩
-        {
-            if(currentDay < 7)
-            {
-                finalEnding = GameEndingType.BadEnding2; // 7일 이전에 폭동치 100 이상
-            }
-            else 
-            {
-                finalEnding = GameEndingType.BadEnding3; // 7일차에 폭동 100
-            }
-            ChangePhase(GamePhase.Ending);
-            return;
-        }
-        if (currentRiot < 100) // 폭동치가 100 미만
-        {
-            if (currentDay < 7) // 7일 이전에 폭동치 100미만
-            {
-                StartDayLogic(); // 다음날로
-            }
-            else
-            {
-                finalEnding = GameEndingType.HappyEnding1; // 7일차까지 폭동치 100미만 유지하면 해피엔딩
-                ChangePhase(GamePhase.Ending);
-            }
-        }
+        CheckEnding();
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -213,6 +209,36 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("순찰 종료");
             ChangePhase(GamePhase.Settlement);
+        }
+    }
+
+    public void CheckEnding()
+    {
+        int currentRiot = settlementManager.RiotGauge;
+        if (currentRiot >= 100) // 폭동치가 100 이상인 경우 엔딩
+        {
+            if (currentDay < 7)
+            {
+                finalEnding = GameEndingType.BadEnding2; // 7일 이전에 폭동치 100 이상
+            }
+            else
+            {
+                finalEnding = GameEndingType.BadEnding3; // 7일차에 폭동 100
+            }
+            ChangePhase(GamePhase.Ending);
+            return;
+        }
+        if (currentRiot < 100) // 폭동치가 100 미만
+        {
+            if (currentDay < 7) // 7일 이전에 폭동치 100미만
+            {
+                StartDayLogic(); // 다음날로
+            }
+            else
+            {
+                finalEnding = GameEndingType.HappyEnding1; // 7일차까지 폭동치 100미만 유지하면 해피엔딩
+                ChangePhase(GamePhase.Ending);
+            }
         }
     }
 }
