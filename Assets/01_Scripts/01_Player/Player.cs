@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     public Animator Animator { get; private set; }
     public CharacterController Controller { get; private set; }
     public ForceReceiver ForceReceiver { get; private set; }
-
+    public bool Interaction { get; private set; }
     public PlayerStateMachine StateMachine { get; private set; }
 
     // PlayerInputs 기반 입력 캐시 (FSM이 읽어감)
@@ -101,13 +101,13 @@ public class Player : MonoBehaviour
 
     private void ReadInputs()
     {
-        // Walk: Vector2, Run: Button, Look: Delta, Jump/Attack: Button
         MoveInput = _playerActions.Walk.ReadValue<Vector2>();
         LookInput = _playerActions.Look.ReadValue<Vector2>();
         RunHeld = _playerActions.Run.IsPressed();
 
         JumpPressedThisFrame = _playerActions.Jump.WasPressedThisFrame();
         AttackPressedThisFrame = _playerActions.Attack.WasPressedThisFrame();
+        Interaction = _playerActions.Interaction.WasPressedThisFrame();
     }
 
     private void OnInspectionStarted(InspectionStartedEvent evt) // 상세보기 이벤트 진입 핸들러
@@ -122,6 +122,7 @@ public class Player : MonoBehaviour
         RunHeld = false;
         JumpPressedThisFrame = false;
         AttackPressedThisFrame = false;
+        Interaction = false;
 
         StateMachine.ChangeState(StateMachine.Locomotion);
     }
