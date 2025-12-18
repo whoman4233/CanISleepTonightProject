@@ -3,7 +3,7 @@
 public sealed class PlayerAttackState : PlayerState
 {
     // 공격 입력 연타 방지(원하면 PlayerSO로)
-    private const float AttackLockTime = 0.15f;
+    private const float AttackLockTime = 0.7f;
     private float _timer;
 
     public PlayerAttackState(PlayerStateMachine sm) : base(sm) { }
@@ -20,5 +20,47 @@ public sealed class PlayerAttackState : PlayerState
 
         if (_timer >= AttackLockTime)
             SM.ChangeState(SM.Locomotion);
+    }
+    public override void FixedTick(float fdt)
+    {
+        if (P.Controller == null) return;
+
+        // 공격 중 이동을 허용(원하면 속도만 줄이기)
+        Vector3 verticalMove = Vector3.zero;
+        if (P.ForceReceiver != null)
+            verticalMove = P.ForceReceiver.ConsumeMove(fdt, IsGrounded);
+
+        Vector3 horizontalMove = Vector3.zero;
+
+        Vector3 input = new Vector3(P.MoveInput.x, 0f, P.MoveInput.y);
+        const float InputDeadZoneSqr = 0.0001f;
+
+        if (input.sqrMagnitude >= InputDeadZoneSqr)
+        {
+            Transform cam = Camera.main.transform;
+
+            Vector3 forward = cam.forward;
+            Vector3 right = cam.right;
+            forward.y = 0f;
+            right.y = 0f;
+            forward.Normalize();
+            right.Normalize();
+
+            Vector3 moveDir = forward * input.z + right * input.x;
+
+            // 공격 중에는 회전이 과하면 어색할 수 있어서 옵션
+            // const float AttackTurnSpeed = 10f;
+            // P.transform.rotation = Quaternion.Slerp(P.transform.rotation, Quaternion.LookRotation(moveDir), fdt * AttackTurnSpeed);
+
+            float baseSpeed = P.Data.GroundData.BaseSpeed;
+            float modifier = P.RunHeld ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier;
+
+            const float AttackMoveMultiplier = 0.6f; // 공격 중 이동감(원하는 값)
+            float moveSpeed = baseSpeed * modifier * AttackMoveMultiplier;
+
+            horizontalMove = moveDir * moveSpeed * fdt;
+        }
+
+        P.Controller.Move(horizontalMove + verticalMove);
     }
 }
