@@ -10,6 +10,13 @@ public sealed class PlayerLocomotionState : PlayerState
 
     public override void Tick(float dt)
     {
+        if (P.Interaction)
+        {
+            var interactor = P.GetComponent<PlayerInteractor>();
+            if (interactor != null)
+                interactor.TryInteract();
+        }
+
         if (P.AttackPressedThisFrame)
         {
             SM.ChangeState(SM.Attack);

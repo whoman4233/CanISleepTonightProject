@@ -14,7 +14,6 @@ public sealed class PlayerLandState : PlayerState
         // 착지 중엔 낙하 종료
         P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, false);
 
-        // Land 애니 시작
         P.Animator.SetTrigger(P.AnimationData.LandParameterHash);
     }
 

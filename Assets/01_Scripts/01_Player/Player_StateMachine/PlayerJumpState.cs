@@ -17,7 +17,7 @@ public sealed class PlayerJumpState : PlayerState
         {
             P.Animator.SetTrigger(P.AnimationData.JumpParameterHash);
             if (P.ForceReceiver != null)
-                P.ForceReceiver.SetJumpVelocity(P.Data.AirData.JumpForce);
+                P.ForceReceiver.SetJumpVelocity(P.Data.JumpData.JumpForce);
         }
 
         // 공중 시작 높이는 Locomotion에서 세팅됨
