@@ -42,26 +42,32 @@ public sealed class PlayerInteractor : MonoBehaviour
         Ray ray = targetCamera.ViewportPointToRay(new Vector3(ViewportCenterX, ViewportCenterY, 0f));
 
         if (drawDebugRay)
-            Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green, 0.1f);
+            Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green, 1.0f);
 
         if (!Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask, QueryTriggerInteraction.Ignore))
+        {
+            Debug.Log("[PlayerInteractor] Raycast MISS");
             return false;
+        }
 
-        // 1) 맞은 콜라이더에서 먼저 찾고
+        Debug.Log($"[PlayerInteractor] HIT: {hit.collider.name}");
+
         if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
         {
+            Debug.Log("[PlayerInteractor] Interactable FOUND on collider");
             interactable.Interact(_player);
             return true;
         }
 
-        // 2) 부모에 붙어있는 경우까지 커버
         interactable = hit.collider.GetComponentInParent<IInteractable>();
         if (interactable != null)
         {
+            Debug.Log("[PlayerInteractor] Interactable FOUND in parent");
             interactable.Interact(_player);
             return true;
         }
 
+        Debug.Log("[PlayerInteractor] HIT but no IInteractable found");
         return false;
     }
 }
