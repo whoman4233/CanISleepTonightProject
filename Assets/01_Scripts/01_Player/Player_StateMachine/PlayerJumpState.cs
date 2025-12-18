@@ -7,29 +7,51 @@ public sealed class PlayerJumpState : PlayerState
 
     public PlayerJumpState(PlayerStateMachine sm) : base(sm) { }
 
+    private const float FallEnterHeightThreshold = 2.5f;
     public override void Enter()
     {
         _timer = 0f;
 
-        P.Animator.SetTrigger(P.AnimationData.JumpParameterHash);
+        // 점프로 시작했을 때만 점프 애니/점프 힘 적용
+        if (P.AirFromJump)
+        {
+            P.Animator.SetTrigger(P.AnimationData.JumpParameterHash);
+            if (P.ForceReceiver != null)
+                P.ForceReceiver.SetJumpVelocity(P.Data.AirData.JumpForce);
+        }
 
-        if (P.ForceReceiver != null)
-            P.ForceReceiver.SetJumpVelocity(P.Data.AirData.JumpForce);
+        // 공중 시작 높이는 Locomotion에서 세팅됨
+        float y = P.transform.position.y;
+        P.AirApexY = Mathf.Max(P.AirApexY, y);
+
+        // 점프 중에는 Falling을 기본으로 꺼둔다
+        P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, false);
     }
 
     public override void Tick(float dt)
     {
         _timer += dt;
-        if (_timer >= MinAirTime &&
-            !IsGrounded &&
-            P.ForceReceiver != null &&
-            P.ForceReceiver.VerticalVelocity < 0f)
+
+        // 정점 갱신
+        float y = P.transform.position.y;
+        if (y > P.AirApexY) P.AirApexY = y;
+
+        bool isInAir = !IsGrounded;
+        if (isInAir && P.ForceReceiver != null)
         {
-            P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
-            SM.ChangeState(SM.Fall);
-            return;
+            float fallDistance = P.AirApexY - y;        // 정점부터 얼마나 떨어졌는지
+            bool isFallingDown = P.ForceReceiver.VerticalVelocity < 0f;
+
+            // 낙하거리 임계치 넘을 때만 Falling 애니/상태 진입
+            if (isFallingDown && fallDistance >= FallEnterHeightThreshold)
+            {
+                P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
+                SM.ChangeState(SM.Fall);
+                return;
+            }
         }
 
+        // 착지 시 Locomotion 복귀
         if (IsGrounded && _timer >= MinAirTime)
         {
             SM.ChangeState(SM.Locomotion);
@@ -63,8 +85,8 @@ public sealed class PlayerJumpState : PlayerState
             Vector3 moveDir = forward * input.z + right * input.x;
 
             // 공중 회전도 원하면 유지
-            const float AirTurnSpeed = 10f;
-            bool rotateOnlyWhenForward = input.z > 0.1f; // input.z == 전후(W/S)
+            const float AirTurnSpeed = 0f;
+            bool rotateOnlyWhenForward = input.z > 0.1f;
             if (rotateOnlyWhenForward && moveDir.sqrMagnitude > 0.0001f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(moveDir);

@@ -63,7 +63,7 @@ public sealed class PlayerFallState : PlayerState
         if (IsGrounded)
         {
             P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, false);
-            SM.ChangeState(SM.Locomotion);
+            SM.ChangeState(SM.Land);
         }
     }
 }

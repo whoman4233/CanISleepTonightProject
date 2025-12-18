@@ -18,6 +18,10 @@ public class Player : MonoBehaviour
     public Vector2 LookInput { get; private set; }
     public bool RunHeld { get; private set; }
     public bool JumpPressedThisFrame { get; private set; }
+    public float AirStartY { get; set; }
+    public float AirApexY { get; set; }
+    public bool AirFromJump { get; set; }
+    public bool JumpLocked { get; set; }
     public bool AttackPressedThisFrame { get; private set; }
 
     private PlayerInputs _inputs;

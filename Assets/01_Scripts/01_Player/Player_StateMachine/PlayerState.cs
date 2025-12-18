@@ -14,4 +14,5 @@ public abstract class PlayerState
     public virtual void FixedTick(float fdt) { }
 
     protected bool IsGrounded => P.Controller != null && P.Controller.isGrounded;
+
 }

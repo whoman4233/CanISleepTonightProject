@@ -7,6 +7,7 @@ public class PlayerStateMachine
     public PlayerLocomotionState Locomotion { get; }
     public PlayerJumpState Jump { get; }
     public PlayerFallState Fall { get; }
+    public PlayerLandState Land { get; }
     public PlayerAttackState Attack { get; }
     public PlayerDeadState Dead { get; }
 
@@ -19,6 +20,7 @@ public class PlayerStateMachine
         Locomotion = new PlayerLocomotionState(this);
         Jump = new PlayerJumpState(this);
         Fall = new PlayerFallState(this);
+        Land = new PlayerLandState(this);
         Attack = new PlayerAttackState(this);
         Dead = new PlayerDeadState(this);
     }
