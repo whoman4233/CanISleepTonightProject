@@ -7,11 +7,14 @@ public class Player : MonoBehaviour
     [field: SerializeField] public PlayerSO Data { get; private set; }
     [field: SerializeField] public PlayerAnimationData AnimationData { get; private set; }
 
+    [Header("Refs (Cache)")]
+    [SerializeField] private PlayerWeaponHandler weaponHandler;
     public Animator Animator { get; private set; }
     public CharacterController Controller { get; private set; }
     public ForceReceiver ForceReceiver { get; private set; }
     public bool Interaction { get; private set; }
     public PlayerStateMachine StateMachine { get; private set; }
+    public Transform MainCameraTransform { get; private set; }
 
     // PlayerInputs 기반 입력 캐시 (FSM이 읽어감)
     public Vector2 MoveInput { get; private set; }
@@ -36,6 +39,11 @@ public class Player : MonoBehaviour
         Controller = GetComponent<CharacterController>();
         ForceReceiver = GetComponent<ForceReceiver>();
 
+        if (weaponHandler == null)
+            weaponHandler = GetComponent<PlayerWeaponHandler>();
+
+        MainCameraTransform = Camera.main != null ? Camera.main.transform : null;
+
         if (AnimationData == null)
         {
             Debug.LogError("[Player] AnimationData가 비어있습니다. Inspector에서 할당하세요.", this);
@@ -44,12 +52,11 @@ public class Player : MonoBehaviour
         }
 
         AnimationData.Initialize();
-
         _inputs = new PlayerInputs();
         _playerActions = _inputs.Player;
-
         StateMachine = new PlayerStateMachine(this);
     }
+
     private void OnEnable()
     {
         _inputs.Enable();
@@ -77,9 +84,14 @@ public class Player : MonoBehaviour
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+
+        // 시작 무기 장착
+        if (weaponHandler != null)
+            weaponHandler.EquipOnStart();
+
         StateMachine.ChangeState(StateMachine.Locomotion);
     }
-
+    public PlayerWeaponHandler WeaponHandler => weaponHandler;
     private void Update()
     {
         if (_isInspectionLocked) // 상세보기 진입시 플레이어 입력 잠그기
