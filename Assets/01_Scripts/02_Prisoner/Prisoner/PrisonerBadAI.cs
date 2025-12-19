@@ -13,9 +13,6 @@ public class PrisonerBadAI : MonoBehaviour
     private void Awake()
     {
         _actor = GetComponent<PrisonerActor>();
-
-        //  스폰 직후(Init 전에) 1프레임이라도 도는 것 방지
-        enabled = false;
     }
 
     public void BindPlayer(Transform player)
@@ -26,10 +23,6 @@ public class PrisonerBadAI : MonoBehaviour
     private void Update()
     {
         if (_player == null) return;
-
-        //  2중 잠금: 진압(전투) 전에는 절대 실행 불가
-        if (!_actor.CombatEnabled) return;
-
         if (!_actor.IsAlive) return;
         if (_actor.Type != PrisonerType.Bad) return;
 
@@ -51,6 +44,6 @@ public class PrisonerBadAI : MonoBehaviour
 
         _cooldown = attackCooldown;
 
-        // TODO: 플레이어 체력에 데미지 적용
+        //// 플레이어 체력에 데미지
     }
 }
