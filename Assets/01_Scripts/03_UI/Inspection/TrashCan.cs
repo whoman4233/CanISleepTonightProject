@@ -4,6 +4,7 @@ public class TrashCan : MonoBehaviour, IInteractable, IInspectable
 {
     [Header("Inspection")]
     [SerializeField] private GameObject inspectPrefab;
+    [SerializeField] private GameObject visualRoot;
 
     [Header("Hidden Items")]
     [SerializeField] private GameObject knifeWorldVisual;
@@ -45,6 +46,16 @@ public class TrashCan : MonoBehaviour, IInteractable, IInspectable
 
     public Transform GetInspectPivot() => transform;
     public GameObject GetInspectPrefab() => inspectPrefab;
+
+    public void OnInspectionEnter()
+    {
+        visualRoot.SetActive(false);
+    }
+
+    public void OnInspectionExit()
+    {
+        visualRoot.SetActive(true);
+    }
 
     public void Interact(Player player)
     {

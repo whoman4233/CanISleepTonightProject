@@ -81,6 +81,7 @@ public class InspectionManager : MonoBehaviour
         isInspecting = true;
         currentInspectable = inspectable;
 
+        currentInspectable.OnInspectionEnter();
         _inputs.Player.Disable();
         _inputs.Inspection.Enable();
 
@@ -109,6 +110,7 @@ public class InspectionManager : MonoBehaviour
         {
             Destroy(inspectInstance);
             inspectInstance = null;
+            currentInspectable.OnInspectionExit();
         }
 
         _inputs.Inspection.Disable();
