@@ -13,6 +13,18 @@ public struct GamePhaseChangedEvent //게임 페이즈에 따른 UI 변경
     }
 }
 
+public struct RequestPhaseChangeEvent // 페이즈 변경 요청
+{
+    public GamePhase TargetPhase;
+    public RequestPhaseChangeEvent(GamePhase phase) => TargetPhase = phase;
+}
+
+public struct EndingConditionMetEvent // 엔딩 조건 달성 알림
+{
+    public GameEndingType EndingType;
+    public EndingConditionMetEvent(GameEndingType type) => EndingType = type;
+}
+
 //==========================================
 //게임 신 관련 이벤트 목록
 //==========================================

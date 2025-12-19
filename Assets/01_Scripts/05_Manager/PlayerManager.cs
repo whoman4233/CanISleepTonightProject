@@ -40,16 +40,6 @@ public class PlayerManager : MonoBehaviour
         IsEngagingInAction = false;
         Debug.Log("플레이어 순찰 상태 초기화 완료");
     }
-
-    public void RequestPatrolStart() // 문 상호작용 시 호출(순찰 시작)
-    {
-        gameManager.StartPatrolLogic();
-    }
-
-    public void RequestPatrolEnd() // 문 상호작용 시 호출 (순찰 끝)
-    {
-        gameManager.EndPatrolLogic();
-    }
     public void SetInspectingCell(string cellID) => CurrentCellID = cellID;
     public void SetObserving(bool state) => IsObserving = state;
     public string GetCurrentCellID() => CurrentCellID;
