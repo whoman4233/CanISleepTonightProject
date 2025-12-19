@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -15,26 +14,38 @@ public class HUDTimer : MonoBehaviour
     private Coroutine warningCoroutine;
     private bool isWarning;
 
-    private System.Action<GameTimeUpdateEvent> _onTimeUpdated;
+    private GameManager gameManager;
 
-    private void Awake()
-    {
-        _onTimeUpdated = OnTimeUpdated;
-        Debug.Log("[HUDTimer] Awake");
-    }
     private void OnEnable()
     {
-        Debug.Log("[HUDTimer] OnEnable");
-        EventBus.Subscribe<GameTimeUpdateEvent>(_onTimeUpdated);
+        gameManager = GameContext.Instance.Get<GameManager>();
+        gameManager.OnInGameTimeUpdated += OnTimeUpdated;
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<GameTimeUpdateEvent>(_onTimeUpdated);
+        if (gameManager != null)
+            gameManager.OnInGameTimeUpdated -= OnTimeUpdated;
+
         StopWarning();
     }
 
-    //시간 표시 
+    private void OnTimeUpdated(float seconds)
+    {
+        timeText.text = FormatTime(seconds);
+
+        if (seconds < 60f)
+        {
+            if (!isWarning)
+                StartWarning();
+        }
+        else
+        {
+            if (isWarning)
+                StopWarning();
+        }
+    }
+
     private string FormatTime(float seconds)
     {
         if (seconds < 0f)
@@ -45,26 +56,6 @@ public class HUDTimer : MonoBehaviour
         int millis = Mathf.FloorToInt((seconds - Mathf.Floor(seconds)) * 100f);
 
         return $"{minutes:00}:{secs:00}.{millis:00}";
-    }
-
-
-    //60초 미만 시 경고용 
-    private void OnTimeUpdated(GameTimeUpdateEvent e)
-    {
-        Debug.Log($"[HUDTimer] Receive: {e.Seconds}");
-
-        timeText.text = FormatTime(e.Seconds);
-
-        if (e.Seconds < 60f)
-        {
-            if (!isWarning)
-                StartWarning();
-        }
-        else
-        {
-            if (isWarning)
-                StopWarning();
-        }
     }
 
     private void StartWarning()
@@ -94,5 +85,5 @@ public class HUDTimer : MonoBehaviour
             yield return new WaitForSeconds(warningBlinkSpeed);
         }
     }
-
 }
+
