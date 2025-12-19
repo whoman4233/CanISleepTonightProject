@@ -72,7 +72,8 @@ public class MainMenuController : MonoBehaviour
 
     private void OnClickNewGame()
     {
-        EventBus.Publish(new StartNewGameEvent());
+        var gm = GameContext.Instance.Get<GameManager>();
+        gm.ChangePhase(GamePhase.Standby);
     }
 
     private void OnClickLoadGame()

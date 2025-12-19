@@ -1,10 +1,8 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class UIStateManager : MonoBehaviour
 {
-    [Header("Phase UI")]
-    [SerializeField] private GameObject menuUI;          // NotStarted
+    [Header("Result UI")]
     [SerializeField] private GameObject resultUI;        // Settlement / OffDuty / Ending
 
     [Header("Gameplay Overlay")]
@@ -37,23 +35,13 @@ public class UIStateManager : MonoBehaviour
 
     private void ApplyPhase(GamePhase phase)
     {
-        // Phase UI 초기화
-        menuUI.SetActive(false);
-        resultUI.SetActive(false);
+        // Result UI
+        bool isResult =
+            phase == GamePhase.Settlement ||
+            phase == GamePhase.OffDuty ||
+            phase == GamePhase.Ending;
 
-        // Phase UI 선택
-        switch (phase)
-        {
-            case GamePhase.NotStarted:
-                menuUI.SetActive(true);
-                break;
-
-            case GamePhase.Settlement:
-            case GamePhase.OffDuty:
-            case GamePhase.Ending:
-                resultUI.SetActive(true);
-                break;
-        }
+        resultUI.SetActive(isResult);
 
         // Gameplay Overlay
         bool isGameplay =
@@ -62,9 +50,9 @@ public class UIStateManager : MonoBehaviour
 
         hudUI.SetActive(isGameplay);
 
-        // InGameMenu / Popup은 대부분 허용
+        // InGameMenu / Popup
         inGameMenuUI.SetActive(phase != GamePhase.NotStarted);
-        popupUI.SetActive(true); // 필요시 조건 추가
+        popupUI.SetActive(true);
     }
-
 }
+
