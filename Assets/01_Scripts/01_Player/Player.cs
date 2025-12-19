@@ -29,7 +29,7 @@ public class Player : MonoBehaviour
     public PlayerInputs Inputs => _inputs;
 
     private bool _isInspectionLocked; // Inspection(상세보기) 중 플레이어 입력 차단 플래그
-
+    private InspectionManager _inspectionManager;
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -49,6 +49,16 @@ public class Player : MonoBehaviour
         _playerActions = _inputs.Player;
 
         StateMachine = new PlayerStateMachine(this);
+
+        _inspectionManager = GetComponentInChildren<InspectionManager>();
+        if (_inspectionManager == null)
+        {
+            Debug.LogError("[Player] InspectionManager not found", this);
+        }
+        else
+        {
+            _inspectionManager.Initialize(_inputs);
+        }
     }
     private void OnEnable()
     {
@@ -120,5 +130,13 @@ public class Player : MonoBehaviour
     {
         _isInspectionLocked = false;
         _inputs.Player.Enable();
+    }
+
+    public void TryEnterInspection(IInspectable inspectable)
+    {
+        if (_inspectionManager == null)
+            return;
+
+        _inspectionManager.EnterInspection(inspectable);
     }
 }

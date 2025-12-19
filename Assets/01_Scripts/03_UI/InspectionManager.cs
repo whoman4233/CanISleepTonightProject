@@ -49,10 +49,13 @@ public class InspectionManager : MonoBehaviour
         Debug.Log("[InspectionManager] Unsubscribe ViewReady");
         EventBus.Unsubscribe(_onViewReady);
     }
-
+    public void Initialize(PlayerInputs inputs)
+    {
+        _inputs = inputs;
+    }
     private void Update()
     {
-        if (!isInspecting)
+        if (!isInspecting || _inputs == null)
             return;
 
         if (_inputs.Inspection.Exit.WasPressedThisFrame())

@@ -48,7 +48,7 @@ public class TrashCan : MonoBehaviour, IInteractable, IInspectable
 
     public void Interact(Player player)
     {
-        InspectionHelper.EnterInspection(player, this);
+        player.TryEnterInspection(this);
     }
 }
 
