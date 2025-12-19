@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -45,6 +46,7 @@ public class InspectionManager : MonoBehaviour
 
     private void OnDisable()
     {
+        Debug.Log("[InspectionManager] Unsubscribe ViewReady");
         EventBus.Unsubscribe(_onViewReady);
     }
 
@@ -87,6 +89,12 @@ public class InspectionManager : MonoBehaviour
         ResetRotation();
         SpawnInspectObject(inspectable.GetInspectPrefab());
 
+        StartCoroutine(RequestViewNextFrame());
+    }
+
+    private IEnumerator RequestViewNextFrame()
+    {
+        yield return null;
         EventBus.Publish(new InspectionViewRequestedEvent());
     }
 
@@ -120,8 +128,18 @@ public class InspectionManager : MonoBehaviour
 
     private void OnViewReady(InspectionViewReadyEvent e)
     {
-        inspectionViewRect = e.ViewRect;
+        var ui = FindObjectOfType<InspectionUIController>();
+        if (ui == null)
+        {
+            Debug.LogError("[InspectionManager] InspectionUIController not found");
+            return;
+        }
+
+        inspectionViewRect = ui.GetInspectionViewRect();
+
+        Debug.Log($"[InspectionManager] ViewRect assigned = {inspectionViewRect}");
     }
+
 
     // =========================
     // Rotation
@@ -222,7 +240,10 @@ public class InspectionManager : MonoBehaviour
     private void HandleHoverOutline()
     {
         if (inspectionViewRect == null)
+        {
+            Debug.Log("[HoverOutline] inspectionViewRect == null");
             return;
+        }
 
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
@@ -254,9 +275,12 @@ public class InspectionManager : MonoBehaviour
 
         Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
 
+        Debug.DrawRay(ray.origin, ray.direction * inspectRayDistance, Color.cyan, 0f);
+
         if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
         {
-            var outliner = hit.collider.GetComponent<InteractableOutliner>();
+            var outliner = hit.collider.GetComponentInChildren<InteractableOutliner>();
+            Debug.Log($"[Hover] Hit={hit.collider.name}, Outliner={(outliner != null ? outliner.name : "NULL")}");
             if (outliner != null)
             {
                 if (_currentOutlined != outliner)

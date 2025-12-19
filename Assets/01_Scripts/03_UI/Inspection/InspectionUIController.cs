@@ -13,6 +13,8 @@ public class InspectionUIController : MonoBehaviour
     private Action<InspectionViewRequestedEvent> _onViewRequested;
     private Action<InspectionViewReleasedEvent> _onViewReleased;
 
+    public RectTransform InspectionViewRect => inspectionRawImage.rectTransform;
+
     private void Awake()
     {
         inspectionRoot.SetActive(false);
@@ -45,12 +47,14 @@ public class InspectionUIController : MonoBehaviour
 
     private IEnumerator NotifyViewReadyNextFrame()
     {
+        
         yield return null; // 다음 프레임 보장
-
-        EventBus.Publish(new InspectionViewReadyEvent
-        {
-            ViewRect = inspectionRawImage.rectTransform
-        });
+       
+        Debug.Log(
+        $"[InspectionUI] RawImage = {inspectionRawImage}, Rect = {inspectionRawImage?.rectTransform}"
+    );
+        EventBus.Publish(new InspectionViewReadyEvent());
+      
     }
 
 
@@ -59,6 +63,14 @@ public class InspectionUIController : MonoBehaviour
         inspectionRoot.SetActive(false);
         inspectionBlurVolume.weight = 0f;
     }
+
+    public RectTransform GetInspectionViewRect()
+    {
+        return inspectionRawImage != null
+            ? inspectionRawImage.rectTransform
+            : null;
+    }
+
 }
 
 
