@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            this.currentDay = 1;
+            this.currentDay = 0;
             Debug.Log("새로운 게임을 시작합니다");
         }
         Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{settlementManager.RiotGauge}");
