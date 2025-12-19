@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            this.currentDay = 1;
+            this.currentDay = 0;
             Debug.Log("새로운 게임을 시작합니다");
         }
         Debug.Log($"게임매니저 초기화 완료. \n 현재 폭동수지{settlementManager.RiotGauge}");
@@ -118,7 +118,7 @@ public class GameManager : MonoBehaviour
         StopAllCoroutines();
         //playerManager.SetMovementState(true);
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
-        StartCoroutine(AutoTransitionAfterDelay(patrolDurationSeconds, GamePhase.Settlement)); // 480초 후 자동으로 페이즈 종료 및 전환
+        // 480초 후 자동으로 페이즈 종료 및 전환
     }
 
     private void OnEnterSettlement() // 정산 페이즈
@@ -169,14 +169,15 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
         while(CurrentPhase == GamePhase.Patrol && patrolDurationSeconds > 0)
         {
-            patrolDurationSeconds -= 1.0f; // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
-                                                              // 1시간 = 3600초 이니까 60 단위로 쪼개서 시, 분, 초 등으로 나눠서 활용 가능함.
-            if (patrolDurationSeconds < 0)
-            {
-                patrolDurationSeconds = 0;
-            }
+            patrolDurationSeconds -= Time.deltaTime; // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
+            // 1시간 = 3600초 이니까 60 단위로 쪼개서 시, 분, 초 등으로 나눠서 활용 가능함.
             OnInGameTimeUpdated?.Invoke(patrolDurationSeconds);
             yield return null;
+        }
+        if (patrolDurationSeconds < 0)
+        {
+            patrolDurationSeconds = 0;
+            ChangePhase(GamePhase.Settlement);
         }
     }
 
