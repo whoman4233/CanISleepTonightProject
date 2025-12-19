@@ -13,9 +13,11 @@ public sealed class PlayerInteractor : MonoBehaviour
     [SerializeField] private LayerMask interactLayerMask = ~0;
 
     [Header("Debug")]
+    [SerializeField] private bool drawInteractAttemptRay = true;
     [SerializeField] private bool drawDebugRay = true;
 
     private Player _player;
+    private InteractableOutliner _currentOutliner;
 
     // UI/다른 시스템이 읽을 수 있는 "현재 타겟" 정보
     public bool HasTarget => _currentInteractable != null;
@@ -66,19 +68,44 @@ public sealed class PlayerInteractor : MonoBehaviour
         if (drawDebugRay)
             Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green, 0f);
 
+        // Ray가 아무 것도 맞추지 못하면: 기존 하이라이트 OFF
         if (!Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask, QueryTriggerInteraction.Ignore))
+        {
+            if (_currentOutliner != null)
+            {
+                _currentOutliner.SetHighlight(false);
+                _currentOutliner = null;
+            }
             return;
+        }
 
         _currentHitCollider = hit.collider;
         _currentHitDistance = hit.distance;
 
         if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
-        {
             _currentInteractable = interactable;
-            return;
+        else
+            _currentInteractable = hit.collider.GetComponentInParent<IInteractable>();
+
+        // 아웃라이너 찾기
+        InteractableOutliner nextOutliner = null;
+
+        if (_currentHitCollider != null)
+        {
+            if (!_currentHitCollider.TryGetComponent(out nextOutliner))
+                nextOutliner = _currentHitCollider.GetComponentInParent<InteractableOutliner>();
         }
 
-        _currentInteractable = hit.collider.GetComponentInParent<IInteractable>();
+        if (_currentOutliner != nextOutliner)
+        {
+            if (_currentOutliner != null)
+                _currentOutliner.SetHighlight(false);
+
+            _currentOutliner = nextOutliner;
+
+            if (_currentOutliner != null)
+                _currentOutliner.SetHighlight(true);
+        }
     }
 
     /// <summary>
@@ -86,6 +113,12 @@ public sealed class PlayerInteractor : MonoBehaviour
     /// </summary>
     public bool TryInteract()
     {
+        if (drawDebugRay || drawInteractAttemptRay)
+        {
+            Ray ray = targetCamera.ViewportPointToRay(new Vector3(ViewportCenterX, ViewportCenterY, 0f));
+            Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.red, 0.15f); // 0.15초만 보이게
+        }
+
         if (_currentInteractable == null)
             return false;
 
