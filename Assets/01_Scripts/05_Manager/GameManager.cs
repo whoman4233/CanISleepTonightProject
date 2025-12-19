@@ -169,7 +169,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
         while(CurrentPhase == GamePhase.Patrol && patrolDurationSeconds > 0)
         {
-            patrolDurationSeconds -= 1.0f; // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
+            patrolDurationSeconds -= Time.deltaTime; // 현실 1초당 60초 감소 ui적용 시 부자연스러우면 델타타임으로 변경 가능
                                                               // 1시간 = 3600초 이니까 60 단위로 쪼개서 시, 분, 초 등으로 나눠서 활용 가능함.
             if (patrolDurationSeconds < 0)
             {
