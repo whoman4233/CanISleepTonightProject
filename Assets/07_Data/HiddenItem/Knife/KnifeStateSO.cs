@@ -4,26 +4,23 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "HiddenItem/KnifeState")]
 public class KnifeStateSO : HiddenItemStateSO
 {
-    [SerializeField] private bool isFound;
-    public bool IsFound => isFound;
-
     public event Action<bool> OnFoundStateChanged;
 
-    public void OnFound()
+    public override void OnFound()
     {
         if (isFound)
             return;
 
-        isFound = true;
-        Debug.Log($"[KnifeStateSO] OnFound 호출 | ID={GetInstanceID()}");
+        base.OnFound();
 
+        Debug.Log($"[KnifeStateSO] OnFound 호출 | ID={GetInstanceID()}");
         OnFoundStateChanged?.Invoke(isFound);
     }
 
-    public void ResetState()
+    public override void ResetState()
     {
-        isFound = false;
+        base.ResetState();
+        OnFoundStateChanged?.Invoke(isFound);
     }
 }
-
 
