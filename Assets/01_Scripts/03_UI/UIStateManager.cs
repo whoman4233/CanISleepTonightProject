@@ -2,13 +2,14 @@
 
 public class UIStateManager : MonoBehaviour
 {
-    [Header("Phase Roots")]
-    [SerializeField] private GameObject mainMenuRoot; //메인 메뉴
-    [SerializeField] private GameObject briefingRoot; // 브리핑관련
-    [SerializeField] private GameObject hudRoot; //HUD 
-    [SerializeField] private GameObject settlementRoot; //정산
-    [SerializeField] private GameObject offDutyRoot; // 퇴근
-    [SerializeField] private GameObject endingRoot; // 엔딩
+    [Header("Result UI")]
+    [SerializeField] private GameObject resultUI;        // Settlement / OffDuty / Ending
+
+    [Header("Gameplay Overlay")]
+    [SerializeField] private GameObject hudUI;           // Briefing / Patrol
+    [SerializeField] private GameObject inGameMenuUI;    // 대부분의 Phase
+    [SerializeField] private GameObject popupUI;         // 공통
+    [SerializeField] private GameObject inspectionUI;    // 공통 (조건부)
 
     private System.Action<GamePhaseChangedEvent> phaseHandler;
 
@@ -34,11 +35,24 @@ public class UIStateManager : MonoBehaviour
 
     private void ApplyPhase(GamePhase phase)
     {
-        mainMenuRoot.SetActive(phase == GamePhase.NotStarted);
-        briefingRoot.SetActive(phase == GamePhase.Briefing);
-        hudRoot.SetActive(phase == GamePhase.Standby || phase == GamePhase.Patrol);
-        settlementRoot.SetActive(phase == GamePhase.Settlement);
-        offDutyRoot.SetActive(phase == GamePhase.OffDuty);
-        endingRoot.SetActive(phase == GamePhase.Ending);
+        // Result UI
+        bool isResult =
+            phase == GamePhase.Settlement ||
+            phase == GamePhase.OffDuty ||
+            phase == GamePhase.Ending;
+
+        resultUI.SetActive(isResult);
+
+        // Gameplay Overlay
+        bool isGameplay =
+            phase == GamePhase.Briefing ||
+            phase == GamePhase.Patrol;
+
+        hudUI.SetActive(isGameplay);
+
+        // InGameMenu / Popup
+        inGameMenuUI.SetActive(phase != GamePhase.NotStarted);
+        popupUI.SetActive(true);
     }
 }
+

@@ -4,41 +4,42 @@ using UnityEngine.UI;
 public class MainMenuController : MonoBehaviour
 {
     [Header("Button Groups")]
-    [SerializeField] private GameObject mainButtonGroup; //메인메뉴 버튼
-    [SerializeField] private GameObject startButtonGroup; // 시작버튼 뒤에 나오는 버튼
+    [SerializeField] private GameObject mainButtonGroup;
+    [SerializeField] private GameObject startButtonGroup;
 
     [Header("Main Buttons")]
-    [SerializeField] private Button btnStart; // 시작버튼
-    [SerializeField] private Button btnExit; // 종료 버튼
-    [SerializeField] private Button btnSettings; //세팅(옵션) 버튼
+    [SerializeField] private Button btnStart;
+    [SerializeField] private Button btnExit;
+    [SerializeField] private Button btnSettings;
 
     [Header("Start Buttons")]
-    [SerializeField] private Button btnNewGame; // 새 게임 버튼
-    [SerializeField] private Button btnLoadGame; // 이어하기 버튼
-    [SerializeField] private Button btnStartBack; // 메인메뉴로 돌아가기
+    [SerializeField] private Button btnNewGame;
+    [SerializeField] private Button btnLoadGame;
+    [SerializeField] private Button btnStartBack;
 
     [Header("Settings Buttons")]
-    [SerializeField] private Button btnSettingsBack; // 세팅 뒤로가기
+    [SerializeField] private Button btnSettingsBack;
 
     private void Awake()
     {
         BindButtons();
+    }
+
+    private void OnEnable()
+    {
         ResetState();
     }
 
     private void BindButtons()
     {
-        // Main
         btnStart.onClick.AddListener(OnClickStart);
         btnExit.onClick.AddListener(OnClickExit);
         btnSettings.onClick.AddListener(OnClickSettings);
 
-        // Start
         btnNewGame.onClick.AddListener(OnClickNewGame);
         btnLoadGame.onClick.AddListener(OnClickLoadGame);
         btnStartBack.onClick.AddListener(OnClickBackToMain);
 
-        // Settings
         btnSettingsBack.onClick.AddListener(OnClickBackToMain);
     }
 
@@ -46,10 +47,7 @@ public class MainMenuController : MonoBehaviour
     {
         mainButtonGroup.SetActive(true);
         startButtonGroup.SetActive(false);
-
     }
-
-    // ---------- Button Callbacks ----------
 
     private void OnClickStart()
     {
@@ -69,13 +67,13 @@ public class MainMenuController : MonoBehaviour
 
     private void OnClickExit()
     {
-        Debug.Log("Exit button clicked");
         EventBus.Publish(new ShowExitConfirmPopupEvent());
     }
 
     private void OnClickNewGame()
     {
-        EventBus.Publish(new StartNewGameEvent());
+        var gm = GameContext.Instance.Get<GameManager>();
+        gm.ChangePhase(GamePhase.Standby);
     }
 
     private void OnClickLoadGame()
@@ -83,3 +81,4 @@ public class MainMenuController : MonoBehaviour
         EventBus.Publish(new LoadGameEvent());
     }
 }
+

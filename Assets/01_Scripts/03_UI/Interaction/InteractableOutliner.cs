@@ -1,56 +1,113 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-[RequireComponent(typeof(Renderer))]
-public class InteractableOutliner : MonoBehaviour
+public sealed class InteractableOutliner : MonoBehaviour
 {
-    private static readonly int OutlineOnId = Shader.PropertyToID("_OutlineOn");
+    private const float OutlineOn = 1f;
+    private const float OutlineOff = 0f;
 
-    [Header("아웃라인 프로퍼티 세팅")]
-    [SerializeField] private string outlinePropertyName = "_OutlineOn";
+    private const string OutlinePropertyName = "_OutlineOn";
+    private static readonly int OutlineOnId = Shader.PropertyToID(OutlinePropertyName);
 
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float outlineOnValue = 1f;
+    [Header("Preview / Default")]
+    [SerializeField] private bool outlineEnabled = false;
 
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float outlineOffValue = 0f;
+    private Renderer[] _renderers;
+    private MaterialPropertyBlock _mpb;
 
-    private Renderer _renderer;
-    private MaterialPropertyBlock _propertyBlock;
-    private bool _isHighlighted;
+    // 캐시 갱신 조건(계층/렌더러 변화 감지)
+    private int _cachedChildCount;
+    private int _cachedAllRendererCount;
 
     private void Awake()
     {
-        _renderer = GetComponent<Renderer>();
-        _propertyBlock = new MaterialPropertyBlock();
-
-        if (string.IsNullOrEmpty(outlinePropertyName))
-        {
-            outlinePropertyName = "_OutlineOn";
-        }
-
-        SetHighlight(false);
+        _mpb = new MaterialPropertyBlock();
+        CacheRenderersIfNeeded(force: true);
+        Apply(outlineEnabled);
     }
 
     public void SetHighlight(bool isOn)
     {
-        if (_renderer == null) return;
-        if (_isHighlighted == isOn) return;
-
-        _isHighlighted = isOn;
-
-        // 현재 머티리얼의 PropertyBlock 읽어오기
-        _renderer.GetPropertyBlock(_propertyBlock);
-
-        float value = isOn ? outlineOnValue : outlineOffValue;
-
-        // 프로퍼티 이름을 직접 쓰고 싶다면 아래처럼 사용 가능:
-        // int propId = Shader.PropertyToID(outlinePropertyName);
-        // _propertyBlock.SetFloat(propId, value);
-
-        _propertyBlock.SetFloat(OutlineOnId, value);
-
-        _renderer.SetPropertyBlock(_propertyBlock);
+        outlineEnabled = isOn;
+        Apply(isOn);
     }
+
+    private void Apply(bool isOn)
+    {
+        if (_renderers == null || _renderers.Length == 0) return;
+        _mpb ??= new MaterialPropertyBlock();
+
+        float value = isOn ? OutlineOn : OutlineOff;
+
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            Renderer r = _renderers[i];
+            if (r == null) continue;
+
+            r.GetPropertyBlock(_mpb);
+            _mpb.SetFloat(OutlineOnId, value);
+            r.SetPropertyBlock(_mpb);
+        }
+    }
+
+    private void CacheRenderersIfNeeded(bool force)
+    {
+        int currentChildCount = transform.childCount;
+
+        Renderer[] all = GetComponentsInChildren<Renderer>(true);
+        int currentAllRendererCount = all.Length;
+
+        if (!force &&
+            _renderers != null && _renderers.Length > 0 &&
+            _cachedChildCount == currentChildCount &&
+            _cachedAllRendererCount == currentAllRendererCount)
+        {
+            return;
+        }
+
+        _cachedChildCount = currentChildCount;
+        _cachedAllRendererCount = currentAllRendererCount;
+
+        // 아웃라인 프로퍼티가 있는 머티리얼을 가진 Renderer만 필터링
+        List<Renderer> filtered = new List<Renderer>(all.Length);
+
+        for (int i = 0; i < all.Length; i++)
+        {
+            Renderer r = all[i];
+            if (r == null) continue;
+
+            Material[] mats = r.sharedMaterials; // 인스턴스화 방지
+            if (mats == null) continue;
+
+            bool hasOutlineMaterial = false;
+
+            for (int m = 0; m < mats.Length; m++)
+            {
+                Material mat = mats[m];
+                if (mat == null) continue;
+
+                if (mat.HasProperty(OutlineOnId) || mat.HasProperty(OutlinePropertyName))
+                {
+                    hasOutlineMaterial = true;
+                    break;
+                }
+            }
+
+            if (hasOutlineMaterial)
+                filtered.Add(r);
+        }
+
+        _renderers = filtered.ToArray();
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (!isActiveAndEnabled) return;
+
+        _mpb ??= new MaterialPropertyBlock();
+        CacheRenderersIfNeeded(force: false);
+        Apply(outlineEnabled);
+    }
+#endif
 }
