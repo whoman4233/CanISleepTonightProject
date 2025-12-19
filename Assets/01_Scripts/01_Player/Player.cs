@@ -7,6 +7,9 @@ public class Player : MonoBehaviour
     [field: SerializeField] public PlayerSO Data { get; private set; }
     [field: SerializeField] public PlayerAnimationData AnimationData { get; private set; }
 
+    [Header("Refs (Cache)")]
+    [SerializeField] private PlayerWeaponHandler weaponHandler;
+
     public Animator Animator { get; private set; }
     public CharacterController Controller { get; private set; }
     public ForceReceiver ForceReceiver { get; private set; }
@@ -29,7 +32,7 @@ public class Player : MonoBehaviour
     public PlayerInputs Inputs => _inputs;
 
     private bool _isInspectionLocked; // Inspection(상세보기) 중 플레이어 입력 차단 플래그
-
+    private InspectionManager _inspectionManager;
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -49,6 +52,16 @@ public class Player : MonoBehaviour
         _playerActions = _inputs.Player;
 
         StateMachine = new PlayerStateMachine(this);
+
+        _inspectionManager = GetComponentInChildren<InspectionManager>();
+        if (_inspectionManager == null)
+        {
+            Debug.LogError("[Player] InspectionManager not found", this);
+        }
+        else
+        {
+            _inspectionManager.Initialize(_inputs);
+        }
     }
     private void OnEnable()
     {
@@ -57,7 +70,7 @@ public class Player : MonoBehaviour
         _inputs.Inspection.Disable();
 
         //상세보기 진입 구독
-        EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted); 
+        EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted);
         EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
     }
     private void OnDisable()
@@ -77,8 +90,14 @@ public class Player : MonoBehaviour
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+
+        // 시작 무기 장착
+        if (weaponHandler != null)
+            weaponHandler.EquipOnStart();
+
         StateMachine.ChangeState(StateMachine.Locomotion);
     }
+    public PlayerWeaponHandler WeaponHandler => weaponHandler;
 
     private void Update()
     {
@@ -120,5 +139,13 @@ public class Player : MonoBehaviour
     {
         _isInspectionLocked = false;
         _inputs.Player.Enable();
+    }
+
+    public void TryEnterInspection(IInspectable inspectable)
+    {
+        if (_inspectionManager == null)
+            return;
+
+        _inspectionManager.EnterInspection(inspectable);
     }
 }

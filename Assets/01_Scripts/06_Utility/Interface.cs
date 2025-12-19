@@ -4,7 +4,9 @@
 public interface IInspectable 
 {
     GameObject GetInspectPrefab();   // 시각용 프리팹
-    Transform GetInspectPivot();         
+    Transform GetInspectPivot();
+    void OnInspectionEnter();
+    void OnInspectionExit();
 }
 
 //상세보기 프리펩 클릭 가능한 검사 대상

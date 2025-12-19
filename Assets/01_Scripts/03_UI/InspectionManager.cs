@@ -49,10 +49,13 @@ public class InspectionManager : MonoBehaviour
         Debug.Log("[InspectionManager] Unsubscribe ViewReady");
         EventBus.Unsubscribe(_onViewReady);
     }
-
+    public void Initialize(PlayerInputs inputs)
+    {
+        _inputs = inputs;
+    }
     private void Update()
     {
-        if (!isInspecting)
+        if (!isInspecting || _inputs == null)
             return;
 
         if (_inputs.Inspection.Exit.WasPressedThisFrame())
@@ -78,6 +81,7 @@ public class InspectionManager : MonoBehaviour
         isInspecting = true;
         currentInspectable = inspectable;
 
+        currentInspectable.OnInspectionEnter();
         _inputs.Player.Disable();
         _inputs.Inspection.Enable();
 
@@ -106,6 +110,7 @@ public class InspectionManager : MonoBehaviour
         {
             Destroy(inspectInstance);
             inspectInstance = null;
+            currentInspectable.OnInspectionExit();
         }
 
         _inputs.Inspection.Disable();
