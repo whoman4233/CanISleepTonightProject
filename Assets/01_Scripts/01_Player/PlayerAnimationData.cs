@@ -12,6 +12,9 @@ public class PlayerAnimationData
     [SerializeField] private string dieParameterName = "Die";
     [SerializeField] private string moveXParameterName = "MoveX";
     [SerializeField] private string moveYParameterName = "MoveY";
+    [SerializeField] private string crouchDownParameterName = "CrouchDown";
+    [SerializeField] private string standUpParameterName = "StandUp";
+    [SerializeField] private string isCrouchingParameterName = "IsCrouching";
 
 
     public int SpeedParameterHash { get; private set; }
@@ -22,6 +25,9 @@ public class PlayerAnimationData
     public int DieParameterHash { get; private set; }
     public int MoveXParameterHash { get; private set; }
     public int MoveYParameterHash { get; private set; }
+    public int CrouchDownParameterHash { get; private set; }
+    public int StandUpParameterHash { get; private set; }
+    public int IsCrouchingParameterHash { get; private set; }
     public void Initialize()
     {
         SpeedParameterHash = Animator.StringToHash(speedParameterName);
@@ -32,5 +38,8 @@ public class PlayerAnimationData
         DieParameterHash = Animator.StringToHash(dieParameterName);
         MoveXParameterHash = Animator.StringToHash(moveXParameterName);
         MoveYParameterHash = Animator.StringToHash(moveYParameterName);
+        CrouchDownParameterHash = Animator.StringToHash(crouchDownParameterName);
+        StandUpParameterHash = Animator.StringToHash(standUpParameterName);
+        IsCrouchingParameterHash = Animator.StringToHash(isCrouchingParameterName);
     }
 }
