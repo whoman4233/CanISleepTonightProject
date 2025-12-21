@@ -16,7 +16,7 @@ public class PlayerGroundData
     [field: Header("WalkData")]
     [field: SerializeField]
     [field: Range(0f, 2f)]
-    public float WalkSpeedModifier { get; private set; } = 0.225f;
+    public float WalkSpeedModifier { get; private set; } = 0.5f;
 
     [field: Header("RunData")]
     [field: SerializeField]
@@ -26,7 +26,7 @@ public class PlayerGroundData
     [field: Header("CrouchWalkData")]
     [field: SerializeField]
     [field: Range(0f, 2f)]
-    public float CrouchWalkSpeedModifier { get; private set; } = 0.5f;
+    public float CrouchWalkSpeedModifier { get; private set; } = 0.3f;
 
     // CharacterController 캡슐 보정용 데이터
     [field: Header("Controller Capsule (Standing/Crouch)")]
