@@ -9,6 +9,10 @@ public sealed class PlayerLandState : PlayerState
 
     public override void Enter()
     {
+        P.ForceClearCrouchTransitionLock();
+
+        P.ForceResetCrouchToStanding(); // 착지 후 무조건 서 있는 상태로 리셋
+
         _timer = 0f;
 
         // 착지 중엔 낙하 종료
