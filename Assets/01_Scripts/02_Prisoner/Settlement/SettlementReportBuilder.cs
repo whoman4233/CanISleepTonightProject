@@ -1,3 +1,4 @@
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class SettlementReportBuilder : MonoBehaviour
 
     private readonly List<ResolvedRecord> _resolved = new();
     private readonly HashSet<string> _resolvedIds = new();
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
     private void Awake()
     {
@@ -17,8 +19,29 @@ public class SettlementReportBuilder : MonoBehaviour
 
         if (inspection != null)
             inspection.OnResolved += HandleResolved;
+        _onPhaseChanged = e =>
+        {
+            if (e.Phase == GamePhase.Standby)
+            {
+                ClearResolvedCache();
+                Debug.Log("SettlementReportBuilderì˜ ClearResolved ì™„ë£Œ");
+            }
+            else if(e.Phase == GamePhase.Settlement)
+            {
+                RunSettlement();
+                Debug.Log("SettlementReportBuilderì˜ RunSettlement ì™„ë£Œ");
+            }
+        };
     }
 
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onPhaseChanged);
+    }
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onPhaseChanged);
+    }
     private void OnDestroy()
     {
         if (inspection != null)
@@ -32,7 +55,7 @@ public class SettlementReportBuilder : MonoBehaviour
         _resolved.Add(new ResolvedRecord(cellId, isSuspicious, didSuppress));
     }
 
-    // Á¤»ê ÆäÀÌÁî ÁøÀÔ ¼ø°£ 1È¸ È£Ãâ
+    // ì •ì‚° í˜ì´ì¦ˆ ì§„ì… ìˆœê°„ 1íšŒ í˜¸ì¶œ
     public void BuildSettlementReport(out List<ResolvedRecord> resolved, out List<UninspectedRecord> uninspected)
     {
         resolved = new List<ResolvedRecord>(_resolved);
@@ -42,14 +65,14 @@ public class SettlementReportBuilder : MonoBehaviour
         {
             foreach (var cell in cellManager.Cells)
             {
-                // ¾ÆÁ÷ ActiveToday°¡ ³²¾ÆÀÖÀ¸¸é "¹ÌÁ¡°Ë"
+                // ì•„ì§ ActiveTodayê°€ ë‚¨ì•„ìˆìœ¼ë©´ "ë¯¸ì ê²€"
                 if (cell.IsActiveToday)
                     uninspected.Add(new UninspectedRecord(cell.CellId, cell.IsSuspicious));
             }
         }
     }
 
-    // ´ÙÀ½³¯À» À§ÇØ ÃÊ±âÈ­(ÇÊ¿ä ½Ã È£Ãâ)
+    // ë‹¤ìŒë‚ ì„ ìœ„í•´ ì´ˆê¸°í™”(í•„ìš” ì‹œ í˜¸ì¶œ)
     public void ClearResolvedCache()
     {
         _resolved.Clear();
@@ -66,7 +89,7 @@ public class SettlementReportBuilder : MonoBehaviour
         if (settlement.IsRiotOver())
         {
             Debug.Log("[GameOver] Riot occurred");
-            // ¿£µù Æ®¸®°Å
+            // ì—”ë”© íŠ¸ë¦¬ê±°
         }
     }
 

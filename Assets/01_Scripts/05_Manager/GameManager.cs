@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
     public event Action<GameEndingType> OnGameEnded; // 게임엔딩 이벤트
 
     [Header("순찰 페이즈 타임어택")]
-    [SerializeField] private float patrolDurationSeconds = 480f; // 480초
+    [SerializeField] private float patrolDurationSeconds = 4f; // 480초
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
     private void Awake()
@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour
     }
     public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
     {
-        ChangePhase(GamePhase.Standby);
+        StartCoroutine(StartFirstPhase());
     }
     private void OnEnable()
     {
@@ -63,16 +63,19 @@ public class GameManager : MonoBehaviour
         switch (newPhase)
         {
             case GamePhase.Standby: 
-                OnEnterStandby(); 
+                OnEnterStandby();
+                StartCoroutine(WaitAndChangePhase(GamePhase.Briefing, 1.5f)); // 1.5초 후 자동으로 브리핑페이즈로 전환
                 break;
             case GamePhase.Briefing:
                 OnEnterBriefing();
+                StartCoroutine(WaitAndChangePhase(GamePhase.Patrol, 1.5f));
                 break;
             case GamePhase.Patrol:
                 OnEnterPatrol();
                 break;
             case GamePhase.Settlement:
                 OnEnterSettlement();
+                StartCoroutine(WaitAndChangePhase(GamePhase.OffDuty, 1.5f));
                 break;
             case GamePhase.OffDuty:
                 OnEnterOffDuty();
@@ -135,5 +138,16 @@ public class GameManager : MonoBehaviour
             patrolDurationSeconds = 0;
             ChangePhase(GamePhase.Settlement);
         }
+    }
+    private IEnumerator StartFirstPhase() // 다른 매니저들 초기화 기다림
+    {
+        yield return null;
+        ChangePhase(GamePhase.Standby);
+    }
+
+    private IEnumerator WaitAndChangePhase(GamePhase nextPhase, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ChangePhase(nextPhase);
     }
 }

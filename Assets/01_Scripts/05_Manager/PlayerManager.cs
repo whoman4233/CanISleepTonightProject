@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,27 @@ public class PlayerManager : MonoBehaviour
     public string CurrentCellID { get; private set; } = string.Empty; // ID = 감방 id, 플레이어가 어느 감방에 있는지, 감방id에 따라 int나 string로 변경
     public bool IsObserving { get; private set; } = false;      // 관찰 중 상태
     public bool IsEngagingInAction { get; private set; } = false; // 진압 액션 중
+
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private void Awake()
+    {
+        _onPhaseChanged = e =>
+        {
+            if (e.Phase == GamePhase.Standby)
+            {
+                ResetDailyRecoed();
+            }
+        };
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onPhaseChanged);
+    }
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onPhaseChanged);
+    }
 
     public void Initialize()
     {

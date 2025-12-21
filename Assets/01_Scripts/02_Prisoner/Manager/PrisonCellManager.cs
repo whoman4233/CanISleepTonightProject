@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -23,6 +23,7 @@ public class PrisonCellManager : MonoBehaviour
     private readonly Dictionary<string, CellRuntime> _byId = new();
 
     public event Action<string, bool> OnNoiseChanged; // (cellId, isNoisy)
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
     private void Awake()
     {
@@ -30,6 +31,24 @@ public class PrisonCellManager : MonoBehaviour
         {
             BuildCellsIfNeeded();
         }
+        _onPhaseChanged = e =>
+        {
+            if (e.Phase == GamePhase.Standby)
+            {
+                RunStandbySetup();
+                Debug.Log("PrisonCellManagerì˜ BuildCellsIfNeeded ì™„ë£Œ");
+            }
+        };
+
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onPhaseChanged);
+    }
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onPhaseChanged);
     }
 
     public void BuildCellsIfNeeded()
@@ -110,13 +129,13 @@ public class PrisonCellManager : MonoBehaviour
 
         cell.IsInspectingNow = false;
         cell.IsSuppressing = false;
-        cell.State = CellState.Inactive; // "¿À´Ã Ã³¸® ³¡"ÀÌ¹Ç·Î ºñÈ°¼ºÀ¸·Î ³»·Á¹ö¸²
+        cell.State = CellState.Inactive; // "ì˜¤ëŠ˜ ì²˜ë¦¬ ë"ì´ë¯€ë¡œ ë¹„í™œì„±ìœ¼ë¡œ ë‚´ë ¤ë²„ë¦¼
     }
 
     public void ForceReleaseInspectingOnly(string cellId)
     {
-        // ½Ã°£ÃÊ°ú ±ÔÄ¢: Exit È£Ãâ X, ¿Ï·áÃ³¸® X.
-        // Inspecting/Suppressing ¶ô¸¸ Ç®°í ActiveNoisy À¯Áö.
+        // ì‹œê°„ì´ˆê³¼ ê·œì¹™: Exit í˜¸ì¶œ X, ì™„ë£Œì²˜ë¦¬ X.
+        // Inspecting/Suppressing ë½ë§Œ í’€ê³  ActiveNoisy ìœ ì§€.
         var cell = GetCell(cellId);
         if (cell == null) return;
 
@@ -150,17 +169,17 @@ public class PrisonCellManager : MonoBehaviour
         cell.WasResolvedToday = true;
         cell.DidSuppress = didSuppress;
 
-        // Á¡°Ë ¿Ï·á ½Ã ¼ÒÀ½Àº ²¨Áü(ÆÄµ¿/Wave Á¦°Å Æ®¸®°Å)
+        // ì ê²€ ì™„ë£Œ ì‹œ ì†ŒìŒì€ êº¼ì§(íŒŒë™/Wave ì œê±° íŠ¸ë¦¬ê±°)
         cell.IsNoisy = false;
 
-        // ¿À´Ã ÀçÀÔÀå ±İÁö(¹® Àá±İ)
+        // ì˜¤ëŠ˜ ì¬ì…ì¥ ê¸ˆì§€(ë¬¸ ì ê¸ˆ)
         cell.IsLockedForDay = true;
 
         cell.IsInspectingNow = false;
         cell.IsSuppressing = false;
         cell.State = CellState.LockedForDay;
 
-        // ÇÊ¿äÇÏ¸é ¿©±â¼­ OnNoiseChanged(cellId,false) °°Àº ÀÌº¥Æ®µµ ¹ßÇà
+        // í•„ìš”í•˜ë©´ ì—¬ê¸°ì„œ OnNoiseChanged(cellId,false) ê°™ì€ ì´ë²¤íŠ¸ë„ ë°œí–‰
     }
 
 }

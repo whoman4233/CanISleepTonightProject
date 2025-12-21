@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -26,6 +27,29 @@ public class SettlementManager : MonoBehaviour
     [SerializeField] private int normalSuppressFailDelta = +10;
 
     public int RiotGauge => riotGauge;
+
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+
+    private void Awake()
+    {
+        _onPhaseChanged = e =>
+        {
+            if (e.Phase == GamePhase.Standby)
+            {
+                ApplyDailyBaseIncrease();
+                Debug.Log("SettlementManager의 ApplyDailyBaseIncrease 완료");
+            }
+        };
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onPhaseChanged);
+    }
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onPhaseChanged);
+    }
 
     /// <summary>
     /// 하루 정산 적용
