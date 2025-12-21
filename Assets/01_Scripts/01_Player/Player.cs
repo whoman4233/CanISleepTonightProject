@@ -27,12 +27,26 @@ public class Player : MonoBehaviour
     public bool JumpLocked { get; set; }
     public bool AttackPressedThisFrame { get; private set; }
 
+    // ---- Crouch ----
+    public bool IsCrouching { get; set; }                  // Animator Bool과 동기화 용도
+    public bool CrouchToggleRequested { get; set; }        // Ctrl 토글 요청
+
+    // CrouchDown / StandUp 재생 중(=전환 애니메이션 중)
+    public bool IsCrouchTransitioning { get; private set; }
+
+    // 앉은 자세 유지 중(=CrouchLocomotion 상태 유지 의미)
+    public bool IsCrouchMode { get; private set; }
+
+    // 점프는 "전환 중" + "앉은 자세 유지" 둘 다 막아야 함
+    public bool IsJumpBlockedByCrouch => IsCrouchTransitioning || IsCrouchMode;
+
     private PlayerInputs _inputs;
     private PlayerInputs.PlayerActions _playerActions;
     public PlayerInputs Inputs => _inputs;
 
-    private bool _isInspectionLocked; // Inspection(상세보기) 중 플레이어 입력 차단 플래그
+    private bool _isInspectionLocked;
     private InspectionManager _inspectionManager;
+
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -63,21 +77,21 @@ public class Player : MonoBehaviour
             _inspectionManager.Initialize(_inputs);
         }
     }
+
     private void OnEnable()
     {
         _inputs.Enable();
         _inputs.Player.Enable();
         _inputs.Inspection.Disable();
 
-        //상세보기 진입 구독
         EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted);
         EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
     }
+
     private void OnDisable()
     {
         _inputs.Disable();
 
-        //상세보기 진입 구독해지
         EventBus.Unsubscribe<InspectionStartedEvent>(OnInspectionStarted);
         EventBus.Unsubscribe<InspectionEndedEvent>(OnInspectionEnded);
     }
@@ -91,17 +105,17 @@ public class Player : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
 
-        // 시작 무기 장착
         if (weaponHandler != null)
             weaponHandler.EquipOnStart();
 
         StateMachine.ChangeState(StateMachine.Locomotion);
     }
+
     public PlayerWeaponHandler WeaponHandler => weaponHandler;
 
     private void Update()
     {
-        if (_isInspectionLocked) // 상세보기 진입시 플레이어 입력 잠그기
+        if (_isInspectionLocked)
             return;
 
         ReadInputs();
@@ -112,7 +126,7 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_isInspectionLocked) // 상세보기 진입시 플레이어 입력 잠그기
+        if (_isInspectionLocked)
             return;
 
         StateMachine.FixedTick(Time.fixedDeltaTime);
@@ -120,6 +134,7 @@ public class Player : MonoBehaviour
 
     private void ReadInputs()
     {
+        // 기본 입력 읽기
         MoveInput = _playerActions.Walk.ReadValue<Vector2>();
         LookInput = _playerActions.Look.ReadValue<Vector2>();
         RunHeld = _playerActions.Run.IsPressed();
@@ -127,15 +142,83 @@ public class Player : MonoBehaviour
         JumpPressedThisFrame = _playerActions.Jump.WasPressedThisFrame();
         AttackPressedThisFrame = _playerActions.Attack.WasPressedThisFrame();
         Interaction = _playerActions.Interaction.WasPressedThisFrame();
+        CrouchToggleRequested = _playerActions.Crouch.WasPressedThisFrame();
+
+        // 앉기 시작~서기 끝까지 점프 차단
+        if (IsJumpBlockedByCrouch)
+            JumpPressedThisFrame = false;
+
+        // 전환 애니메이션 중 이동/공격/점프 잠금
+        if (IsCrouchTransitioning)
+        {
+            MoveInput = Vector2.zero;
+            AttackPressedThisFrame = false;
+            CrouchToggleRequested = false;
+        }
     }
 
-    private void OnInspectionStarted(InspectionStartedEvent evt) // 상세보기 이벤트 진입 핸들러
+    private void ResetFrameInputs()
+    {
+        JumpPressedThisFrame = false;
+        AttackPressedThisFrame = false;
+        Interaction = false;
+        CrouchToggleRequested = false;
+    }
+
+    // Locomotion에서 "트리거 쏘는 순간" 전환 잠금을 즉시 시작하기 위한 함수
+    public void BeginCrouchTransitionLock()
+    {
+        IsCrouchTransitioning = true;
+        ResetFrameInputs();
+    }
+
+    // ---- Animation Events ----
+    public void AE_BeginCrouchTransition()
+    {
+        IsCrouchTransitioning = true;
+    }
+
+    public void AE_EndCrouchTransition()
+    {
+        IsCrouchTransitioning = false;
+    }
+
+    public void AE_EndCrouchDown()
+    {
+        IsCrouchMode = true;
+    }
+
+    public void AE_EndStandUp()
+    {
+        IsCrouchMode = false;
+    }
+    public void ForceClearCrouchTransitionLock()
+    {
+        // 전환 애니가 공중 전환으로 끊겼을 때를 대비한 안전장치
+        IsCrouchTransitioning = false;
+        CrouchToggleRequested = false;
+    }
+    public void ForceResetCrouchToStanding()
+    {
+        // 앉기 관련 상태를 "서있는 기본 상태"로 강제 동기화
+        IsCrouchTransitioning = false;
+        IsCrouchMode = false;
+        CrouchToggleRequested = false;
+
+        IsCrouching = false;
+
+        if (Animator != null)
+        {
+            Animator.SetBool(AnimationData.IsCrouchingParameterHash, false);
+        }
+    }
+    private void OnInspectionStarted(InspectionStartedEvent evt)
     {
         _isInspectionLocked = true;
         _inputs.Player.Disable();
     }
 
-    private void OnInspectionEnded(InspectionEndedEvent evt) // 상세보기 이벤트 종료 핸들러
+    private void OnInspectionEnded(InspectionEndedEvent evt)
     {
         _isInspectionLocked = false;
         _inputs.Player.Enable();

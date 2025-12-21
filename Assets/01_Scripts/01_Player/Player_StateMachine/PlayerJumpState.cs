@@ -10,6 +10,8 @@ public sealed class PlayerJumpState : PlayerState
     private const float FallEnterHeightThreshold = 2.5f;
     public override void Enter()
     {
+        P.ForceClearCrouchTransitionLock();
+
         _timer = 0f;
 
         // 점프로 시작했을 때만 점프 애니/점프 힘 적용

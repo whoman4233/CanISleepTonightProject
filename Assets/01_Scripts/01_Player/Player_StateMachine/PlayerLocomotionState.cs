@@ -10,6 +10,31 @@ public sealed class PlayerLocomotionState : PlayerState
 
     public override void Tick(float dt)
     {
+        // 앉기 토글 처리 (Ctrl)
+        if (P.CrouchToggleRequested)
+        {
+            P.CrouchToggleRequested = false;
+
+            // 전환중이면 추가 토글 금지
+            if (P.IsCrouchTransitioning)
+                return;
+
+            // 공중에서는 토글/잠금 금지
+            if (!IsGrounded)
+                return;
+
+            // 이제부터는 "정상적으로 트리거를 쏠 수 있는 상황"이므로 잠금 시작
+            P.BeginCrouchTransitionLock();
+
+            P.IsCrouching = !P.IsCrouching;
+            P.Animator.SetBool(P.AnimationData.IsCrouchingParameterHash, P.IsCrouching);
+
+            if (P.IsCrouching)
+                P.Animator.SetTrigger(P.AnimationData.CrouchDownParameterHash);
+            else
+                P.Animator.SetTrigger(P.AnimationData.StandUpParameterHash);
+        }
+
         if (P.Interaction)
         {
             var interactor = P.GetComponent<PlayerInteractor>();
@@ -23,7 +48,8 @@ public sealed class PlayerLocomotionState : PlayerState
             return;
         }
 
-        if (P.JumpPressedThisFrame && IsGrounded)
+        // 앉기/서기 중에는 점프 금지
+        if (!P.IsJumpBlockedByCrouch && P.JumpPressedThisFrame && IsGrounded)
         {
             P.JumpLocked = true;
             P.AirFromJump = true;
@@ -45,7 +71,14 @@ public sealed class PlayerLocomotionState : PlayerState
         }
 
         float inputMag = Mathf.Clamp01(P.MoveInput.magnitude);
-        float speedScale = P.RunHeld ? 1f : 0.5f;
+
+        // 달리기 입력은 앉아있으면 무시
+        bool runAllowed = P.RunHeld && !P.IsCrouchMode;
+
+        float speedScale = P.IsCrouchMode
+            ? P.Data.GroundData.CrouchWalkSpeedModifier
+            : (runAllowed ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier);
+
         float speedParam = inputMag * speedScale;
 
         P.Animator.SetFloat(P.AnimationData.SpeedParameterHash, speedParam, SpeedDampTime, dt);
@@ -79,22 +112,36 @@ public sealed class PlayerLocomotionState : PlayerState
             Vector3 moveDirWorld = (forward * input.z + right * input.x).normalized;
 
             float baseSpeed = P.Data.GroundData.BaseSpeed;
-            float modifier = P.RunHeld ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier;
+            bool runAllowed = P.RunHeld && !P.IsCrouchMode;
+
+            float modifier = P.IsCrouchMode
+                ? P.Data.GroundData.CrouchWalkSpeedModifier
+                : (runAllowed ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier);
+
             float moveSpeed = baseSpeed * modifier;
 
             horizontalMove = moveDirWorld * moveSpeed * fdt;
 
-            // 애니메이션용 방향: 플레이어 로컬 기준으로 변환해서 MoveX/MoveY로 보냄
             Vector3 moveDirLocal = P.transform.InverseTransformDirection(moveDirWorld);
-            moveX = moveDirLocal.x;
-            moveY = moveDirLocal.z;
+            moveX = Mathf.Clamp(moveDirLocal.x, -1f, 1f);
+            moveY = Mathf.Clamp(moveDirLocal.z, -1f, 1f);
         }
 
-        // LocomotionState에서 회전은 방지
         P.Controller.Move(horizontalMove + verticalMove);
 
-        // 애니메이터 방향 파라미터 업데이트
         P.Animator.SetFloat(P.AnimationData.MoveXParameterHash, moveX, MoveDampTime, fdt);
         P.Animator.SetFloat(P.AnimationData.MoveYParameterHash, moveY, MoveDampTime, fdt);
+
+        float targetHeight = P.IsCrouchMode ? P.Data.GroundData.CrouchHeight : P.Data.GroundData.StandingHeight;
+        float targetCenterY = P.IsCrouchMode ? P.Data.GroundData.CrouchCenterY : P.Data.GroundData.StandingCenterY;
+
+        float lerpSpeed = P.Data.GroundData.ColliderLerpSpeed;
+        float t = 1f - Mathf.Exp(-lerpSpeed * fdt);
+
+        P.Controller.height = Mathf.Lerp(P.Controller.height, targetHeight, t);
+
+        Vector3 c = P.Controller.center;
+        c.y = Mathf.Lerp(c.y, targetCenterY, t);
+        P.Controller.center = c;
     }
 }
