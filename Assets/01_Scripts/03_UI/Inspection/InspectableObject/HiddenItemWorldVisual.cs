@@ -2,28 +2,29 @@
 
 public class HiddenItemWorldVisual : MonoBehaviour
 {
-    [SerializeField] private HiddenItemHolder itemHolder;
-    [SerializeField] private HiddenItemStateSO targetItem;
+    [SerializeField] private HiddenItemStateSO itemDefinition;
     [SerializeField] private GameObject worldVisual;
+
+    private HiddenItemStateSO runtimeItem;
 
     private void Start()
     {
-        if (itemHolder == null || targetItem == null)
-            return;
+        var holder = GetComponentInParent<HiddenItemHolder>();
+        runtimeItem = holder.GetRuntimeItem(itemDefinition);
 
-        targetItem.OnFoundStateChanged += OnFoundChanged;
-        OnFoundChanged(targetItem.IsFound);
+        runtimeItem.OnFoundStateChanged += OnFoundChanged;
+        OnFoundChanged(runtimeItem.IsFound);
     }
 
     private void OnDestroy()
     {
-        if (targetItem != null)
-            targetItem.OnFoundStateChanged -= OnFoundChanged;
+        if (runtimeItem != null)
+            runtimeItem.OnFoundStateChanged -= OnFoundChanged;
     }
 
     private void OnFoundChanged(bool isFound)
     {
-        if (worldVisual != null)
-            worldVisual.SetActive(!isFound);
+        worldVisual.SetActive(!isFound);
     }
 }
+
