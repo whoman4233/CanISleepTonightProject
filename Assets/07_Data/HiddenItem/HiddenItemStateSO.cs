@@ -1,23 +1,34 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using System;
 
 public abstract class HiddenItemStateSO : ScriptableObject
 {
-    [SerializeField] protected bool isFound;
+    [SerializeField] private bool isFound;
     public bool IsFound => isFound;
 
     public event Action<bool> OnFoundStateChanged;
 
+    // 자식이 읽을 필요가 있으면 이걸 사용
+    protected bool IsFoundInternal => isFound;
+
+    protected void RaiseFoundChanged()
+    {
+        OnFoundStateChanged?.Invoke(isFound);
+    }
+
     public virtual void OnFound()
     {
-        if (isFound) return;
+        if (isFound)
+            return;
+
         isFound = true;
-        OnFoundStateChanged?.Invoke(isFound);
+        RaiseFoundChanged();
     }
 
     public virtual void ResetState()
     {
         isFound = false;
-        OnFoundStateChanged?.Invoke(isFound);
+        RaiseFoundChanged();
     }
 }
+

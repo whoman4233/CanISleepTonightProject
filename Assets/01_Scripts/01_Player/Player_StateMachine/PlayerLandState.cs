@@ -19,6 +19,8 @@ public sealed class PlayerLandState : PlayerState
         P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, false);
 
         P.Animator.SetTrigger(P.AnimationData.LandParameterHash);
+
+        P.Sfx?.PlayLandSfx();
     }
 
     public override void HandleInput()

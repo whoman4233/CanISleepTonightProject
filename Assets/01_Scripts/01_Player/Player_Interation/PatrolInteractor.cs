@@ -16,10 +16,10 @@ public class PatrolInteractor : MonoBehaviour
 
     private void Start()
     {
-        GameContext context = GameContext.Instance;
-        playerManager = context.Get<PlayerManager>();
-        cellManager = context.Get<PrisonCellManager>();
-        gameManager = context.Get<GameManager>();
+        //GameContext context = GameContext.Instance;
+        //playerManager = context.Get<PlayerManager>();
+        //cellManager = context.Get<PrisonCellManager>();
+        //gameManager = context.Get<GameManager>();
     }
 
     private void Update()

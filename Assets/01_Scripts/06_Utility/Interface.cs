@@ -20,3 +20,9 @@ public interface IInspectionView
 {
     void Bind(IInspectable inspectable);
 }
+
+//상세보기 시 InspectTarget 슬롯ID 전달용
+public interface IHiddenItemInteractable
+{
+    void TryRevealItem(HiddenItemStateSO itemDefinition);
+}
