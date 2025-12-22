@@ -7,9 +7,12 @@ public sealed class PlayerSfxController : MonoBehaviour
     [SerializeField] private AudioClip walkLoopClip;
     [SerializeField] private AudioClip runLoopClip;
 
-    [Header("Jump / Land Clips")]
+    [Header("Jump / Lands")]
     [SerializeField] private AudioClip jumpClip;
     [SerializeField] private AudioClip landClip;
+
+    [Header("Attack Swing")]
+    [SerializeField] private AudioClip[] swingClips;
 
     // ==============================
     // 내부 설정값
@@ -22,6 +25,10 @@ public sealed class PlayerSfxController : MonoBehaviour
     private const float LandVolume = 0.95f;
 
     private const float MinMoveInputSqr = 0.01f;
+
+    private const float SwingVolume = 0.85f;
+    private int _lastSwingIndex = -1;
+
 
     // Jump / Land 전용 OneShot AudioSource
     private AudioSource _oneShotSource;
@@ -101,5 +108,31 @@ public sealed class PlayerSfxController : MonoBehaviour
 
         footstepLoopSource.clip = targetClip;
         footstepLoopSource.Play();
+    }
+
+    public void PlayAttackSwingSfx()
+    {
+        if (_oneShotSource == null) return;
+        if (swingClips == null || swingClips.Length == 0) return;
+
+        int index = Random.Range(0, swingClips.Length);
+
+        // 같은 소리 연속 방지(클립이 2개 이상일 때만 의미)
+        if (swingClips.Length > 1)
+        {
+            int safety = 0;
+            while (index == _lastSwingIndex && safety < 10)
+            {
+                index = Random.Range(0, swingClips.Length);
+                safety++;
+            }
+        }
+
+        _lastSwingIndex = index;
+
+        AudioClip clip = swingClips[index];
+        if (clip == null) return;
+
+        _oneShotSource.PlayOneShot(clip, SwingVolume);
     }
 }
