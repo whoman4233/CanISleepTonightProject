@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(menuName = "HiddenItem/KnifeState")]
-public class KnifeStateSO : HiddenItemStateSO
+[CreateAssetMenu(menuName = "HiddenItem/DefinitionSO")]
+public class HiddenItemDefinitionSO : HiddenItemStateSO
 {
     public override void OnFound()
     {
