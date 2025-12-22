@@ -5,10 +5,13 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     [Header("페이즈 상태")]
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
+    public int CurrentDay => currentDay;
 
     private Action<RequestPhaseChangeEvent> _requestPhaseChange;
     private Action<EndingConditionMetEvent> _onEndingConditionMet;
@@ -25,6 +28,16 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); 
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
         _requestPhaseChange = (e) => ChangePhase(e.TargetPhase); // 페이즈 변경 요청시 바로 변경
         _onEndingConditionMet = e => // 엔딩 조건 충족하면 엔딩페이즈 이동 및 엔딩타입 받아옴
         {
