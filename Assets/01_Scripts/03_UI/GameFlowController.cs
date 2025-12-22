@@ -35,7 +35,7 @@ public class GameFlowController : MonoBehaviour
 
     private void OnStartNewGame(RequestStartNewGameEvent e)
     {
-        SceneManager.LoadScene("PlayScene");
+        SceneManager.LoadScene("02_PlayScene");
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

@@ -47,12 +47,18 @@ public class GameManager : MonoBehaviour
             finalEnding = e.EndingType;
             ChangePhase(GamePhase.Ending);
         };
-        StartCoroutine(StartFirstPhase()); // 디버그용
+
     }
     //public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
     //{
     //    StartCoroutine(StartFirstPhase());
     //}
+
+    private void Start()
+    {
+        // IntroScene에서 최초 1회 UI 동기화용
+        EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
+    }
     private void OnEnable()
     {
         EventBus.Subscribe(_requestPhaseChange);  
