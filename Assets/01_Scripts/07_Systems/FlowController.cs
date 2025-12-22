@@ -35,19 +35,20 @@ public class FlowController : MonoBehaviour
 
     private void OnStartNewGame(RequestStartNewGameEvent e)
     {
-        SceneManager.LoadScene("02_PlayScene");
+        SceneManager.LoadScene("02_PlayScene", LoadSceneMode.Additive);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name != "PlayScene")
             return;
+        SceneManager.SetActiveScene(scene);
 
-        var gm = FindObjectOfType<GameManager>();
-        if (gm == null)
+        // IntroScene 명시적 언로드
+        var intro = SceneManager.GetSceneByName("01_IntroScene");
+        if (intro.isLoaded)
         {
-            Debug.LogError("[GameFlowController] GameManager not found");
-            return;
+            SceneManager.UnloadSceneAsync(intro);
         }
 
         // PlayScene 시작 시 Standby로 재진입
