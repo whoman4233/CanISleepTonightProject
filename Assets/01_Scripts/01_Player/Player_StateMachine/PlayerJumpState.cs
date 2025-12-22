@@ -18,6 +18,7 @@ public sealed class PlayerJumpState : PlayerState
         if (P.AirFromJump)
         {
             P.Animator.SetTrigger(P.AnimationData.JumpParameterHash);
+            P.Sfx?.PlayJumpSfx();
             if (P.ForceReceiver != null)
                 P.ForceReceiver.SetJumpVelocity(P.Data.JumpData.JumpForce);
         }
