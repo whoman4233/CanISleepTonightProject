@@ -15,6 +15,9 @@ public class InspectionStateMachine : MonoBehaviour
     public event Action<string> OnSuppressStarted;                     // cellId
     public event Action<string> OnSuppressSuccess;                     // cellId
 
+    private bool _isSuppressionCleared; // 현재 방의 진압 완료 여부
+    public bool IsSuppressionCleared => _isSuppressionCleared;
+
     private void Awake()
     {
         if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
@@ -41,6 +44,8 @@ public class InspectionStateMachine : MonoBehaviour
         CurrentInspectingCellId = cellId;
 
         OnEnteredCell?.Invoke(cellId);
+
+        _isSuppressionCleared = false; // 새 방에 들어갔으니 진압 상태 초기화
         return true;
     }
 
@@ -89,27 +94,18 @@ public class InspectionStateMachine : MonoBehaviour
         return true;
     }
 
-    // 퇴장 요청: 규칙에 따라 허용/차단
+    // CellDoorInteractable이 문을 닫으려 할 때 호출하는 함수
     public bool RequestExitCell(string cellId)
     {
-        var cell = GetCurrentCellOrNull(cellId);
-        if (cell == null) return false;
-
-        // 진압 중이면 퇴장 잠김 (성공 전까지)
-        if (cell.State == CellState.Suppressing)
+        // 기획서 반영: 수상한 방인데 아직 진압 플래그가 안 켜졌다면 false 반환
+        var cell = cellManager.GetCell(cellId);
+        if (cell.IsSuspicious && !_isSuppressionCleared)
         {
-            if (!cell.SuppressSuccess)
-            {
-                OnExitBlocked?.Invoke(cellId);
-                return false;
-            }
-            // 성공이면 퇴장 허용 (이 순간 Resolved 처리)
-            Resolve(cell, didSuppress: true);
-            return true;
+            Debug.LogWarning("아직 죄수가 제압되지 않아 문을 닫을 수 없습니다.");
+            return false;
         }
 
-        // Inspecting 상태에서 경고/무시로 나가는 경우: 즉시 Resolved
-        Resolve(cell, didSuppress: false);
+        // 진압이 되었거나, 처음부터 정상이었던 방이면 true 반환
         return true;
     }
 
@@ -154,18 +150,24 @@ public class InspectionStateMachine : MonoBehaviour
 
     private void OnEnable()
     {
-        PrisonerEventBus.OnAllPrisonersDown += HandleAllDown;
+        PrisonerEventBus.OnPrisonerDown += HandlePrisonerDown;
     }
 
     private void OnDisable()
     {
-        PrisonerEventBus.OnAllPrisonersDown -= HandleAllDown;
+        PrisonerEventBus.OnPrisonerDown -= HandlePrisonerDown;
     }
 
-    private void HandleAllDown(string cellId)
+    private void HandlePrisonerDown(string instanceId)
     {
-        if (CurrentInspectingCellId != cellId) return;
-        NotifySuppressSuccess(cellId);
+        // 현재 점검 중인 방의 죄수가 맞는지 확인 후 플래그 ON
+        // instanceId가 "C_1F_06_..." 형식이니 앞부분만 체크
+        if (instanceId.StartsWith(CurrentInspectingCellId))
+        {
+            _isSuppressionCleared = true;
+            Debug.Log($"[ISSM] {CurrentInspectingCellId} 진압 완료 확인. 퇴장 가능.");
+        }
     }
+
 
 }

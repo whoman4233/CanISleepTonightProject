@@ -48,8 +48,6 @@ public class PrisonerActor : MonoBehaviour
         // 1. 이벤트 버스 전파 (UI나 사운드 매니저가 들음)
         PrisonerEventBus.RaisePrisonerHit(InstanceId, dmg);
 
-        Debug.Log("Hit");
-
         if (Hp <= 0)
         {
             Hp = 0;

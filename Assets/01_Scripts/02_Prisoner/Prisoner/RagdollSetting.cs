@@ -7,11 +7,10 @@ public sealed class RagdollSetting : MonoBehaviour
     [SerializeField] private Rigidbody mainRigidbody;
     [SerializeField] private Collider mainCollider;
 
-    [Header("Hit Sounds")]
-    [SerializeField] private AudioClip[] hittingSounds;
-
     [Header("Disable On Ragdoll (Optional)")]
     [SerializeField] private Behaviour[] disableBehaviours;
+
+    private PrisonerSfxController _prisonerSfx;
 
     // =========================
     // Settings (Script Only)
@@ -43,6 +42,10 @@ public sealed class RagdollSetting : MonoBehaviour
     private Collider[] ragdollColliders;
     private bool isRagdoll;
 
+    // 여러 콜라이더가 한 프레임에 연타로 들어오는 경우를 방지
+    private const float HitSfxCooldown = 0.05f;
+    private float _nextHitSfxTime;
+
     private void Awake()
     {
         if (animator == null) animator = GetComponent<Animator>();
@@ -53,11 +56,13 @@ public sealed class RagdollSetting : MonoBehaviour
         ragdollColliders = GetComponentsInChildren<Collider>(includeInactive: true);
 
         SetRagdollActive(false);
+
+        _prisonerSfx = GetComponent<PrisonerSfxController>();
     }
 
     public void ApplyImpact(Vector3 hitPoint, Vector3 direction, float strength)
     {
-        PlayRandomHittingSFX();
+        TryPlayHitSfxOnce();
 
         if (!isRagdoll)
             SetRagdollActive(true);
@@ -78,7 +83,16 @@ public sealed class RagdollSetting : MonoBehaviour
         ApplySpreadForce(hitPoint, forceDirection, forceMagnitude);
         ApplyTorque(hitPoint, forceDirection, forceMagnitude);
     }
+    private void TryPlayHitSfxOnce()
+    {
+        if (_prisonerSfx == null) return;
 
+        // (선택) 같은 순간에 여러 번 들어오는 충돌로 소리 연타 방지
+        if (Time.time < _nextHitSfxTime) return;
+        _nextHitSfxTime = Time.time + HitSfxCooldown;
+
+        _prisonerSfx.PlayRandomHit();
+    }
     private void SetRagdollActive(bool enable)
     {
         isRagdoll = enable;
@@ -188,11 +202,5 @@ public sealed class RagdollSetting : MonoBehaviour
 
         target.WakeUp();
         target.AddTorque(torqueAxis * torqueAmount, ImpactForceMode);
-    }
-
-    private void PlayRandomHittingSFX()
-    {
-        if (hittingSounds == null || hittingSounds.Length == 0) return;
-        // AudioManager 연동은 프로젝트 방식대로
     }
 }

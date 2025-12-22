@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 {
@@ -6,10 +6,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     {
         public const string OpenTrigger = "Open";
         public const string CloseTrigger = "Close";
-        public const string LockedTrigger = "Locked"; // ¼±ÅÃ(¾øÀ¸¸é Áö¿öµµ µÊ)
+        public const string LockedTrigger = "Locked";
     }
 
     [Header("Identity")]
+    [Tooltip("ë¹„ì–´ìˆìœ¼ë©´ ì¼ë°˜ ë¬¸(ë‹¨ìˆœ ê°œí)ìœ¼ë¡œ ë™ì‘í•©ë‹ˆë‹¤.")]
     [SerializeField] private string cellId;
 
     [Header("Refs")]
@@ -20,15 +21,35 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Debug")]
     [SerializeField] private bool verboseLog = true;
 
+    // cellIdê°€ ì—†ëŠ” ì¼ë°˜ ë¬¸ì¼ ë•Œë§Œ ì‚¬ìš©í•˜ëŠ” ë‚´ë¶€ ìƒíƒœê°’
+    private bool _isSimpleDoorOpen = false;
+
     public void Interact(Player player)
     {
         if (!Validate()) return;
 
+        // 1. ì¼ë°˜ ë¬¸ ë¡œì§ (cellIdê°€ ì—†ëŠ” ê²½ìš°)
+        if (string.IsNullOrWhiteSpace(cellId))
+        {
+            if (!_isSimpleDoorOpen)
+            {
+                PlayOpen();
+                _isSimpleDoorOpen = true;
+            }
+            else
+            {
+                PlayClose();
+                _isSimpleDoorOpen = false;
+            }
+            return;
+        }
+
+        // 2. ê°ë°© ì „ìš© ë¡œì§ (cellIdê°€ ìˆëŠ” ê²½ìš°)
         bool isInspectingThisCell = inspection.CurrentInspectingCellId == cellId;
 
         if (!isInspectingThisCell)
         {
-            // "¹® ¿­°í µé¾î°¡±â" ½Ãµµ = Á¡°Ë ½ÃÀÛ ½Ãµµ
+            // [ë¬¸ ì—´ê¸°] ì ê²€ ì‹œì‘ ì‹œë„
             if (TryEnter())
                 PlayOpen();
             else
@@ -36,53 +57,35 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // "¹® ¿­°í ³ª°¡±â" ½Ãµµ = Á¡°Ë Á¾·á(ÅğÀå) ½Ãµµ
+            // [ë¬¸ ë‹«ê¸°] ì ê²€ ì¢…ë£Œ ì‹œë„
             if (TryExit())
+            {
                 PlayClose();
+                bool didSuppress = inspection.IsSuppressionCleared;
+                cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
+
+                if (verboseLog) Debug.Log($"[Door] {cellId} closed and locked for the day.");
+            }
             else
-                PlayLocked(); // Áø¾Ğ Áß ¼º°ø Àü µî
+            {
+                PlayLocked();
+            }
         }
     }
 
     private bool TryEnter()
     {
         var cell = cellManager.GetCell(cellId);
-        if (cell == null)
-        {
-            if (verboseLog) Debug.LogWarning($"[Door] CellRuntime not found cell={cellId}", this);
-            return false;
-        }
+        if (cell == null) return false;
 
-        // ¿À´Ã ÀçÀÔÀå ±İÁö
-        if (cell.IsLockedForDay)
-        {
-            if (verboseLog) Debug.Log($"[Door] Enter blocked (LockedForDay) cell={cellId}", this);
-            return false;
-        }
+        if (cell.IsLockedForDay) return false;
 
-        // ·ê Ã¼Å© Æ÷ÇÔ: È°¼º+¼ÒÀ½+µ¿½ÃÁ¡°Ë 1°³ Á¦ÇÑ
-        bool ok = inspection.TryEnterCell(cellId);
-        if (!ok)
-        {
-            if (verboseLog) Debug.Log($"[Door] TryEnter failed cell={cellId}", this);
-            return false;
-        }
-
-        if (verboseLog) Debug.Log($"[Door] Enter SUCCESS cell={cellId}", this);
-        return true;
+        return inspection.TryEnterCell(cellId);
     }
 
     private bool TryExit()
     {
-        bool ok = inspection.RequestExitCell(cellId); // Áø¾Ğ Áß ¼º°ø ÀüÀÌ¸é false
-        if (!ok)
-        {
-            if (verboseLog) Debug.Log($"[Door] Exit blocked cell={cellId}", this);
-            return false;
-        }
-
-        if (verboseLog) Debug.Log($"[Door] Exit SUCCESS cell={cellId}", this);
-        return true;
+        return inspection.RequestExitCell(cellId);
     }
 
     private void PlayOpen()
@@ -102,34 +105,38 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private void PlayLocked()
     {
         if (doorAnimator == null) return;
-        // Àá±è ¿¬ÃâÀÌ ¾øÀ¸¸é ±×³É ¾Æ¹«°Íµµ ¾È ÇØµµ µÊ
         if (HasParam(AnimParams.LockedTrigger))
             doorAnimator.SetTrigger(AnimParams.LockedTrigger);
     }
 
     private bool Validate()
     {
-        if (string.IsNullOrWhiteSpace(cellId))
+        // AnimatorëŠ” ì–´ë–¤ ìƒí™©ì—ì„œë„ í•„ìˆ˜ì…ë‹ˆë‹¤.
+        if (doorAnimator == null)
         {
-            Debug.LogWarning("[Door] cellId empty.", this);
+            Debug.LogError("[Door] Animator is missing.", this);
             return false;
         }
 
-        if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
-        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
-
-        if (inspection == null || cellManager == null)
+        // cellIdê°€ ìˆì„ ë•Œë§Œ Managerì™€ StateMachineì´ í•„ìˆ˜ì…ë‹ˆë‹¤.
+        if (!string.IsNullOrWhiteSpace(cellId))
         {
-            Debug.LogWarning("[Door] Missing refs (inspection/cellManager).", this);
-            return false;
+            if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
+            if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+
+            if (inspection == null || cellManager == null)
+            {
+                Debug.LogWarning("[Door] Missing refs for cell logic.", this);
+                return false;
+            }
         }
+
         return true;
     }
 
     private bool HasParam(string name)
     {
-        // Animator ÆÄ¶ó¹ÌÅÍ Á¸Àç Ã¼Å©´Â ºñ¿ëÀÌ ÀÖ¾î¼­ MVP¿¡¼± »ı·«ÇØµµ µË´Ï´Ù.
-        // ÇÊ¿äÇÏ¸é Ä³½Ã ¹æ½ÄÀ¸·Î ¹Ù²ãµå¸±°Ô¿ä.
+        if (doorAnimator == null) return false;
         foreach (var p in doorAnimator.parameters)
             if (p.name == name) return true;
         return false;
