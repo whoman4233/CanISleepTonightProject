@@ -17,11 +17,10 @@ public class GameManager : MonoBehaviour
     private GameEndingType finalEnding = GameEndingType.None;
 
     public event Action<GamePhase> OnPhaseChanged; // 페이즈 변경 이벤트
-    public event Action<float> OnRiotGaugeChanged; // 폭동게이지 변경 이벤트
     public event Action<GameEndingType> OnGameEnded; // 게임엔딩 이벤트
 
     [Header("순찰 페이즈 타임어택")]
-    [SerializeField] private float patrolDurationSeconds = 4f; // 480초
+    [SerializeField] private float patrolDurationSeconds = 480f; // 480초
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
     private void Awake()
