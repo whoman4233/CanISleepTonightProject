@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    public static GameManager Instance { get; private set; } 
+    private SaveManager _saveManager;
 
     [Header("페이즈 상태")]
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        _saveManager = new SaveManager();
 
         _requestPhaseChange = (e) => ChangePhase(e.TargetPhase); // 페이즈 변경 요청시 바로 변경
         _onEndingConditionMet = e => // 엔딩 조건 충족하면 엔딩페이즈 이동 및 엔딩타입 받아옴
@@ -45,11 +47,12 @@ public class GameManager : MonoBehaviour
             finalEnding = e.EndingType;
             ChangePhase(GamePhase.Ending);
         };
+        StartCoroutine(StartFirstPhase()); // 디버그용
     }
-    public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
-    {
-        StartCoroutine(StartFirstPhase());
-    }
+    //public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
+    //{
+    //    StartCoroutine(StartFirstPhase());
+    //}
     private void OnEnable()
     {
         EventBus.Subscribe(_requestPhaseChange);  
@@ -126,7 +129,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterOffDuty() // 퇴근 페이즈
     {
-
+        _saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -162,5 +165,29 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         ChangePhase(nextPhase);
+    }
+    public GameSaveData GetCurrentSaveData()
+    {
+        return new GameSaveData
+        {
+            currentDay = this.currentDay,
+            //riotGauge = this.currentRiotGauge
+            currentPhase = this.currentPhase
+        };
+    }
+
+    public bool LoadPlayerData() // 이어하기 추가 시 호출 될 함수
+    {
+        var data = _saveManager.LoadGame();
+        if (data != null)
+        {
+            this.currentDay = data.currentDay;
+            //this.currentRiotGauge = data.riotGauge;
+            this.currentPhase = data.currentPhase;
+            Debug.Log("세이브 파일을 성공적으로 불러왔습니다.");
+            return true;
+        }
+        Debug.LogWarning("세이브 파일이 없습니다");
+        return false;
     }
 }
