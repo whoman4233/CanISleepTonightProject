@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         _requestPhaseChange = (e) => ChangePhase(e.TargetPhase); // 페이즈 변경 요청시 바로 변경
         _onEndingConditionMet = e => // 엔딩 조건 충족하면 엔딩페이즈 이동 및 엔딩타입 받아옴
         {
@@ -154,7 +155,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator StartFirstPhase() // 다른 매니저들 초기화 기다림
     {
         yield return null;
-        ChangePhase(GamePhase.Standby);
+        ChangePhase(GamePhase.Standby); // 나중에 버튼 대기.
     }
 
     private IEnumerator WaitAndChangePhase(GamePhase nextPhase, float delay)

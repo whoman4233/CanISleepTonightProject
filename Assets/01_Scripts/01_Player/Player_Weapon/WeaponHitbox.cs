@@ -26,26 +26,22 @@ public sealed class WeaponHitbox : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (((1 << other.gameObject.layer) & hittableLayers.value) == 0)
-            return;
+        // 1. 죄수인지 확인
+        if (other.TryGetComponent<PrisonerActor>(out var prisoner))
+        {
+            // 2. PlayerSO에서 공격력 가져오기
+            // 기획서상 PlayerSO에 AttackPower 혹은 유사한 필드가 있다고 가정합니다.
+            var player = GetComponent<Player>();
+            int damage = (player != null && player.Data != null) ? (int)player.Data.AttakData.AttackInfoDatas[0].Force : 10;
 
-        // Prisoner의 RagdollSetting 찾기(자식 콜라이더를 맞춰도 부모에서 찾음)
-        RagdollSetting ragdoll = other.GetComponentInParent<RagdollSetting>();
-        if (ragdoll == null)
-            return;
+            // 3. 타격 지점 및 방향 계산 (물리 효과용)
+            Vector3 hitPoint = other.ClosestPoint(transform.position);
+            Vector3 hitDir = (other.transform.position - transform.position).normalized;
 
-        int id = ragdoll.gameObject.GetInstanceID();
-        if (_hitTargets.Contains(id))
-            return;
+            // 4. 죄수에게 데미지 전달
+            prisoner.ApplyDamage(damage, hitPoint, hitDir);
 
-        _hitTargets.Add(id);
-
-        Vector3 hitPoint = other.ClosestPoint(transform.position);
-
-        Vector3 dir = (ragdoll.transform.position - ownerRoot.position);
-        if (dir.sqrMagnitude < 0.0001f)
-            dir = ownerRoot.forward;
-
-        ragdoll.ApplyImpact(hitPoint, dir.normalized, impactStrength);
+            Debug.Log($"[Hit] {other.name} hit by player with {damage} dmg.");
+        }
     }
 }
