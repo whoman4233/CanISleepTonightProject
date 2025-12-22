@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-
+using System;
 public class UIStateManager : MonoBehaviour
 {
     [Header("Result UI")]
@@ -11,7 +11,7 @@ public class UIStateManager : MonoBehaviour
     [SerializeField] private GameObject popupUI;         // 공통
     [SerializeField] private GameObject inspectionUI;    // 공통 (조건부)
 
-    private System.Action<GamePhaseChangedEvent> phaseHandler;
+    private Action<GamePhaseChangedEvent> phaseHandler;
 
     private void Awake()
     {
