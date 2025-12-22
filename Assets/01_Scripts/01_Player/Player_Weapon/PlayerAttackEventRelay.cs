@@ -20,4 +20,8 @@ public sealed class PlayerAttackEventRelay : MonoBehaviour
     {
         player?.WeaponHandler?.SetHitColliderEnabled(false);
     }
+    public void AnimEvent_AttackSwingSfx()
+    {
+        player?.Sfx?.PlayAttackSwingSfx();
+    }
 }
