@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 {
@@ -6,7 +6,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     {
         public const string OpenTrigger = "Open";
         public const string CloseTrigger = "Close";
-        public const string LockedTrigger = "Locked"; // ¼±ÅÃ(¾øÀ¸¸é Áö¿öµµ µÊ)
+        public const string LockedTrigger = "Locked"; // ì„ íƒ(ì—†ìœ¼ë©´ ì§€ì›Œë„ ë¨)
     }
 
     [Header("Identity")]
@@ -24,23 +24,42 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     {
         if (!Validate()) return;
 
+        // í˜„ì¬ ì´ ë°©ì„ ì ê²€ ì¤‘ì¸ì§€ í™•ì¸
         bool isInspectingThisCell = inspection.CurrentInspectingCellId == cellId;
 
         if (!isInspectingThisCell)
         {
-            // "¹® ¿­°í µé¾î°¡±â" ½Ãµµ = Á¡°Ë ½ÃÀÛ ½Ãµµ
+            // [ë¬¸ ì—´ê¸°] ì ê²€ ì‹œì‘
             if (TryEnter())
+            {
                 PlayOpen();
+                // í•„ìš”í•˜ë‹¤ë©´ ì—¬ê¸°ì„œ ë¬¸ì´ ì—´ë¦° ìƒíƒœì„ì„ ê¸°ë¡
+            }
             else
+            {
                 PlayLocked();
+            }
         }
         else
         {
-            // "¹® ¿­°í ³ª°¡±â" ½Ãµµ = Á¡°Ë Á¾·á(ÅğÀå) ½Ãµµ
+            // [ë¬¸ ë‹«ê¸°] ì ê²€ ì¢…ë£Œ ì‹œë„
+            // TryExit ë‚´ë¶€ì—ì„œ ê²€ì¦(ì§„ì•• ì™„ë£Œ ë“±)ì„ ê±°ì¹œ í›„ ë¬¸ì„ ë‹«ìŠµë‹ˆë‹¤.
             if (TryExit())
+            {
                 PlayClose();
+
+                // âœ… í•µì‹¬: ë¬¸ì„ ì„±ê³µì ìœ¼ë¡œ ë‹«ì•˜ë‹¤ë©´, ë°©ì„ 'LockedForDay' ìƒíƒœë¡œ ë³€ê²½
+                // ì§„ì•• ì„±ê³µ ì—¬ë¶€ëŠ” inspection ìƒíƒœ ë¨¸ì‹ ì—ì„œ ê°€ì ¸ì˜µë‹ˆë‹¤.
+                bool didSuppress = inspection.IsSuppressionCleared;
+                cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
+
+                if (verboseLog) Debug.Log($"[Door] {cellId} closed and locked for the day.");
+            }
             else
-                PlayLocked(); // Áø¾Ğ Áß ¼º°ø Àü µî
+            {
+                // ì•„ì§ ì£„ìˆ˜ê°€ ì•ˆ ì£½ì—ˆê±°ë‚˜ ì ê²€ì´ ì•ˆ ëë‚¬ìœ¼ë©´ ì² ì»¥ê±°ë¦¬ê³  ì•ˆ ë‹«í˜
+                PlayLocked();
+            }
         }
     }
 
@@ -53,14 +72,14 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             return false;
         }
 
-        // ¿À´Ã ÀçÀÔÀå ±İÁö
+        // ì˜¤ëŠ˜ ì¬ì…ì¥ ê¸ˆì§€
         if (cell.IsLockedForDay)
         {
             if (verboseLog) Debug.Log($"[Door] Enter blocked (LockedForDay) cell={cellId}", this);
             return false;
         }
 
-        // ·ê Ã¼Å© Æ÷ÇÔ: È°¼º+¼ÒÀ½+µ¿½ÃÁ¡°Ë 1°³ Á¦ÇÑ
+        // ë£° ì²´í¬ í¬í•¨: í™œì„±+ì†ŒìŒ+ë™ì‹œì ê²€ 1ê°œ ì œí•œ
         bool ok = inspection.TryEnterCell(cellId);
         if (!ok)
         {
@@ -74,7 +93,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private bool TryExit()
     {
-        bool ok = inspection.RequestExitCell(cellId); // Áø¾Ğ Áß ¼º°ø ÀüÀÌ¸é false
+        bool ok = inspection.RequestExitCell(cellId); // ì§„ì•• ì¤‘ ì„±ê³µ ì „ì´ë©´ false
         if (!ok)
         {
             if (verboseLog) Debug.Log($"[Door] Exit blocked cell={cellId}", this);
@@ -102,7 +121,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private void PlayLocked()
     {
         if (doorAnimator == null) return;
-        // Àá±è ¿¬ÃâÀÌ ¾øÀ¸¸é ±×³É ¾Æ¹«°Íµµ ¾È ÇØµµ µÊ
+        // ì ê¹€ ì—°ì¶œì´ ì—†ìœ¼ë©´ ê·¸ëƒ¥ ì•„ë¬´ê²ƒë„ ì•ˆ í•´ë„ ë¨
         if (HasParam(AnimParams.LockedTrigger))
             doorAnimator.SetTrigger(AnimParams.LockedTrigger);
     }
@@ -128,8 +147,8 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private bool HasParam(string name)
     {
-        // Animator ÆÄ¶ó¹ÌÅÍ Á¸Àç Ã¼Å©´Â ºñ¿ëÀÌ ÀÖ¾î¼­ MVP¿¡¼± »ı·«ÇØµµ µË´Ï´Ù.
-        // ÇÊ¿äÇÏ¸é Ä³½Ã ¹æ½ÄÀ¸·Î ¹Ù²ãµå¸±°Ô¿ä.
+        // Animator íŒŒë¼ë¯¸í„° ì¡´ì¬ ì²´í¬ëŠ” ë¹„ìš©ì´ ìˆì–´ì„œ MVPì—ì„  ìƒëµí•´ë„ ë©ë‹ˆë‹¤.
+        // í•„ìš”í•˜ë©´ ìºì‹œ ë°©ì‹ìœ¼ë¡œ ë°”ê¿”ë“œë¦´ê²Œìš”.
         foreach (var p in doorAnimator.parameters)
             if (p.name == name) return true;
         return false;
