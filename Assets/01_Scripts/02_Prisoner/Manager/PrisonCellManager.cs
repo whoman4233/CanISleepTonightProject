@@ -15,6 +15,7 @@ public class PrisonCellManager : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool autoBuildOnAwake = true;
+    [SerializeField] private bool verboseLog = false;
 
     public IReadOnlyList<CellRuntime> Cells => _cells;
     public IReadOnlyList<CellRuntime> ActiveCells => _cells.Where(c => c.IsActiveToday).ToList();
@@ -169,17 +170,17 @@ public class PrisonCellManager : MonoBehaviour
         cell.WasResolvedToday = true;
         cell.DidSuppress = didSuppress;
 
-        // 점검 완료 시 소음은 꺼짐(파동/Wave 제거 트리거)
-        cell.IsNoisy = false;
+        // ✅ 직접 false를 넣지 말고 SetNoisy를 통해 이벤트를 발생시킵니다.
+        // 그래야 복도의 소음 파동(Wave) 이펙트가 즉시 사라집니다.
+        SetNoisy(cell, false);
 
-        // 오늘 재입장 금지(문 잠금)
+        // 오늘 재입장 금지 및 상태 변경
         cell.IsLockedForDay = true;
-
         cell.IsInspectingNow = false;
         cell.IsSuppressing = false;
         cell.State = CellState.LockedForDay;
 
-        // 필요하면 여기서 OnNoiseChanged(cellId,false) 같은 이벤트도 발행
+        if (verboseLog) Debug.Log($"[CellManager] Cell {cellId} resolved. Locked for the day.");
     }
 
 }
