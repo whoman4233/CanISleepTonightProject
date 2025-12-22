@@ -41,7 +41,10 @@ public class GameManager : MonoBehaviour
         }
         _saveManager = new SaveManager();
 
-        _requestPhaseChange = (e) => ChangePhase(e.TargetPhase); // 페이즈 변경 요청시 바로 변경
+        _requestPhaseChange = (e) =>
+        {
+            Debug.Log($"GameManager: 페이즈 변경 요청 받음 -> {e.TargetPhase}"); ChangePhase(e.TargetPhase);
+        };// 페이즈 변경 요청시 바로 변경
         _onEndingConditionMet = e => // 엔딩 조건 충족하면 엔딩페이즈 이동 및 엔딩타입 받아옴
         {
             finalEnding = e.EndingType;
