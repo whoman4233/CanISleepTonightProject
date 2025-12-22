@@ -1,39 +1,52 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class HiddenItemHolder : MonoBehaviour
+public class HiddenItemHolder : MonoBehaviour, IHiddenItemInteractable
 {
     [SerializeField] private HiddenItemStateSO[] hiddenItems;
 
-    private HiddenItemStateSO[] runtimeItems;
+    private Dictionary<System.Type, HiddenItemStateSO> runtimeItems;
 
     private void Awake()
     {
-        runtimeItems = new HiddenItemStateSO[hiddenItems.Length];
+        runtimeItems = new Dictionary<System.Type, HiddenItemStateSO>();
 
-        for (int i = 0; i < hiddenItems.Length; i++)
+        foreach (var item in hiddenItems)
         {
-            runtimeItems[i] = Instantiate(hiddenItems[i]);
+            var instance = Instantiate(item);
+            instance.ResetState();
 
-            if (runtimeItems[i] is KnifeStateSO knife)
-            {
-                knife.ResetState();
-            }
+            runtimeItems.Add(item.GetType(), instance);
         }
     }
 
-    public T GetItem<T>() where T : HiddenItemStateSO
+    public void TryRevealItem(HiddenItemStateSO itemDefinition)
     {
-        if (runtimeItems == null)
+        if (itemDefinition == null)
+            return;
+
+        var type = itemDefinition.GetType();
+
+        if (!runtimeItems.TryGetValue(type, out var runtimeItem))
+            return;
+
+        if (runtimeItem.IsFound)
+            return;
+
+        runtimeItem.OnFound();
+    }
+
+    public HiddenItemStateSO GetRuntimeItem(HiddenItemStateSO definition)
+    {
+        if (definition == null)
             return null;
 
-        foreach (var item in runtimeItems)
-        {
-            if (item is T typed)
-                return typed;
-        }
-
-        return null;
+        runtimeItems.TryGetValue(definition.GetType(), out var item);
+        return item;
     }
+
 }
+
+
 
 
