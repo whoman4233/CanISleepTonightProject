@@ -75,6 +75,8 @@ public sealed class PlayerLocomotionState : PlayerState
         // 달리기 입력은 앉아있으면 무시
         bool runAllowed = P.RunHeld && !P.IsCrouchMode;
 
+        P.Sfx?.TickFootstepLoop(dt, P.MoveInput, IsGrounded, runAllowed, P.IsCrouchMode);
+
         float speedScale = P.IsCrouchMode
             ? P.Data.GroundData.CrouchWalkSpeedModifier
             : (runAllowed ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier);
@@ -82,6 +84,7 @@ public sealed class PlayerLocomotionState : PlayerState
         float speedParam = inputMag * speedScale;
 
         P.Animator.SetFloat(P.AnimationData.SpeedParameterHash, speedParam, SpeedDampTime, dt);
+
     }
 
     public override void FixedTick(float fdt)

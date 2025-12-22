@@ -9,7 +9,7 @@ public class Player : MonoBehaviour
 
     [Header("Refs (Cache)")]
     [SerializeField] private PlayerWeaponHandler weaponHandler;
-
+    public PlayerSfxController Sfx { get; private set; }
     public Animator Animator { get; private set; }
     public CharacterController Controller { get; private set; }
     public ForceReceiver ForceReceiver { get; private set; }
@@ -76,6 +76,8 @@ public class Player : MonoBehaviour
         {
             _inspectionManager.Initialize(_inputs);
         }
+
+        Sfx = GetComponent<PlayerSfxController>();
     }
 
     private void OnEnable()
