@@ -11,18 +11,19 @@ public sealed class PlayerSfxController : MonoBehaviour
     [SerializeField] private AudioClip jumpClip;
     [SerializeField] private AudioClip landClip;
 
-    // 볼륨은 스크립트 내부에서만 관리
+    // ==============================
+    // 내부 설정값
+    // ==============================
+    private const float WalkVolume = 0.5f;
+    private const float RunVolume = 0.7f;
+    private const float FadeSpeed = 8f;
+
     private const float JumpVolume = 0.9f;
     private const float LandVolume = 0.95f;
 
-    [Header("Volumes")]
-    [SerializeField, Range(0f, 1f)] private float walkVolume = 0.8f;
-    [SerializeField, Range(0f, 1f)] private float runVolume = 0.9f;
-    [SerializeField] private float fadeSpeed = 8f;
-
     private const float MinMoveInputSqr = 0.01f;
 
-    // Jump/Land 전용 원샷 소스 (Loop랑 분리)
+    // Jump / Land 전용 OneShot AudioSource
     private AudioSource _oneShotSource;
 
     private void Awake()
@@ -42,16 +43,18 @@ public sealed class PlayerSfxController : MonoBehaviour
         }
 
         // ---- OneShot Source ----
-        // Player에 AudioSource가 1개만 있을 수도 있으니 "추가 생성" 방식으로 안전하게
         _oneShotSource = gameObject.AddComponent<AudioSource>();
         _oneShotSource.playOnAwake = false;
         _oneShotSource.loop = false;
-
-        // 3D 발소리 느낌을 유지하고 싶으면 동일하게
         _oneShotSource.spatialBlend = 1f;
     }
 
-    public void TickFootstepLoop(float dt, Vector2 moveInput, bool isGrounded, bool isRunning, bool isCrouchMode)
+    public void TickFootstepLoop(
+        float dt,
+        Vector2 moveInput,
+        bool isGrounded,
+        bool isRunning,
+        bool isCrouchMode)
     {
         if (footstepLoopSource == null) return;
 
@@ -61,12 +64,16 @@ public sealed class PlayerSfxController : MonoBehaviour
             moveInput.sqrMagnitude >= MinMoveInputSqr;
 
         AudioClip targetClip = isRunning ? runLoopClip : walkLoopClip;
-        float targetVolume = isRunning ? runVolume : walkVolume;
+        float targetVolume = isRunning ? RunVolume : WalkVolume;
 
         EnsurePlayingWithClip(targetClip);
 
         float desired = shouldHear ? targetVolume : 0f;
-        footstepLoopSource.volume = Mathf.MoveTowards(footstepLoopSource.volume, desired, fadeSpeed * dt);
+        footstepLoopSource.volume = Mathf.MoveTowards(
+            footstepLoopSource.volume,
+            desired,
+            FadeSpeed * dt
+        );
     }
 
     public void PlayJumpSfx()
@@ -87,7 +94,8 @@ public sealed class PlayerSfxController : MonoBehaviour
 
         if (footstepLoopSource.clip == targetClip)
         {
-            if (!footstepLoopSource.isPlaying) footstepLoopSource.Play();
+            if (!footstepLoopSource.isPlaying)
+                footstepLoopSource.Play();
             return;
         }
 
