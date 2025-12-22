@@ -6,10 +6,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     {
         public const string OpenTrigger = "Open";
         public const string CloseTrigger = "Close";
-        public const string LockedTrigger = "Locked"; // 선택(없으면 지워도 됨)
+        public const string LockedTrigger = "Locked";
     }
 
     [Header("Identity")]
+    [Tooltip("비어있으면 일반 문(단순 개폐)으로 동작합니다.")]
     [SerializeField] private string cellId;
 
     [Header("Refs")]
@@ -20,36 +21,46 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Debug")]
     [SerializeField] private bool verboseLog = true;
 
+    // cellId가 없는 일반 문일 때만 사용하는 내부 상태값
+    private bool _isSimpleDoorOpen = false;
+
     public void Interact(Player player)
     {
         if (!Validate()) return;
 
-        // 현재 이 방을 점검 중인지 확인
+        // 1. 일반 문 로직 (cellId가 없는 경우)
+        if (string.IsNullOrWhiteSpace(cellId))
+        {
+            if (!_isSimpleDoorOpen)
+            {
+                PlayOpen();
+                _isSimpleDoorOpen = true;
+            }
+            else
+            {
+                PlayClose();
+                _isSimpleDoorOpen = false;
+            }
+            return;
+        }
+
+        // 2. 감방 전용 로직 (cellId가 있는 경우)
         bool isInspectingThisCell = inspection.CurrentInspectingCellId == cellId;
 
         if (!isInspectingThisCell)
         {
-            // [문 열기] 점검 시작
+            // [문 열기] 점검 시작 시도
             if (TryEnter())
-            {
                 PlayOpen();
-                // 필요하다면 여기서 문이 열린 상태임을 기록
-            }
             else
-            {
                 PlayLocked();
-            }
         }
         else
         {
             // [문 닫기] 점검 종료 시도
-            // TryExit 내부에서 검증(진압 완료 등)을 거친 후 문을 닫습니다.
             if (TryExit())
             {
                 PlayClose();
-
-                // ✅ 핵심: 문을 성공적으로 닫았다면, 방을 'LockedForDay' 상태로 변경
-                // 진압 성공 여부는 inspection 상태 머신에서 가져옵니다.
                 bool didSuppress = inspection.IsSuppressionCleared;
                 cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
 
@@ -57,7 +68,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             }
             else
             {
-                // 아직 죄수가 안 죽었거나 점검이 안 끝났으면 철컥거리고 안 닫힘
                 PlayLocked();
             }
         }
@@ -66,42 +76,16 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private bool TryEnter()
     {
         var cell = cellManager.GetCell(cellId);
-        if (cell == null)
-        {
-            if (verboseLog) Debug.LogWarning($"[Door] CellRuntime not found cell={cellId}", this);
-            return false;
-        }
+        if (cell == null) return false;
 
-        // 오늘 재입장 금지
-        if (cell.IsLockedForDay)
-        {
-            if (verboseLog) Debug.Log($"[Door] Enter blocked (LockedForDay) cell={cellId}", this);
-            return false;
-        }
+        if (cell.IsLockedForDay) return false;
 
-        // 룰 체크 포함: 활성+소음+동시점검 1개 제한
-        bool ok = inspection.TryEnterCell(cellId);
-        if (!ok)
-        {
-            if (verboseLog) Debug.Log($"[Door] TryEnter failed cell={cellId}", this);
-            return false;
-        }
-
-        if (verboseLog) Debug.Log($"[Door] Enter SUCCESS cell={cellId}", this);
-        return true;
+        return inspection.TryEnterCell(cellId);
     }
 
     private bool TryExit()
     {
-        bool ok = inspection.RequestExitCell(cellId); // 진압 중 성공 전이면 false
-        if (!ok)
-        {
-            if (verboseLog) Debug.Log($"[Door] Exit blocked cell={cellId}", this);
-            return false;
-        }
-
-        if (verboseLog) Debug.Log($"[Door] Exit SUCCESS cell={cellId}", this);
-        return true;
+        return inspection.RequestExitCell(cellId);
     }
 
     private void PlayOpen()
@@ -121,34 +105,38 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private void PlayLocked()
     {
         if (doorAnimator == null) return;
-        // 잠김 연출이 없으면 그냥 아무것도 안 해도 됨
         if (HasParam(AnimParams.LockedTrigger))
             doorAnimator.SetTrigger(AnimParams.LockedTrigger);
     }
 
     private bool Validate()
     {
-        if (string.IsNullOrWhiteSpace(cellId))
+        // Animator는 어떤 상황에서도 필수입니다.
+        if (doorAnimator == null)
         {
-            Debug.LogWarning("[Door] cellId empty.", this);
+            Debug.LogError("[Door] Animator is missing.", this);
             return false;
         }
 
-        if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
-        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
-
-        if (inspection == null || cellManager == null)
+        // cellId가 있을 때만 Manager와 StateMachine이 필수입니다.
+        if (!string.IsNullOrWhiteSpace(cellId))
         {
-            Debug.LogWarning("[Door] Missing refs (inspection/cellManager).", this);
-            return false;
+            if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
+            if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+
+            if (inspection == null || cellManager == null)
+            {
+                Debug.LogWarning("[Door] Missing refs for cell logic.", this);
+                return false;
+            }
         }
+
         return true;
     }
 
     private bool HasParam(string name)
     {
-        // Animator 파라미터 존재 체크는 비용이 있어서 MVP에선 생략해도 됩니다.
-        // 필요하면 캐시 방식으로 바꿔드릴게요.
+        if (doorAnimator == null) return false;
         foreach (var p in doorAnimator.parameters)
             if (p.name == name) return true;
         return false;

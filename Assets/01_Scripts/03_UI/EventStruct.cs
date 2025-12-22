@@ -130,3 +130,7 @@ public struct InspectionViewReleasedEvent
 {
 
 }
+public struct RequestStartNewGameEvent
+{
+
+}
