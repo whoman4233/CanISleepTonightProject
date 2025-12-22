@@ -36,17 +36,17 @@ public class PlayerManager : MonoBehaviour
 
     public void Initialize()
     {
-        GameContext context = GameContext.Instance;
-        //Player = context.Get<Player>();
-        gameManager = context.Get<GameManager>();
-        prisonCellManager = context.Get<PrisonCellManager>();
+        //GameContext context = GameContext.Instance;
+        ////Player = context.Get<Player>();
+        //gameManager = context.Get<GameManager>();
+        //prisonCellManager = context.Get<PrisonCellManager>();
         
 
-        if(gameManager == null || prisonCellManager == null)
-        {
-            Debug.LogError("Player 혹은 GameManager가 연결되지 않았습니다");
-            return;
-        }
+        //if(gameManager == null || prisonCellManager == null)
+        //{
+        //    Debug.LogError("Player 혹은 GameManager가 연결되지 않았습니다");
+        //    return;
+        //}
        // SetMovementState(false);
     }
 
