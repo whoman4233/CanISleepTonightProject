@@ -43,10 +43,11 @@ public class Player : MonoBehaviour
     private PlayerInputs _inputs;
     private PlayerInputs.PlayerActions _playerActions;
     public PlayerInputs Inputs => _inputs;
-
-    private bool _isInspectionLocked;
+    private InputMode _currentInputMode = InputMode.Gameplay;
     private InspectionManager _inspectionManager;
 
+    //테스트 보호용 bool
+    private bool HasInputPolicy => FindObjectOfType<InputManager>() != null;
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -62,8 +63,24 @@ public class Player : MonoBehaviour
 
         AnimationData.Initialize();
 
-        _inputs = new PlayerInputs();
+        var inputManager = FindObjectOfType<InputManager>();
+
+        if (inputManager != null && inputManager.SharedInputs != null)
+        {
+            _inputs = inputManager.SharedInputs;
+        }
+        else
+        {
+            // 테스트/단독 실행용 Fallback
+            _inputs = new PlayerInputs();
+            _inputs.Player.Enable();
+
+            Debug.LogWarning("[Player] InputManager 찾을 수 없음. Fallback input enabled.");
+        }
+
         _playerActions = _inputs.Player;
+
+        _playerActions.Setting.performed += OnSettingsPressed;
 
         StateMachine = new PlayerStateMachine(this);
 
@@ -82,20 +99,13 @@ public class Player : MonoBehaviour
 
     private void OnEnable()
     {
-        _inputs.Enable();
-        _inputs.Player.Enable();
-        _inputs.Inspection.Disable();
-
-        EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted);
-        EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
+        EventBus.Subscribe<InputModeChangedEvent>(OnInputModeChanged);
     }
 
     private void OnDisable()
     {
-        _inputs.Disable();
-
-        EventBus.Unsubscribe<InspectionStartedEvent>(OnInspectionStarted);
-        EventBus.Unsubscribe<InspectionEndedEvent>(OnInspectionEnded);
+        _playerActions.Setting.performed -= OnSettingsPressed;
+        EventBus.Unsubscribe<InputModeChangedEvent>(OnInputModeChanged);
     }
 
     private void OnDestroy()
@@ -105,9 +115,7 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-
-        if (weaponHandler != null)
+       if (weaponHandler != null)
             weaponHandler.EquipOnStart();
 
         StateMachine.ChangeState(StateMachine.Locomotion);
@@ -117,9 +125,12 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (_isInspectionLocked)
+        // Inspection 중이면 무조건 차단
+        if (_inspectionManager != null && _inspectionManager.IsInspecting)
             return;
-
+        // 정책이 있을 때만 모드 제한
+        if (HasInputPolicy && _currentInputMode != InputMode.Gameplay)
+            return;
         ReadInputs();
 
         StateMachine.HandleInput();
@@ -128,7 +139,10 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_isInspectionLocked)
+        if (_inspectionManager != null && _inspectionManager.IsInspecting)
+            return;
+
+        if (HasInputPolicy && _currentInputMode != InputMode.Gameplay)
             return;
 
         StateMachine.FixedTick(Time.fixedDeltaTime);
@@ -214,17 +228,6 @@ public class Player : MonoBehaviour
             Animator.SetBool(AnimationData.IsCrouchingParameterHash, false);
         }
     }
-    private void OnInspectionStarted(InspectionStartedEvent evt)
-    {
-        _isInspectionLocked = true;
-        _inputs.Player.Disable();
-    }
-
-    private void OnInspectionEnded(InspectionEndedEvent evt)
-    {
-        _isInspectionLocked = false;
-        _inputs.Player.Enable();
-    }
 
     public void TryEnterInspection(IInspectable inspectable)
     {
@@ -232,5 +235,21 @@ public class Player : MonoBehaviour
             return;
 
         _inspectionManager.EnterInspection(inspectable);
+    }
+
+    private void OnSettingsPressed(InputAction.CallbackContext context)
+    {
+        //  Inspection 중에는 무조건 무시
+        if (_inspectionManager != null && _inspectionManager.IsInspecting)
+            return;
+        if (HasInputPolicy && _currentInputMode == InputMode.Inspection)
+            return;
+
+        EventBus.Publish(new PauseMenuToggleRequestedEvent());
+    }
+
+    private void OnInputModeChanged(InputModeChangedEvent e)
+    {
+        _currentInputMode = e.Mode;
     }
 }

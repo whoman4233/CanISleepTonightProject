@@ -3,12 +3,16 @@ using UnityEngine.UI;
 
 public class InGameMenuController : MonoBehaviour
 {
+    [SerializeField] private GameObject menuRoot;
     [SerializeField] private Button btnResume;
     [SerializeField] private Button btnReturnToTitle;
     [SerializeField] private Button btnOptions;
 
+    private bool isOpen;
+
     private void Awake()
     {
+        menuRoot.SetActive(false);
         btnResume.onClick.AddListener(OnClickResume);
         btnReturnToTitle.onClick.AddListener(OnClickReturnToTitle);
         btnOptions.onClick.AddListener(OnClickOptions);
@@ -16,22 +20,28 @@ public class InGameMenuController : MonoBehaviour
 
     private void OnEnable()
     {
-        ShowCursor();
-        EventBus.Publish(new PauseGameRequestedEvent()); //GameManager에 요청(시간 일시정지용)
+        EventBus.Subscribe<PauseMenuToggleRequestedEvent>(OnToggleRequested);
     }
 
     private void OnDisable()
     {
-        HideCursor();
-        EventBus.Publish(new ResumeGameRequestedEvent());
+        EventBus.Unsubscribe<PauseMenuToggleRequestedEvent>(OnToggleRequested);
     }
+
+    private void OnToggleRequested(PauseMenuToggleRequestedEvent e)
+    {
+        SetOpen(!isOpen);
+    }
+
     private void OnClickResume()
     {
-        gameObject.SetActive(false);
+        SetOpen(false);
     }
 
     private void OnClickReturnToTitle()
     {
+        SetOpen(false);
+        EventBus.Publish(new ResumeGameRequestedEvent());
         EventBus.Publish(new ReturnToTitleRequestedEvent());
     }
 
@@ -39,14 +49,27 @@ public class InGameMenuController : MonoBehaviour
     {
         EventBus.Publish(new ShowSettingsPopupEvent());
     }
-    private void ShowCursor()
+
+    private void SetOpen(bool open)
     {
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-    }
-    private void HideCursor()
-    {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        if (isOpen == open)
+            return;
+
+        isOpen = open;
+        menuRoot.SetActive(open);
+
+        if (open)
+        {
+            EventBus.Publish(new PauseGameRequestedEvent());
+            EventBus.Publish(new InputModeChangedEvent(InputMode.UIOnly));
+        }
+        else
+        {
+            EventBus.Publish(new ResumeGameRequestedEvent());
+            EventBus.Publish(new InputModeChangedEvent(InputMode.Gameplay));
+        }
     }
 }
+
+
+

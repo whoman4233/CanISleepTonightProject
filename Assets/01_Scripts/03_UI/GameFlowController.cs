@@ -5,20 +5,24 @@ using UnityEngine.SceneManagement;
 public class GameFlowController : MonoBehaviour
 {
     private Action<RequestStartNewGameEvent> _onRequestNewGame;
+    private Action<ReturnToTitleRequestedEvent> _onReturnToTitle;
 
     private void Awake()
     {
         _onRequestNewGame = OnStartNewGame;
+        _onReturnToTitle = OnReturnToTitle;
     }
 
     private void OnEnable()
     {
+        EventBus.Subscribe(_onReturnToTitle);
         EventBus.Subscribe(_onRequestNewGame);
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
+        EventBus.Unsubscribe(_onReturnToTitle);
         EventBus.Unsubscribe(_onRequestNewGame);
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
@@ -55,6 +59,12 @@ public class GameFlowController : MonoBehaviour
 
         // Phase 전환
         GameManager.Instance.ChangePhase(GamePhase.Standby);
+    }
+
+    private void OnReturnToTitle(ReturnToTitleRequestedEvent e)
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("01_IntroScene", LoadSceneMode.Single);
     }
 
 }

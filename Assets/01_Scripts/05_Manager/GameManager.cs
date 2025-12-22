@@ -66,6 +66,10 @@ public class GameManager : MonoBehaviour
     {
         EventBus.Subscribe(_requestPhaseChange);  
         EventBus.Subscribe(_onEndingConditionMet);
+
+        //인게임 메뉴 팝업시 시간정지
+        EventBus.Subscribe<PauseGameRequestedEvent>(_ => Time.timeScale = 0f);
+        EventBus.Subscribe<ResumeGameRequestedEvent>(_ => Time.timeScale = 1f);
     }
 
     private void OnDisable()
