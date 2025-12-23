@@ -31,7 +31,7 @@ public class HUDTimer : MonoBehaviour
     private void OnDisable()
     {
         if (gameManager != null)
-            gameManager.OnInGameTimeUpdated -= OnTimeUpdated;
+            GameManager.Instance.OnInGameTimeUpdated -= OnTimeUpdated;
 
         StopWarning();
     }

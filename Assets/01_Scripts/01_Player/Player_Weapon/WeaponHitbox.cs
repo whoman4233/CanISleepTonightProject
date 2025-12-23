@@ -8,13 +8,18 @@ public sealed class WeaponHitbox : MonoBehaviour
         public const string Prisoner = "Prisoner";
     }
 
+    private static class Defaults
+    {
+        public const int FallbackDamage = 1;
+        public const int DefaultAttackIndex = 0;
+    }
+
     [Header("Owner")]
     [SerializeField] private Transform ownerRoot;
 
     private readonly HashSet<int> _hitTargets = new HashSet<int>();
     private int _prisonerLayer;
 
-    // ✅ 스윙 활성 상태(디버깅/안전용)
     private bool _swingActive;
 
     private void Awake()
@@ -28,14 +33,12 @@ public sealed class WeaponHitbox : MonoBehaviour
         if (col != null) col.isTrigger = true;
     }
 
-    // ✅ 히트박스 ON(스윙 시작) 때마다 호출
     public void BeginSwing()
     {
         _swingActive = true;
         _hitTargets.Clear();
     }
 
-    // ✅ 히트박스 OFF(스윙 종료) 때 호출
     public void EndSwing()
     {
         _swingActive = false;
@@ -58,14 +61,7 @@ public sealed class WeaponHitbox : MonoBehaviour
         if (!other.TryGetComponent<PrisonerActor>(out var prisoner))
             return;
 
-        int damage = 10;
-
-        var player = ownerRoot != null ? ownerRoot.GetComponent<Player>() : null;
-        if (player != null && player.Data != null && player.Data.AttakData != null &&
-            player.Data.AttakData.AttackInfoDatas != null && player.Data.AttakData.AttackInfoDatas.Count > 0)
-        {
-            damage = Mathf.Max(1, (int)player.Data.AttakData.AttackInfoDatas[0].Force);
-        }
+        int damage = GetPlayerDamage();
 
         Vector3 hitPoint = other.ClosestPoint(transform.position);
         Vector3 hitDir = (other.transform.position - transform.position).normalized;
@@ -73,5 +69,22 @@ public sealed class WeaponHitbox : MonoBehaviour
         prisoner.ApplyDamage(damage, hitPoint, hitDir);
 
         Debug.Log($"[WeaponHitbox] Hit Prisoner: {other.name}, dmg={damage}");
+    }
+
+    private int GetPlayerDamage()
+    {
+        // ✅ PlayerSO(=player.Data)에서 AttackInfoData.Damage를 읽음
+        var player = ownerRoot != null ? ownerRoot.GetComponent<Player>() : null;
+        if (player == null || player.Data == null)
+            return Defaults.FallbackDamage;
+
+        var attackData = player.Data.AttakData;
+        if (attackData == null || attackData.AttackInfoDatas == null || attackData.AttackInfoDatas.Count == 0)
+            return Defaults.FallbackDamage;
+
+        int index = Mathf.Clamp(Defaults.DefaultAttackIndex, 0, attackData.AttackInfoDatas.Count - 1);
+        int dmg = attackData.AttackInfoDatas[index].Damage;
+
+        return Mathf.Max(1, dmg);
     }
 }
