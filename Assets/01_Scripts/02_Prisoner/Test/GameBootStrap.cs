@@ -38,10 +38,41 @@ public class GameBootstrap : MonoBehaviour
         cellManager?.BuildCellsIfNeeded();
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        if (Input.GetKeyDown(nextDayKey)) StartNextDay();
-        if (Input.GetKeyDown(settlementKey)) RunSettlement();
+        EventBus.Subscribe<GamePhaseChangedEvent>(OnPhaseChanged);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe<GamePhaseChangedEvent>(OnPhaseChanged);
+    }
+
+
+    private void OnPhaseChanged(GamePhaseChangedEvent e)
+    {
+        if (e.Phase == GamePhase.Standby)
+        {
+            // 하루 시작 시점 로직 (죄수 스폰 등)
+            StartNewDay();
+        }
+        else if (e.Phase == GamePhase.Settlement)
+        {
+            // 정산 시점 로직
+            RunSettlement();
+        }
+    }
+
+    private void StartNewDay()
+    {
+        spawner?.ClearAllForNewDay();
+        cellManager.RunStandbySetup();
+
+        var activeIds = cellManager.GetActiveCellIds();
+        spawner?.SpawnForToday(activeIds, id => cellManager.GetCell(id).IsSuspicious);
+
+        reportBuilder.ClearResolvedCache();
+        Debug.Log($"[Bootstrap] Day {day} Setup Complete via GameManager Event.");
     }
 
     public void StartNextDay()

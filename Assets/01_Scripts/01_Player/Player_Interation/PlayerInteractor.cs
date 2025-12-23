@@ -19,6 +19,8 @@ public sealed class PlayerInteractor : MonoBehaviour
     private Player _player;
     private InteractableOutliner _currentOutliner;
 
+    [SerializeField] private float interactSphereRadius = 0.15f; // ✅ SphereCast 두께(반지름)
+
     // UI/다른 시스템이 읽을 수 있는 "현재 타겟" 정보
     public bool HasTarget => _currentInteractable != null;
     public GameObject CurrentTargetObject => _currentHitCollider ? _currentHitCollider.gameObject : null;
@@ -55,7 +57,7 @@ public sealed class PlayerInteractor : MonoBehaviour
     }
 
     /// <summary>
-    /// 매 프레임: 화면 중앙으로 Raycast해서 현재 Interactable을 캐싱
+    /// 매 프레임: 화면 중앙으로 SphereCast를 쏴서 현재 Interactable을 캐싱
     /// </summary>
     private void Scan()
     {
@@ -68,8 +70,8 @@ public sealed class PlayerInteractor : MonoBehaviour
         if (drawDebugRay)
             Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green, 0f);
 
-        // Ray가 아무 것도 맞추지 못하면: 기존 하이라이트 OFF
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask, QueryTriggerInteraction.Ignore))
+        // ✅ Physics.Raycast를 Physics.SphereCast로 변경하여 조준 판정 강화
+        if (!Physics.SphereCast(ray, interactSphereRadius, out RaycastHit hit, interactDistance, interactLayerMask, QueryTriggerInteraction.Ignore))
         {
             if (_currentOutliner != null)
             {
@@ -82,19 +84,11 @@ public sealed class PlayerInteractor : MonoBehaviour
         _currentHitCollider = hit.collider;
         _currentHitDistance = hit.distance;
 
-        if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
-            _currentInteractable = interactable;
-        else
-            _currentInteractable = hit.collider.GetComponentInParent<IInteractable>();
+        // 상호작용 인터페이스 탐색 (본인 혹은 부모)
+        _currentInteractable = hit.collider.GetComponentInParent<IInteractable>();
 
-        // 아웃라이너 찾기
-        InteractableOutliner nextOutliner = null;
-
-        if (_currentHitCollider != null)
-        {
-            if (!_currentHitCollider.TryGetComponent(out nextOutliner))
-                nextOutliner = _currentHitCollider.GetComponentInParent<InteractableOutliner>();
-        }
+        // 아웃라이너 찾기 (본인 혹은 부모)
+        InteractableOutliner nextOutliner = hit.collider.GetComponentInParent<InteractableOutliner>();
 
         if (_currentOutliner != nextOutliner)
         {
