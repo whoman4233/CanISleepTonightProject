@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
                 break;
             case GamePhase.Briefing:
                 OnEnterBriefing();
-                StartCoroutine(WaitAndChangePhase(GamePhase.Patrol, 1.5f));
+                //StartCoroutine(WaitAndChangePhase(GamePhase.Patrol, 1.5f));
                 break;
             case GamePhase.Patrol:
                 OnEnterPatrol();
