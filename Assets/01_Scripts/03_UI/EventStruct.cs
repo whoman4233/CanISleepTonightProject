@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 //==========================================
 //GamePhase관련 이벤트 목록
 //==========================================
@@ -101,24 +102,40 @@ public struct ReturnToTitleRequestedEvent //타이틀로 돌아가기
 
 }
 
-public struct PauseMenuOpenedEvent //메뉴 열림(상태)
-{
+// --------------------
+// Pause Menu (Request)
+// --------------------
+public struct PauseMenuOpenRequestedEvent { }   // 입력 의도
+public struct PauseMenuCloseRequestedEvent { }  // 입력 의도
 
+// --------------------
+// Pause Menu (State)
+// --------------------
+public struct PauseMenuOpenedEvent { }          // 결과(사실)
+public struct PauseMenuClosedEvent { }          // 결과(사실)
+
+// --------------------
+// Global Input Lock (Request)
+// --------------------
+public struct GlobalInputLockRequestedEvent     //  요청
+{
+    public GlobalInputLockReason Reason;
+    public GlobalInputLockRequestedEvent(GlobalInputLockReason reason) => Reason = reason;
 }
 
-public struct PauseMenuClosedEvent //메뉴 닫힘(상태)
+public struct GlobalInputLockReleasedEvent      // 
 {
-
+    public GlobalInputLockReason Reason;
+    public GlobalInputLockReleasedEvent(GlobalInputLockReason reason) => Reason = reason;
 }
 
-public struct PauseMenuOpenRequestedEvent // 메뉴 열림 알림(입력)
+// --------------------
+// Player 유무 파악
+// --------------------
+public struct PlayerPresenceChangedEvent         // 
 {
-
-}
-
-public struct PauseMenuCloseRequestedEvent //메뉴 닫힘 알림(입력)
-{
-
+    public bool IsPresent;
+    public PlayerPresenceChangedEvent(bool isPresent) => IsPresent = isPresent;
 }
 
 //==========================================
@@ -171,3 +188,5 @@ public struct InputModeChangedEvent
         Mode = mode;
     }
 }
+
+

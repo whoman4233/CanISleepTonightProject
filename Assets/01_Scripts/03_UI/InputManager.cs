@@ -1,145 +1,160 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
-    public PlayerInputs SharedInputs { get; private set; }
+    public static InputManager Instance { get; private set; }
+    public PlayerInputs Inputs { get; private set; }
 
-    private InputMode currentMode = InputMode.Gameplay;
+    private bool _playerPresent;
+    private bool _inspectionActive;
+    private int _uiLockCount; // Pause / Popup / Result 등
 
-    private bool HasGameFlow => GameManager.Instance != null;
+    private InputState _currentState;
 
-    private bool isPauseMenuOpen;
-    private bool isInspecting;
+    // =============================
+    // EventBus handlers (캐시)
+    // =============================
+    private Action<PlayerPresenceChangedEvent> _onPlayerPresence;
+    private Action<InspectionStartedEvent> _onInspectionStarted;
+    private Action<InspectionEndedEvent> _onInspectionEnded;
+    private Action<GlobalInputLockRequestedEvent> _onGlobalLockRequested;
+    private Action<GlobalInputLockReleasedEvent> _onGlobalLockReleased;
 
     private void Awake()
     {
-        // 테스트 씬 보호: GameManager 없으면 개입하지 않음
-        if (!HasGameFlow)
+        if (Instance != null && Instance != this)
         {
-            Debug.Log("[InputManager] GameManager not found. Policy disabled.");
+            Destroy(gameObject);
             return;
         }
 
-        SharedInputs = new PlayerInputs();
-        SetInputMode(InputMode.Gameplay, true);
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        Inputs = new PlayerInputs();
+
+        // UI 입력은 항상 켜둔다 (핵심 정책)
+        Inputs.UI.Enable();
+
+        // =============================
+        // Event handler 캐싱 (중요)
+        // =============================
+        _onPlayerPresence = OnPlayerPresence;
+
+        _onInspectionStarted = _ =>
+        {
+            _inspectionActive = true;
+            ApplyState();
+        };
+
+        _onInspectionEnded = _ =>
+        {
+            _inspectionActive = false;
+            ApplyState();
+        };
+
+        _onGlobalLockRequested = _ =>
+        {
+            _uiLockCount++;
+            ApplyState();
+        };
+
+        _onGlobalLockReleased = _ =>
+        {
+            _uiLockCount = Mathf.Max(0, _uiLockCount - 1);
+            ApplyState();
+        };
+
+        ApplyState(force: true);
     }
 
     private void OnEnable()
     {
-        if (!HasGameFlow)
-            return;
-
-        EventBus.Subscribe<GamePhaseChangedEvent>(OnGamePhaseChanged);
-        EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted);
-        EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
-        EventBus.Subscribe<InputModeChangedEvent>(OnInputModeChanged);
-        EventBus.Subscribe<PauseMenuOpenedEvent>(OnPauseMenuOpened);
-        EventBus.Subscribe<PauseMenuClosedEvent>(OnPauseMenuClosed);
+        EventBus.Subscribe(_onPlayerPresence);
+        EventBus.Subscribe(_onInspectionStarted);
+        EventBus.Subscribe(_onInspectionEnded);
+        EventBus.Subscribe(_onGlobalLockRequested);
+        EventBus.Subscribe(_onGlobalLockReleased);
     }
 
     private void OnDisable()
     {
-        if (!HasGameFlow)
-            return;
-
-        EventBus.Unsubscribe<GamePhaseChangedEvent>(OnGamePhaseChanged);
-        EventBus.Unsubscribe<InspectionStartedEvent>(OnInspectionStarted);
-        EventBus.Unsubscribe<InspectionEndedEvent>(OnInspectionEnded);
-        EventBus.Unsubscribe<InputModeChangedEvent>(OnInputModeChanged);
+        EventBus.Unsubscribe(_onPlayerPresence);
+        EventBus.Unsubscribe(_onInspectionStarted);
+        EventBus.Unsubscribe(_onInspectionEnded);
+        EventBus.Unsubscribe(_onGlobalLockRequested);
+        EventBus.Unsubscribe(_onGlobalLockReleased);
     }
 
-    private void OnGamePhaseChanged(GamePhaseChangedEvent e)
+    private void OnDestroy()
     {
-        if (isPauseMenuOpen)
-            return;
-
-        if (e.Phase == GamePhase.NotStarted)
-            SetInputMode(InputMode.UIOnly);
-        else
-            SetInputMode(InputMode.Gameplay);
-    }
-
-
-    private void OnInspectionStarted(InspectionStartedEvent e)
-    {
-        isInspecting = true;
-
-        if (!isPauseMenuOpen)
-            SetInputMode(InputMode.Inspection);
-    }
-
-    private void OnInspectionEnded(InspectionEndedEvent e)
-    {
-        isInspecting = false;
-
-        if (!isPauseMenuOpen)
-            SetInputMode(InputMode.Gameplay);
-    }
-
-
-    private void OnInputModeChanged(InputModeChangedEvent e)
-    {
-        SetInputMode(e.Mode);
-    }
-
-    private void SetInputMode(InputMode mode, bool force = false)
-    {
-        if (!HasGameFlow)
-            return;
-
-        if (!force && currentMode == mode)
-            return;
-
-        currentMode = mode;
-
-        SharedInputs.Player.Disable();
-        SharedInputs.UI.Disable();
-        SharedInputs.Inspection.Disable();
-
-        switch (mode)
+        if (!Application.isPlaying)
         {
-            case InputMode.Gameplay:
-                SharedInputs.Player.Enable();
-                ApplyCursor(true);
-                break;
-
-            case InputMode.UIOnly:
-                SharedInputs.UI.Enable();
-                ApplyCursor(false);
-                break;
-
-            case InputMode.Inspection:
-                SharedInputs.Inspection.Enable();
-                ApplyCursor(false);
-                break;
+            Inputs?.Dispose();
         }
-
-        Debug.Log($"[InputManager] InputMode = {mode}");
     }
 
-    private void ApplyCursor(bool locked)
+    // =============================
+    // Event handlers
+    // =============================
+    private void OnPlayerPresence(PlayerPresenceChangedEvent e)
     {
-        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !locked;
+        _playerPresent = e.IsPresent;
+        ApplyState();
     }
 
-    private void OnPauseMenuOpened(PauseMenuOpenedEvent e)
+    // =============================
+    // Core: 상태 계산
+    // =============================
+    private void ApplyState(bool force = false)
     {
-        isPauseMenuOpen = true;
-        SetInputMode(InputMode.UIOnly);
+        InputState next = ResolveState();
+
+        if (!force && next == _currentState)
+            return;
+
+        _currentState = next;
+
+        // Gameplay / Inspection만 Enable/Disable
+        SetMap(Inputs.Player, next == InputState.Gameplay);
+        SetMap(Inputs.Inspection, next == InputState.Inspection);
+
+        ApplyCursor(next);
+
+        Debug.Log($"[InputManager] State={_currentState} UIAlwaysOn lock={_uiLockCount}");
     }
 
-    private void OnPauseMenuClosed(PauseMenuClosedEvent e)
+    private InputState ResolveState()
     {
-        isPauseMenuOpen = false;
+        if (!_playerPresent)
+            return InputState.UIOnly;
 
-        if (isInspecting)
-            SetInputMode(InputMode.Inspection);
-        else
-            SetInputMode(InputMode.Gameplay);
+        if (_uiLockCount > 0)
+            return InputState.UIOnly;
+
+        if (_inspectionActive)
+            return InputState.Inspection;
+
+        return InputState.Gameplay;
     }
 
+    private static void SetMap(InputActionMap map, bool enable)
+    {
+        if (enable && !map.enabled) map.Enable();
+        if (!enable && map.enabled) map.Disable();
+    }
+
+    private static void ApplyCursor(InputState state)
+    {
+        bool gameplay = state == InputState.Gameplay;
+        Cursor.lockState = gameplay ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !gameplay;
+    }
 }
+
+
 
 
 

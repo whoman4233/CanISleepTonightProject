@@ -47,14 +47,9 @@ public class InspectionUIController : MonoBehaviour
 
     private IEnumerator NotifyViewReadyNextFrame()
     {
-        
         yield return null; // 다음 프레임 보장
-       
-        Debug.Log(
-        $"[InspectionUI] RawImage = {inspectionRawImage}, Rect = {inspectionRawImage?.rectTransform}"
-    );
+    
         EventBus.Publish(new InspectionViewReadyEvent());
-      
     }
 
 
