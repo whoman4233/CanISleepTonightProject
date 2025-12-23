@@ -79,6 +79,13 @@ public class DayDebugConsole : MonoBehaviour
             Debug.Log($"[RequestExit] {target} => {ok}");
         }
 
+        // F7: Time Expired (Force release, no resolve)
+        if (Input.GetKeyDown(KeyCode.F7))
+        {
+            inspection.ForceReleaseOnTimeExpired();
+            Debug.Log("[TimeExpired] ForceReleaseOnTimeExpired()");
+        }
+
         // (선택) 리포트만 확인하고 싶으면 F9 같은 남는 키로
         if (Input.GetKeyDown(KeyCode.F9))
         {
