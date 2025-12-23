@@ -17,18 +17,16 @@ public class InspectionManager : MonoBehaviour
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private float inspectRayDistance = 5f;
 
-    private Action<InspectionViewReadyEvent> _onViewReady; // view 전용 이벤트
+    private Action<InspectionViewReadyEvent> _onViewReady;
 
-    private InteractableOutliner _currentOutlined; //아웃라인용
-
+    private InteractableOutliner _currentOutlined;
     private RectTransform inspectionViewRect;
 
-    private PlayerInputs _inputs;
+    private PlayerInputs _inputs;                     // 외부 주입만 받음
 
-    private bool forceInspectionInput; //플레이어 입력 강제 차단용
-    public bool IsInspecting => isInspecting;
+    public bool IsInspecting => _isInspecting;
+    private bool _isInspecting;
 
-    private bool isInspecting;
     private float yaw;
     private float pitch;
 
@@ -37,8 +35,8 @@ public class InspectionManager : MonoBehaviour
 
     private void Awake()
     {
-        _inputs = GetComponentInParent<Player>().Inputs;
         inspectionCamera.gameObject.SetActive(false);
+
         _onViewReady = OnViewReady;
     }
 
@@ -49,25 +47,32 @@ public class InspectionManager : MonoBehaviour
 
     private void OnDisable()
     {
-        Debug.Log("[InspectionManager] Unsubscribe ViewReady");
         EventBus.Unsubscribe(_onViewReady);
     }
+
+    // =========================
+    // Initialization
+    // =========================
+
+    // Player에서 Inputs 주입
     public void Initialize(PlayerInputs inputs)
     {
         _inputs = inputs;
     }
+
     private void Update()
     {
-        if (!isInspecting || _inputs == null)
+        if (!_isInspecting || _inputs == null)
             return;
 
+        // Exit 입력은 소비만 함 (Enable/Disable X)
         if (_inputs.Inspection.Exit.WasPressedThisFrame())
         {
             ExitInspection();
             return;
         }
 
-        HandleHoverOutline(); //아웃라인
+        HandleHoverOutline();
         HandleRotation();
         HandleInspectClick();
     }
@@ -78,18 +83,10 @@ public class InspectionManager : MonoBehaviour
 
     public void EnterInspection(IInspectable inspectable)
     {
-        if (inspectable == null)
+        if (inspectable == null || _isInspecting)
             return;
 
-        isInspecting = true;
-
-        //  입력 장악
-        _inputs.Player.Disable();
-        _inputs.Inspection.Enable();
-
-        //  커서 제어
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        _isInspecting = true;
 
         currentInspectable = inspectable;
         currentInspectable.OnInspectionEnter();
@@ -99,6 +96,8 @@ public class InspectionManager : MonoBehaviour
         ResetRotation();
         SpawnInspectObject(inspectable.GetInspectPrefab());
 
+        // 입력/커서 직접 제어 제거
+        // 상태만 알림
         EventBus.Publish(new InspectionStartedEvent { Target = inspectable });
 
         StartCoroutine(RequestViewNextFrame());
@@ -112,10 +111,10 @@ public class InspectionManager : MonoBehaviour
 
     public void ExitInspection()
     {
-        if (!isInspecting)
+        if (!_isInspecting)
             return;
 
-        isInspecting = false;
+        _isInspecting = false;
 
         if (inspectInstance != null)
         {
@@ -127,22 +126,13 @@ public class InspectionManager : MonoBehaviour
         inspectionCamera.gameObject.SetActive(false);
         inspectionViewRect = null;
 
-        //  입력 복구
-        _inputs.Inspection.Disable();
-        _inputs.Player.Enable();
-
-        //  커서 복구
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
+        // 입력/커서 복구 제거
+        // 상태 종료 알림
         EventBus.Publish(new InspectionEndedEvent());
         EventBus.Publish(new InspectionViewReleasedEvent());
 
         currentInspectable = null;
     }
-
-
-
 
     // =========================
     // View Binding
@@ -158,10 +148,7 @@ public class InspectionManager : MonoBehaviour
         }
 
         inspectionViewRect = ui.GetInspectionViewRect();
-
-        Debug.Log($"[InspectionManager] ViewRect assigned = {inspectionViewRect}");
     }
-
 
     // =========================
     // Rotation
@@ -191,20 +178,17 @@ public class InspectionManager : MonoBehaviour
     }
 
     // =========================
-    // Inspect Click (Ray)
+    // Inspect Click
     // =========================
 
     private void HandleInspectClick()
     {
-        // 1. Inspection View 준비 여부
         if (inspectionViewRect == null)
             return;
 
-        // 2. 클릭 입력 확인
         if (!_inputs.Inspection.InspectClick.WasPressedThisFrame())
             return;
 
-        // 3. 마우스 위치가 Inspection 영역 안인지 확인
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
         if (!RectTransformUtility.RectangleContainsScreenPoint(
@@ -213,7 +197,6 @@ public class InspectionManager : MonoBehaviour
                 null))
             return;
 
-        // 4. Viewport 좌표 계산
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             inspectionViewRect,
             screenPos,
@@ -228,44 +211,26 @@ public class InspectionManager : MonoBehaviour
         if (u < 0f || u > 1f || v < 0f || v > 1f)
             return;
 
-        // 5. Inspection Camera 기준 Ray 생성
-        Ray ray = inspectionCamera.ViewportPointToRay(
-            new Vector3(u, v, 0f)
-        );
+        Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
 
-        Debug.DrawRay(ray.origin, ray.direction * inspectRayDistance, Color.green, 1.5f);
-
-        // 6. Raycast
         if (!Physics.Raycast(ray, out RaycastHit hit, inspectRayDistance, inspectLayerMask))
-        {
-            Debug.Log("[InspectClick] Raycast 실패");
             return;
-        }
-        Debug.Log($"[InspectClick] Hit: {hit.collider.name}");
-        // 7. InspectTarget 처리
-        if (!hit.collider.TryGetComponent<IInspectTarget>(out var target))
-        {
-            Debug.Log($"[InspectClick] IInspectTarget 없음: {hit.collider.name}");
-            return;
-        }
-        Debug.Log($"[InspectClick] IInspectTarget 발견: {hit.collider.name}");
-        // 8. 실제 Inspect 실행
-        target.OnInspect(currentInspectable);
 
-        // 9. UX 정리 (클릭 성공 시에만)
+        if (!hit.collider.TryGetComponent<IInspectTarget>(out var target))
+            return;
+
+        target.OnInspect(currentInspectable);
         ClearOutline();
     }
 
     // =========================
     // Inspect Outline
     // =========================
+
     private void HandleHoverOutline()
     {
         if (inspectionViewRect == null)
-        {
-            Debug.Log("[HoverOutline] inspectionViewRect == null");
             return;
-        }
 
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
@@ -297,20 +262,14 @@ public class InspectionManager : MonoBehaviour
 
         Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
 
-        Debug.DrawRay(ray.origin, ray.direction * inspectRayDistance, Color.cyan, 0f);
-
         if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
         {
             var outliner = hit.collider.GetComponentInChildren<InteractableOutliner>();
-            Debug.Log($"[Hover] Hit={hit.collider.name}, Outliner={(outliner != null ? outliner.name : "NULL")}");
-            if (outliner != null)
+            if (outliner != null && _currentOutlined != outliner)
             {
-                if (_currentOutlined != outliner)
-                {
-                    ClearOutline();
-                    _currentOutlined = outliner;
-                    _currentOutlined.SetHighlight(true);
-                }
+                ClearOutline();
+                _currentOutlined = outliner;
+                _currentOutlined.SetHighlight(true);
                 return;
             }
         }
@@ -347,6 +306,8 @@ public class InspectionManager : MonoBehaviour
         }
     }
 }
+
+
 
 
 
