@@ -13,6 +13,8 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Tooltip("비어있으면 일반 문(단순 개폐)으로 동작합니다.")]
     [SerializeField] private string cellId;
 
+    [SerializeField] private Collider cellInsideTrigger; // ✅ 감방 내부를 덮는 트리거 콜라이더
+
     [Header("Refs")]
     [SerializeField] private InspectionStateMachine inspection;
     [SerializeField] private PrisonCellManager cellManager;
@@ -22,14 +24,20 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Debug")]
     [SerializeField] private bool verboseLog = true;
 
+    [Header("State")]
+    [SerializeField] private bool _isPlayerInside; // ✅ 태그 검사로 상태 업데이트됨
+
     private bool _isSimpleDoorOpen = false;
 
     public void Interact(Player player)
     {
         if (!Validate()) return;
 
-        // 1. 일반 문 로직
-        if (string.IsNullOrWhiteSpace(cellId))
+        if (doorAnimator.IsInTransition(0) ||
+            doorAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+
+            // 1. 일반 문 로직
+            if (string.IsNullOrWhiteSpace(cellId))
         {
             HandleSimpleDoor();
             return;
@@ -66,25 +74,19 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // [문 닫기] 점검 종료
+            // ✅ 개선 2: 태그 검사 기반 내부 체크
+            if (_isPlayerInside)
+            {
+                Debug.LogWarning($"[Door] {cellId} 내부에 플레이어가 있어 문을 닫을 수 없습니다.");
+                return;
+            }
+
             if (TryExit())
             {
                 PlayClose();
-
-                // 리포트 기록 및 시스템 리셋 (다른 방 문 열 수 있게 함)
-                bool didSuppress = inspection.IsSuppressionCleared;
-
-                // InspectionStateMachine에 우리가 만든 Complete 로직이 있다면 그것을 사용
-                // 없으면 아래처럼 직접 처리
-                cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
-                inspection.EndInspection();
-
-                if (verboseLog) Debug.Log($"[Door] {cellId} closed. System Reset.");
+                inspection.CompleteInspection(cellId, inspection.IsSuppressionCleared);
             }
-            else
-            {
-                PlayLocked();
-            }
+            else PlayLocked();
         }
     }
 
@@ -156,4 +158,21 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             if (p.name == name) return true;
         return false;
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            _isPlayerInside = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            _isPlayerInside = false;
+        }
+    }
+
 }
