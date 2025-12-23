@@ -10,6 +10,7 @@ public sealed class PlayerJumpState : PlayerState
     private const float FallEnterHeightThreshold = 2.5f;
     public override void Enter()
     {
+        P.Sfx?.StopFootstepLoopImmediate();
         P.ForceClearCrouchTransitionLock();
 
         _timer = 0f;

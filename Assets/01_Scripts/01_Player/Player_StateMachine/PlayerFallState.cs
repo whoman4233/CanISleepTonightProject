@@ -10,6 +10,7 @@ public sealed class PlayerFallState : PlayerState
 
     public override void Enter()
     {
+        P.Sfx?.StopFootstepLoopImmediate();
         P.ForceClearCrouchTransitionLock();
         P.Animator.SetBool(P.AnimationData.IsFallingParameterHash, true);
     }
