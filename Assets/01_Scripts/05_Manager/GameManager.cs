@@ -203,4 +203,10 @@ public class GameManager : MonoBehaviour
         Debug.LogWarning("세이브 파일이 없습니다");
         return false;
     }
+
+    public void ResetTimer()
+    {
+        patrolDurationSeconds = 480f;
+        Debug.Log("타이머가 480초로 초기화되었습니다.");
+    }
 }
