@@ -25,6 +25,9 @@ public class InspectionManager : MonoBehaviour
 
     private PlayerInputs _inputs;
 
+    private bool forceInspectionInput; //플레이어 입력 강제 차단용
+    public bool IsInspecting => isInspecting;
+
     private bool isInspecting;
     private float yaw;
     private float pitch;
@@ -79,19 +82,24 @@ public class InspectionManager : MonoBehaviour
             return;
 
         isInspecting = true;
-        currentInspectable = inspectable;
 
-        currentInspectable.OnInspectionEnter();
+        //  입력 장악
         _inputs.Player.Disable();
         _inputs.Inspection.Enable();
 
-        inspectionCamera.gameObject.SetActive(true);
-
+        //  커서 제어
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        currentInspectable = inspectable;
+        currentInspectable.OnInspectionEnter();
+
+        inspectionCamera.gameObject.SetActive(true);
+
         ResetRotation();
         SpawnInspectObject(inspectable.GetInspectPrefab());
+
+        EventBus.Publish(new InspectionStartedEvent { Target = inspectable });
 
         StartCoroutine(RequestViewNextFrame());
     }
@@ -104,6 +112,9 @@ public class InspectionManager : MonoBehaviour
 
     public void ExitInspection()
     {
+        if (!isInspecting)
+            return;
+
         isInspecting = false;
 
         if (inspectInstance != null)
@@ -113,19 +124,25 @@ public class InspectionManager : MonoBehaviour
             currentInspectable.OnInspectionExit();
         }
 
+        inspectionCamera.gameObject.SetActive(false);
+        inspectionViewRect = null;
+
+        //  입력 복구
         _inputs.Inspection.Disable();
         _inputs.Player.Enable();
 
-        currentInspectable = null;
-
-        inspectionCamera.gameObject.SetActive(false);
-
-        inspectionViewRect = null;
-        EventBus.Publish(new InspectionViewReleasedEvent());
-
+        //  커서 복구
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        EventBus.Publish(new InspectionEndedEvent());
+        EventBus.Publish(new InspectionViewReleasedEvent());
+
+        currentInspectable = null;
     }
+
+
+
 
     // =========================
     // View Binding

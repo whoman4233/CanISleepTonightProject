@@ -2,27 +2,23 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameFlowController : MonoBehaviour
+public class FlowController : MonoBehaviour
 {
     private Action<RequestStartNewGameEvent> _onRequestNewGame;
-    private Action<ReturnToTitleRequestedEvent> _onReturnToTitle;
 
     private void Awake()
     {
         _onRequestNewGame = OnStartNewGame;
-        _onReturnToTitle = OnReturnToTitle;
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe(_onReturnToTitle);
         EventBus.Subscribe(_onRequestNewGame);
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onReturnToTitle);
         EventBus.Unsubscribe(_onRequestNewGame);
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
@@ -44,10 +40,8 @@ public class GameFlowController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != "02_PlayScene")
+        if (scene.name != "PlayScene")
             return;
-
-        // PlayScene 활성화
         SceneManager.SetActiveScene(scene);
 
         // IntroScene 명시적 언로드
@@ -57,15 +51,10 @@ public class GameFlowController : MonoBehaviour
             SceneManager.UnloadSceneAsync(intro);
         }
 
-        // Phase 전환
-        GameManager.Instance.ChangePhase(GamePhase.Standby);
-    }
+        // PlayScene 시작 시 Standby로 재진입
+        EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Standby));
 
-    private void OnReturnToTitle(ReturnToTitleRequestedEvent e)
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene("01_IntroScene", LoadSceneMode.Single);
     }
-
 }
+
 
