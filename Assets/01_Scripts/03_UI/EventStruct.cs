@@ -79,6 +79,16 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 
 }
 
+public struct ShowWarningPopupEvent
+{
+    public string Message;
+
+    public ShowWarningPopupEvent(string message)
+    {
+        Message = message;
+    }
+}
+
 //==========================================
 //InGameMenu 이벤트 목록
 //==========================================
