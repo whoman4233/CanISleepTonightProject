@@ -9,6 +9,12 @@ public class InitialLoader : MonoBehaviour
 
     private void Awake()
     {
+        if (GameObject.Find("UIRoot") != null)
+        {
+            Debug.Log("이미 UIRoot가 존재하므로 로딩을 건너뜁니다.");
+            Destroy(gameObject);
+            return;
+        }
         // UI 씬이 로드되어 있지 않다면 Additive로 로드
         if (!IsSceneLoaded(uiSceneName))
         {
