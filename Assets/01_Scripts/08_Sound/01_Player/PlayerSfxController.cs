@@ -128,4 +128,14 @@ public sealed class PlayerSfxController : MonoBehaviour
         footstepLoopSource.clip = targetClip;
         footstepLoopSource.Play();
     }
+    public void StopFootstepLoopImmediate()
+    {
+        if (footstepLoopSource == null) return;
+
+        footstepLoopSource.volume = 0f;
+
+        // 완전히 멈춰서 공중에서 “루프 자체”가 안 돌게 함
+        if (footstepLoopSource.isPlaying)
+            footstepLoopSource.Stop();
+    }
 }
