@@ -30,6 +30,11 @@ public class FlowController : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    private void Start()
+    {
+        GameManager.Instance.ChangePhase(GamePhase.NotStarted);
+        Debug.Log("notstarted");
+    }
 
     private void OnEnable()
     {
@@ -75,11 +80,33 @@ public class FlowController : MonoBehaviour
     public void ReturnToTitle()
     {
         if (isBusy) return;
+        StartCoroutine(ReturnToTitleSequence());
+    }
+    private IEnumerator ReturnToTitleSequence()
+    {
         isBusy = true;
         Time.timeScale = 1f;
 
-        // 타이틀 씬으로 이동
-        SceneManager.LoadScene(introSceneName, LoadSceneMode.Single);
+        // 1. 현재 로드된 'PlayScene'만 비동기로 언로드합니다.
+        Scene playScene = SceneManager.GetSceneByName(playSceneName);
+        if (playScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(playScene);
+        }
+
+        // 2. 'IntroScene'을 Additive로 로드합니다. (Single이 아님!)
+        if (!SceneManager.GetSceneByName(introSceneName).isLoaded)
+        {
+            yield return SceneManager.LoadSceneAsync(introSceneName, LoadSceneMode.Additive);
+        }
+
+        // 3. 인트로 씬을 메인으로 설정
+        Scene intro = SceneManager.GetSceneByName(introSceneName);
+        SceneManager.SetActiveScene(intro);
+
+        // 4. 상태 초기화
+        GameManager.Instance.ChangePhase(GamePhase.NotStarted);
+
         isBusy = false;
     }
 
@@ -89,5 +116,4 @@ public class FlowController : MonoBehaviour
     //isBusy = 로딩이 진행 중일 때는 추가적인 로딩 요청을 무시
     //SceneManager.SetActiveScene을 통해 새로 불러온 씬을 메인으로 설정
     //전역화 시켜서 게임 종료 시까지 컨트롤러가 모든 씬 전환을 책임짐
-    //LoadSceneMode.Single을 사용하여 타이틀(인트로)씬으로 돌아갈 때 메모리 정리(기존 씬 등)하고 이동
 }

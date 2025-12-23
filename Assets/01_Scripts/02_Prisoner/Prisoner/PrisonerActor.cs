@@ -22,6 +22,8 @@ public class PrisonerActor : MonoBehaviour
 
     private bool _combatEnabled;
 
+    private PrisonerFSM fsm;
+
     [Header("Feedback Refs")]
     [SerializeField] private RagdollSetting ragdoll;
     [SerializeField] private Animator animator;
@@ -42,7 +44,8 @@ public class PrisonerActor : MonoBehaviour
     {
         // ✅ 씬에 그냥 배치된 경우 Init이 안 올 수 있으니 폴백 초기화
         if (useSceneFallback && !_initialized)
-            EnsureInitialized();
+            EnsureInitialized(); 
+        fsm = GetComponent<PrisonerFSM>();
     }
 
     public void Init(string cellId, string instanceId, PrisonerDefinition def)
@@ -86,36 +89,34 @@ public class PrisonerActor : MonoBehaviour
 
     public bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
-        // ✅ Init이 안 왔어도 맞는 순간에는 최소 초기화
-        if (!_initialized && useSceneFallback)
-            EnsureInitialized();
+        if (!IsAlive) return false;
 
-        if (debugHit)
+        // ✅ 핵심 1: Idle 상태일 때는 공격 무시 (무적)
+        if (fsm != null && fsm.IsInvulnerable)
         {
-            Debug.Log($"[PrisonerActor] ApplyDamage ENTER: dmg={dmg}, hp={Hp}, alive={IsAlive}, combat={_combatEnabled} hitPoint={hitPoint}", this);
-        }
-
-        if (!IsAlive)
+            Debug.Log($"[Prisoner] {InstanceId} is sitting Idle. Damage blocked.");
             return false;
-
-        if (!_combatEnabled)
-        {
-            Debug.Log($"[Prisoner] First hit! Enabling combat for {InstanceId}");
-            SetCombatEnabled(true);
         }
+
+        // ✅ 핵심 2: 첫 피격 시 전투 모드 활성화 (기획: 팬다 -> 진압 시작)
+        if (!_combatEnabled) SetCombatEnabled(true);
 
         Hp -= dmg;
-
         PrisonerEventBus.RaisePrisonerHit(InstanceId, dmg);
 
         if (Hp <= 0)
         {
             Hp = 0;
-            Die(hitPoint, hitDirection);
+            fsm.ChangeState(fsm.DeadState); // FSM을 사망 상태로
+            PrisonerEventBus.RaisePrisonerDown(InstanceId);
+
+            // 래그돌은 DeadState.Enter()에서 처리하거나 여기서 처리
+            if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
         }
         else
         {
-            PlayHitAnimation();
+            // FSM에게 피격 알림 (전투/웅크리기 전환 트리거)
+            fsm.OnDamaged(dmg, hitPoint, hitDirection);
         }
 
         return true;
