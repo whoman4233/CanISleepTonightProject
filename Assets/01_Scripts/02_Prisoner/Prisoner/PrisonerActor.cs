@@ -2,6 +2,13 @@
 
 public class PrisonerActor : MonoBehaviour
 {
+    private static class Defaults
+    {
+        public const int Hp = 3;
+        public const int Atk = 1;
+        public const int Spd = 1;
+    }
+
     public string InstanceId { get; private set; }
     public string CellId { get; private set; }
     public PrisonerType Type { get; private set; }
@@ -17,10 +24,31 @@ public class PrisonerActor : MonoBehaviour
 
     [Header("Feedback Refs")]
     [SerializeField] private RagdollSetting ragdoll;
-    [SerializeField] private Animator animator; // 애니메이션 피드백용
+    [SerializeField] private Animator animator;
+
+    [Header("Scene Fallback (Init 미호출 대비)")]
+    [SerializeField] private bool useSceneFallback = true;
+    [SerializeField] private int fallbackHp = Defaults.Hp;
+    [SerializeField] private int fallbackAtk = Defaults.Atk;
+    [SerializeField] private int fallbackSpd = Defaults.Spd;
+    [SerializeField] private PrisonerType fallbackType = PrisonerType.Bad;
+
+    [Header("Debug (Minimal)")]
+    [SerializeField] private bool debugHit;
+
+    private bool _initialized;
+
+    private void Awake()
+    {
+        // ✅ 씬에 그냥 배치된 경우 Init이 안 올 수 있으니 폴백 초기화
+        if (useSceneFallback && !_initialized)
+            EnsureInitialized();
+    }
 
     public void Init(string cellId, string instanceId, PrisonerDefinition def)
     {
+        _initialized = true;
+
         CellId = cellId;
         InstanceId = instanceId;
 
@@ -29,13 +57,46 @@ public class PrisonerActor : MonoBehaviour
         Atk = def.atk;
         Spd = def.spd;
 
-        // ✅ 스폰 직후 절대 전투 금지
         SetCombatEnabled(false);
+
+        if (debugHit)
+            Debug.Log($"[PrisonerActor] Init: id={InstanceId}, hp={Hp}", this);
+    }
+
+    private void EnsureInitialized()
+    {
+        if (_initialized) return;
+
+        _initialized = true;
+
+        // InstanceId가 비어있으면 임시로 유니크하게 부여(디버그용)
+        if (string.IsNullOrEmpty(InstanceId))
+            InstanceId = gameObject.name;
+
+        Type = fallbackType;
+        Hp = Mathf.Max(1, fallbackHp);
+        Atk = Mathf.Max(1, fallbackAtk);
+        Spd = Mathf.Max(1, fallbackSpd);
+
+        SetCombatEnabled(false);
+
+        if (debugHit)
+            Debug.Log($"[PrisonerActor] Fallback Init: id={InstanceId}, hp={Hp}", this);
     }
 
     public bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
-        if (!IsAlive) return false;
+        // ✅ Init이 안 왔어도 맞는 순간에는 최소 초기화
+        if (!_initialized && useSceneFallback)
+            EnsureInitialized();
+
+        if (debugHit)
+        {
+            Debug.Log($"[PrisonerActor] ApplyDamage ENTER: dmg={dmg}, hp={Hp}, alive={IsAlive}, combat={_combatEnabled} hitPoint={hitPoint}", this);
+        }
+
+        if (!IsAlive)
+            return false;
 
         if (!_combatEnabled)
         {
@@ -45,7 +106,6 @@ public class PrisonerActor : MonoBehaviour
 
         Hp -= dmg;
 
-        // 1. 이벤트 버스 전파 (UI나 사운드 매니저가 들음)
         PrisonerEventBus.RaisePrisonerHit(InstanceId, dmg);
 
         if (Hp <= 0)
@@ -55,10 +115,7 @@ public class PrisonerActor : MonoBehaviour
         }
         else
         {
-            // 2. 살아있을 때의 피격 연출
             PlayHitAnimation();
-            // 필요하다면 살아있을 때도 약간의 물리 충격을 줄 수 있음
-            // ragdoll.ApplyImpact(...)를 여기서 쓰면 즉시 쓰러지므로 주의
         }
 
         return true;
@@ -68,15 +125,14 @@ public class PrisonerActor : MonoBehaviour
     {
         PrisonerEventBus.RaisePrisonerDown(InstanceId);
 
-        // 기획서 반영: SetActive(false) 대신 래그돌 활성화
         if (ragdoll != null)
         {
-            // 쓰러질 때의 강한 충격량 전달
-            ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
+            const float DeathImpactStrength = 10f; // 매직넘버 방지 시 const로
+            ragdoll.ApplyImpact(hitPoint, hitDirection, DeathImpactStrength);
         }
         else
         {
-            gameObject.SetActive(false); // 래그돌 없으면 그냥 사라짐(백업)
+            gameObject.SetActive(false);
         }
 
         Debug.Log($"[Prisoner] {InstanceId} has been suppressed.");
@@ -85,9 +141,6 @@ public class PrisonerActor : MonoBehaviour
     private void PlayHitAnimation()
     {
         if (animator == null) return;
-
-        // 반항형/순응형에 따른 애니메이션 파라미터 분기 가능
-        // 기획서: 순응형은 웅크리기, 반항형은 얼굴 가리기
         animator.SetTrigger("Hit");
     }
 
@@ -95,7 +148,6 @@ public class PrisonerActor : MonoBehaviour
     {
         _combatEnabled = enabled;
 
-        // ✅ Bad AI는 "전투 중 + Bad"일 때만 켜짐
         var badAi = GetComponent<PrisonerBadAI>();
         if (badAi != null)
             badAi.enabled = enabled && (Type == PrisonerType.Bad);

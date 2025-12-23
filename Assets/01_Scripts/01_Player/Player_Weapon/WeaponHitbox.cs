@@ -3,45 +3,75 @@ using UnityEngine;
 
 public sealed class WeaponHitbox : MonoBehaviour
 {
-    [Header("Owner")]
-    [SerializeField] private Transform ownerRoot;   // Player 루트
-    [SerializeField] private float impactStrength = 20f;
+    private static class LayerNames
+    {
+        public const string Prisoner = "Prisoner";
+    }
 
-    [Header("Filters")]
-    [SerializeField] private LayerMask hittableLayers;
+    [Header("Owner")]
+    [SerializeField] private Transform ownerRoot;
 
     private readonly HashSet<int> _hitTargets = new HashSet<int>();
+    private int _prisonerLayer;
+
+    // ✅ 스윙 활성 상태(디버깅/안전용)
+    private bool _swingActive;
 
     private void Awake()
     {
         if (ownerRoot == null)
             ownerRoot = transform.root;
+
+        _prisonerLayer = LayerMask.NameToLayer(LayerNames.Prisoner);
+
+        var col = GetComponent<Collider>();
+        if (col != null) col.isTrigger = true;
     }
 
-    private void OnEnable()
+    // ✅ 히트박스 ON(스윙 시작) 때마다 호출
+    public void BeginSwing()
     {
-        // HitboxOn 될 때마다 초기화 = 한 스윙 1회 판정 보장
+        _swingActive = true;
         _hitTargets.Clear();
+    }
+
+    // ✅ 히트박스 OFF(스윙 종료) 때 호출
+    public void EndSwing()
+    {
+        _swingActive = false;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // 1. 죄수인지 확인
-        if (other.TryGetComponent<PrisonerActor>(out var prisoner))
+        if (!_swingActive) return;
+        if (other == null) return;
+
+        if (other.gameObject.layer != _prisonerLayer)
+            return;
+
+        int id = other.GetInstanceID();
+        if (_hitTargets.Contains(id))
+            return;
+
+        _hitTargets.Add(id);
+
+        if (!other.TryGetComponent<PrisonerActor>(out var prisoner))
+            return;
+
+        int damage = 10;
+
+        var player = ownerRoot != null ? ownerRoot.GetComponent<Player>() : null;
+        if (player != null && player.Data != null && player.Data.AttakData != null &&
+            player.Data.AttakData.AttackInfoDatas != null && player.Data.AttakData.AttackInfoDatas.Count > 0)
         {
-            // 2. PlayerSO에서 공격력 가져오기
-            // 기획서상 PlayerSO에 AttackPower 혹은 유사한 필드가 있다고 가정합니다.
-            var player = GetComponent<Player>();
-            int damage = (player != null && player.Data != null) ? (int)player.Data.AttakData.AttackInfoDatas[0].Force : 10;
-
-            // 3. 타격 지점 및 방향 계산 (물리 효과용)
-            Vector3 hitPoint = other.ClosestPoint(transform.position);
-            Vector3 hitDir = (other.transform.position - transform.position).normalized;
-
-            // 4. 죄수에게 데미지 전달
-            prisoner.ApplyDamage(damage, hitPoint, hitDir);
-
-            Debug.Log($"[Hit] {other.name} hit by player with {damage} dmg.");
+            damage = Mathf.Max(1, (int)player.Data.AttakData.AttackInfoDatas[0].Force);
         }
+
+        Vector3 hitPoint = other.ClosestPoint(transform.position);
+        Vector3 hitDir = (other.transform.position - transform.position).normalized;
+
+        prisoner.ApplyDamage(damage, hitPoint, hitDir);
+
+        Debug.Log($"[WeaponHitbox] Hit Prisoner: {other.name}, dmg={damage}");
     }
 }
