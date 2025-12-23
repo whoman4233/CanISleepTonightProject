@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
                 break;
             case GamePhase.Briefing:
                 OnEnterBriefing();
-                StartCoroutine(WaitAndChangePhase(GamePhase.Patrol, 1.5f));
+                //StartCoroutine(WaitAndChangePhase(GamePhase.Patrol, 1.5f));
                 break;
             case GamePhase.Patrol:
                 OnEnterPatrol();
@@ -202,5 +202,11 @@ public class GameManager : MonoBehaviour
         }
         Debug.LogWarning("세이브 파일이 없습니다");
         return false;
+    }
+
+    public void ResetTimer()
+    {
+        patrolDurationSeconds = 480f;
+        Debug.Log("타이머가 480초로 초기화되었습니다.");
     }
 }

@@ -70,15 +70,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Setting",
-                    "type": "Button",
-                    "id": "7cc97910-e9fe-485a-ab0d-f99cb9c1c914",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Crouch",
                     "type": "Button",
                     "id": "82f9cc47-4cfb-483c-aadb-d65de201b96b",
@@ -212,17 +203,6 @@
                 },
                 {
                     "name": "",
-                    "id": "d64b86b8-37ac-4af3-abee-5f2015407ff2",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Setting",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "cf4e05d6-125e-42ce-9168-a3d1e480780d",
                     "path": "<Keyboard>/ctrl",
                     "interactions": "",
@@ -273,15 +253,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "ForceInspect",
-                    "type": "Button",
-                    "id": "66dbad81-84a4-47f7-9159-0e4d99ebbee7",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -299,7 +270,7 @@
                 {
                     "name": "",
                     "id": "62bf5394-b5d6-4892-9386-c2d4c98e7b38",
-                    "path": "<Keyboard>/escape",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -328,17 +299,6 @@
                     "action": "InspectClick",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "39a143a9-ca60-4302-b396-5c1967a1792c",
-                    "path": "<Keyboard>/i",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ForceInspect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -359,6 +319,15 @@
                     "name": "Click",
                     "type": "Button",
                     "id": "afe7d14c-77ee-4069-afec-c9e136c15f46",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Setting",
+                    "type": "Button",
+                    "id": "f21e74f9-0c0a-4fc8-b3f6-2b4e20e64b75",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -385,6 +354,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Click",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2d69e475-a987-40dc-98f7-9648dda12e11",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Setting",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

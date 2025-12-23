@@ -156,15 +156,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Setting"",
-                    ""type"": ""Button"",
-                    ""id"": ""7cc97910-e9fe-485a-ab0d-f99cb9c1c914"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""Crouch"",
                     ""type"": ""Button"",
                     ""id"": ""82f9cc47-4cfb-483c-aadb-d65de201b96b"",
@@ -298,17 +289,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""d64b86b8-37ac-4af3-abee-5f2015407ff2"",
-                    ""path"": ""<Keyboard>/escape"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Setting"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""cf4e05d6-125e-42ce-9168-a3d1e480780d"",
                     ""path"": ""<Keyboard>/ctrl"",
                     ""interactions"": """",
@@ -359,15 +339,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""ForceInspect"",
-                    ""type"": ""Button"",
-                    ""id"": ""66dbad81-84a4-47f7-9159-0e4d99ebbee7"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -385,7 +356,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""62bf5394-b5d6-4892-9386-c2d4c98e7b38"",
-                    ""path"": ""<Keyboard>/escape"",
+                    ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -414,17 +385,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""action"": ""InspectClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""39a143a9-ca60-4302-b396-5c1967a1792c"",
-                    ""path"": ""<Keyboard>/i"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ForceInspect"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -445,6 +405,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""name"": ""Click"",
                     ""type"": ""Button"",
                     ""id"": ""afe7d14c-77ee-4069-afec-c9e136c15f46"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Setting"",
+                    ""type"": ""Button"",
+                    ""id"": ""f21e74f9-0c0a-4fc8-b3f6-2b4e20e64b75"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -473,6 +442,17 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2d69e475-a987-40dc-98f7-9648dda12e11"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Setting"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -488,7 +468,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Player_Inventory = m_Player.FindAction("Inventory", throwIfNotFound: true);
         m_Player_Interaction = m_Player.FindAction("Interaction", throwIfNotFound: true);
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
-        m_Player_Setting = m_Player.FindAction("Setting", throwIfNotFound: true);
         m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
         // Inspection
         m_Inspection = asset.FindActionMap("Inspection", throwIfNotFound: true);
@@ -496,11 +475,11 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Inspection_Rotate = m_Inspection.FindAction("Rotate", throwIfNotFound: true);
         m_Inspection_Exit = m_Inspection.FindAction("Exit", throwIfNotFound: true);
         m_Inspection_InspectClick = m_Inspection.FindAction("InspectClick", throwIfNotFound: true);
-        m_Inspection_ForceInspect = m_Inspection.FindAction("ForceInspect", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Point = m_UI.FindAction("Point", throwIfNotFound: true);
         m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
+        m_UI_Setting = m_UI.FindAction("Setting", throwIfNotFound: true);
     }
 
     ~@PlayerInputs()
@@ -590,7 +569,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Inventory;
     private readonly InputAction m_Player_Interaction;
     private readonly InputAction m_Player_Attack;
-    private readonly InputAction m_Player_Setting;
     private readonly InputAction m_Player_Crouch;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
@@ -631,10 +609,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Attack".
         /// </summary>
         public InputAction @Attack => m_Wrapper.m_Player_Attack;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/Setting".
-        /// </summary>
-        public InputAction @Setting => m_Wrapper.m_Player_Setting;
         /// <summary>
         /// Provides access to the underlying input action "Player/Crouch".
         /// </summary>
@@ -686,9 +660,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Attack.started += instance.OnAttack;
             @Attack.performed += instance.OnAttack;
             @Attack.canceled += instance.OnAttack;
-            @Setting.started += instance.OnSetting;
-            @Setting.performed += instance.OnSetting;
-            @Setting.canceled += instance.OnSetting;
             @Crouch.started += instance.OnCrouch;
             @Crouch.performed += instance.OnCrouch;
             @Crouch.canceled += instance.OnCrouch;
@@ -724,9 +695,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Attack.started -= instance.OnAttack;
             @Attack.performed -= instance.OnAttack;
             @Attack.canceled -= instance.OnAttack;
-            @Setting.started -= instance.OnSetting;
-            @Setting.performed -= instance.OnSetting;
-            @Setting.canceled -= instance.OnSetting;
             @Crouch.started -= instance.OnCrouch;
             @Crouch.performed -= instance.OnCrouch;
             @Crouch.canceled -= instance.OnCrouch;
@@ -771,7 +739,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Inspection_Rotate;
     private readonly InputAction m_Inspection_Exit;
     private readonly InputAction m_Inspection_InspectClick;
-    private readonly InputAction m_Inspection_ForceInspect;
     /// <summary>
     /// Provides access to input actions defined in input action map "Inspection".
     /// </summary>
@@ -799,10 +766,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Inspection/InspectClick".
         /// </summary>
         public InputAction @InspectClick => m_Wrapper.m_Inspection_InspectClick;
-        /// <summary>
-        /// Provides access to the underlying input action "Inspection/ForceInspect".
-        /// </summary>
-        public InputAction @ForceInspect => m_Wrapper.m_Inspection_ForceInspect;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -841,9 +804,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @InspectClick.started += instance.OnInspectClick;
             @InspectClick.performed += instance.OnInspectClick;
             @InspectClick.canceled += instance.OnInspectClick;
-            @ForceInspect.started += instance.OnForceInspect;
-            @ForceInspect.performed += instance.OnForceInspect;
-            @ForceInspect.canceled += instance.OnForceInspect;
         }
 
         /// <summary>
@@ -867,9 +827,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @InspectClick.started -= instance.OnInspectClick;
             @InspectClick.performed -= instance.OnInspectClick;
             @InspectClick.canceled -= instance.OnInspectClick;
-            @ForceInspect.started -= instance.OnForceInspect;
-            @ForceInspect.performed -= instance.OnForceInspect;
-            @ForceInspect.canceled -= instance.OnForceInspect;
         }
 
         /// <summary>
@@ -909,6 +866,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private List<IUIActions> m_UIActionsCallbackInterfaces = new List<IUIActions>();
     private readonly InputAction m_UI_Point;
     private readonly InputAction m_UI_Click;
+    private readonly InputAction m_UI_Setting;
     /// <summary>
     /// Provides access to input actions defined in input action map "UI".
     /// </summary>
@@ -928,6 +886,10 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "UI/Click".
         /// </summary>
         public InputAction @Click => m_Wrapper.m_UI_Click;
+        /// <summary>
+        /// Provides access to the underlying input action "UI/Setting".
+        /// </summary>
+        public InputAction @Setting => m_Wrapper.m_UI_Setting;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -960,6 +922,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @Setting.started += instance.OnSetting;
+            @Setting.performed += instance.OnSetting;
+            @Setting.canceled += instance.OnSetting;
         }
 
         /// <summary>
@@ -977,6 +942,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @Setting.started -= instance.OnSetting;
+            @Setting.performed -= instance.OnSetting;
+            @Setting.canceled -= instance.OnSetting;
         }
 
         /// <summary>
@@ -1067,13 +1035,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnAttack(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Setting" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnSetting(InputAction.CallbackContext context);
-        /// <summary>
         /// Method invoked when associated input action "Crouch" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -1116,13 +1077,6 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInspectClick(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "ForceInspect" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnForceInspect(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
@@ -1145,5 +1099,12 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClick(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Setting" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSetting(InputAction.CallbackContext context);
     }
 }

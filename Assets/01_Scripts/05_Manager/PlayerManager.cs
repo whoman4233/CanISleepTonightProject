@@ -5,65 +5,64 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
-    //private Player Player;
-    private GameManager gameManager;
-    private PrisonCellManager prisonCellManager;
+    [Header("Player Settings")]
+    [SerializeField] public GameObject playerPrefab; // 플레이어 프리팹
+    [SerializeField] public Transform spawnPoint;    // 생성 위치
 
-    public string CurrentCellID { get; private set; } = string.Empty; // ID = 감방 id, 플레이어가 어느 감방에 있는지, 감방id에 따라 int나 string로 변경
-    public bool IsObserving { get; private set; } = false;      // 관찰 중 상태
-    public bool IsEngagingInAction { get; private set; } = false; // 진압 액션 중
+    private GameObject currentPlayer;
+    private Action<GamePhaseChangedEvent> _phaseChangedHandler;
 
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;
     private void Awake()
     {
-        _onPhaseChanged = e =>
-        {
-            if (e.Phase == GamePhase.Standby)
-            {
-                ResetDailyRecoed();
-            }
-        };
+        _phaseChangedHandler = (e) => OnPhaseChanged(e);
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_phaseChangedHandler);
     }
+
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_phaseChangedHandler);
     }
 
-    public void Initialize()
+    private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
-        //GameContext context = GameContext.Instance;
-        ////Player = context.Get<Player>();
-        //gameManager = context.Get<GameManager>();
-        //prisonCellManager = context.Get<PrisonCellManager>();
-        
-
-        //if(gameManager == null || prisonCellManager == null)
-        //{
-        //    Debug.LogError("Player 혹은 GameManager가 연결되지 않았습니다");
-        //    return;
-        //}
-       // SetMovementState(false);
+        // 스탠바이 페이즈로 진입할 때 플레이어 생성
+        if (e.Phase == GamePhase.Standby)
+        {
+            SpawnPlayer();
+        }
+        // 타이틀로 돌아갈 때(NotStarted) 기존 플레이어 삭제
+        else if (e.Phase == GamePhase.NotStarted)
+        {
+            CleanupPlayer();
+        }
     }
 
-    //public void SetMovementState(bool state) // 플레이어 이동 가능 상태
-    //{
-    //    Player.SetMovementEnabled(state);
-    //}
-
-    public void ResetDailyRecoed() // 플레이어 상태 초기화
+    private void SpawnPlayer()
     {
-        CurrentCellID = string.Empty;
-        IsObserving = false;
-        IsEngagingInAction = false;
-        Debug.Log("플레이어 순찰 상태 초기화 완료");
-    }
-    public void SetInspectingCell(string cellID) => CurrentCellID = cellID;
-    public void SetObserving(bool state) => IsObserving = state;
-    public string GetCurrentCellID() => CurrentCellID;
+        // 이미 플레이어가 있다면 중복 생성 방지
+        if (currentPlayer != null) return;
 
+        if (playerPrefab != null && spawnPoint != null)
+        {
+            currentPlayer = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+            Debug.Log("플레이어가 생성되었습니다.");
+        }
+        else
+        {
+            Debug.LogError("프리팹이나 스폰 포인트가 설정되지 않았습니다.");
+        }
+    }
+
+    private void CleanupPlayer()
+    {
+        if (currentPlayer != null)
+        {
+            Destroy(currentPlayer);
+            currentPlayer = null;
+        }
+    }
 }

@@ -42,12 +42,8 @@ public class Player : MonoBehaviour
 
     private PlayerInputs _inputs;
     private PlayerInputs.PlayerActions _playerActions;
-    public PlayerInputs Inputs => _inputs;
-    private InputMode _currentInputMode = InputMode.Gameplay;
     private InspectionManager _inspectionManager;
 
-    //테스트 보호용 bool
-    private bool HasInputPolicy => FindObjectOfType<InputManager>() != null;
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -63,55 +59,47 @@ public class Player : MonoBehaviour
 
         AnimationData.Initialize();
 
-        var inputManager = FindObjectOfType<InputManager>();
-
-        if (inputManager != null && inputManager.SharedInputs != null)
+        // InputManager 사용
+        if (InputManager.Instance == null)
         {
-            _inputs = inputManager.SharedInputs;
-        }
-        else
-        {
-            // 테스트/단독 실행용 Fallback
-            _inputs = new PlayerInputs();
-            _inputs.Player.Enable();
-
-            Debug.LogWarning("[Player] InputManager 찾을 수 없음. Fallback input enabled.");
+            Debug.LogError("[Player] InputManager.Instance not found", this);
+            enabled = false;
+            return;
         }
 
+        _inputs = InputManager.Instance.Inputs;         
         _playerActions = _inputs.Player;
-
-        _playerActions.Setting.performed += OnSettingsPressed;
 
         StateMachine = new PlayerStateMachine(this);
 
         _inspectionManager = GetComponentInChildren<InspectionManager>();
-        if (_inspectionManager == null)
+        if (_inspectionManager != null)
         {
-            Debug.LogError("[Player] InspectionManager not found", this);
+            _inspectionManager.Initialize(_inputs);        // Inputs 주입 유지
         }
         else
         {
-            _inspectionManager.Initialize(_inputs);
+            Debug.LogError("[Player] InspectionManager not found", this);
         }
+
 
         Sfx = GetComponent<PlayerSfxController>();
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe<InputModeChangedEvent>(OnInputModeChanged);
+        // 플레이어 존재 알림 (InputManager가 Gameplay enable 판단)
+        EventBus.Publish(new PlayerPresenceChangedEvent(true));
     }
 
     private void OnDisable()
     {
-        _playerActions.Setting.performed -= OnSettingsPressed;
-        EventBus.Unsubscribe<InputModeChangedEvent>(OnInputModeChanged);
+        // 플레이어 비존재 알림
+        EventBus.Publish(new PlayerPresenceChangedEvent(false));
     }
 
-    private void OnDestroy()
-    {
-        _inputs?.Dispose();
-    }
+    // Player는 Input을 소유하지 않음
+    // Dispose 책임은 InputManager에 있음
 
     private void Start()
     {
@@ -125,12 +113,14 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        // Inspection 중이면 무조건 차단
+        // Inspection 중 Player FSM 차단
         if (_inspectionManager != null && _inspectionManager.IsInspecting)
             return;
-        // 정책이 있을 때만 모드 제한
-        if (HasInputPolicy && _currentInputMode != InputMode.Gameplay)
+
+        // ActionMap enable 여부 확인
+        if (!_inputs.Player.enabled)
             return;
+
         ReadInputs();
 
         StateMachine.HandleInput();
@@ -142,7 +132,7 @@ public class Player : MonoBehaviour
         if (_inspectionManager != null && _inspectionManager.IsInspecting)
             return;
 
-        if (HasInputPolicy && _currentInputMode != InputMode.Gameplay)
+        if (!_inputs.Player.enabled)
             return;
 
         StateMachine.FixedTick(Time.fixedDeltaTime);
@@ -229,27 +219,12 @@ public class Player : MonoBehaviour
         }
     }
 
+    // =========================
+    // Inspection
+    // =========================
     public void TryEnterInspection(IInspectable inspectable)
     {
-        if (_inspectionManager == null)
-            return;
-
+        if (_inspectionManager == null) return;
         _inspectionManager.EnterInspection(inspectable);
-    }
-
-    private void OnSettingsPressed(InputAction.CallbackContext context)
-    {
-        //  Inspection 중에는 무조건 무시
-        if (_inspectionManager != null && _inspectionManager.IsInspecting)
-            return;
-        if (HasInputPolicy && _currentInputMode == InputMode.Inspection)
-            return;
-
-        EventBus.Publish(new PauseMenuToggleRequestedEvent());
-    }
-
-    private void OnInputModeChanged(InputModeChangedEvent e)
-    {
-        _currentInputMode = e.Mode;
     }
 }
