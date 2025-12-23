@@ -7,6 +7,7 @@ public class CellAnchor : MonoBehaviour
 
     [Header("Spawns")]
     public Transform prisonerSpawn;
+    public Transform inspectionPoint;
     public Transform playerEnterSpawn;
     public Transform playerExitSpawn;
 

@@ -51,12 +51,6 @@ public class DayDebugConsole : MonoBehaviour
             Debug.Log($"[TryEnter] {target} => {ok}");
         }
 
-        // F3: Warning(NonSuppress)
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            bool ok = inspection.SelectWarning(target);
-            Debug.Log($"[SelectWarning] {target} => {ok}");
-        }
 
         // F4: Suppress start (Lock)
         if (Input.GetKeyDown(KeyCode.F4))

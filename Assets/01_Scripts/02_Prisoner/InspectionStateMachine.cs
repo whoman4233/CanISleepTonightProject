@@ -5,169 +5,147 @@ public class InspectionStateMachine : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private PrisonCellManager cellManager;
+    [SerializeField] private CellContentRegistry contentRegistry; // 죄수 FSM을 찾기 위해 필요
 
     public string CurrentInspectingCellId { get; private set; }
 
-    // 외부(UI/시스템/정산) 연동 이벤트
-    public event Action<string> OnEnteredCell;                         // cellId
-    public event Action<string> OnExitBlocked;                         // cellId
-    public event Action<string, bool, bool> OnResolved;                // cellId, isSuspicious, didSuppress
-    public event Action<string> OnSuppressStarted;                     // cellId
-    public event Action<string> OnSuppressSuccess;                     // cellId
+    public event Action<string> OnEnteredCell;
+    public event Action<string> OnExitBlocked;
+    public event Action<string, bool, bool> OnResolved;
+    public event Action<string> OnSuppressStarted;
+    public event Action<string> OnSuppressSuccess;
 
-    private bool _isSuppressionCleared; // 현재 방의 진압 완료 여부
+    private bool _isSuppressionCleared;
     public bool IsSuppressionCleared => _isSuppressionCleared;
 
     private void Awake()
     {
         if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+        if (contentRegistry == null) contentRegistry = FindObjectOfType<CellContentRegistry>();
         cellManager?.BuildCellsIfNeeded();
     }
 
+    private void OnEnable() => PrisonerEventBus.OnPrisonerDown += HandlePrisonerDown;
+    private void OnDisable() => PrisonerEventBus.OnPrisonerDown -= HandlePrisonerDown;
+
     public bool TryEnterCell(string cellId)
     {
-        if (cellManager == null) return false;
-
-        // 한 번에 한 방만 점검
-        if (!string.IsNullOrEmpty(CurrentInspectingCellId))
-            return false;
+        if (cellManager == null || !string.IsNullOrEmpty(CurrentInspectingCellId)) return false;
 
         var cell = cellManager.GetCell(cellId);
-        if (cell == null) return false;
+        if (cell == null || !cell.IsActiveToday || cell.IsLockedForDay) return false;
 
-        // 오늘 활성(소음) 방만 점검 가능
-        if (!cell.IsActiveToday || !cell.IsNoisy)
-            return false;
-
+        // 시스템 상태 변경
         cell.IsInspectingNow = true;
         cell.State = CellState.Inspecting;
         CurrentInspectingCellId = cellId;
+        _isSuppressionCleared = false;
+
+        // ✅ [살려야 할 로직 1] 죄수 FSM을 Inspection(일어서기) 상태로 전환
+        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.InspectionState));
 
         OnEnteredCell?.Invoke(cellId);
-
-        _isSuppressionCleared = false; // 새 방에 들어갔으니 진압 상태 초기화
         return true;
     }
 
-    // UI상 "경고" 버튼. 내부는 NonSuppress.
-    public bool SelectWarning(string cellId)
+    // ✅ [살려야 할 로직 2] 시간 초과 시 강제 해제 (기존 메서드 유지)
+    public void ForceReleaseOnTimeExpired()
     {
-        var cell = GetCurrentCellOrNull(cellId);
-        if (cell == null) return false;
+        if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
 
-        // 진압 중에는 경고 선택 불가
-        if (cell.State == CellState.Suppressing || cell.IsSuppressing)
+        var cellId = CurrentInspectingCellId;
+        var cell = cellManager.GetCell(cellId);
+
+        // ✅ 추가: 시간 다 되면 죄수를 다시 Idle(앉기) 상태로 돌려보냄
+        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.IdleState));
+
+        if (cell != null) cellManager.ForceReleaseInspectingOnly(cellId);
+
+        CurrentInspectingCellId = null;
+        Debug.Log($"[ISSM] Time Expired. Force Released cell {cellId}");
+    }
+
+    // ✅ [살려야 할 로직 3] 문을 닫을 때 성공적으로 마감하는 메서드
+    public void CompleteInspection(string cellId, bool didSuppress)
+    {
+        var cell = cellManager.GetCell(cellId);
+        if (cell == null) return;
+
+        // 리포트 빌더에 신호 전달
+        OnResolved?.Invoke(cell.CellId, cell.IsSuspicious, didSuppress);
+        // 데이터상 오늘 마감 처리
+        cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
+        // 시스템 리셋
+        EndInspection();
+    }
+
+    public void EndInspection()
+    {
+        CurrentInspectingCellId = null;
+        _isSuppressionCleared = false;
+    }
+
+    public bool RequestExitCell(string cellId)
+    {
+        var cell = cellManager.GetCell(cellId);
+        if (cell != null && cell.IsSuspicious && !_isSuppressionCleared)
+        {
+            OnExitBlocked?.Invoke(cellId);
             return false;
-
-        cell.NonSuppressChosen = true;
+        }
         return true;
     }
 
-    // 진압 선택: 즉시 퇴장/문 상호작용 잠금
     public bool SelectSuppress(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
-        if (cell == null) return false;
-
-        if (cell.State == CellState.Suppressing) return false;
+        if (cell == null || cell.State == CellState.Suppressing) return false;
 
         cell.IsSuppressing = true;
-        cell.SuppressSuccess = false;
         cell.State = CellState.Suppressing;
+
+        // ✅ 추가: 진압 버튼 클릭 시 죄수를 Combat(공격) 상태로 전환
+        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.CombatState));
 
         OnSuppressStarted?.Invoke(cellId);
         PrisonerEventBus.RaiseSuppressSessionStarted(cellId);
-
         return true;
     }
 
-    // 죄수 파트가 "진압 성공" 시 호출
+    // --- 헬퍼 메서드 ---
+    private void SetPrisonerState(string cellId, Action<PrisonerFSM> action)
+    {
+        if (contentRegistry != null && contentRegistry.TryGet(cellId, out var content))
+        {
+            if (content.prisoner != null)
+            {
+                var fsm = content.prisoner.GetComponent<PrisonerFSM>();
+                if (fsm != null) action?.Invoke(fsm);
+            }
+        }
+    }
+
+    private void HandlePrisonerDown(string instanceId)
+    {
+        if (!string.IsNullOrEmpty(CurrentInspectingCellId) && instanceId.StartsWith(CurrentInspectingCellId))
+        {
+            _isSuppressionCleared = true;
+            NotifySuppressSuccess(CurrentInspectingCellId);
+        }
+    }
+
     public bool NotifySuppressSuccess(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
-        if (cell == null) return false;
-
-        if (cell.State != CellState.Suppressing) return false;
-
+        if (cell == null || cell.State != CellState.Suppressing) return false;
         cell.SuppressSuccess = true;
         OnSuppressSuccess?.Invoke(cellId);
         return true;
     }
 
-    // CellDoorInteractable이 문을 닫으려 할 때 호출하는 함수
-    public bool RequestExitCell(string cellId)
-    {
-        // 기획서 반영: 수상한 방인데 아직 진압 플래그가 안 켜졌다면 false 반환
-        var cell = cellManager.GetCell(cellId);
-        if (cell.IsSuspicious && !_isSuppressionCleared)
-        {
-            Debug.LogWarning("아직 죄수가 제압되지 않아 문을 닫을 수 없습니다.");
-            return false;
-        }
-
-        // 진압이 되었거나, 처음부터 정상이었던 방이면 true 반환
-        return true;
-    }
-
-    // 시간 초과: Exit 호출 X, 완료처리 X, 락만 해제하고 ActiveNoisy 유지
-    public void ForceReleaseOnTimeExpired()
-    {
-        if (cellManager == null) return;
-        if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
-
-        var cellId = CurrentInspectingCellId;
-        var cell = cellManager.GetCell(cellId);
-        if (cell == null)
-        {
-            CurrentInspectingCellId = null;
-            return;
-        }
-
-        cellManager.ForceReleaseInspectingOnly(cellId);
-        CurrentInspectingCellId = null;
-    }
-
-    private void Resolve(CellRuntime cell, bool didSuppress)
-    {
-        // 정산 기록 이벤트(ReportBuilder가 받음)
-        OnResolved?.Invoke(cell.CellId, cell.IsSuspicious, didSuppress);
-
-        // ✅ 즉시 비활성화 X
-        // ✅ 오늘은 잠금 + 소음 OFF + 해결 기록만 남김
-        cellManager.MarkResolvedAndLockForDay(cell.CellId, didSuppress);
-
-        // 점검 락 해제(다른 방 점검 가능)
-        CurrentInspectingCellId = null;
-    }
-
     private CellRuntime GetCurrentCellOrNull(string cellId)
     {
-        if (cellManager == null) return null;
-        if (string.IsNullOrEmpty(CurrentInspectingCellId)) return null;
-        if (!string.Equals(CurrentInspectingCellId, cellId, StringComparison.Ordinal)) return null;
+        if (string.IsNullOrEmpty(CurrentInspectingCellId) || !CurrentInspectingCellId.Equals(cellId)) return null;
         return cellManager.GetCell(cellId);
     }
-
-    private void OnEnable()
-    {
-        PrisonerEventBus.OnPrisonerDown += HandlePrisonerDown;
-    }
-
-    private void OnDisable()
-    {
-        PrisonerEventBus.OnPrisonerDown -= HandlePrisonerDown;
-    }
-
-    private void HandlePrisonerDown(string instanceId)
-    {
-        // 현재 점검 중인 방의 죄수가 맞는지 확인 후 플래그 ON
-        // instanceId가 "C_1F_06_..." 형식이니 앞부분만 체크
-        if (instanceId.StartsWith(CurrentInspectingCellId))
-        {
-            _isSuppressionCleared = true;
-            Debug.Log($"[ISSM] {CurrentInspectingCellId} 진압 완료 확인. 퇴장 가능.");
-        }
-    }
-
-
 }
