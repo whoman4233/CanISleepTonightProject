@@ -13,6 +13,12 @@ public class PopupCanvasRootController : MonoBehaviour
     private Action<ShowWhiteBoardPopupEvent> showWhiteBoardHandler;
     private Action<HideWhiteBoardPopupEvent> hideWhiteBoardHandler;
     private Action<PopupCloseRequestedEvent> closePopupHandler;
+
+    public bool HasAnyPopupOpen =>
+    whiteBoardPopup.IsOpen ||
+    settingsPopup.IsOpen ||
+    exitConfirmPopup.IsOpen;
+
     private void Awake()
     {
         showExitHandler = OnShowExitConfirm;
