@@ -58,21 +58,16 @@ public class SettlementReportBuilder : MonoBehaviour
     // 정산 페이즈 진입 순간 1회 호출
     public void BuildSettlementReport(out List<ResolvedRecord> resolved, out List<UninspectedRecord> uninspected)
     {
-        // 1. 이미 완료되어 캐시에 쌓인 리스트 전달
         resolved = new List<ResolvedRecord>(_resolved);
 
-        // 2. 미조사 리스트 생성
         uninspected = new List<UninspectedRecord>();
         if (cellManager != null)
         {
             foreach (var cell in cellManager.Cells)
             {
-                // ✅ 수정된 조건: 오늘 활성 방(IsActiveToday)이면서 
-                // ✅ 동시에 이미 조사 완료된 ID 목록(_resolvedIds)에 없어야만 "미점검"입니다.
-                if (cell.IsActiveToday && !_resolvedIds.Contains(cell.CellId))
-                {
+                // 아직 ActiveToday가 남아있으면 "미점검"
+                if (cell.IsActiveToday)
                     uninspected.Add(new UninspectedRecord(cell.CellId, cell.IsSuspicious));
-                }
             }
         }
     }
