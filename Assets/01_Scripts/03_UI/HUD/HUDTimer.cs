@@ -18,8 +18,14 @@ public class HUDTimer : MonoBehaviour
 
     private void OnEnable()
     {
-        //gameManager = GameContext.Instance.Get<GameManager>();
-        GameManager.Instance.OnInGameTimeUpdated += OnTimeUpdated;
+        gameManager = FindObjectOfType<GameManager>();
+        if (gameManager == null)
+        {
+            Debug.LogError("[HUDTimer] GameManager not found");
+            return;
+        }
+
+        gameManager.OnInGameTimeUpdated += OnTimeUpdated;
     }
 
     private void OnDisable()

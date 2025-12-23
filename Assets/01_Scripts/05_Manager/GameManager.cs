@@ -41,22 +41,35 @@ public class GameManager : MonoBehaviour
         }
         _saveManager = new SaveManager();
 
-        _requestPhaseChange = (e) => ChangePhase(e.TargetPhase); // 페이즈 변경 요청시 바로 변경
+        _requestPhaseChange = (e) =>
+        {
+            Debug.Log($"GameManager: 페이즈 변경 요청 받음 -> {e.TargetPhase}"); ChangePhase(e.TargetPhase);
+        };// 페이즈 변경 요청시 바로 변경
         _onEndingConditionMet = e => // 엔딩 조건 충족하면 엔딩페이즈 이동 및 엔딩타입 받아옴
         {
             finalEnding = e.EndingType;
             ChangePhase(GamePhase.Ending);
         };
-        StartCoroutine(StartFirstPhase()); // 디버그용
+
     }
     //public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
     //{
     //    StartCoroutine(StartFirstPhase());
     //}
+
+    private void Start()
+    {
+        // IntroScene에서 최초 1회 UI 동기화용
+        EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
+    }
     private void OnEnable()
     {
         EventBus.Subscribe(_requestPhaseChange);  
         EventBus.Subscribe(_onEndingConditionMet);
+
+        //인게임 메뉴 팝업시 시간정지
+        EventBus.Subscribe<PauseGameRequestedEvent>(_ => Time.timeScale = 0f);
+        EventBus.Subscribe<ResumeGameRequestedEvent>(_ => Time.timeScale = 1f);
     }
 
     private void OnDisable()

@@ -130,3 +130,24 @@ public struct InspectionViewReleasedEvent
 {
 
 }
+
+//==========================================
+// 게임 시작 관련 이벤트
+//==========================================
+public struct RequestStartNewGameEvent
+{
+
+}
+
+//==========================================
+// 인풋모드 변환 이벤트
+//==========================================
+public struct InputModeChangedEvent
+{
+    public InputMode Mode;
+
+    public InputModeChangedEvent(InputMode mode)
+    {
+        Mode = mode;
+    }
+}

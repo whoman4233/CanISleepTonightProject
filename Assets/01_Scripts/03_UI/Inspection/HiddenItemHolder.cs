@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class HiddenItemHolder : MonoBehaviour, IHiddenItemInteractable
 {
     [SerializeField] private HiddenItemStateSO[] hiddenItems;
 
-    private Dictionary<System.Type, HiddenItemStateSO> runtimeItems;
+    private Dictionary<Type, HiddenItemStateSO> runtimeItems;
 
     private void Awake()
     {
-        runtimeItems = new Dictionary<System.Type, HiddenItemStateSO>();
+        runtimeItems = new Dictionary<Type, HiddenItemStateSO>();
 
         foreach (var item in hiddenItems)
         {
