@@ -38,6 +38,8 @@ public class PrisonerActor : MonoBehaviour
     [Header("Debug (Minimal)")]
     [SerializeField] private bool debugHit;
 
+    [SerializeField] private PrisonerSfxController sfx;
+
     private bool _initialized;
 
     private void Awake()
@@ -46,6 +48,9 @@ public class PrisonerActor : MonoBehaviour
         if (useSceneFallback && !_initialized)
             EnsureInitialized(); 
         fsm = GetComponent<PrisonerFSM>();
+
+        if (sfx == null)
+            sfx = GetComponent<PrisonerSfxController>();
     }
 
     public void Init(string cellId, string instanceId, PrisonerDefinition def)
@@ -110,6 +115,9 @@ public class PrisonerActor : MonoBehaviour
             fsm.ChangeState(fsm.DeadState); // FSM을 사망 상태로
             PrisonerEventBus.RaisePrisonerDown(InstanceId);
 
+            if (sfx != null) sfx.PlayRandomDieOnce();
+            Die(hitPoint, hitDirection);
+
             // 래그돌은 DeadState.Enter()에서 처리하거나 여기서 처리
             if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
         }
@@ -117,6 +125,9 @@ public class PrisonerActor : MonoBehaviour
         {
             // FSM에게 피격 알림 (전투/웅크리기 전환 트리거)
             fsm.OnDamaged(dmg, hitPoint, hitDirection);
+
+            if (sfx != null) sfx.PlayHitAndRandomMoan();
+            PlayHitAnimation();
         }
 
         return true;
