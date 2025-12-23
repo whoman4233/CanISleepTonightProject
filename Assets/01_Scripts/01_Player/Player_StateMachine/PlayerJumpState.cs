@@ -3,11 +3,20 @@
 public sealed class PlayerJumpState : PlayerState
 {
     private const float MinAirTime = 0.05f;
+    private const float FallEnterHeightThreshold = 2.5f;
+
+    // 공중 수평 입력 데드존(매직넘버 제거)
+    private const float AirInputDeadzoneSqr = 0.01f;
+
+    // 공중 이동 허용 비율(원하면 나중에 PlayerSO로 빼도 됨)
+    private const float AirControlMultiplier = 0.8f;
+
+    private static Transform _cachedMainCameraTransform;
+
     private float _timer;
 
     public PlayerJumpState(PlayerStateMachine sm) : base(sm) { }
 
-    private const float FallEnterHeightThreshold = 2.5f;
     public override void Enter()
     {
         P.Sfx?.StopFootstepLoopImmediate();
@@ -20,6 +29,7 @@ public sealed class PlayerJumpState : PlayerState
         {
             P.Animator.SetTrigger(P.AnimationData.JumpParameterHash);
             P.Sfx?.PlayJumpSfx();
+
             if (P.ForceReceiver != null)
                 P.ForceReceiver.SetJumpVelocity(P.Data.JumpData.JumpForce);
         }
@@ -43,7 +53,7 @@ public sealed class PlayerJumpState : PlayerState
         bool isInAir = !IsGrounded;
         if (isInAir && P.ForceReceiver != null)
         {
-            float fallDistance = P.AirApexY - y;        // 정점부터 얼마나 떨어졌는지
+            float fallDistance = P.AirApexY - y;               // 정점부터 얼마나 떨어졌는지
             bool isFallingDown = P.ForceReceiver.VerticalVelocity < 0f;
 
             // 낙하거리 임계치 넘을 때만 Falling 애니/상태 진입
@@ -75,37 +85,38 @@ public sealed class PlayerJumpState : PlayerState
         Vector3 horizontalMove = Vector3.zero;
 
         Vector3 input = new Vector3(P.MoveInput.x, 0f, P.MoveInput.y);
-        if (input.sqrMagnitude >= 0.0001f)
+        if (input.sqrMagnitude >= AirInputDeadzoneSqr)
         {
-            Transform cam = Camera.main.transform;
-
-            Vector3 forward = cam.forward;
-            Vector3 right = cam.right;
-            forward.y = 0f;
-            right.y = 0f;
-            forward.Normalize();
-            right.Normalize();
-
-            Vector3 moveDir = forward * input.z + right * input.x;
-
-            // 공중 회전도 원하면 유지
-            const float AirTurnSpeed = 0f;
-            bool rotateOnlyWhenForward = input.z > 0.1f;
-            if (rotateOnlyWhenForward && moveDir.sqrMagnitude > 0.0001f)
+            Transform cam = GetMainCameraTransform();
+            if (cam != null)
             {
-                Quaternion targetRot = Quaternion.LookRotation(moveDir);
-                P.transform.rotation = Quaternion.Slerp(P.transform.rotation, targetRot, fdt * AirTurnSpeed);
+                Vector3 forward = cam.forward;
+                Vector3 right = cam.right;
+                forward.y = 0f;
+                right.y = 0f;
+
+                forward.Normalize();
+                right.Normalize();
+
+                Vector3 moveDir = forward * input.z + right * input.x;
+
+                float baseSpeed = P.Data.GroundData.BaseSpeed;
+                float modifier = P.RunHeld ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier;
+                float moveSpeed = baseSpeed * modifier * AirControlMultiplier;
+
+                horizontalMove = moveDir * moveSpeed * fdt;
             }
-
-            // 공중 이동 속도(원하는 만큼만 허용)
-            const float AirControlMultiplier = 0.8f; // 0~1: 공중에서 얼마나 조작 가능한지
-            float baseSpeed = P.Data.GroundData.BaseSpeed;
-            float modifier = P.RunHeld ? P.Data.GroundData.RunSpeedModifier : P.Data.GroundData.WalkSpeedModifier;
-            float moveSpeed = baseSpeed * modifier * AirControlMultiplier;
-
-            horizontalMove = moveDir * moveSpeed * fdt;
         }
 
         P.Controller.Move(horizontalMove + verticalMove);
+    }
+
+    private static Transform GetMainCameraTransform()
+    {
+        if (_cachedMainCameraTransform != null) return _cachedMainCameraTransform;
+
+        Camera cam = Camera.main;
+        _cachedMainCameraTransform = cam != null ? cam.transform : null;
+        return _cachedMainCameraTransform;
     }
 }
