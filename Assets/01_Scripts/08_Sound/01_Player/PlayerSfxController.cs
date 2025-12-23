@@ -82,7 +82,16 @@ public sealed class PlayerSfxController : MonoBehaviour
         if (oneShotSource == null || jumpClip == null) return;
         oneShotSource.PlayOneShot(jumpClip, JumpVolume);
     }
-
+    public void PlayJumpLandingSfx()
+    {
+        if (oneShotSource == null || landClip == null)
+            return;
+        oneShotSource.PlayOneShot(landClip);
+    }
+    public void AE_PlayJumpLanding()
+    {
+        PlayJumpLandingSfx();
+    }
     public void PlayLandSfx()
     {
         if (oneShotSource == null || landClip == null) return;
