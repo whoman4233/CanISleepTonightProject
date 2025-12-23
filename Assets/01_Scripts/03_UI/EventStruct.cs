@@ -79,14 +79,27 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 
 }
 
-public struct ShowWarningPopupEvent
+//보고서 상호작용 시
+public struct ShowWarningPopupEvent // 경고 팝업 노출
 {
-    public string Message;
 
-    public ShowWarningPopupEvent(string message)
-    {
-        Message = message;
-    }
+}
+
+//화이트 보드 상호작용 시
+public struct ShowWhiteBoardPopupEvent
+{
+
+}
+
+public struct HideWhiteBoardPopupEvent
+{
+
+}
+
+// Popup UI ESC로 닫을 때
+public struct PopupCloseRequestedEvent
+{
+
 }
 
 //==========================================

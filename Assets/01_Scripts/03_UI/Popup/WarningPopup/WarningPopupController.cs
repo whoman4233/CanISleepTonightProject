@@ -6,7 +6,7 @@ using System.Collections;
 public class WarningPopupController : MonoBehaviour
 {
     [SerializeField] private GameObject warningRoot;
-    [SerializeField] private TMP_Text warningText;
+    [SerializeField] private TextMeshProUGUI warningText;
     [SerializeField] private float displayDuration = 1f;
 
     private Coroutine _currentRoutine;
@@ -14,8 +14,8 @@ public class WarningPopupController : MonoBehaviour
 
     private void Awake()
     {
-        warningRoot.SetActive(false);
         _onWarning = OnShowWarning;
+        warningRoot.SetActive(false);
     }
 
     private void OnEnable()
@@ -33,12 +33,11 @@ public class WarningPopupController : MonoBehaviour
         if (_currentRoutine != null)
             StopCoroutine(_currentRoutine);
 
-        _currentRoutine = StartCoroutine(ShowRoutine(e.Message));
+        _currentRoutine = StartCoroutine(ShowRoutine());
     }
 
-    private IEnumerator ShowRoutine(string message)
+    private IEnumerator ShowRoutine()
     {
-        warningText.text = message;
         warningRoot.SetActive(true);
 
         yield return new WaitForSeconds(displayDuration);
@@ -47,3 +46,4 @@ public class WarningPopupController : MonoBehaviour
         _currentRoutine = null;
     }
 }
+
