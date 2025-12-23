@@ -70,6 +70,8 @@ public class FlowController : MonoBehaviour
         Scene introScene = SceneManager.GetSceneByName(introSceneName);
         if (introScene.isLoaded) yield return SceneManager.UnloadSceneAsync(introScene);
 
+        GameManager.Instance.ResetTimer(); // 시간 초기화
+
         // 페이즈 변경
         GameManager.Instance.ChangePhase(GamePhase.Standby);
 

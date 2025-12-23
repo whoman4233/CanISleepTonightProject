@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,27 +9,15 @@ public class PrisonerSpawnController : MonoBehaviour
     [SerializeField] private CellAnchorRegistry anchorRegistry;
     [SerializeField] private CellContentRegistry contentRegistry;
 
-    [Header("Spawn Prefabs (Fallback)")]
-    [Tooltip("AnomalyDatabaseSO°¡ ºñ¾îÀÖÀ» ¶§¸¸ ¾²´Â ÀÓ½Ã ÇÁ¸®ÆÕ")]
-    [SerializeField] private GameObject anomalyFallbackPrefab;
-
     [Header("Prisoner Prefab")]
     [SerializeField] private GameObject prisonerPrefab;
 
-    [Header("Player (Bad AI target)")]
-    [SerializeField] private Transform player;
-
-    [Header("Template Pick (ÀÓ½Ã)")]
-    [Tooltip("°¨¹æ ¹èÄ¡ µ¥ÀÌÅÍ ÀüÀÌ¶ó ÀÓ½Ã·Î Å¸ÀÔº° ÅÛÇÃ¸´À» ÁöÁ¤")]
+    [Header("Template Pick (ì„ì‹œ)")]
     [SerializeField] private string defaultGoodTemplateId = "P_01";
     [SerializeField] private string defaultBadTemplateId = "P_02";
 
     [Header("Anomaly Data")]
     [SerializeField] private AnomalyDatabaseSO anomalyDatabase;
-    [Min(0)]
-    [SerializeField] private int suspiciousAnomalyCount = 1; // ¼ö»ó ¹æ¿¡ ¸î °³ ±òÁö(ÀÓ½Ã)
-    [Min(0)]
-    [SerializeField] private int normalAnomalyCount = 1;     // Á¤»ó ¹æ¿¡µµ °Ë»ç¿ä¼Ò¸¦ µÑÁö(ÀÓ½Ã)
 
     [Header("Debug")]
     [SerializeField] private bool verboseLog;
@@ -44,10 +32,6 @@ public class PrisonerSpawnController : MonoBehaviour
         PrisonerEventBus.OnSuppressSessionStarted -= HandleSuppressStart;
     }
 
-    /// <summary>
-    /// »õ·Î¿î ÇÏ·ç ½ÃÀÛ Àü¿¡ ±âÁ¸ ÄÜÅÙÃ÷¸¦ ½Ï ºñ¿ì°í ½ÍÀ¸¸é È£ÃâÇÏ¼¼¿ä.
-    /// (DayStart/Standby ½ÃÀÛ Å¸ÀÌ¹Ö¿¡ ¿¬°á)
-    /// </summary>
     public void ClearAllForNewDay()
     {
         if (contentRegistry == null) return;
@@ -55,17 +39,9 @@ public class PrisonerSpawnController : MonoBehaviour
         if (verboseLog) Debug.Log("[Spawn] Cleared all cell contents for new day.");
     }
 
-    /// <summary>
-    /// Standby Á÷ÈÄ: ¿À´Ã È°¼º ¹æµé¿¡ ÁË¼ö/ÀÌ»óÇö»ó ¿ä¼Ò¸¦ ¹Ì¸® »ı¼º
-    /// </summary>
     public void SpawnForToday(List<string> activeCellIds, Func<string, bool> isSuspiciousByCell)
     {
         if (!ValidateRefs()) return;
-        if (activeCellIds == null || activeCellIds.Count == 0)
-        {
-            Debug.LogWarning("[Spawn] activeCellIds is empty.");
-            return;
-        }
 
         foreach (var cellId in activeCellIds)
         {
@@ -75,142 +51,49 @@ public class PrisonerSpawnController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Æ¯Á¤ °¨¹æ 1°³¿¡ ÄÜÅÙÃ÷ »ı¼º
-    /// </summary>
     public void SpawnForCell(string cellId, bool isSuspicious)
     {
         if (!ValidateRefs()) return;
-        if (string.IsNullOrWhiteSpace(cellId))
-        {
-            Debug.LogWarning("[Spawn] cellId is null/empty.");
-            return;
-        }
-
-        // ÀÌ¹Ì ÀÖÀ¸¸é Áßº¹ »ı¼º ¹æÁö
-        if (contentRegistry.TryGet(cellId, out _))
-        {
-            if (verboseLog) Debug.Log($"[Spawn] Skip (already spawned) cell={cellId}");
-            return;
-        }
+        if (contentRegistry.TryGet(cellId, out _)) return;
 
         if (!anchorRegistry.TryGet(cellId, out var anchor) || anchor == null || anchor.prisonerSpawn == null)
         {
-            Debug.LogWarning($"[Spawn] Anchor missing or prisonerSpawn not set for cell={cellId}");
+            Debug.LogWarning($"[Spawn] Anchor missing for cell={cellId}");
             return;
         }
 
-        // ¼ö»ó/Á¤»ó¿¡ µû¶ó ÀÓ½Ã ÅÛÇÃ¸´ ¼±ÅÃ(ÃßÈÄ cellId->templateId Å×ÀÌºí·Î ±³Ã¼)
         string templateId = isSuspicious ? defaultBadTemplateId : defaultGoodTemplateId;
+        if (!prisonerDatabase.TryGet(templateId, out var def) || def == null) return;
 
-        if (!prisonerDatabase.TryGet(templateId, out var def) || def == null)
-        {
-            Debug.LogError($"[Spawn] Prisoner template not found: {templateId} (cell={cellId})");
-            return;
-        }
-
-        // ÄÜÅÙÃ÷ ÄÁÅ×ÀÌ³Ê
         var content = new CellContentRegistry.CellContent();
-
-        // 1¸í ±âº»(ÃßÈÄ N¸í È®Àå ´ëºñ: InstanceId´Â ±ÔÄ¢¸¸ Àâ¾ÆµÒ)
         string instanceId = BuildInstanceId(cellId, def.templateId, 1);
         content.prisonerInstanceId = instanceId;
 
-        // ÁË¼ö »ı¼º
+        // 1. ì£„ìˆ˜ ìƒì„±
         var pGo = InstantiatePrisoner(anchor, instanceId, def, out var actor);
-        if (actor == null)
-        {
-            Debug.LogError($"[Spawn] Failed to create prisoner actor (cell={cellId})");
-            return;
-        }
         content.prisoner = actor;
 
-        // ÀÌ»óÇö»ó ¿ä¼Ò »ı¼º (Á¤»ó/¼ö»ó ¸ğµÎ °¡´É)
-        SpawnAnomalies(cellId, anchor, isSuspicious, content);
+        // 2. ì´ìƒí˜„ìƒ ìš”ì†Œ ìƒì„± (ëª¨ë“  ìŠ¬ë¡¯ ì±„ìš°ê¸° ë¡œì§)
+        SpawnAllAnomaliesInSlots(cellId, anchor, isSuspicious, content);
 
         contentRegistry.Set(cellId, content);
-
-        if (verboseLog)
-        {
-            Debug.Log($"[Spawn] cell={cellId} susp={isSuspicious} prisoner={instanceId} type={def.type} hp={def.hp} anomalies={content.anomalies.Count}");
-        }
-        else
-        {
-            Debug.Log($"[Spawn] cell={cellId} susp={isSuspicious} spawned={instanceId}");
-        }
     }
 
-    /// <summary>
-    /// Áø¾Ğ ½ÃÀÛ: ÀÌ¹Ì »ı¼ºµÈ ÁË¼ö¸¦ ÀüÅõ ¸ğµå·Î ÀüÈ¯
-    /// </summary>
     private void HandleSuppressStart(string cellId)
     {
-        if (contentRegistry == null)
+        if (!contentRegistry.TryGet(cellId, out var content) || content == null || content.prisoner == null) return;
+
+        // ì´ì œ FSM ìƒíƒœë§Œ ë³€ê²½í•´ì£¼ë©´ AIê°€ ì•Œì•„ì„œ ë™ì‘í•©ë‹ˆë‹¤.
+        var fsm = content.prisoner.GetComponent<PrisonerFSM>();
+        if (fsm != null)
         {
-            Debug.LogError("[Combat] contentRegistry missing.");
-            return;
+            // ì ê²€(Inspection) ì¤‘ì— ë•Œë¦¬ëŠ” ê²ƒê³¼ ë³„ê°œë¡œ 'ì§„ì•• ëª¨ë“œ' ë²„íŠ¼ì„ ëˆŒë €ì„ ë•Œì˜ ì²˜ë¦¬
+            fsm.ChangeState(fsm.CombatState);
         }
-
-        if (!contentRegistry.TryGet(cellId, out var content) || content == null || content.prisoner == null)
-        {
-            Debug.LogError($"[Combat] No prisoner content for cell={cellId} (Standby spawn missing?)");
-            return;
-        }
-
-        content.prisoner.SetCombatEnabled(true);
-
-        if (verboseLog)
-            Debug.Log($"[Combat] Enabled cell={cellId} prisoner={content.prisoner.InstanceId} type={content.prisoner.Type}");
-        else
-            Debug.Log($"[Combat] Enabled cell={cellId}");
     }
-
-    /// <summary>
-    /// Á¡°Ë ¿Ï·á(ÅğÀå) ½Ã È£ÃâÇØ¼­ ÇØ´ç ¹æ ÄÜÅÙÃ÷ Á¤¸®
-    /// </summary>
-    public void DespawnCell(string cellId)
-    {
-        if (contentRegistry == null) return;
-        contentRegistry.ClearCell(cellId);
-        if (verboseLog) Debug.Log($"[Spawn] Despawn cell={cellId}");
-    }
-
-    // -------------------------
-    // Internal helpers
-    // -------------------------
-
-    private bool ValidateRefs()
-    {
-        if (prisonerDatabase == null)
-        {
-            Debug.LogError("[Spawn] Missing ref: prisonerDatabase");
-            return false;
-        }
-        if (anchorRegistry == null)
-        {
-            Debug.LogError("[Spawn] Missing ref: anchorRegistry");
-            return false;
-        }
-        if (contentRegistry == null)
-        {
-            Debug.LogError("[Spawn] Missing ref: contentRegistry");
-            return false;
-        }
-        if (prisonerPrefab == null)
-        {
-            Debug.LogError("[Spawn] Missing ref: prisonerPrefab");
-            return false;
-        }
-        return true;
-    }
-
-    private static string BuildInstanceId(string cellId, string templateId, int index1Based)
-        => $"{cellId}_{templateId}_{index1Based:00}";
 
     private GameObject InstantiatePrisoner(CellAnchor anchor, string instanceId, PrisonerDefinition def, out PrisonerActor actor)
     {
-        actor = null;
-
         var pGo = Instantiate(prisonerPrefab, anchor.prisonerSpawn.position, anchor.prisonerSpawn.rotation);
         pGo.name = $"Prisoner_{instanceId}";
 
@@ -218,96 +101,62 @@ public class PrisonerSpawnController : MonoBehaviour
         if (actor == null) actor = pGo.AddComponent<PrisonerActor>();
         actor.Init(anchor.cellId, instanceId, def);
 
-        // Bad AI´Â ÀüÅõ ¶§¸¸ ÄÑÁü(Actor.SetCombatEnabled¿¡¼­ Åä±Û)
-        if (def.type == PrisonerType.Bad)
+        // âœ… FSM ì„¤ì •: ì´ë™ ìœ„ì¹˜ í• ë‹¹ (BadAI ë¡œì§ì€ ì‚­ì œë¨)
+        var fsm = pGo.GetComponent<PrisonerFSM>();
+        if (fsm != null)
         {
-            var ai = pGo.GetComponent<PrisonerBadAI>();
-            if (ai == null) ai = pGo.AddComponent<PrisonerBadAI>();
-            if (player != null) ai.BindPlayer(player);
+            fsm.InspectionPoint = anchor.inspectionPoint;
         }
 
         return pGo;
     }
 
-    private void SpawnAnomalies(string cellId, CellAnchor anchor, bool isSuspicious, CellContentRegistry.CellContent content)
+    /// <summary>
+    /// âœ… í•µì‹¬: ê°ë°©ì˜ ëª¨ë“  ìŠ¬ë¡¯ì„ ì±„ìš°ê³ , ìˆ˜ìƒí•œ ë°©ì´ë©´ 1ê°œë§Œ ì´ìƒí˜„ìƒ ì ìš©
+    /// </summary>
+    private void SpawnAllAnomaliesInSlots(string cellId, CellAnchor anchor, bool roomIsSuspicious, CellContentRegistry.CellContent content)
     {
-        // root: ½½·Ô ¾ø°Å³ª fallback¿ë
-        var root = anchor.anomalyRoot != null ? anchor.anomalyRoot : anchor.transform;
+        if (anchor.anomalySlots == null || anchor.anomalySlots.Count == 0) return;
+        if (anomalyDatabase == null || anomalyDatabase.defs == null) return;
 
-        // 1) AnomalyDatabase ¿ì¼±
-        if (anomalyDatabase != null && anomalyDatabase.defs != null && anomalyDatabase.defs.Count > 0)
+        var slots = anchor.anomalySlots;
+
+        // 1. ìˆ˜ìƒí•œ ë°©ì´ë¼ë©´ ì–´ëŠ ìŠ¬ë¡¯ì„ ì´ìƒí•˜ê²Œ ë§Œë“¤ì§€ ë¯¸ë¦¬ ê²°ì •
+        int suspiciousSlotIndex = roomIsSuspicious ? UnityEngine.Random.Range(0, slots.Count) : -1;
+
+        for (int i = 0; i < slots.Count; i++)
         {
-            int count = isSuspicious
-                ? Mathf.Clamp(suspiciousAnomalyCount, 0, anomalyDatabase.defs.Count)
-                : Mathf.Clamp(normalAnomalyCount, 0, anomalyDatabase.defs.Count);
+            var slot = slots[i];
+            if (slot == null) continue;
 
-            SpawnFromDatabase(cellId, anchor, root, content, suspiciousVariant: isSuspicious, count: count);
-            return;
-        }
+            // 2. í•´ë‹¹ ìŠ¬ë¡¯ì˜ Kind(ë² ê°œ, ì¹«ì†” ë“±)ì™€ ì¼ì¹˜í•˜ëŠ” ì •ì˜ë“¤ ê²€ìƒ‰
+            var matches = anomalyDatabase.defs.FindAll(d => d.kind == slot.kind);
+            if (matches.Count == 0) continue;
 
-        // 2) Fallback: ¼ö»ó ¹æÀÌ¸é ÀÓ½Ã ÇÁ¸®ÆÕ 1°³
-        if (isSuspicious && anomalyFallbackPrefab != null)
-        {
-            var aGo = Instantiate(anomalyFallbackPrefab, root.position, root.rotation, root);
-            aGo.name = $"Anomaly_{cellId}_Fallback";
-            content.anomalies.Add(aGo);
-        }
-    }
+            // 3. ë§¤ì¹­ë˜ëŠ” ê²ƒ ì¤‘ í•˜ë‚˜ ë¬´ì‘ìœ„ ì„ íƒ
+            var def = matches[UnityEngine.Random.Range(0, matches.Count)];
 
-    private void SpawnFromDatabase(
-    string cellId,
-    CellAnchor anchor,
-    Transform fallbackRoot,
-    CellContentRegistry.CellContent content,
-    bool suspiciousVariant,
-    int count)
-    {
-        if (count <= 0) return;
-
-        var pool = new List<AnomalyDefinitionSO>(anomalyDatabase.defs);
-        int spawnCount = Mathf.Min(count, pool.Count);
-
-        for (int i = 0; i < spawnCount; i++)
-        {
-            int idx = UnityEngine.Random.Range(0, pool.Count);
-            var def = pool[idx];
-            pool.RemoveAt(idx);
-
-            GameObject prefab = suspiciousVariant ? def.suspiciousPrefab : def.normalPrefab;
+            // 4. ê²°ì •ëœ suspiciousSlotIndexì™€ ì¼ì¹˜í•˜ë©´ ìˆ˜ìƒí•œ í”„ë¦¬íŒ¹ ì‚¬ìš©
+            bool isThisOneSuspicious = (i == suspiciousSlotIndex);
+            GameObject prefab = isThisOneSuspicious ? def.suspiciousPrefab : def.normalPrefab;
             if (prefab == null) continue;
 
-            //  ½½·Ô ¿ì¼±: kind¿¡ ¸Â´Â ½½·Ô Áß ÇÏ³ª
-            Transform parent = fallbackRoot;
-            Vector3 pos = fallbackRoot.position;
-            Quaternion rot = fallbackRoot.rotation;
-
-            if (anchor.anomalySlots != null && anchor.anomalySlots.Count > 0)
-            {
-                var candidates = new List<AnomalySpawnSlot>();
-                foreach (var s in anchor.anomalySlots)
-                {
-                    if (s == null) continue;
-                    if (s.kind == def.kind) candidates.Add(s);
-                }
-
-                if (candidates.Count > 0)
-                {
-                    var slot = candidates[UnityEngine.Random.Range(0, candidates.Count)];
-                    parent = slot.transform;
-                    pos = slot.transform.position;
-                    rot = slot.transform.rotation;
-                }
-            }
-
-            var go = Instantiate(prefab, pos, rot, parent);
-            go.name = $"Anomaly_{cellId}_{def.anomalyId}_{(suspiciousVariant ? "S" : "N")}";
+            var go = Instantiate(prefab, slot.transform.position, slot.transform.rotation, slot.transform);
+            go.name = $"Anomaly_{cellId}_{def.anomalyId}_{(isThisOneSuspicious ? "S" : "N")}";
 
             var actor = go.GetComponent<AnomalyActor>();
             if (actor == null) actor = go.AddComponent<AnomalyActor>();
-            actor.Init(cellId, def, suspiciousVariant);
+            actor.Init(cellId, def, isThisOneSuspicious);
 
             content.anomalies.Add(go);
         }
     }
 
+    private bool ValidateRefs()
+    {
+        return prisonerDatabase != null && anchorRegistry != null && contentRegistry != null && prisonerPrefab != null;
+    }
+
+    private static string BuildInstanceId(string cellId, string templateId, int index1Based)
+        => $"{cellId}_{templateId}_{index1Based:00}";
 }
