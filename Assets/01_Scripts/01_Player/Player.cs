@@ -44,6 +44,7 @@ public class Player : MonoBehaviour
     private PlayerInputs.PlayerActions _playerActions;
     public PlayerInputs Inputs => _inputs;
     private InputMode _currentInputMode = InputMode.Gameplay;
+    private bool _isPauseMenuOpen;
     private InspectionManager _inspectionManager;
 
     //테스트 보호용 bool
@@ -100,12 +101,16 @@ public class Player : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe<InputModeChangedEvent>(OnInputModeChanged);
+        EventBus.Subscribe<PauseMenuOpenedEvent>(OnPauseMenuOpened);
+        EventBus.Subscribe<PauseMenuClosedEvent>(OnPauseMenuClosed);
     }
 
     private void OnDisable()
     {
         _playerActions.Setting.performed -= OnSettingsPressed;
         EventBus.Unsubscribe<InputModeChangedEvent>(OnInputModeChanged);
+        EventBus.Unsubscribe<PauseMenuOpenedEvent>(OnPauseMenuOpened);
+        EventBus.Unsubscribe<PauseMenuClosedEvent>(OnPauseMenuClosed);
     }
 
     private void OnDestroy()
@@ -239,17 +244,34 @@ public class Player : MonoBehaviour
 
     private void OnSettingsPressed(InputAction.CallbackContext context)
     {
-        //  Inspection 중에는 무조건 무시
+        // Inspection 중에는 ESC 무시
         if (_inspectionManager != null && _inspectionManager.IsInspecting)
             return;
+
+        // Inspection 입력 모드에서도 무시
         if (HasInputPolicy && _currentInputMode == InputMode.Inspection)
             return;
 
-        EventBus.Publish(new PauseMenuToggleRequestedEvent());
+        //  Toggle 제거
+        if (!_isPauseMenuOpen)
+            EventBus.Publish(new PauseMenuOpenRequestedEvent());
+        else
+            EventBus.Publish(new PauseMenuCloseRequestedEvent());
     }
+
 
     private void OnInputModeChanged(InputModeChangedEvent e)
     {
         _currentInputMode = e.Mode;
+    }
+
+    private void OnPauseMenuOpened(PauseMenuOpenedEvent e)
+    {
+        _isPauseMenuOpen = true;
+    }
+
+    private void OnPauseMenuClosed(PauseMenuClosedEvent e)
+    {
+        _isPauseMenuOpen = false;
     }
 }

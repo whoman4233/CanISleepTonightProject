@@ -8,6 +8,9 @@ public class InputManager : MonoBehaviour
 
     private bool HasGameFlow => GameManager.Instance != null;
 
+    private bool isPauseMenuOpen;
+    private bool isInspecting;
+
     private void Awake()
     {
         // 테스트 씬 보호: GameManager 없으면 개입하지 않음
@@ -30,6 +33,8 @@ public class InputManager : MonoBehaviour
         EventBus.Subscribe<InspectionStartedEvent>(OnInspectionStarted);
         EventBus.Subscribe<InspectionEndedEvent>(OnInspectionEnded);
         EventBus.Subscribe<InputModeChangedEvent>(OnInputModeChanged);
+        EventBus.Subscribe<PauseMenuOpenedEvent>(OnPauseMenuOpened);
+        EventBus.Subscribe<PauseMenuClosedEvent>(OnPauseMenuClosed);
     }
 
     private void OnDisable()
@@ -45,21 +50,32 @@ public class InputManager : MonoBehaviour
 
     private void OnGamePhaseChanged(GamePhaseChangedEvent e)
     {
+        if (isPauseMenuOpen)
+            return;
+
         if (e.Phase == GamePhase.NotStarted)
             SetInputMode(InputMode.UIOnly);
         else
             SetInputMode(InputMode.Gameplay);
     }
 
+
     private void OnInspectionStarted(InspectionStartedEvent e)
     {
-        SetInputMode(InputMode.Inspection);
+        isInspecting = true;
+
+        if (!isPauseMenuOpen)
+            SetInputMode(InputMode.Inspection);
     }
 
     private void OnInspectionEnded(InspectionEndedEvent e)
     {
-        SetInputMode(InputMode.Gameplay);
+        isInspecting = false;
+
+        if (!isPauseMenuOpen)
+            SetInputMode(InputMode.Gameplay);
     }
+
 
     private void OnInputModeChanged(InputModeChangedEvent e)
     {
@@ -106,6 +122,23 @@ public class InputManager : MonoBehaviour
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
     }
+
+    private void OnPauseMenuOpened(PauseMenuOpenedEvent e)
+    {
+        isPauseMenuOpen = true;
+        SetInputMode(InputMode.UIOnly);
+    }
+
+    private void OnPauseMenuClosed(PauseMenuClosedEvent e)
+    {
+        isPauseMenuOpen = false;
+
+        if (isInspecting)
+            SetInputMode(InputMode.Inspection);
+        else
+            SetInputMode(InputMode.Gameplay);
+    }
+
 }
 
 

@@ -101,6 +101,26 @@ public struct ReturnToTitleRequestedEvent //타이틀로 돌아가기
 
 }
 
+public struct PauseMenuOpenedEvent //메뉴 열림(상태)
+{
+
+}
+
+public struct PauseMenuClosedEvent //메뉴 닫힘(상태)
+{
+
+}
+
+public struct PauseMenuOpenRequestedEvent // 메뉴 열림 알림(입력)
+{
+
+}
+
+public struct PauseMenuCloseRequestedEvent //메뉴 닫힘 알림(입력)
+{
+
+}
+
 //==========================================
 //Inspection(상세보기) 이벤트 목록
 //==========================================

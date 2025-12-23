@@ -20,17 +20,25 @@ public class InGameMenuController : MonoBehaviour
 
     private void OnEnable()
     {
-        EventBus.Subscribe<PauseMenuToggleRequestedEvent>(OnToggleRequested);
+        EventBus.Subscribe<PauseMenuOpenRequestedEvent>(OnOpenRequested);
+        EventBus.Subscribe<PauseMenuCloseRequestedEvent>(OnCloseRequested);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<PauseMenuToggleRequestedEvent>(OnToggleRequested);
+        EventBus.Unsubscribe<PauseMenuOpenRequestedEvent>(OnOpenRequested);
+        EventBus.Unsubscribe<PauseMenuCloseRequestedEvent>(OnCloseRequested);
+
     }
 
-    private void OnToggleRequested(PauseMenuToggleRequestedEvent e)
+    private void OnOpenRequested(PauseMenuOpenRequestedEvent e)
     {
-        SetOpen(!isOpen);
+        SetOpen(true);
+    }
+
+    private void OnCloseRequested(PauseMenuCloseRequestedEvent e)
+    {
+        SetOpen(false);
     }
 
     private void OnClickResume()
@@ -61,12 +69,12 @@ public class InGameMenuController : MonoBehaviour
         if (open)
         {
             EventBus.Publish(new PauseGameRequestedEvent());
-            EventBus.Publish(new InputModeChangedEvent(InputMode.UIOnly));
+            EventBus.Publish(new PauseMenuOpenedEvent());
         }
         else
         {
             EventBus.Publish(new ResumeGameRequestedEvent());
-            EventBus.Publish(new InputModeChangedEvent(InputMode.Gameplay));
+            EventBus.Publish(new PauseMenuClosedEvent());
         }
     }
 }
