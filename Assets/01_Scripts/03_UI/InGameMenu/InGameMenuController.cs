@@ -30,6 +30,7 @@ public class InGameMenuController : MonoBehaviour
     {
         EventBus.Subscribe(_onOpenRequested);
         EventBus.Subscribe(_onCloseRequested);
+        SetOpen(false);
     }
 
     private void OnDisable()
