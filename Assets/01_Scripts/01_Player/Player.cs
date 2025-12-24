@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
@@ -44,6 +45,10 @@ public class Player : MonoBehaviour
     private PlayerInputs.PlayerActions _playerActions;
     private InspectionManager _inspectionManager;
 
+    // 입력차단 관련 이벤트 핸들러 (캐시)
+    private Action<GlobalInputLockRequestedEvent> _onGlobalInputLock;
+    private Action<InspectionStartedEvent> _onInspectionStarted;
+
     private void Awake()
     {
         Animator = GetComponentInChildren<Animator>();
@@ -72,6 +77,9 @@ public class Player : MonoBehaviour
 
         StateMachine = new PlayerStateMachine(this);
 
+        _onGlobalInputLock = OnGlobalInputLocked;
+        _onInspectionStarted = OnInspectionStarted;
+
         _inspectionManager = GetComponentInChildren<InspectionManager>();
         if (_inspectionManager != null)
         {
@@ -90,12 +98,16 @@ public class Player : MonoBehaviour
     {
         // 플레이어 존재 알림 (InputManager가 Gameplay enable 판단)
         EventBus.Publish(new PlayerPresenceChangedEvent(true));
+        EventBus.Subscribe(_onGlobalInputLock);
+        EventBus.Subscribe(_onInspectionStarted);
     }
 
     private void OnDisable()
     {
         // 플레이어 비존재 알림
         EventBus.Publish(new PlayerPresenceChangedEvent(false));
+        EventBus.Unsubscribe(_onGlobalInputLock);
+        EventBus.Unsubscribe(_onInspectionStarted);
     }
 
     // Player는 Input을 소유하지 않음
@@ -113,9 +125,10 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        // Inspection 중 Player FSM 차단
-        if (_inspectionManager != null && _inspectionManager.IsInspecting)
+        // Gameplay 상태가 아니면 FSM 차단
+        if (!IsGameplayActive())
             return;
+
 
         // ActionMap enable 여부 확인
         if (!_inputs.Player.enabled)
@@ -129,6 +142,9 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!IsGameplayActive())
+            return;
+
         if (_inspectionManager != null && _inspectionManager.IsInspecting)
             return;
 
@@ -226,5 +242,42 @@ public class Player : MonoBehaviour
     {
         if (_inspectionManager == null) return;
         _inspectionManager.EnterInspection(inspectable);
+    }
+
+    // =========================
+    // Inputmanager 관련
+    // =========================
+    private bool IsGameplayActive()
+    {
+        var im = InputManager.Instance;
+        if (im == null)
+            return false;
+
+        return im.CurrentState == InputState.Gameplay;
+    }
+    private void ResetInputCache() //기존 FSM 초기화
+    {
+        MoveInput = Vector2.zero;
+        LookInput = Vector2.zero;
+        RunHeld = false;
+
+        JumpPressedThisFrame = false;
+        AttackPressedThisFrame = false;
+        Interaction = false;
+        CrouchToggleRequested = false;
+    }
+
+    // =============================
+    // Event handlers
+    // =============================
+
+    private void OnGlobalInputLocked(GlobalInputLockRequestedEvent e)
+    {
+        ResetInputCache();
+    }
+
+    private void OnInspectionStarted(InspectionStartedEvent e)
+    {
+        ResetInputCache();
     }
 }
