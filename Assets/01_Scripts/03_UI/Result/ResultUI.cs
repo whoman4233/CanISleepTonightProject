@@ -11,7 +11,8 @@ public struct SettlementResultUIData
     public int WarnedCount;
     public int UncheckedCount;
 
-    public float RiotGaugeDelta;
+    public int RiotGaugeBefore;   
+    public int RiotGaugeAfter;    
 }
 public class ResultUI : MonoBehaviour
 {
@@ -53,9 +54,10 @@ public class ResultUI : MonoBehaviour
         warnedText.text = data.WarnedCount.ToString();
         uncheckedText.text = data.UncheckedCount.ToString();
 
+        int delta = data.RiotGaugeAfter - data.RiotGaugeBefore;
+
         riotGaugeDeltaText.text =
-            data.RiotGaugeDelta >= 0
-                ? $"+{data.RiotGaugeDelta:F1}"
-                : data.RiotGaugeDelta.ToString("F1");
+            $"{data.RiotGaugeBefore} → {data.RiotGaugeAfter} " +
+            $"({(delta >= 0 ? "+" : "")}{delta})";
     }
 }

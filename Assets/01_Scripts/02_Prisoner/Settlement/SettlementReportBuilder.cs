@@ -12,7 +12,7 @@ public class SettlementReportBuilder : MonoBehaviour
     // =========================
     // Riot Gauge Cache (추가)
     // =========================
-    private float _riotGaugeAtStart;
+    private int _riotGaugeAtStart;
 
     private readonly List<ResolvedRecord> _resolved = new();
     private readonly HashSet<string> _resolvedIds = new();
@@ -61,12 +61,11 @@ public class SettlementReportBuilder : MonoBehaviour
     public void CacheRiotGaugeAtStart()
     {
         if (GameManager.Instance == null)
-        {
-            Debug.LogError("[SettlementReportBuilder] GameManager not found");
             return;
-        }
 
         _riotGaugeAtStart = GameManager.Instance.CurrentRiotGauge;
+
+        Debug.Log($"[SettlementReportBuilder] RiotGauge cached = {_riotGaugeAtStart}");
     }
     private void OnSettlementStarted(SettlementStartedEvent e)
     {
@@ -141,6 +140,8 @@ public class SettlementReportBuilder : MonoBehaviour
             return default;
         }
 
+        int after = GameManager.Instance.CurrentRiotGauge;
+
         return new SettlementResultUIData
         {
             TotalAnomalyCount =
@@ -151,8 +152,8 @@ public class SettlementReportBuilder : MonoBehaviour
             WarnedCount = uiData.WarnedCount,
             UncheckedCount = uiData.UncheckedCount,
 
-            RiotGaugeDelta =
-                GameManager.Instance.CurrentRiotGauge - _riotGaugeAtStart
+            RiotGaugeBefore = _riotGaugeAtStart,
+            RiotGaugeAfter = after
         };
     }
 }

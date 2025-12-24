@@ -247,4 +247,9 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    public void SetRiotGauge(int value)
+    {
+        riotGauge = Mathf.Clamp(value, 0, maxRiotGauge);
+    }
 }

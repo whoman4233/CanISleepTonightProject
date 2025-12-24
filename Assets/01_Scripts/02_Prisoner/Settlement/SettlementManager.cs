@@ -107,6 +107,9 @@ public class SettlementManager : MonoBehaviour
         riotGauge += delta;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetRiotGauge(riotGauge);
+
         Debug.Log($"[Settlement] RiotGauge Δ={delta}, Result={riotGauge}/{maxRiotGauge}");
     }
 
@@ -154,6 +157,10 @@ public class SettlementManager : MonoBehaviour
     {
         riotGauge += dailyBaseIncrease;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetRiotGauge(riotGauge);
+
         Debug.Log($"[Standby] RiotGauge +{dailyBaseIncrease} => {riotGauge}/{maxRiotGauge}");
     }
 
