@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int currentDay = 0;
     [SerializeField] private int riotGauge = 10;
     [SerializeField] private int maxRiotGauge = 100;
+    [SerializeField] public int maxDay = 7;
     public int RiotGauge => riotGauge;
     public int CurrentRiotGauge => riotGauge;
     public int MaxRiotGauge => maxRiotGauge;
@@ -96,6 +97,9 @@ public class GameManager : MonoBehaviour
 
         switch (newPhase)
         {
+            case GamePhase.NotStarted:
+                OnEnterNotStarted();
+                break;
             case GamePhase.Standby:
                 OnEnterStandby();
                 StartCoroutine(WaitAndChangePhase(GamePhase.Briefing, 1.5f)); // 1.5초 후 자동으로 브리핑페이즈로 전환
@@ -116,6 +120,12 @@ public class GameManager : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    private void OnEnterNotStarted()
+    {
+        currentDay = 0;
+        riotGauge = 10;
     }
     private void OnEnterStandby() // 준비 페이즈
     {
@@ -225,12 +235,12 @@ public class GameManager : MonoBehaviour
     {
         if (riotGauge >= maxRiotGauge)
         {
-            if (currentDay <= 7)
+            if (currentDay <= maxDay)
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // 산업 재해(7일 이전에 폭동 100 이상)
                 Debug.Log("BadEnding2");
             }
-            if (currentDay >= 7)
+            if (currentDay >= maxDay)
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // 위기 회피(7일차에 폭동 100 이상으로 퇴근)
                 Debug.Log("BadEnding3");
@@ -238,7 +248,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            if(currentDay >= 7)
+            if(currentDay >= maxDay)
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1)); // 7일차까지 무사히 완료
             }
