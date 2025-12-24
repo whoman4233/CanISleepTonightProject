@@ -43,29 +43,11 @@ public class InputManager : MonoBehaviour
         // =============================
         _onPlayerPresence = OnPlayerPresence;
 
-        _onInspectionStarted = _ =>
-        {
-            _inspectionActive = true;
-            ApplyState();
-        };
-
-        _onInspectionEnded = _ =>
-        {
-            _inspectionActive = false;
-            ApplyState();
-        };
-
-        _onGlobalLockRequested = _ =>
-        {
-            _uiLockCount++;
-            ApplyState();
-        };
-
-        _onGlobalLockReleased = _ =>
-        {
-            _uiLockCount = Mathf.Max(0, _uiLockCount - 1);
-            ApplyState();
-        };
+        _onPlayerPresence = OnPlayerPresence;
+        _onInspectionStarted = _ => { _inspectionActive = true; ApplyState(); };
+        _onInspectionEnded = _ => { _inspectionActive = false; ApplyState(); };
+        _onGlobalLockRequested = _ => { _uiLockCount++; ApplyState(); };
+        _onGlobalLockReleased = _ => { _uiLockCount = Mathf.Max(0, _uiLockCount - 1); ApplyState(); };
 
         ApplyState(force: true);
     }
