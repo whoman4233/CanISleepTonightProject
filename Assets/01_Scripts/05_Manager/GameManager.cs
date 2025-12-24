@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int riotGauge = 10;
     [SerializeField] private int maxRiotGauge = 100;
     public int RiotGauge => riotGauge;
+    public int CurrentRiotGauge => riotGauge;
     public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
 
@@ -134,6 +135,15 @@ public class GameManager : MonoBehaviour
         patrolDurationSeconds = 480;
 
         EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds)); // UI 시간초기화 (기존 페이즈의 잔존시간 보이지 않도록)
+
+        // =========================
+        // RiotGauge 기준값 캐싱 (추가)
+        // =========================
+        var builder = FindObjectOfType<SettlementReportBuilder>();
+        if (builder != null)
+        {
+            builder.CacheRiotGaugeAtStart();
+        }
 
         StopAllCoroutines();
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작

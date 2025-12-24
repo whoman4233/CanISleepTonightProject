@@ -9,8 +9,10 @@ public class SettlementReportBuilder : MonoBehaviour
     [SerializeField] private InspectionStateMachine inspection;
     [SerializeField] private SettlementManager settlement;
 
-    // UI 컨트롤러 참조 (필요시 Inspector에서 연결)
-    // [SerializeField] private ResultPanelController resultPanel; 
+    // =========================
+    // Riot Gauge Cache (추가)
+    // =========================
+    private float _riotGaugeAtStart;
 
     private readonly List<ResolvedRecord> _resolved = new();
     private readonly HashSet<string> _resolvedIds = new();
@@ -51,6 +53,20 @@ public class SettlementReportBuilder : MonoBehaviour
     {
         if (inspection != null)
             inspection.OnResolved -= HandleResolved;
+    }
+
+    // =========================
+    // Riot Gauge Cache (추가)
+    // =========================
+    public void CacheRiotGaugeAtStart()
+    {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[SettlementReportBuilder] GameManager not found");
+            return;
+        }
+
+        _riotGaugeAtStart = GameManager.Instance.CurrentRiotGauge;
     }
     private void OnSettlementStarted(SettlementStartedEvent e)
     {
@@ -99,7 +115,12 @@ public class SettlementReportBuilder : MonoBehaviour
         // 3. UI 표시용 데이터 생성
         SettlementUIData uiData = settlement.BuildSettlementData(resolved, uninspected);
         Debug.Log("[SettlementReportBuilder] Publish SettlementCompletedEvent");
+
+        //Result UI Data 생성
+        SettlementResultUIData resultUIData = BuildResultUIData(uiData);
+        EventBus.Publish(new ResultUIShowRequestedEvent(resultUIData));
         EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI 버튼 연결)
+        
         // Debug Log로 데이터 확인
         Debug.Log($"[Settlement UI Data] 1F Sus: {uiData.Floor1_AnomalyCount}, 2F Sus: {uiData.Floor2_AnomalyCount} | " +
                   $"Suppressed: {uiData.SuppressedCount}, Warned: {uiData.WarnedCount}, Unchecked: {uiData.UncheckedCount}");
@@ -108,5 +129,30 @@ public class SettlementReportBuilder : MonoBehaviour
         // 예: resultPanel.ShowResult(uiData);
         // 또는 EventBus를 통해 UI에 데이터를 발행할 수도 있습니다.
         // EventBus.Publish(new SettlementDataCreatedEvent(uiData));
+
+
+    }
+
+    private SettlementResultUIData BuildResultUIData(SettlementUIData uiData)
+    {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[SettlementReportBuilder] GameManager not found");
+            return default;
+        }
+
+        return new SettlementResultUIData
+        {
+            TotalAnomalyCount =
+                uiData.Floor1_AnomalyCount +
+                uiData.Floor2_AnomalyCount,
+
+            SuppressedCount = uiData.SuppressedCount,
+            WarnedCount = uiData.WarnedCount,
+            UncheckedCount = uiData.UncheckedCount,
+
+            RiotGaugeDelta =
+                GameManager.Instance.CurrentRiotGauge - _riotGaugeAtStart
+        };
     }
 }

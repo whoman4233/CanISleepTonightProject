@@ -119,6 +119,20 @@ public struct PopupCloseRequestedEvent
 {
 
 }
+//==========================================
+//ResultUI 이벤트 목록
+//==========================================
+
+public struct ResultUIShowRequestedEvent // 정산 데이터
+{
+    public SettlementResultUIData Data;
+
+    public ResultUIShowRequestedEvent(SettlementResultUIData data)
+    {
+        Data = data;
+    }
+}
+
 
 //==========================================
 //InGameMenu 이벤트 목록
