@@ -89,9 +89,14 @@ public class SettlementReportBuilder : MonoBehaviour
         {
             foreach (var cell in cellManager.Cells)
             {
-                // 아직 ActiveToday가 남아있으면 "미점검"
-                if (cell.IsActiveToday)
+                // [수정 전] if (cell.IsActiveToday) 
+                // -> 점검을 했어도 ActiveToday는 true라서 계속 미점검으로 잡힘
+
+                // [수정 후] 오늘 활성화된 방 중에서 + 아직 해결(Resolved)되지 않은 방만 체크
+                if (cell.IsActiveToday && !cell.WasResolvedToday)
+                {
                     uninspected.Add(new UninspectedRecord(cell.CellId, cell.IsSuspicious));
+                }
             }
         }
     }
