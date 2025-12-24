@@ -126,7 +126,7 @@ public class SettlementReportBuilder : MonoBehaviour
         EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI 버튼 연결)
         
         // Debug Log로 데이터 확인
-        Debug.Log($"[Settlement UI Data] 1F Sus: {uiData.Floor1_AnomalyCount}, 2F Sus: {uiData.Floor2_AnomalyCount} | " +
+        Debug.Log($"[Settlement UI Data] 1F Sus: {uiData.Floor1_ActiveCount}, 2F Sus: {uiData.Floor2_ActiveCount} | " +
                   $"Suppressed: {uiData.SuppressedCount}, Warned: {uiData.WarnedCount}, Unchecked: {uiData.UncheckedCount}");
 
         // TODO: 여기서 결과창 UI를 호출하며 uiData를 넘겨주면 됩니다.
@@ -149,9 +149,10 @@ public class SettlementReportBuilder : MonoBehaviour
 
         return new SettlementResultUIData
         {
+            // [변경] AnomalyCount -> ActiveCount로 변경된 필드 사용
             TotalAnomalyCount =
-                uiData.Floor1_AnomalyCount +
-                uiData.Floor2_AnomalyCount,
+            uiData.Floor1_ActiveCount +
+            uiData.Floor2_ActiveCount,
 
             SuppressedCount = uiData.SuppressedCount,
             WarnedCount = uiData.WarnedCount,

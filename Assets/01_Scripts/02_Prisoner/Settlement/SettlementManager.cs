@@ -121,34 +121,30 @@ public class SettlementManager : MonoBehaviour
     {
         SettlementUIData data = new SettlementUIData();
 
-        // 1. 플레이어 조치 결과 집계
+        // 1. 플레이어 조치 결과 집계 (기존 유지)
         foreach (var r in resolved)
         {
-            if (r.didSuppress)
-                data.SuppressedCount++; // 진압
-            else
-                data.WarnedCount++;     // 경고/무시
+            if (r.didSuppress) data.SuppressedCount++;
+            else data.WarnedCount++;
         }
-        data.UncheckedCount = uninspected.Count; // 미점검
+        data.UncheckedCount = uninspected.Count;
 
-        // 2. 층별 이상현상(요주의 감방) 발생 개수 집계
+        // 2. [변경] 층별 '활성 감방' 개수 집계
         if (_cellManager != null)
         {
             foreach (var cell in _cellManager.Cells)
             {
-                // 오늘 발생한 요주의(이상현상) 감방인지 확인
-                if (cell.IsSuspicious)
+                // [수정 전] if (cell.IsSuspicious) // 이상현상만 집계했었음
+
+                // [수정 후] 오늘 활성화된(배정된) 모든 감방을 집계
+                if (cell.IsActiveToday)
                 {
                     if (cell.Floor == 1)
-                        data.Floor1_AnomalyCount++;
+                        data.Floor1_ActiveCount++;
                     else if (cell.Floor == 2)
-                        data.Floor2_AnomalyCount++;
+                        data.Floor2_ActiveCount++;
                 }
             }
-        }
-        else
-        {
-            Debug.LogWarning("SettlementManager: PrisonCellManager를 찾을 수 없어 층별 데이터를 집계하지 못했습니다.");
         }
 
         return data;
@@ -184,14 +180,14 @@ public class SettlementManager : MonoBehaviour
 [System.Serializable]
 public struct SettlementUIData
 {
-    [Header("Floor Anomaly Counts")]
-    public int Floor1_AnomalyCount; // 1층 요주의(이상현상) 감방 개수
-    public int Floor2_AnomalyCount; // 2층 요주의(이상현상) 감방 개수
+    [Header("Floor Active Counts")]
+    public int Floor1_ActiveCount; // [변경] 1층 활성화된 감방 개수
+    public int Floor2_ActiveCount; // [변경] 2층 활성화된 감방 개수
 
     [Header("Player Actions")]
-    public int SuppressedCount;     // 진압한 감방 수
-    public int WarnedCount;         // 경고(무시)한 감방 수
-    public int UncheckedCount;      // 체크하지 못한(미점검) 감방 수
+    public int SuppressedCount;
+    public int WarnedCount;
+    public int UncheckedCount;
 
-    public float RiotGaugeDelta; // 폭동게이지
+    public float RiotGaugeDelta;
 }
