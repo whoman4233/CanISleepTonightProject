@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class WhiteBoardDataBinder : MonoBehaviour
 {
+    [Header("Texts")]
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI floor1Text;
     [SerializeField] private TextMeshProUGUI floor2Text;
 
     private PrisonCellManager _cellManager;
 
-    // ResultUI 이벤트를 "정산 완료 신호"로만 사용
+    // 정산 완료 / Result UI 표시 시점을 갱신 트리거로만 사용
     private Action<ResultUIShowRequestedEvent> _onResultUIShow;
 
     private void Awake()
@@ -23,8 +24,8 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         EventBus.Subscribe(_onResultUIShow);
 
-        // 이미 Standby 이후라면 즉시 반영
-        RefreshFromCellManager();
+        // 이미 활성화된 상태라면 즉시 한 번 반영
+        Refresh();
     }
 
     private void OnDisable()
@@ -34,11 +35,11 @@ public class WhiteBoardDataBinder : MonoBehaviour
 
     private void OnResultUIShow(ResultUIShowRequestedEvent e)
     {
-        // 정산 시점에 한 번 더 보정 (선택사항)
-        RefreshFromCellManager();
+        // 정산 직후 한 번 더 보정
+        Refresh();
     }
 
-    private void RefreshFromCellManager()
+    private void Refresh()
     {
         if (_cellManager == null)
         {
@@ -66,8 +67,10 @@ public class WhiteBoardDataBinder : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
-            dayText.text = $"{GameManager.Instance.CurrentDay}";
+            dayText.text = GameManager.Instance.CurrentDay.ToString();
         }
     }
 }
+
+
 
