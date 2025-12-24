@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class WhiteBoardDataBinder : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI floor1Text;
     [SerializeField] private TextMeshProUGUI floor2Text;
 
@@ -62,6 +63,11 @@ public class WhiteBoardDataBinder : MonoBehaviour
 
         floor1Text.text = floor1.ToString();
         floor2Text.text = floor2.ToString();
+
+        if (GameManager.Instance != null)
+        {
+            dayText.text = $"{GameManager.Instance.CurrentDay}";
+        }
     }
 }
 
