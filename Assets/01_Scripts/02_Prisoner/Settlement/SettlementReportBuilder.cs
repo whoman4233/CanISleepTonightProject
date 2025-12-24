@@ -86,6 +86,7 @@ public class SettlementReportBuilder : MonoBehaviour
         BuildSettlementReport(out var resolved, out var uninspected);
         settlement.ApplyDailyReport(resolved, uninspected);
 
+        EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI연결)
         //if (settlement.IsRiotOver())
         //{
         //    Debug.Log("[GameOver] Riot occurred");

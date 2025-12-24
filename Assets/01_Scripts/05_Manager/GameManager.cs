@@ -138,7 +138,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterSettlement() // 정산 페이즈
     {
-        StartCoroutine(SettlementProcessRoutine());
+        EventBus.Publish(new SettlementStartedEvent());
     }
 
     private void OnEnterEnding() // 엔딩 페이즈

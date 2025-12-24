@@ -25,6 +25,19 @@ public struct EndingConditionMetEvent // 엔딩 조건 달성 알림
     public GameEndingType EndingType;
     public EndingConditionMetEvent(GameEndingType type) => EndingType = type;
 }
+public struct SettlementStartedEvent // 정산페이즈 시작알림
+{
+
+}
+public struct SettlementCompletedEvent // 정산페이즈 종료알림
+{
+    public bool IsEnding;
+}
+
+public struct SettlementConfirmedEvent // UI에서 사용할 정산페이즈 확인 이벤트
+{
+
+}
 
 //==========================================
 //게임 신 관련 이벤트 목록
