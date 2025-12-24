@@ -123,16 +123,6 @@ public struct HideWhiteBoardPopupEvent
 {
 
 }
-public struct SettlementUIDataCreatedEvent
-{
-    public SettlementUIData Data;
-
-    public SettlementUIDataCreatedEvent(SettlementUIData data)
-    {
-        Data = data;
-    }
-}
-
 
 // Popup UI ESC로 닫을 때
 
