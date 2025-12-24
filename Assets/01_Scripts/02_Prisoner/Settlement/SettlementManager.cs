@@ -106,6 +106,7 @@ public class SettlementManager : MonoBehaviour
         // 3. 게이지 적용
         riotGauge += delta;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
+        GameManager.Instance.AddRiotGauge(delta);
 
         if (GameManager.Instance != null)
             GameManager.Instance.SetRiotGauge(riotGauge);
@@ -157,6 +158,7 @@ public class SettlementManager : MonoBehaviour
     {
         riotGauge += dailyBaseIncrease;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
+        GameManager.Instance.AddRiotGauge(dailyBaseIncrease);
 
         if (GameManager.Instance != null)
             GameManager.Instance.SetRiotGauge(riotGauge);
