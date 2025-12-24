@@ -131,6 +131,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterPatrol() // 순찰 페이즈
     {
+        patrolDurationSeconds = 480;
         StopAllCoroutines();
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
     }
@@ -191,7 +192,7 @@ public class GameManager : MonoBehaviour
         if (data != null)
         {
             this.currentDay = data.currentDay;
-            //this.currentRiotGauge = data.riotGauge;
+            this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
             Debug.Log("세이브 파일을 성공적으로 불러왔습니다.");
             return true;
