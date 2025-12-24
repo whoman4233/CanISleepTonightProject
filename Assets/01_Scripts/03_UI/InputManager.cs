@@ -12,7 +12,7 @@ public class InputManager : MonoBehaviour
     private int _uiLockCount; // Pause / Popup / Result 등
 
     private InputState _currentState;
-
+    public InputState CurrentState => _currentState;
     // =============================
     // EventBus handlers (캐시)
     // =============================

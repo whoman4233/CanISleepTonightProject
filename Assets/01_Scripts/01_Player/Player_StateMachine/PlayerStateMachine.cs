@@ -13,6 +13,8 @@ public class PlayerStateMachine
 
     private PlayerState _current;
 
+    private bool _isPaused; //FSM Pause 플래그
+    public bool IsPaused => _isPaused;
     public PlayerStateMachine(Player player)
     {
         Player = player;
@@ -34,7 +36,29 @@ public class PlayerStateMachine
         _current.Enter();
     }
 
-    public void HandleInput() => _current?.HandleInput();
-    public void Tick(float dt) => _current?.Tick(dt);
-    public void FixedTick(float fdt) => _current?.FixedTick(fdt);
+    // =========================
+    // Pause 제어 API
+    // =========================
+    public void SetPaused(bool paused)
+    {
+        _isPaused = paused;
+    }
+
+    public void HandleInput()
+    {
+        if (_isPaused) return;
+        _current?.HandleInput();
+    }
+
+    public void Tick(float dt)
+    {
+        if (_isPaused) return;
+        _current?.Tick(dt);
+    }
+
+    public void FixedTick(float fdt) // 정지 해제 후 움직임보간
+    {
+        if (_isPaused) return;
+        _current?.FixedTick(fdt);
+    }
 }
