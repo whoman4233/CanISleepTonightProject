@@ -43,9 +43,14 @@ public struct SettlementConfirmedEvent // UI에서 사용할 정산페이즈 확
 //게임 신 관련 이벤트 목록
 //==========================================
 
-public struct GameTimeUpdateEvent //타이머
+public struct PatrolTimerResetEvent //타이머 초기화
 {
-    public float Seconds;
+    public float InitialSeconds;
+
+    public PatrolTimerResetEvent(float initialSeconds)
+    {
+        InitialSeconds = initialSeconds;
+    }
 }
 
 //==========================================

@@ -132,6 +132,9 @@ public class GameManager : MonoBehaviour
     private void OnEnterPatrol() // 순찰 페이즈
     {
         patrolDurationSeconds = 480;
+
+        EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds)); // UI 시간초기화 (기존 페이즈의 잔존시간 보이지 않도록)
+
         StopAllCoroutines();
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
     }

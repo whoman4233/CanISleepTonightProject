@@ -1,95 +1,118 @@
-﻿using System.Collections;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HUDTimer : MonoBehaviour
 {
-    [Header("타이머")]
-    [SerializeField] private TextMeshProUGUI timeText;
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color warningColorA = Color.red;
-    [SerializeField] private Color warningColorB = Color.yellow;
-    [SerializeField] private float warningBlinkSpeed = 0.5f;
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI timerText;
 
-    private Coroutine warningCoroutine;
-    private bool isWarning;
+    [Header("Format")]
+    [SerializeField] private bool showMilliseconds = true;
 
-    private GameManager gameManager;
+    private bool _isActive;
+    private float _currentSeconds;
+
+    // =========================
+    // 라이프 타임
+    // =========================
+
+    private void Awake()
+    {
+        // Awake에서는 상태만 초기화
+        _isActive = false;
+        _currentSeconds = 0f;
+    }
 
     private void OnEnable()
     {
-        gameManager = FindObjectOfType<GameManager>();
-        if (gameManager == null)
+        // UI 참조 방어
+        if (timerText == null)
         {
-            Debug.LogError("[HUDTimer] GameManager not found");
+            Debug.LogError("[HUDTimer] timerText is not assigned.");
+            enabled = false;
             return;
         }
 
-        gameManager.OnInGameTimeUpdated += OnTimeUpdated;
+        timerText.gameObject.SetActive(false);
+
+        EventBus.Subscribe<PatrolTimerResetEvent>(OnTimerReset);
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnInGameTimeUpdated += OnTimeUpdated;
     }
 
     private void OnDisable()
     {
-        if (gameManager != null)
-            gameManager.OnInGameTimeUpdated -= OnTimeUpdated;
+        EventBus.Unsubscribe<PatrolTimerResetEvent>(OnTimerReset);
 
-        StopWarning();
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnInGameTimeUpdated -= OnTimeUpdated;
     }
 
+    // =========================
+    // Event handlers
+    // =========================
+
+    /// <summary>
+    /// Patrol 시작 시 1회 호출
+    /// </summary>
+    private void OnTimerReset(PatrolTimerResetEvent e)
+    {
+        _isActive = true;
+        _currentSeconds = e.InitialSeconds;
+
+        timerText.gameObject.SetActive(true);
+        UpdateText(_currentSeconds);
+    }
+
+    /// <summary>
+    /// Patrol 중 시간 업데이트
+    /// </summary>
     private void OnTimeUpdated(float seconds)
     {
-        timeText.text = FormatTime(seconds);
+        if (!_isActive)
+            return;
 
-        if (seconds < 60f)
-        {
-            if (!isWarning)
-                StartWarning();
-        }
-        else
-        {
-            if (isWarning)
-                StopWarning();
-        }
+        _currentSeconds = seconds;
+        UpdateText(_currentSeconds);
     }
 
-    private string FormatTime(float seconds)
+    // =========================
+    // 타이머 표시
+    // =========================
+
+    private void UpdateText(float seconds)
     {
         if (seconds < 0f)
             seconds = 0f;
 
-        int minutes = Mathf.FloorToInt(seconds / 60f);
-        int secs = Mathf.FloorToInt(seconds % 60f);
-        int millis = Mathf.FloorToInt((seconds - Mathf.Floor(seconds)) * 100f);
+        int min = Mathf.FloorToInt(seconds / 60f);
+        int sec = Mathf.FloorToInt(seconds % 60f);
 
-        return $"{minutes:00}:{secs:00}.{millis:00}";
-    }
-
-    private void StartWarning()
-    {
-        isWarning = true;
-        warningCoroutine = StartCoroutine(WarningBlink());
-    }
-
-    private void StopWarning()
-    {
-        isWarning = false;
-
-        if (warningCoroutine != null)
-            StopCoroutine(warningCoroutine);
-
-        timeText.color = normalColor;
-    }
-
-    private IEnumerator WarningBlink()
-    {
-        while (true)
+        if (showMilliseconds)
         {
-            timeText.color = warningColorA;
-            yield return new WaitForSeconds(warningBlinkSpeed);
-
-            timeText.color = warningColorB;
-            yield return new WaitForSeconds(warningBlinkSpeed);
+            int ms = Mathf.FloorToInt((seconds - Mathf.Floor(seconds)) * 100f);
+            timerText.text = $"{min:00}:{sec:00}.{ms:00}";
+        }
+        else
+        {
+            timerText.text = $"{min:00}:{sec:00}";
         }
     }
+
+    // =========================
+    // 비활성화
+    // =========================
+
+    public void Deactivate()
+    {
+        _isActive = false;
+
+        if (timerText != null)
+            timerText.gameObject.SetActive(false);
+    }
 }
+
+
 
