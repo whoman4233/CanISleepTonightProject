@@ -5,17 +5,13 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    public static GameManager Instance { get; private set; } 
     private SaveManager _saveManager;
 
     [Header("페이즈 상태")]
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
-    [SerializeField] private int riotGauge = 10;
-    [SerializeField] private int maxRiotGauge = 100;
-    public int RiotGauge => riotGauge;
-    public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
 
     private Action<RequestPhaseChangeEvent> _requestPhaseChange;
@@ -36,7 +32,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); 
         }
         else
         {
@@ -68,7 +64,7 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnable()
     {
-        EventBus.Subscribe(_requestPhaseChange);
+        EventBus.Subscribe(_requestPhaseChange);  
         EventBus.Subscribe(_onEndingConditionMet);
 
         //인게임 메뉴 팝업시 시간정지
@@ -95,7 +91,7 @@ public class GameManager : MonoBehaviour
 
         switch (newPhase)
         {
-            case GamePhase.Standby:
+            case GamePhase.Standby: 
                 OnEnterStandby();
                 StartCoroutine(WaitAndChangePhase(GamePhase.Briefing, 1.5f)); // 1.5초 후 자동으로 브리핑페이즈로 전환
                 break;
@@ -108,6 +104,10 @@ public class GameManager : MonoBehaviour
                 break;
             case GamePhase.Settlement:
                 OnEnterSettlement();
+                StartCoroutine(WaitAndChangePhase(GamePhase.OffDuty, 1.5f));
+                break;
+            case GamePhase.OffDuty:
+                OnEnterOffDuty();
                 break;
             case GamePhase.Ending:
                 OnEnterEnding();
@@ -118,7 +118,7 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnterStandby() // 준비 페이즈
     {
-        if (currentPhase == GamePhase.Ending)
+        if(currentPhase == GamePhase.Ending)
         {
             return;
         }
@@ -137,7 +137,12 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterSettlement() // 정산 페이즈
     {
-        StartCoroutine(SettlementProcessRoutine());
+
+    }
+
+    private void OnEnterOffDuty() // 퇴근 페이즈
+    {
+        _saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -151,7 +156,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator UpdateTimer() // 타이머 코루틴
     {
         yield return new WaitForSeconds(1.0f);
-        while (CurrentPhase == GamePhase.Patrol && patrolDurationSeconds > 0)
+        while(CurrentPhase == GamePhase.Patrol && patrolDurationSeconds > 0)
         {
             patrolDurationSeconds -= Time.deltaTime;
             OnInGameTimeUpdated?.Invoke(patrolDurationSeconds);
@@ -163,11 +168,10 @@ public class GameManager : MonoBehaviour
             ChangePhase(GamePhase.Settlement);
         }
     }
-    private IEnumerator SettlementProcessRoutine() // 다른 매니저들 초기화 기다림
+    private IEnumerator StartFirstPhase() // 다른 매니저들 초기화 기다림
     {
-        yield return new WaitForSeconds(1.0f);
-        _saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
-        EndTrigger();
+        yield return null;
+        ChangePhase(GamePhase.Standby); // 나중에 버튼 대기.
     }
 
     private IEnumerator WaitAndChangePhase(GamePhase nextPhase, float delay)
@@ -204,33 +208,5 @@ public class GameManager : MonoBehaviour
     {
         patrolDurationSeconds = 480f;
         Debug.Log("타이머가 480초로 초기화되었습니다.");
-    }
-
-    public void EndTrigger()
-    {
-        if (riotGauge >= maxRiotGauge)
-        {
-            if (currentDay <= 7)
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // 산업 재해(7일 이전에 폭동 100 이상)
-                Debug.Log("BadEnding2");
-            }
-            if (currentDay >= 7)
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // 위기 회피(7일차에 폭동 100 이상으로 퇴근)
-                Debug.Log("BadEnding3");
-            }
-        }
-        else
-        {
-            if(currentDay >= 7)
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1)); // 7일차까지 무사히 완료
-            }
-            else
-            {
-                ChangePhase(GamePhase.Standby);
-            }
-        }
     }
 }

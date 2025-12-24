@@ -14,9 +14,6 @@ public sealed class PlayerSfxController : MonoBehaviour
     [SerializeField] private AudioClip jumpClip;
     [SerializeField] private AudioClip landClip;
 
-    [Header("Jump Landing (After Jump)")]
-    [SerializeField] private AudioClip jumpLandingClip;
-
     [Header("Attack Swing")]
     [SerializeField] private AudioClip[] swingClips;
 
@@ -27,15 +24,10 @@ public sealed class PlayerSfxController : MonoBehaviour
 
     private const float JumpVolume = 0.9f;
     private const float LandVolume = 0.95f;
-
-    private const float JumpLandingVolume = 0.7f;
-
     private const float SwingVolume = 0.85f;
 
     private const float MinMoveInputSqr = 0.01f;
     private const float SpatialBlend3D = 1f;
-
-    private const int MaxReselectAttempts = 10; // (기존 safety < 10 매직넘버 제거)
 
     private int _lastSwingIndex = -1;
 
@@ -48,9 +40,11 @@ public sealed class PlayerSfxController : MonoBehaviour
             footstepLoopSource.playOnAwake = false;
             footstepLoopSource.volume = 0f;
 
-            // 시작 clip이 비어있다면 기본으로 Walk를 세팅만 해둠 (Play는 하지 않음)
             if (footstepLoopSource.clip == null && walkLoopClip != null)
                 footstepLoopSource.clip = walkLoopClip;
+
+            if (footstepLoopSource.clip != null && !footstepLoopSource.isPlaying)
+                footstepLoopSource.Play();
         }
 
         // ---- OneShot Source ----
@@ -89,18 +83,6 @@ public sealed class PlayerSfxController : MonoBehaviour
         oneShotSource.PlayOneShot(jumpClip, JumpVolume);
     }
 
-    public void PlayJumpLandingSfx()
-    {
-        if (oneShotSource == null || jumpLandingClip == null) return;
-        oneShotSource.PlayOneShot(jumpLandingClip, JumpLandingVolume);
-    }
-
-    // Animation Event에서 직접 호출
-    public void AE_PlayJumpLanding()
-    {
-        PlayJumpLandingSfx();
-    }
-
     public void PlayLandSfx()
     {
         if (oneShotSource == null || landClip == null) return;
@@ -116,11 +98,11 @@ public sealed class PlayerSfxController : MonoBehaviour
 
         if (swingClips.Length > 1)
         {
-            int attempts = 0;
-            while (index == _lastSwingIndex && attempts < MaxReselectAttempts)
+            int safety = 0;
+            while (index == _lastSwingIndex && safety < 10)
             {
                 index = Random.Range(0, swingClips.Length);
-                attempts++;
+                safety++;
             }
         }
 
@@ -136,22 +118,14 @@ public sealed class PlayerSfxController : MonoBehaviour
     {
         if (targetClip == null || footstepLoopSource == null) return;
 
-        if (footstepLoopSource.clip != targetClip)
-            footstepLoopSource.clip = targetClip;
+        if (footstepLoopSource.clip == targetClip)
+        {
+            if (!footstepLoopSource.isPlaying)
+                footstepLoopSource.Play();
+            return;
+        }
 
-        // “필요할 때만” 재생 (Awake에서 미리 Play하지 않음)
-        if (!footstepLoopSource.isPlaying)
-            footstepLoopSource.Play();
-    }
-
-    public void StopFootstepLoopImmediate()
-    {
-        if (footstepLoopSource == null) return;
-
-        footstepLoopSource.volume = 0f;
-
-        // 완전히 멈춰서 공중에서 “루프 자체”가 안 돌게 함
-        if (footstepLoopSource.isPlaying)
-            footstepLoopSource.Stop();
+        footstepLoopSource.clip = targetClip;
+        footstepLoopSource.Play();
     }
 }

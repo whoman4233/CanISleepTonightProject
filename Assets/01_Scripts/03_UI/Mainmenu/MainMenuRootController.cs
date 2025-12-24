@@ -13,8 +13,6 @@ public class MainMenuRootController : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe<GamePhaseChangedEvent>(OnPhaseChanged);
-        if (GameManager.Instance != null)
-            OnPhaseChanged(new GamePhaseChangedEvent(GameManager.Instance.CurrentPhase));
     }
 
     private void OnDisable()

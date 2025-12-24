@@ -10,8 +10,8 @@ using UnityEngine;
 public class SettlementManager : MonoBehaviour
 {
     [Header("Riot Gauge")]
-    //[SerializeField] private int riotGauge = 30;
-    //[SerializeField] private int maxRiotGauge = 100;
+    [SerializeField] private int riotGauge = 30;
+    [SerializeField] private int maxRiotGauge = 100;
 
     [Header("Gauge Change Values")]
     [Tooltip("수상한 방 진압 성공")]
@@ -26,11 +26,7 @@ public class SettlementManager : MonoBehaviour
     [Tooltip("정상 방 과잉 진압 실패")]
     [SerializeField] private int normalSuppressFailDelta = +10;
 
-    private GameManager gameManager;
-    private int riotGauge;
-    private int maxRiotGauge;
-
-    //public int RiotGauge => riotGauge;
+    public int RiotGauge => riotGauge;
 
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
@@ -45,22 +41,6 @@ public class SettlementManager : MonoBehaviour
             }
         };
     }
-
-    private void Start()
-    {
-        // GameManager.Instance가 확실히 존재할 때 값을 가져옵니다.
-        if (GameManager.Instance != null)
-        {
-            riotGauge = GameManager.Instance.RiotGauge;
-            maxRiotGauge = GameManager.Instance.MaxRiotGauge;
-            Debug.Log($"데이터 로드 완료: {riotGauge}/{maxRiotGauge}");
-        }
-        else
-        {
-            Debug.LogError("GameManager를 찾을 수 없습니다");
-        }
-    }
-
 
     private void OnEnable()
     {

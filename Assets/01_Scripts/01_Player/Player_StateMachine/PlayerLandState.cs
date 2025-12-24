@@ -9,8 +9,6 @@ public sealed class PlayerLandState : PlayerState
 
     public override void Enter()
     {
-        P.Sfx?.StopFootstepLoopImmediate();
-
         P.ForceClearCrouchTransitionLock();
 
         P.ForceResetCrouchToStanding(); // 착지 후 무조건 서 있는 상태로 리셋
