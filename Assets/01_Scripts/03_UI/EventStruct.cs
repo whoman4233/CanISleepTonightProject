@@ -39,6 +39,11 @@ public struct SettlementConfirmedEvent // UI에서 사용할 정산페이즈 확
 
 }
 
+public struct RequestSceneReloadEvent // 씬 재로딩 요청 이벤트
+{
+
+}
+
 //==========================================
 //게임 신 관련 이벤트 목록
 //==========================================
