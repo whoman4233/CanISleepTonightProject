@@ -66,7 +66,7 @@ public class FlowController : MonoBehaviour
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive); // 플레이 씬 다시 로드
         while (!asyncLoad.isDone) yield return null;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName)); // 씬 활성화
-        yield return new WaitForSeconds(1.0f);
+        yield return null; //new WaitForSeconds(1.0f);
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
         Debug.Log("씬 재로딩 완료");
     }
