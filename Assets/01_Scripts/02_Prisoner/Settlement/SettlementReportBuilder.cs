@@ -14,8 +14,9 @@ public class SettlementReportBuilder : MonoBehaviour
 
     private readonly List<ResolvedRecord> _resolved = new();
     private readonly HashSet<string> _resolvedIds = new();
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<SettlementStartedEvent> _onSettlementStarted;
     private void Awake()
     {
         if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
@@ -32,28 +33,30 @@ public class SettlementReportBuilder : MonoBehaviour
                 ClearResolvedCache();
                 Debug.Log("SettlementReportBuilder의 ClearResolved 완료");
             }
-            else if (e.Phase == GamePhase.Settlement)
-            {
-                RunSettlement();
-                Debug.Log("SettlementReportBuilder의 RunSettlement 완료");
-            }
         };
+        _onSettlementStarted = OnSettlementStarted;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_onSettlementStarted);
     }
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_onSettlementStarted);
     }
     private void OnDestroy()
     {
         if (inspection != null)
             inspection.OnResolved -= HandleResolved;
     }
-
+    private void OnSettlementStarted(SettlementStartedEvent e)
+    {
+        RunSettlement();
+        Debug.Log("SettlementReportBuilder의 RunSettlement 완료");
+    }
     private void HandleResolved(string cellId, bool isSuspicious, bool didSuppress)
     {
         if (_resolvedIds.Contains(cellId)) return;
@@ -86,6 +89,7 @@ public class SettlementReportBuilder : MonoBehaviour
 
     public void RunSettlement()
     {
+        Debug.Log("[SettlementReportBuilder] RunSettlement START");
         // 1. 리스트 빌드
         BuildSettlementReport(out var resolved, out var uninspected);
 
@@ -94,8 +98,8 @@ public class SettlementReportBuilder : MonoBehaviour
 
         // 3. UI 표시용 데이터 생성
         SettlementUIData uiData = settlement.BuildSettlementData(resolved, uninspected);
-
-        EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI연결)
+        Debug.Log("[SettlementReportBuilder] Publish SettlementCompletedEvent");
+        EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI 버튼 연결)
         // Debug Log로 데이터 확인
         Debug.Log($"[Settlement UI Data] 1F Sus: {uiData.Floor1_AnomalyCount}, 2F Sus: {uiData.Floor2_AnomalyCount} | " +
                   $"Suppressed: {uiData.SuppressedCount}, Warned: {uiData.WarnedCount}, Unchecked: {uiData.UncheckedCount}");

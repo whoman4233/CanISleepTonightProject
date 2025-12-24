@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using System;
+
 public class UIStateManager : MonoBehaviour
 {
-    [Header("Result UI")]
-    [SerializeField] private GameObject resultUI;        // Settlement / OffDuty / Ending
-
     [Header("Gameplay Overlay")]
     [SerializeField] private GameObject hudUI;           // Briefing / Patrol
     [SerializeField] private GameObject inGameMenuUI;    // 대부분의 Phase
@@ -21,6 +19,7 @@ public class UIStateManager : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe(phaseHandler);
+
         if (GameManager.Instance != null)
             ApplyPhase(GameManager.Instance.CurrentPhase);
     }
@@ -37,24 +36,25 @@ public class UIStateManager : MonoBehaviour
 
     private void ApplyPhase(GamePhase phase)
     {
-        // Result UI
-        bool isResult =
-            phase == GamePhase.Settlement ||
-            phase == GamePhase.OffDuty ||
-            phase == GamePhase.Ending;
-
-        resultUI.SetActive(isResult);
-
+        // =========================
         // Gameplay Overlay
+        // =========================
+
         bool isGameplay =
             phase == GamePhase.Briefing ||
             phase == GamePhase.Patrol;
 
         hudUI.SetActive(isGameplay);
 
+        // =========================
         // InGameMenu / Popup
+        // =========================
+
         inGameMenuUI.SetActive(phase != GamePhase.NotStarted);
         popupUI.SetActive(true);
+
+        // Result UI는 여기서 절대 제어하지 않는다
     }
 }
+
 

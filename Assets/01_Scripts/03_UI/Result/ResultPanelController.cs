@@ -6,53 +6,61 @@ public class ResultPanelController : MonoBehaviour
 {
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private Button nextDayButton;
+
     private bool _settlementReady;
 
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<SettlementStartedEvent> _onSettlementStarted;
     private Action<SettlementCompletedEvent> _onSettlementCompleted;
 
     private void Awake()
     {
-        nextDayButton.interactable = false;
         nextDayButton.onClick.AddListener(OnClickNextDay);
 
-        _onPhaseChanged = OnPhaseChanged;
+        _onSettlementStarted = OnSettlementStarted;
         _onSettlementCompleted = OnSettlementCompleted;
+
+        ResetPanel();
     }
 
     private void OnEnable()
     {
-        Debug.Log(typeof(GamePhaseChangedEvent).AssemblyQualifiedName);
-        EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_onSettlementStarted);
         EventBus.Subscribe(_onSettlementCompleted);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_onSettlementStarted);
         EventBus.Unsubscribe(_onSettlementCompleted);
     }
 
-    private void OnPhaseChanged(GamePhaseChangedEvent e)
+    // =========================
+    // Settlement lifecycle
+    // =========================
+
+    private void OnSettlementStarted(SettlementStartedEvent e)
     {
-        Debug.Log($"[ResultPanelController] PhaseChanged: {e.Phase}");
-        if (e.Phase == GamePhase.Settlement)
-        {
-            Open();
-        }
-        else
-        {
-            Close();
-        }
+        Open();
     }
+
     private void OnSettlementCompleted(SettlementCompletedEvent e)
     {
+        Debug.Log("[ResultPanelController] SettlementCompletedEvent RECEIVED");
+
         _settlementReady = true;
         nextDayButton.interactable = true;
     }
+
+    // =========================
+    // UI 
+    // =========================
+
     private void Open()
     {
+        ResetPanel();
+
         resultPanel.SetActive(true);
+
         EventBus.Publish(new GlobalInputLockRequestedEvent());
         EventBus.Publish(new PauseGameRequestedEvent());
     }
@@ -60,9 +68,23 @@ public class ResultPanelController : MonoBehaviour
     private void Close()
     {
         resultPanel.SetActive(false);
+
         EventBus.Publish(new GlobalInputLockReleasedEvent());
         EventBus.Publish(new ResumeGameRequestedEvent());
     }
+
+    private void ResetPanel()
+    {
+        _settlementReady = false;
+        nextDayButton.interactable = false;
+
+        if (resultPanel != null)
+            resultPanel.SetActive(false);
+    }
+
+    // =========================
+    // Button
+    // =========================
 
     private void OnClickNextDay()
     {
@@ -70,9 +92,8 @@ public class ResultPanelController : MonoBehaviour
             return;
 
         Close();
-        EventBus.Publish(new GlobalInputLockReleasedEvent());
-        EventBus.Publish(new ResumeGameRequestedEvent());
+
         EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Standby));
     }
-
 }
+
