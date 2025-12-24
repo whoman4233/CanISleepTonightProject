@@ -2,6 +2,7 @@
 
 public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 {
+    // ✅ 애니메이션 파라미터 정의 (필수)
     private static class AnimParams
     {
         public const string OpenTrigger = "Open";
@@ -13,7 +14,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Tooltip("비어있으면 일반 문(단순 개폐)으로 동작합니다.")]
     [SerializeField] private string cellId;
 
-    [SerializeField] private Collider cellInsideTrigger; // ✅ 감방 내부를 덮는 트리거 콜라이더
+    [SerializeField] private Collider cellInsideTrigger; // ✅ 감방 내부를 덮는 트리거 콜라이더 (옵션)
 
     [Header("Refs")]
     [SerializeField] private InspectionStateMachine inspection;
@@ -24,20 +25,31 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Debug")]
     [SerializeField] private bool verboseLog = true;
 
-    [Header("State")]
-    [SerializeField] private bool _isPlayerInside; // ✅ 태그 검사로 상태 업데이트됨
+    [Header("Settings")]
+    [SerializeField] private float interactCooldown = 0.8f; // 문 여닫는 쿨타임 (애니메이션 길이와 비슷하게 설정)
+    private float _lastInteractTime = -999f; // 마지막 상호작용 시간
 
+    // [상태]
+    [SerializeField] private bool _isPlayerInside;
     private bool _isSimpleDoorOpen = false;
 
     public void Interact(Player player)
     {
         if (!Validate()) return;
 
-        if (doorAnimator.IsInTransition(0) ||
-            doorAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        // [수정] 애니메이션 상태 확인 대신 쿨타임 체크로 변경
+        // 이렇게 하면 애니메이션이 조금 꼬여도 일정 시간 지나면 무조건 다시 상호작용 가능
+        if (Time.time < _lastInteractTime + interactCooldown)
+        {
+            if (verboseLog) Debug.Log($"[Door] 쿨타임 중... ({_lastInteractTime + interactCooldown - Time.time:F1}초 남음)");
+            return;
+        }
 
-            // 1. 일반 문 로직
-            if (string.IsNullOrWhiteSpace(cellId))
+        // 쿨타임 갱신
+        _lastInteractTime = Time.time;
+
+        // 1. 일반 문 로직
+        if (string.IsNullOrWhiteSpace(cellId))
         {
             HandleSimpleDoor();
             return;
@@ -55,27 +67,35 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void HandlePrisonDoor()
     {
+        // inspection이 null인지 안전장치
+        if (inspection == null)
+        {
+            Debug.LogError($"[Door] {name}: InspectionStateMachine이 연결되지 않았습니다!");
+            return;
+        }
+
         bool isInspectingThisCell = inspection.CurrentInspectingCellId == cellId;
 
         if (!isInspectingThisCell)
         {
             // [문 열기] 점검 시작
+            // [수정 2] TryEnter 실패 원인 파악을 위한 로그 추가
             if (TryEnter())
             {
+                if(verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
                 PlayOpen();
-
-                // ✅ 핵심: 죄수 상태를 Idle -> Inspection으로 변경
                 TriggerPrisonerInspection();
             }
             else
             {
+                Debug.LogWarning($"[Door] {cellId}: 진입 불가 (TryEnter 실패). 잠김 애니메이션 재생.");
                 PlayLocked();
             }
         }
         else
         {
-            // ✅ 개선 2: 태그 검사 기반 내부 체크
-            if (_isPlayerInside)
+            // ... (기존 닫기 로직 유지)
+            if (cellInsideTrigger != null && _isPlayerInside)
             {
                 Debug.LogWarning($"[Door] {cellId} 내부에 플레이어가 있어 문을 닫을 수 없습니다.");
                 return;
@@ -112,9 +132,26 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private bool TryEnter()
     {
+        if (cellManager == null) return false;
+
         var cell = cellManager.GetCell(cellId);
-        if (cell == null || cell.IsLockedForDay) return false;
-        return inspection.TryEnterCell(cellId);
+        if (cell == null)
+        {
+            Debug.LogError($"[Door] CellManager에서 ID '{cellId}'를 찾을 수 없습니다. 오타 확인 필요.");
+            return false;
+        }
+
+        if (cell.IsLockedForDay)
+        {
+            Debug.Log($"[Door] {cellId}는 금일 폐쇄(IsLockedForDay) 상태입니다.");
+            return false;
+        }
+
+        // InspectionStateMachine에서 거부하는 경우
+        bool canEnter = inspection.TryEnterCell(cellId);
+        if (!canEnter) Debug.Log($"[Door] InspectionStateMachine.TryEnterCell('{cellId}')가 false를 반환했습니다.");
+
+        return canEnter;
     }
 
     private bool TryExit() => inspection.RequestExitCell(cellId);
@@ -174,5 +211,4 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             _isPlayerInside = false;
         }
     }
-
 }

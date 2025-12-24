@@ -25,11 +25,6 @@ public class MainMenuController : MonoBehaviour
         BindButtons();
     }
 
-    private void OnEnable()
-    {
-        ResetState();
-    }
-
     private void BindButtons()
     {
         btnStart.onClick.AddListener(OnClickStart);
@@ -42,8 +37,7 @@ public class MainMenuController : MonoBehaviour
 
         btnSettingsBack.onClick.AddListener(OnClickBackToMain);
     }
-
-    private void ResetState()
+    public void ResetState() //MainMenuRootController 에서 초기화
     {
         mainButtonGroup.SetActive(true);
         startButtonGroup.SetActive(false);

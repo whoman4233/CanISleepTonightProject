@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int riotGauge = 10;
     [SerializeField] private int maxRiotGauge = 100;
     public int RiotGauge => riotGauge;
+    public int CurrentRiotGauge => riotGauge;
     public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
 
@@ -132,12 +133,25 @@ public class GameManager : MonoBehaviour
     private void OnEnterPatrol() // 순찰 페이즈
     {
         patrolDurationSeconds = 480;
+
+        EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds)); // UI 시간초기화 (기존 페이즈의 잔존시간 보이지 않도록)
+
+        // =========================
+        // RiotGauge 기준값 캐싱 (추가)
+        // =========================
+        var builder = FindObjectOfType<SettlementReportBuilder>();
+        if (builder != null)
+        {
+            builder.CacheRiotGaugeAtStart();
+        }
+
         StopAllCoroutines();
         StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
     }
 
     private void OnEnterSettlement() // 정산 페이즈
     {
+        EventBus.Publish(new SettlementStartedEvent());
         StartCoroutine(SettlementProcessRoutine());
     }
 
@@ -181,7 +195,7 @@ public class GameManager : MonoBehaviour
         return new GameSaveData
         {
             currentDay = this.currentDay,
-            //riotGauge = this.currentRiotGauge
+            riotGauge = this.riotGauge,
             currentPhase = this.currentPhase
         };
     }
@@ -230,8 +244,20 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                ChangePhase(GamePhase.Standby);
+                EventBus.Publish(new RequestSceneReloadEvent());
             }
         }
+    }
+
+    public void SetRiotGauge(int value)
+    {
+        riotGauge = Mathf.Clamp(value, 0, maxRiotGauge);
+    }
+    public void AddRiotGauge(int value)
+    {
+        riotGauge += value;
+        riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
+
+        Debug.Log($"[GM]게이지 변경: {value} 적용됨. 현재: {riotGauge}");
     }
 }

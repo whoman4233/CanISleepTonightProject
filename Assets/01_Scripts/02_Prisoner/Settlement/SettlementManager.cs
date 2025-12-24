@@ -107,6 +107,9 @@ public class SettlementManager : MonoBehaviour
         riotGauge += delta;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetRiotGauge(riotGauge);
+
         Debug.Log($"[Settlement] RiotGauge Δ={delta}, Result={riotGauge}/{maxRiotGauge}");
     }
 
@@ -154,6 +157,10 @@ public class SettlementManager : MonoBehaviour
     {
         riotGauge += dailyBaseIncrease;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetRiotGauge(riotGauge);
+
         Debug.Log($"[Standby] RiotGauge +{dailyBaseIncrease} => {riotGauge}/{maxRiotGauge}");
     }
 
@@ -183,4 +190,6 @@ public struct SettlementUIData
     public int SuppressedCount;     // 진압한 감방 수
     public int WarnedCount;         // 경고(무시)한 감방 수
     public int UncheckedCount;      // 체크하지 못한(미점검) 감방 수
+
+    public float RiotGaugeDelta; // 폭동게이지
 }

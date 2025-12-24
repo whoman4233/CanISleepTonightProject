@@ -25,14 +25,37 @@ public struct EndingConditionMetEvent // 엔딩 조건 달성 알림
     public GameEndingType EndingType;
     public EndingConditionMetEvent(GameEndingType type) => EndingType = type;
 }
+public struct SettlementStartedEvent // 정산페이즈 시작알림
+{
+
+}
+public struct SettlementCompletedEvent // 정산페이즈 종료알림
+{
+    public bool IsEnding;
+}
+
+public struct SettlementConfirmedEvent // UI에서 사용할 정산페이즈 확인 이벤트
+{
+
+}
+
+public struct RequestSceneReloadEvent // 씬 재로딩 요청 이벤트
+{
+
+}
 
 //==========================================
 //게임 신 관련 이벤트 목록
 //==========================================
 
-public struct GameTimeUpdateEvent //타이머
+public struct PatrolTimerResetEvent //타이머 초기화
 {
-    public float Seconds;
+    public float InitialSeconds;
+
+    public PatrolTimerResetEvent(float initialSeconds)
+    {
+        InitialSeconds = initialSeconds;
+    }
 }
 
 //==========================================
@@ -84,8 +107,13 @@ public struct ShowWarningPopupEvent // 경고 팝업 노출
 {
 
 }
+public struct PopupCloseRequestedEvent
+{
 
-//화이트 보드 상호작용 시
+}
+//==========================================
+//WhiteBoadrd이벤트 목록
+//==========================================
 public struct ShowWhiteBoardPopupEvent
 {
 
@@ -97,10 +125,21 @@ public struct HideWhiteBoardPopupEvent
 }
 
 // Popup UI ESC로 닫을 때
-public struct PopupCloseRequestedEvent
-{
 
+//==========================================
+//ResultUI 이벤트 목록
+//==========================================
+
+public struct ResultUIShowRequestedEvent // 정산 데이터
+{
+    public SettlementResultUIData Data;
+
+    public ResultUIShowRequestedEvent(SettlementResultUIData data)
+    {
+        Data = data;
+    }
 }
+
 
 //==========================================
 //InGameMenu 이벤트 목록
