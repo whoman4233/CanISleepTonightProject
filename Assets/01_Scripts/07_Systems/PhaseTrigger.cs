@@ -17,8 +17,6 @@ public class PhaseTrigger : MonoBehaviour
                 Debug.Log("플레이어 감지. 순찰 페이즈로 전환합니다.");
 
                 GameManager.Instance.ChangePhase(targetPhase);
-
-                gameObject.SetActive(false);
             }
         }
     }

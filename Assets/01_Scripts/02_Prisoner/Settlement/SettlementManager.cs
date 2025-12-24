@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 하루 정산 담당
 /// - 점검 결과를 받아 폭동 게이지 증감 처리
-/// - 수치는 전부 SerializeField로 분리
+/// - UI 표시에 필요한 정산 데이터 집계 기능 제공
 /// </summary>
 public class SettlementManager : MonoBehaviour
 {
@@ -26,13 +26,15 @@ public class SettlementManager : MonoBehaviour
     [Tooltip("정상 방 과잉 진압 실패")]
     [SerializeField] private int normalSuppressFailDelta = +10;
 
-    private GameManager gameManager;
+    [Header("Daily Base Increase (Standby)")]
+    [SerializeField] private int dailyBaseIncrease = 20;
+
     private int riotGauge;
     private int maxRiotGauge;
-
-    //public int RiotGauge => riotGauge;
-
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
+
+    // 층별 데이터 집계를 위한 참조
+    private PrisonCellManager _cellManager;
 
     private void Awake()
     {
@@ -48,7 +50,6 @@ public class SettlementManager : MonoBehaviour
 
     private void Start()
     {
-        // GameManager.Instance가 확실히 존재할 때 값을 가져옵니다.
         if (GameManager.Instance != null)
         {
             riotGauge = GameManager.Instance.RiotGauge;
@@ -59,8 +60,10 @@ public class SettlementManager : MonoBehaviour
         {
             Debug.LogError("GameManager를 찾을 수 없습니다");
         }
-    }
 
+        // 층별 이상현상 집계를 위해 매니저 찾기
+        _cellManager = FindObjectOfType<PrisonCellManager>();
+    }
 
     private void OnEnable()
     {
@@ -72,11 +75,9 @@ public class SettlementManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 하루 정산 적용
+    /// 하루 정산 적용 (게이지 로직)
     /// </summary>
-    public void ApplyDailyReport(
-        List<ResolvedRecord> resolved,
-        List<UninspectedRecord> uninspected)
+    public void ApplyDailyReport(List<ResolvedRecord> resolved, List<UninspectedRecord> uninspected)
     {
         int delta = 0;
 
@@ -85,45 +86,21 @@ public class SettlementManager : MonoBehaviour
         {
             if (r.isSuspicious)
             {
-                if (r.didSuppress)
-                {
-                    // 수상 + 진압 성공
-                    delta += suspiciousSuppressSuccessDelta;
-                }
-                else
-                {
-                    // 수상 + 경고(실패)
-                    delta += suspiciousIgnoreFailDelta;
-                }
+                if (r.didSuppress) delta += suspiciousSuppressSuccessDelta; // 수상 + 진압 성공
+                else delta += suspiciousIgnoreFailDelta; // 수상 + 경고(실패)
             }
             else
             {
-                if (r.didSuppress)
-                {
-                    // 정상 + 과잉 진압
-                    delta += normalSuppressFailDelta;
-                }
-                else
-                {
-                    // 정상 + 경고 성공
-                    delta += normalIgnoreSuccessDelta;
-                }
+                if (r.didSuppress) delta += normalSuppressFailDelta; // 정상 + 과잉 진압
+                else delta += normalIgnoreSuccessDelta; // 정상 + 경고 성공
             }
         }
 
         // 2. 미점검 방 처리 (전부 실패 취급)
         foreach (var u in uninspected)
         {
-            if (u.isSuspicious)
-            {
-                // 수상 + 미점검
-                delta += suspiciousIgnoreFailDelta;
-            }
-            else
-            {
-                // 정상 + 미점검
-                delta += normalSuppressFailDelta;
-            }
+            if (u.isSuspicious) delta += suspiciousIgnoreFailDelta;
+            else delta += normalSuppressFailDelta;
         }
 
         // 3. 게이지 적용
@@ -133,18 +110,45 @@ public class SettlementManager : MonoBehaviour
         Debug.Log($"[Settlement] RiotGauge Δ={delta}, Result={riotGauge}/{maxRiotGauge}");
     }
 
-    public bool IsRiotOver()
+    /// <summary>
+    /// UI 표시용 정산 데이터 생성
+    /// </summary>
+    public SettlementUIData BuildSettlementData(List<ResolvedRecord> resolved, List<UninspectedRecord> uninspected)
     {
-        return riotGauge >= maxRiotGauge;
-    }
+        SettlementUIData data = new SettlementUIData();
 
-    public void ResetGauge(int startValue)
-    {
-        riotGauge = Mathf.Clamp(startValue, 0, maxRiotGauge);
-    }
+        // 1. 플레이어 조치 결과 집계
+        foreach (var r in resolved)
+        {
+            if (r.didSuppress)
+                data.SuppressedCount++; // 진압
+            else
+                data.WarnedCount++;     // 경고/무시
+        }
+        data.UncheckedCount = uninspected.Count; // 미점검
 
-    [Header("Daily Base Increase (Standby)")]
-    [SerializeField] private int dailyBaseIncrease = 20;
+        // 2. 층별 이상현상(요주의 감방) 발생 개수 집계
+        if (_cellManager != null)
+        {
+            foreach (var cell in _cellManager.Cells)
+            {
+                // 오늘 발생한 요주의(이상현상) 감방인지 확인
+                if (cell.IsSuspicious)
+                {
+                    if (cell.Floor == 1)
+                        data.Floor1_AnomalyCount++;
+                    else if (cell.Floor == 2)
+                        data.Floor2_AnomalyCount++;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("SettlementManager: PrisonCellManager를 찾을 수 없어 층별 데이터를 집계하지 못했습니다.");
+        }
+
+        return data;
+    }
 
     public void ApplyDailyBaseIncrease()
     {
@@ -152,9 +156,31 @@ public class SettlementManager : MonoBehaviour
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
         Debug.Log($"[Standby] RiotGauge +{dailyBaseIncrease} => {riotGauge}/{maxRiotGauge}");
     }
+
     public void SetRiotGauge(int value)
     {
-        riotGauge = value; // 내부 변수에 로드된 값 할당
+        riotGauge = value;
         Debug.Log($"폭동 게이지가 로드된 값으로 설정됨: {value}");
     }
+
+    public bool IsRiotOver()
+    {
+        return riotGauge >= maxRiotGauge;
+    }
+}
+
+/// <summary>
+/// 정산 결과 UI 표시용 데이터 구조체
+/// </summary>
+[System.Serializable]
+public struct SettlementUIData
+{
+    [Header("Floor Anomaly Counts")]
+    public int Floor1_AnomalyCount; // 1층 요주의(이상현상) 감방 개수
+    public int Floor2_AnomalyCount; // 2층 요주의(이상현상) 감방 개수
+
+    [Header("Player Actions")]
+    public int SuppressedCount;     // 진압한 감방 수
+    public int WarnedCount;         // 경고(무시)한 감방 수
+    public int UncheckedCount;      // 체크하지 못한(미점검) 감방 수
 }
