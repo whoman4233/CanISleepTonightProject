@@ -151,7 +151,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterSettlement() // 정산 페이즈
     {
-        //EventBus.Publish(new SettlementStartedEvent());
+        EventBus.Publish(new SettlementStartedEvent());
         //StartCoroutine(SettlementProcessRoutine());
     }
 
