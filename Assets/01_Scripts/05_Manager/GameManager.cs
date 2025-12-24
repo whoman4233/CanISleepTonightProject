@@ -170,6 +170,7 @@ public class GameManager : MonoBehaviour
         //추후 엔딩 연출 추가
         Debug.Log("엔딩 페이즈 진입");
         Debug.Log($"{finalEnding}에 진입하였습니다.");
+
         OnGameEnded?.Invoke(finalEnding);
     }
 

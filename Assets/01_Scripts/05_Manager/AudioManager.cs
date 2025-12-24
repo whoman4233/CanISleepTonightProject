@@ -50,6 +50,10 @@ public class AudioManager : MonoBehaviour
         LoadSettings();
         ApplyVolumes();
     }
+    private void Start()
+    {
+        ApplyVolumes();
+    }
 
     // =========================
     // UI 슬라이더용
