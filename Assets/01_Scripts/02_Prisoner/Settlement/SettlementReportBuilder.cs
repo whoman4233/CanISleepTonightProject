@@ -86,21 +86,21 @@ public class SettlementReportBuilder : MonoBehaviour
         BuildSettlementReport(out var resolved, out var uninspected);
         settlement.ApplyDailyReport(resolved, uninspected);
 
-        if (settlement.IsRiotOver())
-        {
-            Debug.Log("[GameOver] Riot occurred");
-            // 엔딩 트리거
-            if(GameManager.Instance.CurrentDay < 7)
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // 산업 재해(7일 이전에 폭동 100 이상)
-                Debug.Log("BadEnding2");
-            }
-            else
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // 위기 회피(7일차에 폭동 100 이상으로 퇴근)
-                Debug.Log("BadEnding3");
-            }
-        }
+        //if (settlement.IsRiotOver())
+        //{
+        //    Debug.Log("[GameOver] Riot occurred");
+        //    // 엔딩 트리거
+        //    if(GameManager.Instance.CurrentDay < 7)
+        //    {
+        //        EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // 산업 재해(7일 이전에 폭동 100 이상)
+        //        Debug.Log("BadEnding2");
+        //    }
+        //    else
+        //    {
+        //        EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // 위기 회피(7일차에 폭동 100 이상으로 퇴근)
+        //        Debug.Log("BadEnding3");
+        //    }
+        //}
     }
 
 }
