@@ -15,6 +15,7 @@ public class FlowController : MonoBehaviour
 
     private Action<RequestStartNewGameEvent> _startNewGameHandler;
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
+    private Action<RequestSceneReloadEvent> _reloadHandler;
 
     private void Awake()
     {
@@ -24,6 +25,7 @@ public class FlowController : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             _startNewGameHandler = e => StartNewGame();
             _returnToTitleHandler = e => ReturnToTitle();
+            _reloadHandler = e => StartCoroutine(ReloadPlaySceneRoutine());
         }
         else
         {
@@ -40,12 +42,33 @@ public class FlowController : MonoBehaviour
     {
         EventBus.Subscribe(_startNewGameHandler);
         EventBus.Subscribe(_returnToTitleHandler);
+        EventBus.Subscribe(_reloadHandler);
     }
     private void OnDisable()
     {
 
         EventBus.Unsubscribe(_startNewGameHandler);
         EventBus.Unsubscribe(_returnToTitleHandler);
+        EventBus.Unsubscribe(_reloadHandler);
+    }
+
+    private IEnumerator ReloadPlaySceneRoutine() // 씬 재로딩 코루틴
+    {
+        isBusy = true;
+        Scene playScene = SceneManager.GetSceneByName(playSceneName);
+        if (playScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(playScene); // 현재 씬 언로드
+        }
+        yield return Resources.UnloadUnusedAssets(); // 메모리 정리
+        System.GC.Collect(); // 메모리 정리
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive); // 플레이 씬 다시 로드
+        while (!asyncLoad.isDone) yield return null;
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName)); // 씬 활성화
+        yield return new WaitForSeconds(1.0f);
+        GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
+        Debug.Log("씬 재로딩 완료");
     }
 
     public void StartNewGame()

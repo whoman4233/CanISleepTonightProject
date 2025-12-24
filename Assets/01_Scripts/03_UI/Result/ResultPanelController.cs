@@ -93,7 +93,7 @@ public class ResultPanelController : MonoBehaviour
 
         Close();
 
-        EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Standby));
+        GameManager.Instance.OnClickSettlementButton();
     }
 }
 

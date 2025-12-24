@@ -152,7 +152,7 @@ public class GameManager : MonoBehaviour
     private void OnEnterSettlement() // 정산 페이즈
     {
         EventBus.Publish(new SettlementStartedEvent());
-        StartCoroutine(SettlementProcessRoutine());
+        //StartCoroutine(SettlementProcessRoutine());
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -259,5 +259,11 @@ public class GameManager : MonoBehaviour
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
         Debug.Log($"[GM]게이지 변경: {value} 적용됨. 현재: {riotGauge}");
+    }
+
+
+    public void OnClickSettlementButton() // 보고서 nextday 버튼 클릭 시 호출 될 함수
+    {
+        StartCoroutine(SettlementProcessRoutine());
     }
 }
