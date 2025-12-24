@@ -21,6 +21,8 @@ public class UIStateManager : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe(phaseHandler);
+        if (GameManager.Instance != null)
+            ApplyPhase(GameManager.Instance.CurrentPhase);
     }
 
     private void OnDisable()

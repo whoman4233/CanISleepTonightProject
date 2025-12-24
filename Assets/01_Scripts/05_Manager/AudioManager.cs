@@ -11,177 +11,151 @@ public class AudioManager : MonoBehaviour
 
     [Header("Audio Mixer")]
     [SerializeField] private AudioMixer mainMixer;
-    [SerializeField] private AudioMixerGroup sfxMixerGroup;
-    public AudioMixerGroup SfxMixerGroup => sfxMixerGroup;
 
-    private const string MasterVolumeParameterName = "MasterVolume";
-    private const string BgmVolumeParameterName = "BGMVolume";
-    private const string SfxVolumeParameterName = "SFXVolume";
+    private const string MasterParam = "MasterVolume";
+    private const string BgmParam = "BGMVolume";
+    private const string SfxParam = "SFXVolume";
 
-    private const string MasterVolumeKey = "MasterVolume";
-    private const string BgmVolumeKey = "BGMVolume";
-    private const string SfxVolumeKey = "SFXVolume";
-    private const string IsMutedKey = "IsMuted";
+    private const string MasterKey = "MasterVolume";
+    private const string BgmKey = "BGMVolume";
+    private const string SfxKey = "SFXVolume";
+    private const string MuteKey = "IsMuted";
 
-    private const float MinVolumeDb = -80f;     // 완전 무음 수준
-    private const float MinLinearVolume = 0.0001f;  // log10 계산용 최소값
+    private const float MinDb = -80f;
+    private const float MinLinear = 0.0001f;
 
-    // 볼륨 값 (0 ~ 1)
     [Range(0f, 1f)] private float masterVolume = 1f;
     [Range(0f, 1f)] private float bgmVolume = 1f;
     [Range(0f, 1f)] private float sfxVolume = 1f;
-
-    // 음소거 상태 확인용 변수
-    private bool isMuted = false;
+    private bool isMuted;
 
     private void Awake()
     {
-        // 싱글톤 패턴
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            LoadVolumeSettings();
-        }
-        else
+        if (Instance != null)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        LoadSettings();
+        ApplyVolumes();
     }
 
-    private void Start()
+    // =========================
+    // UI 슬라이더용
+    // ========================= 
+
+    public void SetMasterVolume(float value)
     {
-        ApplyVolumeSettings();
+        masterVolume = Mathf.Clamp01(value);
+        ApplyVolumes();
+        SaveSettings();
     }
 
-    // 마스터 볼륨 설정
-    public void SetMasterVolume(float volume)
+    public void SetBgmVolume(float value)
     {
-        masterVolume = Mathf.Clamp01(volume);
-        ApplyVolumeSettings();
-        SaveVolumeSettings();
+        bgmVolume = Mathf.Clamp01(value);
+        ApplyVolumes();
+        SaveSettings();
     }
 
-    // BGM 볼륨 설정
-    public void SetBGMVolume(float volume)
+    public void SetSfxVolume(float value)
     {
-        bgmVolume = Mathf.Clamp01(volume);
-        ApplyVolumeSettings();
-        SaveVolumeSettings();
+        sfxVolume = Mathf.Clamp01(value);
+        ApplyVolumes();
+        SaveSettings();
     }
 
-    // SFX 볼륨 설정
-    public void SetSFXVolume(float volume)
-    {
-        sfxVolume = Mathf.Clamp01(volume);
-        ApplyVolumeSettings();
-        SaveVolumeSettings();
-    }
-
-    // 음소거 토글
-    public void ToggleMute()
-    {
-        isMuted = !isMuted;
-        ApplyVolumeSettings();
-        SaveVolumeSettings();
-    }
-
-    // 음소거 설정
     public void SetMute(bool mute)
     {
         isMuted = mute;
-        ApplyVolumeSettings();
-        SaveVolumeSettings();
+        ApplyVolumes();
+        SaveSettings();
     }
 
-    // 실제 AudioSource에 볼륨 적용
-    private void ApplyVolumeSettings()
-    {
-        float actualMasterVolume = isMuted ? 0f : masterVolume;
-
-        SetMixerVolume(MasterVolumeParameterName, actualMasterVolume);
-        SetMixerVolume(BgmVolumeParameterName, actualMasterVolume * bgmVolume);
-        SetMixerVolume(SfxVolumeParameterName, actualMasterVolume * sfxVolume);
-
-        if (bgmSource != null)
-        {
-            bgmSource.volume = 1f;
-        }
-
-        if (sfxSource != null)
-        {
-            sfxSource.volume = 1f;
-        }
-    }
-
-    // 볼륨 설정 저장 (PlayerPrefs 사용)
-    private void SaveVolumeSettings()
-    {
-        PlayerPrefs.SetFloat(MasterVolumeKey, masterVolume);
-        PlayerPrefs.SetFloat(BgmVolumeKey, bgmVolume);
-        PlayerPrefs.SetFloat(SfxVolumeKey, sfxVolume);
-        PlayerPrefs.SetInt(IsMutedKey, isMuted ? 1 : 0);
-        PlayerPrefs.Save();
-    }
-
-    // 볼륨 설정 로드
-    private void LoadVolumeSettings()
-    {
-        masterVolume = PlayerPrefs.GetFloat(MasterVolumeKey, 1f);
-        bgmVolume = PlayerPrefs.GetFloat(BgmVolumeKey, 1f);
-        sfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, 1f);
-        isMuted = PlayerPrefs.GetInt(IsMutedKey, 0) == 1;
-    }
-
-    // Getter 메서드들
-    public float GetMasterVolume() => masterVolume;
-    public float GetBGMVolume() => bgmVolume;
-    public float GetSFXVolume() => sfxVolume;
     public bool IsMuted() => isMuted;
+    public float GetMasterVolume() => masterVolume;
+    public float GetBgmVolume() => bgmVolume;
+    public float GetSfxVolume() => sfxVolume;
 
-    // BGM 재생
+    // =========================
+    // BGM/SFX
+    // ========================= 
+
     public void PlayBGM(AudioClip clip, bool loop = true)
     {
-        if (bgmSource != null && clip != null)
-        {
-            bgmSource.clip = clip;
-            bgmSource.loop = loop;
-            bgmSource.Play();
-        }
+        if (bgmSource == null || clip == null) return;
+
+        bgmSource.clip = clip;
+        bgmSource.loop = loop;
+        bgmSource.Play();
     }
 
-    // SFX 재생
     public void PlaySFX(AudioClip clip)
     {
-        if (sfxSource == null || clip == null)
-        {
-            return;
-        }
-
+        if (sfxSource == null || clip == null) return;
         sfxSource.PlayOneShot(clip);
     }
 
-    private void SetMixerVolume(string parameterName, float normalizedVolume)
+    // =========================
+    // 볼륨/믹서 조절
+    // ========================= 
+
+    private void ApplyVolumes()
+    {
+        float master = isMuted ? 0f : masterVolume;
+
+        SetMixerVolume(MasterParam, master);
+        SetMixerVolume(BgmParam, master * bgmVolume);
+        SetMixerVolume(SfxParam, master * sfxVolume);
+
+        Debug.Log(
+            $"[AudioManager] ApplyVolumes M:{masterVolume} B:{bgmVolume} S:{sfxVolume} Muted:{isMuted}"
+        );
+    }
+
+    private void SetMixerVolume(string param, float linear)
     {
         if (mainMixer == null)
         {
-            Debug.LogWarning("AudioManager: mainMixer가 설정되지 않았습니다.", this);
+            Debug.LogWarning("[AudioManager] Mixer missing");
             return;
         }
 
-        float volume = Mathf.Clamp01(normalizedVolume);
-
-        if (volume <= 0f)
+        if (linear <= 0f)
         {
-            mainMixer.SetFloat(parameterName, MinVolumeDb);
+            mainMixer.SetFloat(param, MinDb);
             return;
         }
 
-        // 0~1 값을 dB 로 변환 (20 * log10)
-        float volumeDb = Mathf.Log10(Mathf.Max(volume, MinLinearVolume)) * 20f;
-        volumeDb = Mathf.Max(volumeDb, MinVolumeDb);
+        float db = Mathf.Log10(Mathf.Max(linear, MinLinear)) * 20f;
+        db = Mathf.Max(db, MinDb);
+        mainMixer.SetFloat(param, db);
+    }
 
-        mainMixer.SetFloat(parameterName, volumeDb);
+    // =========================
+    // 저장/불러오기 
+    // ========================= 
+
+    private void SaveSettings()
+    {
+        PlayerPrefs.SetFloat(MasterKey, masterVolume);
+        PlayerPrefs.SetFloat(BgmKey, bgmVolume);
+        PlayerPrefs.SetFloat(SfxKey, sfxVolume);
+        PlayerPrefs.SetInt(MuteKey, isMuted ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    private void LoadSettings()
+    {
+        masterVolume = PlayerPrefs.GetFloat(MasterKey, 1f);
+        bgmVolume = PlayerPrefs.GetFloat(BgmKey, 1f);
+        sfxVolume = PlayerPrefs.GetFloat(SfxKey, 1f);
+        isMuted = PlayerPrefs.GetInt(MuteKey, 0) == 1;
     }
 }
+
 

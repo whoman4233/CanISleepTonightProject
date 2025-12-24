@@ -12,7 +12,6 @@ public class SettlementTrigger : MonoBehaviour, IInteractable
         if (!CanInteract())
         {
             EventBus.Publish(new ShowWarningPopupEvent());
-            return;
         }
 
         EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Settlement));
