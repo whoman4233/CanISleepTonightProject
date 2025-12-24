@@ -264,7 +264,6 @@ public class GameManager : MonoBehaviour
 
     public void OnClickSettlementButton() // 보고서 nextday 버튼 클릭 시 호출 될 함수
     {
-        EventBus.Publish(new SettlementStartedEvent());
         StartCoroutine(SettlementProcessRoutine());
     }
 }
