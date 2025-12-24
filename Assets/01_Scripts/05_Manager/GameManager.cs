@@ -152,6 +152,7 @@ public class GameManager : MonoBehaviour
     private void OnEnterSettlement() // 정산 페이즈
     {
         EventBus.Publish(new SettlementStartedEvent());
+        StartCoroutine(SettlementProcessRoutine());
     }
 
     private void OnEnterEnding() // 엔딩 페이즈
@@ -194,7 +195,7 @@ public class GameManager : MonoBehaviour
         return new GameSaveData
         {
             currentDay = this.currentDay,
-            //riotGauge = this.currentRiotGauge
+            riotGauge = this.riotGauge,
             currentPhase = this.currentPhase
         };
     }
@@ -243,7 +244,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                ChangePhase(GamePhase.Standby);
+                EventBus.Publish(new RequestSceneReloadEvent());
             }
         }
     }
@@ -251,5 +252,12 @@ public class GameManager : MonoBehaviour
     public void SetRiotGauge(int value)
     {
         riotGauge = Mathf.Clamp(value, 0, maxRiotGauge);
+    }
+    public void AddRiotGauge(int value)
+    {
+        riotGauge += value;
+        riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
+
+        Debug.Log($"[GM]게이지 변경: {value} 적용됨. 현재: {riotGauge}");
     }
 }
