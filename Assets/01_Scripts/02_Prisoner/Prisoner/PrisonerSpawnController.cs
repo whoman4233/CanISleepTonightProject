@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq; // List 변환을 위해 추가
 using UnityEngine;
 
 public class PrisonerSpawnController : MonoBehaviour
@@ -22,14 +23,52 @@ public class PrisonerSpawnController : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool verboseLog;
 
+    // [중요] EventBus의 WeakReference 이슈 방지를 위해 Action을 필드로 보관
+    private Action<GamePhaseChangedEvent> _onGamePhaseChanged;
+
+    private void Awake()
+    {
+        // 이벤트 핸들러 할당
+        _onGamePhaseChanged = HandleGamePhaseChanged;
+    }
+
     private void OnEnable()
     {
+        // 기존 구독 유지
         PrisonerEventBus.OnSuppressSessionStarted += HandleSuppressStart;
+
+        // [추가] GameManager의 페이즈 변경 이벤트 구독
+        EventBus.Subscribe(_onGamePhaseChanged);
     }
 
     private void OnDisable()
     {
         PrisonerEventBus.OnSuppressSessionStarted -= HandleSuppressStart;
+
+        // [추가] 구독 해지
+        EventBus.Unsubscribe(_onGamePhaseChanged);
+    }
+
+    // [추가] 페이즈 변경 시 호출되는 콜백
+    private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
+    {
+        if (evt.Phase == GamePhase.Briefing)
+        {
+            if (verboseLog) Debug.Log("[Spawn] Briefing Phase Started. Spawning Prisoners...");
+
+            // 1. 기존 데이터 초기화
+            ClearAllForNewDay();
+
+            // 2. 스폰할 감방 ID 목록 가져오기 (AnchorRegistry에 등록된 모든 방)
+            // CellAnchorRegistry에 모든 키를 가져오는 기능이 있다고 가정하거나, 
+            // 없다면 아래처럼 anchorRegistry 내부 구현에 맞춰 가져와야 합니다.
+            // 여기서는 예시로 anchorRegistry가 Dictionary 등을 가지고 있다고 가정하고 Keys를 리스트로 변환합니다.
+            // 만약 anchorRegistry에 public 메서드로 ID 목록을 얻는 게 없다면 추가가 필요합니다.
+            List<string> allCellIds = anchorRegistry.GetAllCellIds();
+
+            // 3. 오늘의 죄수 생성 (수상함 여부 로직은 임시로 50% 확률 적용)
+            SpawnForToday(allCellIds, (cellId) => UnityEngine.Random.value > 0.5f);
+        }
     }
 
     public void ClearAllForNewDay()
@@ -83,11 +122,9 @@ public class PrisonerSpawnController : MonoBehaviour
     {
         if (!contentRegistry.TryGet(cellId, out var content) || content == null || content.prisoner == null) return;
 
-        // 이제 FSM 상태만 변경해주면 AI가 알아서 동작합니다.
         var fsm = content.prisoner.GetComponent<PrisonerFSM>();
         if (fsm != null)
         {
-            // 점검(Inspection) 중에 때리는 것과 별개로 '진압 모드' 버튼을 눌렀을 때의 처리
             fsm.ChangeState(fsm.CombatState);
         }
     }
@@ -101,7 +138,6 @@ public class PrisonerSpawnController : MonoBehaviour
         if (actor == null) actor = pGo.AddComponent<PrisonerActor>();
         actor.Init(anchor.cellId, instanceId, def);
 
-        // ✅ FSM 설정: 이동 위치 할당 (BadAI 로직은 삭제됨)
         var fsm = pGo.GetComponent<PrisonerFSM>();
         if (fsm != null)
         {
@@ -111,17 +147,12 @@ public class PrisonerSpawnController : MonoBehaviour
         return pGo;
     }
 
-    /// <summary>
-    /// ✅ 핵심: 감방의 모든 슬롯을 채우고, 수상한 방이면 1개만 이상현상 적용
-    /// </summary>
     private void SpawnAllAnomaliesInSlots(string cellId, CellAnchor anchor, bool roomIsSuspicious, CellContentRegistry.CellContent content)
     {
         if (anchor.anomalySlots == null || anchor.anomalySlots.Count == 0) return;
         if (anomalyDatabase == null || anomalyDatabase.defs == null) return;
 
         var slots = anchor.anomalySlots;
-
-        // 1. 수상한 방이라면 어느 슬롯을 이상하게 만들지 미리 결정
         int suspiciousSlotIndex = roomIsSuspicious ? UnityEngine.Random.Range(0, slots.Count) : -1;
 
         for (int i = 0; i < slots.Count; i++)
@@ -129,14 +160,10 @@ public class PrisonerSpawnController : MonoBehaviour
             var slot = slots[i];
             if (slot == null) continue;
 
-            // 2. 해당 슬롯의 Kind(베개, 칫솔 등)와 일치하는 정의들 검색
             var matches = anomalyDatabase.defs.FindAll(d => d.kind == slot.kind);
             if (matches.Count == 0) continue;
 
-            // 3. 매칭되는 것 중 하나 무작위 선택
             var def = matches[UnityEngine.Random.Range(0, matches.Count)];
-
-            // 4. 결정된 suspiciousSlotIndex와 일치하면 수상한 프리팹 사용
             bool isThisOneSuspicious = (i == suspiciousSlotIndex);
             GameObject prefab = isThisOneSuspicious ? def.suspiciousPrefab : def.normalPrefab;
             if (prefab == null) continue;
