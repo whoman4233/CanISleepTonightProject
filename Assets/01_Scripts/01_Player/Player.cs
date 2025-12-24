@@ -47,7 +47,9 @@ public class Player : MonoBehaviour
 
     // 입력차단 관련 이벤트 핸들러 (캐시)
     private Action<GlobalInputLockRequestedEvent> _onGlobalInputLock;
+    private Action<GlobalInputLockReleasedEvent> _onGlobalInputUnlock;
     private Action<InspectionStartedEvent> _onInspectionStarted;
+    private Action<InspectionEndedEvent> _onInspectionEnded;
 
     private void Awake()
     {
@@ -78,7 +80,9 @@ public class Player : MonoBehaviour
         StateMachine = new PlayerStateMachine(this);
 
         _onGlobalInputLock = OnGlobalInputLocked;
+        _onGlobalInputUnlock = OnGlobalInputUnlocked;
         _onInspectionStarted = OnInspectionStarted;
+        _onInspectionEnded = OnInspectionEnded;
 
         _inspectionManager = GetComponentInChildren<InspectionManager>();
         if (_inspectionManager != null)
@@ -99,7 +103,9 @@ public class Player : MonoBehaviour
         // 플레이어 존재 알림 (InputManager가 Gameplay enable 판단)
         EventBus.Publish(new PlayerPresenceChangedEvent(true));
         EventBus.Subscribe(_onGlobalInputLock);
+        EventBus.Subscribe(_onGlobalInputUnlock);
         EventBus.Subscribe(_onInspectionStarted);
+        EventBus.Subscribe(_onInspectionEnded);
     }
 
     private void OnDisable()
@@ -107,7 +113,9 @@ public class Player : MonoBehaviour
         // 플레이어 비존재 알림
         EventBus.Publish(new PlayerPresenceChangedEvent(false));
         EventBus.Unsubscribe(_onGlobalInputLock);
+        EventBus.Unsubscribe(_onGlobalInputUnlock);
         EventBus.Unsubscribe(_onInspectionStarted);
+        EventBus.Unsubscribe(_onInspectionEnded);
     }
 
     // Player는 Input을 소유하지 않음
@@ -125,16 +133,11 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        // Gameplay 상태가 아니면 FSM 차단
-        if (!IsGameplayActive())
-            return;
-
-
-        // ActionMap enable 여부 확인
-        if (!_inputs.Player.enabled)
-            return;
-
-        ReadInputs();
+        //FSM Pause 중에는 입력 갱신 막아둠
+        if (!StateMachine.IsPaused && _inputs.Player.enabled)
+        {
+            ReadInputs();
+        }
 
         StateMachine.HandleInput();
         StateMachine.Tick(Time.deltaTime);
@@ -142,15 +145,6 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!IsGameplayActive())
-            return;
-
-        if (_inspectionManager != null && _inspectionManager.IsInspecting)
-            return;
-
-        if (!_inputs.Player.enabled)
-            return;
-
         StateMachine.FixedTick(Time.fixedDeltaTime);
     }
 
@@ -267,17 +261,60 @@ public class Player : MonoBehaviour
         CrouchToggleRequested = false;
     }
 
-    // =============================
-    // Event handlers
-    // =============================
+    // =========================
+    // FSM Pause / Resume 
+    // =========================
+    private void OnEnterPause()
+    {
+        // 1. 이동 입력/캐시 제거
+        ResetInputCache();
+
+        // 2. CharacterController 이동 정지
+        if (Controller != null)
+        {
+            Controller.Move(Vector3.zero);
+        }
+
+        // 3. Animator 이동 파라미터 강제 0
+        if (Animator != null && AnimationData != null)
+        {
+            // 이동 속도 제거
+            Animator.SetFloat(AnimationData.SpeedParameterHash, 0f);
+
+            // Blend Tree 입력 제거
+            Animator.SetFloat(AnimationData.MoveXParameterHash, 0f);
+            Animator.SetFloat(AnimationData.MoveYParameterHash, 0f);
+
+            // Jump / Fall / Land / Attack 은 건드리지 않는다
+            // 공중 상태, 공격 상태 보존 목적
+        }
+            // 4. SFX 정지 (이미 재생 중인 루프)
+            if (Sfx != null)
+        {
+            Sfx.StopFootstepLoopImmediate();
+        }
+    }
+
 
     private void OnGlobalInputLocked(GlobalInputLockRequestedEvent e)
     {
-        ResetInputCache();
+        OnEnterPause();
+        StateMachine.SetPaused(true);
+    }
+
+    private void OnGlobalInputUnlocked(GlobalInputLockReleasedEvent e)
+    {
+        StateMachine.SetPaused(false);
     }
 
     private void OnInspectionStarted(InspectionStartedEvent e)
     {
-        ResetInputCache();
+        OnEnterPause();
+        StateMachine.SetPaused(true);
+    }
+
+    private void OnInspectionEnded(InspectionEndedEvent e)
+    {
+        StateMachine.SetPaused(false);
     }
 }
