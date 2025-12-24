@@ -70,6 +70,8 @@ public class ResultPanelController : MonoBehaviour
             return;
 
         Close();
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
         EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Standby));
     }
 

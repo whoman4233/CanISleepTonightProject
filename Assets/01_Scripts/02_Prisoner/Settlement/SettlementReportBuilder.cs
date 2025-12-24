@@ -95,6 +95,7 @@ public class SettlementReportBuilder : MonoBehaviour
         // 3. UI 표시용 데이터 생성
         SettlementUIData uiData = settlement.BuildSettlementData(resolved, uninspected);
 
+        EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI연결)
         // Debug Log로 데이터 확인
         Debug.Log($"[Settlement UI Data] 1F Sus: {uiData.Floor1_AnomalyCount}, 2F Sus: {uiData.Floor2_AnomalyCount} | " +
                   $"Suppressed: {uiData.SuppressedCount}, Warned: {uiData.WarnedCount}, Unchecked: {uiData.UncheckedCount}");

@@ -138,6 +138,8 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterSettlement() // 정산 페이즈
     {
+        EventBus.Publish(new GlobalInputLockRequestedEvent());
+        EventBus.Publish(new PauseGameRequestedEvent());
         EventBus.Publish(new SettlementStartedEvent());
     }
 
