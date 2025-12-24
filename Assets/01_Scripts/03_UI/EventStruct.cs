@@ -107,8 +107,13 @@ public struct ShowWarningPopupEvent // 경고 팝업 노출
 {
 
 }
+public struct PopupCloseRequestedEvent
+{
 
-//화이트 보드 상호작용 시
+}
+//==========================================
+//WhiteBoadrd이벤트 목록
+//==========================================
 public struct ShowWhiteBoardPopupEvent
 {
 
@@ -120,10 +125,7 @@ public struct HideWhiteBoardPopupEvent
 }
 
 // Popup UI ESC로 닫을 때
-public struct PopupCloseRequestedEvent
-{
 
-}
 //==========================================
 //ResultUI 이벤트 목록
 //==========================================

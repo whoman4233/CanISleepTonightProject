@@ -48,7 +48,6 @@ public class InspectionStateMachine : MonoBehaviour
         return true;
     }
 
-    // ✅ [살려야 할 로직 2] 시간 초과 시 강제 해제 (기존 메서드 유지)
     public void ForceReleaseOnTimeExpired()
     {
         if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
@@ -65,7 +64,6 @@ public class InspectionStateMachine : MonoBehaviour
         Debug.Log($"[ISSM] Time Expired. Force Released cell {cellId}");
     }
 
-    // ✅ [살려야 할 로직 3] 문을 닫을 때 성공적으로 마감하는 메서드
     public void CompleteInspection(string cellId, bool didSuppress)
     {
         var cell = cellManager.GetCell(cellId);
@@ -77,6 +75,8 @@ public class InspectionStateMachine : MonoBehaviour
         cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
         // 시스템 리셋
         EndInspection();
+
+        Debug.Log($"{cellId} complete");
     }
 
     public void EndInspection()
@@ -86,14 +86,8 @@ public class InspectionStateMachine : MonoBehaviour
     }
 
     public bool RequestExitCell(string cellId)
-    {
-        var cell = cellManager.GetCell(cellId);
-        if (cell != null && cell.IsSuspicious && !_isSuppressionCleared)
-        {
-            OnExitBlocked?.Invoke(cellId);
-            return false;
-        }
-        return true;
+    { 
+        return true; // 무조건 문 닫기 허용
     }
 
     public bool SelectSuppress(string cellId)
