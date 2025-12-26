@@ -7,15 +7,23 @@ public sealed class InteractableOutliner : MonoBehaviour
     private const float OutlineOff = 0f;
 
     private const string OutlinePropertyName = "_OutlineOn";
+    private const string OutlineColorPropertyName = "_Color";
+
     private static readonly int OutlineOnId = Shader.PropertyToID(OutlinePropertyName);
+    private static readonly int OutlineColorId = Shader.PropertyToID(OutlineColorPropertyName);
 
     [Header("Preview / Default")]
     [SerializeField] private bool outlineEnabled = false;
 
+    // 기본색 : 파랑색
+    [SerializeField] private Color defaultOutlineColor = new Color(0f, 0.8f, 1f, 1f);
+
     private Renderer[] _renderers;
     private MaterialPropertyBlock _mpb;
 
-    // 캐시 갱신 조건(계층/렌더러 변화 감지)
+    // 마지막으로 적용한 색을 기억
+    private Color _currentOutlineColor;
+
     private int _cachedChildCount;
     private int _cachedAllRendererCount;
 
@@ -23,13 +31,38 @@ public sealed class InteractableOutliner : MonoBehaviour
     {
         _mpb = new MaterialPropertyBlock();
         CacheRenderersIfNeeded(force: true);
+
+        _currentOutlineColor = defaultOutlineColor;
         Apply(outlineEnabled);
     }
 
+    /// <summary>
+    /// 기존 호출부(PlayerInteractor 등) 호환용.
+    /// -> 색을 "현재 색"으로 유지한 채 on/off만 바꿈
+    /// </summary>
     public void SetHighlight(bool isOn)
     {
         outlineEnabled = isOn;
         Apply(isOn);
+    }
+
+    /// <summary>
+    /// 색까지 바꾸고 싶을 때 사용 (Locked=red 등)
+    /// </summary>
+    public void SetHighlight(bool isOn, Color color)
+    {
+        _currentOutlineColor = color;
+        outlineEnabled = isOn;
+        Apply(isOn);
+    }
+
+    /// <summary>
+    /// 기본색으로 되돌리고 싶을 때
+    /// </summary>
+    public void ResetColorToDefault()
+    {
+        _currentOutlineColor = defaultOutlineColor;
+        Apply(outlineEnabled);
     }
 
     private void Apply(bool isOn)
@@ -46,6 +79,10 @@ public sealed class InteractableOutliner : MonoBehaviour
 
             r.GetPropertyBlock(_mpb);
             _mpb.SetFloat(OutlineOnId, value);
+
+            // ✅ 항상 색도 같이 넣어준다(프레임 덮어쓰기 방지)
+            _mpb.SetColor(OutlineColorId, _currentOutlineColor);
+
             r.SetPropertyBlock(_mpb);
         }
     }
@@ -68,7 +105,6 @@ public sealed class InteractableOutliner : MonoBehaviour
         _cachedChildCount = currentChildCount;
         _cachedAllRendererCount = currentAllRendererCount;
 
-        // 아웃라인 프로퍼티가 있는 머티리얼을 가진 Renderer만 필터링
         List<Renderer> filtered = new List<Renderer>(all.Length);
 
         for (int i = 0; i < all.Length; i++)
@@ -76,7 +112,7 @@ public sealed class InteractableOutliner : MonoBehaviour
             Renderer r = all[i];
             if (r == null) continue;
 
-            Material[] mats = r.sharedMaterials; // 인스턴스화 방지
+            Material[] mats = r.sharedMaterials;
             if (mats == null) continue;
 
             bool hasOutlineMaterial = false;
@@ -107,6 +143,9 @@ public sealed class InteractableOutliner : MonoBehaviour
 
         _mpb ??= new MaterialPropertyBlock();
         CacheRenderersIfNeeded(force: false);
+
+        // 에디터에서도 동일 적용
+        _currentOutlineColor = defaultOutlineColor;
         Apply(outlineEnabled);
     }
 #endif
