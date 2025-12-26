@@ -29,7 +29,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Settings")]
     [SerializeField] private float interactCooldown = 0.8f; // 문 여닫는 쿨타임 (애니메이션 길이와 비슷하게 설정)
     private float _lastInteractTime = -999f; // 마지막 상호작용 시간
-
+    [SerializeField] private bool useRedOutlineOnCloseOnlySlidingDoor = false;
     [SerializeField] private InteractableOutliner outliner;
 
     // [상태]
@@ -182,8 +182,8 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         doorAnimator.ResetTrigger(AnimParams.OpenTrigger);
         doorAnimator.SetTrigger(AnimParams.CloseTrigger);
 
-        if (outliner != null)
-            outliner.ResetColorToDefault();
+        if (useRedOutlineOnCloseOnlySlidingDoor && outliner != null)
+            outliner.SetHighlight(true, Color.red);
     }
 
     private void PlayLocked()
