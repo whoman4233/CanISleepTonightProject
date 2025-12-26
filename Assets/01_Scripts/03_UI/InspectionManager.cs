@@ -50,6 +50,14 @@ public class InspectionManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (_isInspecting)
+        {
+            _isInspecting = false;
+
+            EventBus.Publish(new InspectionEndedEvent());
+            EventBus.Publish(new InspectionViewReleasedEvent());
+        }
+
         EventBus.Unsubscribe(_onViewReady);
     }
 
@@ -169,7 +177,7 @@ public class InspectionManager : MonoBehaviour
         if (delta.sqrMagnitude < 0.001f)
             return;
 
-        yaw += delta.x * rotateSpeed;
+        yaw -= delta.x * rotateSpeed;
         pitch += delta.y * rotateSpeed;
         pitch = Mathf.Clamp(pitch, -pitchLimit, pitchLimit);
 

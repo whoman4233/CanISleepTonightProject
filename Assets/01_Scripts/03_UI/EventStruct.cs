@@ -284,4 +284,16 @@ public struct InputModeChangedEvent
     }
 }
 
+public struct InputHardResetEvent
+{
+
+}
+
+//==========================================
+// UI 종료 이벤트 (메인메뉴(인트로신)으로 돌아갈 때)
+//==========================================
+public struct UIHardResetEvent
+{
+}
+
 

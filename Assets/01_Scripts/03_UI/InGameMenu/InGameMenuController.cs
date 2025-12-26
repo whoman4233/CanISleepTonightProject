@@ -47,9 +47,15 @@ public class InGameMenuController : MonoBehaviour
     private void OnClickReturnToTitle()
     {
         SetOpen(false);
+
+        EventBus.Publish(new InspectionEndedEvent());
+        EventBus.Publish(new InspectionViewReleasedEvent());
+
         EventBus.Publish(new ResumeGameRequestedEvent());
+        EventBus.Publish(new UIHardResetEvent());
         EventBus.Publish(new ReturnToTitleRequestedEvent());
     }
+
 
     private void OnClickOptions()
     {
