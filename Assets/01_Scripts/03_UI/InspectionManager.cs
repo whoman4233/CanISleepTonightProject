@@ -16,6 +16,7 @@ public class InspectionManager : MonoBehaviour
     [Header("Ray")]
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private float inspectRayDistance = 5f;
+    [SerializeField] private float inspectHoverRadius = 0.08f;
 
     private Action<InspectionViewReadyEvent> _onViewReady;
 
@@ -239,6 +240,7 @@ public class InspectionManager : MonoBehaviour
 
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
+        // UI 영역 밖이면 즉시 해제
         if (!RectTransformUtility.RectangleContainsScreenPoint(
                 inspectionViewRect,
                 screenPos,
@@ -248,6 +250,7 @@ public class InspectionManager : MonoBehaviour
             return;
         }
 
+        // UI → Viewport 좌표 변환
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             inspectionViewRect,
             screenPos,
@@ -267,20 +270,37 @@ public class InspectionManager : MonoBehaviour
 
         Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
 
-        if (Physics.Raycast(ray, out var hit, inspectRayDistance, inspectLayerMask))
+        // SphereCast
+        if (Physics.SphereCast(
+                ray,
+                inspectHoverRadius,
+                out RaycastHit hit,
+                inspectRayDistance,
+                inspectLayerMask,
+                QueryTriggerInteraction.Ignore))
         {
-            var outliner = hit.collider.GetComponentInChildren<InteractableOutliner>();
-            if (outliner != null && _currentOutlined != outliner)
+            var nextOutliner = hit.collider.GetComponentInChildren<InteractableOutliner>();
+
+            //대상이 바뀌었을 때만 토글
+            if (_currentOutlined != nextOutliner)
             {
-                ClearOutline();
-                _currentOutlined = outliner;
-                _currentOutlined.SetHighlight(true);
-                return;
+                if (_currentOutlined != null)
+                    _currentOutlined.SetHighlight(false);
+
+                _currentOutlined = nextOutliner;
+
+                if (_currentOutlined != null)
+                    _currentOutlined.SetHighlight(true);
             }
+
+            // 히트 유지 중이면 Clear하지 않음
+            return;
         }
 
+        // SphereCast 실패했을 때만 해제
         ClearOutline();
     }
+
 
     private void ClearOutline()
     {
