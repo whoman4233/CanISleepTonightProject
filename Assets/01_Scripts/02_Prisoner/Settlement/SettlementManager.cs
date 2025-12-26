@@ -116,11 +116,12 @@ public class SettlementManager : MonoBehaviour
         if (_cellManager != null)
         {
             foreach (var cell in _cellManager.Cells)
+
             {
-                if (cell.IsActiveToday)
+                if (cell.IsActiveToday && cell.IsSuspicious)
                 {
                     if (cell.Floor == 1)
-                        data.Floor1_ActiveCount++;
+                        data.Floor1_ActiveCount++; // 변수명은 ActiveCount지만 내용물은 Suspicious Count가 됩니다.
                     else if (cell.Floor == 2)
                         data.Floor2_ActiveCount++;
                 }
