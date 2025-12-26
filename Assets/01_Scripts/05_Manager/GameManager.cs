@@ -156,11 +156,11 @@ public class GameManager : MonoBehaviour
         {
             builder.CacheRiotGaugeAtStart();
         }
-        if (patrolTimerCoroutine != null) // 기존 타이머 코루틴 중지하고
-        {
-            StopCoroutine(patrolTimerCoroutine);
-            patrolTimerCoroutine = null;
-        }
+        //if (patrolTimerCoroutine != null) // 기존 타이머 코루틴 중지하고
+        //{
+        //    StopCoroutine(patrolTimerCoroutine);
+        //    patrolTimerCoroutine = null;
+        //}
 
         patrolTimerCoroutine = StartCoroutine(UpdateTimer()); // 새 타이머 코루틴 시작
     }
