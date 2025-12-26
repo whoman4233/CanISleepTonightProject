@@ -91,15 +91,10 @@ public class GameManager : MonoBehaviour
         Debug.Log($"{CurrentPhase} 에서 {newPhase}로 페이즈 전환이 이루어졌습니다.");
         currentPhase = newPhase;
         OnPhaseChanged?.Invoke(newPhase);
-        if (currentPhase == GamePhase.Ending)
-        {
-            return;
-        }
 
         // =========================
         // [추가] UI 및 외부 시스템 전파용
         // =========================
-        EventBus.Publish(new GamePhaseChangedEvent(newPhase));
 
         switch (newPhase)
         {
@@ -126,6 +121,11 @@ public class GameManager : MonoBehaviour
             default:
                 break;
         }
+        if (currentPhase == GamePhase.Ending)
+        {
+            return;
+        }
+        EventBus.Publish(new GamePhaseChangedEvent(newPhase));
     }
 
     private void OnEnterNotStarted() // 루프 시 초기화 및 메인으로(인트로씬) 돌아가면 초기화

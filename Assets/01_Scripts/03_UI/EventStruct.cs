@@ -58,7 +58,7 @@ public struct EndingUIShowRequestedEvent
 //게임 신 관련 이벤트 목록
 //==========================================
 
-public struct PatrolTimerResetEvent //타이머 초기화
+public struct PatrolTimerResetEvent // 타이머 초기화
 {
     public float InitialSeconds;
 
@@ -67,6 +67,17 @@ public struct PatrolTimerResetEvent //타이머 초기화
         InitialSeconds = initialSeconds;
     }
 }
+
+public readonly struct InteractableHoverChangedEvent //크로스 헤어 관련 이벤트(PlayerInteractor Ray 상태 수신)
+{
+    public readonly bool IsHovering;
+
+    public InteractableHoverChangedEvent(bool isHovering)
+    {
+        IsHovering = isHovering;
+    }
+}
+
 
 //==========================================
 //MainMenuUI 이벤트 목록
@@ -271,6 +282,18 @@ public struct InputModeChangedEvent
     {
         Mode = mode;
     }
+}
+
+public struct InputHardResetEvent
+{
+
+}
+
+//==========================================
+// UI 종료 이벤트 (메인메뉴(인트로신)으로 돌아갈 때)
+//==========================================
+public struct UIHardResetEvent
+{
 }
 
 

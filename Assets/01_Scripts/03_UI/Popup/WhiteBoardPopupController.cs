@@ -13,8 +13,6 @@ public class WhiteBoardPopupController : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Publish(new GlobalInputLockRequestedEvent());
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     private void OnDisable()
