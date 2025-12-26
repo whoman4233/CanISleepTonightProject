@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public sealed class PrisonerSfxController : MonoBehaviour
 {
+    [SerializeField] private AudioMixerGroup sfxMixerGroup;
+
     [Header("Hit Clips")]
     [SerializeField] private AudioClip[] hitClips;
 
@@ -46,6 +49,9 @@ public sealed class PrisonerSfxController : MonoBehaviour
         // 목소리/사망 전용 소스 (Hit와 겹쳐도 재생되게 분리)
         _voiceSource = gameObject.AddComponent<AudioSource>();
         Setup3DOneShot(_voiceSource);
+
+        _hitSource.outputAudioMixerGroup = sfxMixerGroup;
+        _voiceSource.outputAudioMixerGroup = sfxMixerGroup;
 
         RefillAndShuffleBag(hitClips, _hitBag, ref _hitBagIndex);
         RefillAndShuffleBag(moanClips, _moanBag, ref _moanBagIndex);
