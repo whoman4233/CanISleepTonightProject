@@ -98,7 +98,7 @@ public class PrisonerSpawnController : MonoBehaviour
         content.prisonerInstanceId = instanceId;
 
         // 1. 죄수 생성
-        var pGo = InstantiatePrisoner(anchor, instanceId, def, out var actor);
+        var pGo = InstantiatePrisoner(anchor, instanceId, def, isSuspicious, out var actor);
         content.prisoner = actor;
 
         // 2. [추가] 프롭(Prop) 생성 로직
@@ -132,14 +132,14 @@ public class PrisonerSpawnController : MonoBehaviour
         }
     }
 
-    private GameObject InstantiatePrisoner(CellAnchor anchor, string instanceId, PrisonerDefinition def, out PrisonerActor actor)
+    private GameObject InstantiatePrisoner(CellAnchor anchor, string instanceId, PrisonerDefinition def, bool isSuspicious, out PrisonerActor actor)
     {
         var pGo = Instantiate(prisonerPrefab, anchor.prisonerSpawn.position, anchor.prisonerSpawn.rotation);
         pGo.name = $"Prisoner_{instanceId}";
 
         actor = pGo.GetComponent<PrisonerActor>();
         if (actor == null) actor = pGo.AddComponent<PrisonerActor>();
-        actor.Init(anchor.cellId, instanceId, def);
+        actor.Init(anchor.cellId, instanceId, def, isSuspicious);
 
         var fsm = pGo.GetComponent<PrisonerFSM>();
         if (fsm != null)
