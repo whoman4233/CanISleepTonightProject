@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; // List 변환을 위해 추가
+using System.Linq;
 using UnityEngine;
 
 public class PrisonerSpawnController : MonoBehaviour
@@ -13,6 +13,10 @@ public class PrisonerSpawnController : MonoBehaviour
     [Header("Prisoner Prefab")]
     [SerializeField] private GameObject prisonerPrefab;
 
+    [Header("Cell Prop")]
+    [Tooltip("감방 내 책상 등에 배치될 기본 프롭 프리팹")]
+    [SerializeField] private GameObject cellPropPrefab; // [추가] 프롭 프리팹
+
     [Header("Template Pick (임시)")]
     [SerializeField] private string defaultGoodTemplateId = "P_01";
     [SerializeField] private string defaultBadTemplateId = "P_02";
@@ -23,50 +27,35 @@ public class PrisonerSpawnController : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool verboseLog;
 
-    // [중요] EventBus의 WeakReference 이슈 방지를 위해 Action을 필드로 보관
     private Action<GamePhaseChangedEvent> _onGamePhaseChanged;
 
     private void Awake()
     {
-        // 이벤트 핸들러 할당
         _onGamePhaseChanged = HandleGamePhaseChanged;
     }
 
     private void OnEnable()
     {
-        // 기존 구독 유지
         PrisonerEventBus.OnSuppressSessionStarted += HandleSuppressStart;
-
-        // [추가] GameManager의 페이즈 변경 이벤트 구독
         EventBus.Subscribe(_onGamePhaseChanged);
     }
 
     private void OnDisable()
     {
         PrisonerEventBus.OnSuppressSessionStarted -= HandleSuppressStart;
-
-        // [추가] 구독 해지
         EventBus.Unsubscribe(_onGamePhaseChanged);
     }
 
-    // [추가] 페이즈 변경 시 호출되는 콜백
     private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
     {
         if (evt.Phase == GamePhase.Briefing)
         {
             if (verboseLog) Debug.Log("[Spawn] Briefing Phase Started. Spawning Prisoners...");
 
-            // 1. 기존 데이터 초기화
             ClearAllForNewDay();
 
-            // 2. 스폰할 감방 ID 목록 가져오기 (AnchorRegistry에 등록된 모든 방)
-            // CellAnchorRegistry에 모든 키를 가져오는 기능이 있다고 가정하거나, 
-            // 없다면 아래처럼 anchorRegistry 내부 구현에 맞춰 가져와야 합니다.
-            // 여기서는 예시로 anchorRegistry가 Dictionary 등을 가지고 있다고 가정하고 Keys를 리스트로 변환합니다.
-            // 만약 anchorRegistry에 public 메서드로 ID 목록을 얻는 게 없다면 추가가 필요합니다.
-            List<string> allCellIds = anchorRegistry.GetAllCellIds();
+            List<string> allCellIds = anchorRegistry.GetAllCellIds(); // AnchorRegistry에 이 메서드가 있다고 가정
 
-            // 3. 오늘의 죄수 생성 (수상함 여부 로직은 임시로 50% 확률 적용)
             SpawnForToday(allCellIds, (cellId) => UnityEngine.Random.value > 0.5f);
         }
     }
@@ -112,7 +101,21 @@ public class PrisonerSpawnController : MonoBehaviour
         var pGo = InstantiatePrisoner(anchor, instanceId, def, out var actor);
         content.prisoner = actor;
 
-        // 2. 이상현상 요소 생성 (모든 슬롯 채우기 로직)
+        // 2. [추가] 프롭(Prop) 생성 로직
+        if (cellPropPrefab != null && anchor.propSpawnPoint != null)
+        {
+            var propGo = Instantiate(cellPropPrefab, anchor.propSpawnPoint.position, anchor.propSpawnPoint.rotation, anchor.transform);
+            propGo.name = $"Prop_{cellId}";
+            content.prop = propGo; // Registry에 등록하여 나중에 삭제 가능하게 함
+        }
+        else
+        {
+            // 디버그용 (필요 없다면 주석 처리)
+            if (cellPropPrefab == null && verboseLog) Debug.LogWarning($"[Spawn] CellPropPrefab is null.");
+            if (anchor.propSpawnPoint == null && verboseLog) Debug.LogWarning($"[Spawn] PropSpawnPoint is null in Anchor {cellId}");
+        }
+
+        // 3. 이상현상 요소 생성
         SpawnAllAnomaliesInSlots(cellId, anchor, isSuspicious, content);
 
         contentRegistry.Set(cellId, content);
