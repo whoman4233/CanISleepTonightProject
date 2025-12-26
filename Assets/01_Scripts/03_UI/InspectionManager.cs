@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class InspectionManager : MonoBehaviour
 {
-    [Header("Camera")]
+    [Header("Camera/Pivot")]
     [SerializeField] private Camera inspectionCamera;
     [SerializeField] private Transform inspectPivot;
 
@@ -32,6 +32,8 @@ public class InspectionManager : MonoBehaviour
 
     private IInspectable currentInspectable;
     private GameObject inspectInstance;
+
+    private Transform visualRoot; // 회전/스케일 조작 대상
 
     private void Awake()
     {
@@ -120,18 +122,21 @@ public class InspectionManager : MonoBehaviour
         {
             Destroy(inspectInstance);
             inspectInstance = null;
-            currentInspectable.OnInspectionExit();
         }
+
+        // =========================
+        // VisualRoot 정리
+        // =========================
+        visualRoot = null;
+
+        currentInspectable?.OnInspectionExit();
+        currentInspectable = null;
 
         inspectionCamera.gameObject.SetActive(false);
         inspectionViewRect = null;
 
-        // 입력/커서 복구 제거
-        // 상태 종료 알림
         EventBus.Publish(new InspectionEndedEvent());
         EventBus.Publish(new InspectionViewReleasedEvent());
-
-        currentInspectable = null;
     }
 
     // =========================
@@ -299,6 +304,15 @@ public class InspectionManager : MonoBehaviour
         inspectInstance.transform.localPosition = Vector3.zero;
         inspectInstance.transform.localRotation = Quaternion.identity;
         inspectInstance.transform.localScale = Vector3.one;
+
+        // =========================
+        // VisualRoot 탐색
+        // =========================
+        visualRoot = inspectInstance.transform.Find("VisualRoot");
+        if (visualRoot == null)
+        {
+            visualRoot = inspectInstance.transform;
+        }
 
         if (inspectInstance.TryGetComponent<IInspectionView>(out var view))
         {
