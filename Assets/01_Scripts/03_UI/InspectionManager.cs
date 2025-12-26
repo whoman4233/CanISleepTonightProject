@@ -170,7 +170,7 @@ public class InspectionManager : MonoBehaviour
             return;
 
         yaw += delta.x * rotateSpeed;
-        pitch -= delta.y * rotateSpeed;
+        pitch += delta.y * rotateSpeed;
         pitch = Mathf.Clamp(pitch, -pitchLimit, pitchLimit);
 
         inspectPivot.localRotation = Quaternion.Euler(pitch, yaw, 0f);
