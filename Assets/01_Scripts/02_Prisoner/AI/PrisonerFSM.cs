@@ -13,6 +13,7 @@ public class PrisonerFSM : MonoBehaviour
     public PrisonerCombatState CombatState { get; private set; } // 공격 로직 클래스
     public PrisonerCowerState CowerState { get; private set; }   // 웅크리기 로직 클래스
     public PrisonerDeadState DeadState { get; private set; }     // 사망 로직 클래스
+    public PrisonerActor actor;
 
     public bool IsInvulnerable => _currentState is PrisonerIdleState;
 
@@ -21,7 +22,6 @@ public class PrisonerFSM : MonoBehaviour
         // 상태 초기화
         IdleState = new PrisonerIdleState(this);
         InspectionState = new PrisonerInspectionState(this);
-        // CombatState, CowerState, DeadState도 동일하게 생성 (생략된 클래스 구현 필요)
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);

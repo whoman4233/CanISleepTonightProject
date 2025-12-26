@@ -22,7 +22,9 @@ public class PrisonerActor : MonoBehaviour
 
     private bool _combatEnabled;
 
-    private PrisonerFSM fsm;
+    private PrisonerFSM fsm; 
+    
+    public bool IsSuspicious { get; private set; }
 
     [Header("Feedback Refs")]
     [SerializeField] private RagdollSetting ragdoll;
@@ -48,17 +50,19 @@ public class PrisonerActor : MonoBehaviour
         if (useSceneFallback && !_initialized)
             EnsureInitialized(); 
         fsm = GetComponent<PrisonerFSM>();
+        fsm.actor = this;
 
         if (sfx == null)
             sfx = GetComponent<PrisonerSfxController>();
     }
 
-    public void Init(string cellId, string instanceId, PrisonerDefinition def)
+    public void Init(string cellId, string instanceId, PrisonerDefinition def, bool isSuspicious)
     {
         _initialized = true;
 
         CellId = cellId;
-        InstanceId = instanceId;
+        InstanceId = instanceId; 
+        this.IsSuspicious =  isSuspicious;
 
         Type = def.type;
         Hp = def.hp;
