@@ -7,7 +7,17 @@ public class PrisonerIdleState : BasePrisonerState
     public override void Enter()
     {
         agent.isStopped = true;
-        anim.SetBool("IsSitting", true); // 앉아있는 애니메이션 루프
+
+        if (fsm.actor != null && fsm.actor.IsSuspicious)
+        {
+            // 수상한 행동 (예: 서성거리기, 벽 긁기 등)
+            anim.SetBool("Suspicious", true);
+        }
+        else
+        {
+            // 일반 행동 (앉아있기)
+            anim.SetBool("Suspicious", false);
+        }
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
