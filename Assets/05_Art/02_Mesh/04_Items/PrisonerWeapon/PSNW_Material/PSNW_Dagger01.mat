@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PSNW_Dagger01
-  m_Shader: {fileID: -6465566751694194690, guid: b2c58a39b59af42b081d22622f1969e6,
+  m_Shader: {fileID: -6465566751694194690, guid: 9985b18d308aa244b942342aef5e6397,
     type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -39,6 +39,14 @@ Material:
     m_TexEnvs:
     - _AO_r_metalic_g:
         m_Texture: {fileID: 2800000, guid: e6fc9cfd119c1f5429141a4e9a52fb3c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AO_r_metallic_g:
+        m_Texture: {fileID: 2800000, guid: 56f7b1930914ca447bc9a88f4cf59173, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BC_rgb_Roughness_a:
+        m_Texture: {fileID: 2800000, guid: 56f7b1930914ca447bc9a88f4cf59173, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BC_rgb_smoothness_a:
@@ -77,6 +85,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetalnessMap:
+        m_Texture: {fileID: 2800000, guid: ebcd5b9a8f6724c4ab3f1bdf3d8f4eda, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: e445afea44850ae408d05100d7272cfb, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -91,6 +103,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 2800000, guid: e6fc9cfd119c1f5429141a4e9a52fb3c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -130,24 +146,27 @@ Material:
     - _GlossyReflections: 0
     - _Metalic: 2
     - _Metallic: 0
+    - _MetalnessStrength: 1.48
     - _NormalStrenght: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _Roughness: 0.79
     - _Smoothness: 0.62
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _StrokeBlendingNoiseScale: 500
-    - _StrokeBlendingNoiseStrength: 0.15
+    - _StrokeBlendingNoiseStrength: 0.226
     - _StrokeRandomness: 1
-    - _StrokeScale: 5
+    - _StrokeScale: 8.1
     - _Surface: 0
     - _UseBlendingNoise: 1
-    - _Variation: 0.1
+    - _UseMetalnessMap: 1
+    - _Variation: 0.59
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
@@ -155,6 +174,6 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _VariationColorA: {r: 0, g: 0, b: 0, a: 0}
-    - _VariationColorB: {r: 1, g: 1, b: 1, a: 0}
+    - _VariationColorA: {r: 1, g: 1, b: 1, a: 0}
+    - _VariationColorB: {r: 0.06448024, g: 0.16107437, b: 0.6509434, a: 0}
   m_BuildTextureStacks: []

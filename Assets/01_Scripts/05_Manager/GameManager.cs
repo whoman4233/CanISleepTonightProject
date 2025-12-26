@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
 
+    private Coroutine patrolTimerCoroutine;
+
     private Action<RequestPhaseChangeEvent> _requestPhaseChange;
     private Action<EndingConditionMetEvent> _onEndingConditionMet;
 
@@ -89,6 +91,10 @@ public class GameManager : MonoBehaviour
         Debug.Log($"{CurrentPhase} 에서 {newPhase}로 페이즈 전환이 이루어졌습니다.");
         currentPhase = newPhase;
         OnPhaseChanged?.Invoke(newPhase);
+        if (currentPhase == GamePhase.Ending)
+        {
+            return;
+        }
 
         // =========================
         // [추가] UI 및 외부 시스템 전파용
@@ -122,17 +128,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnEnterNotStarted()
+    private void OnEnterNotStarted() // 루프 시 초기화 및 메인으로(인트로씬) 돌아가면 초기화
     {
         currentDay = 0;
         riotGauge = 10;
     }
     private void OnEnterStandby() // 준비 페이즈
     {
-        if (currentPhase == GamePhase.Ending)
-        {
-            return;
-        }
         currentDay++;
     }
     private void OnEnterBriefing() // 브리핑 페이즈
@@ -154,9 +156,13 @@ public class GameManager : MonoBehaviour
         {
             builder.CacheRiotGaugeAtStart();
         }
+        if (patrolTimerCoroutine != null) // 기존 타이머 코루틴 중지하고
+        {
+            StopCoroutine(patrolTimerCoroutine);
+            patrolTimerCoroutine = null;
+        }
 
-        StopAllCoroutines();
-        StartCoroutine(UpdateTimer()); // 타이머 코루틴 시작
+        patrolTimerCoroutine = StartCoroutine(UpdateTimer()); // 새 타이머 코루틴 시작
     }
 
     private void OnEnterSettlement() // 정산 페이즈
@@ -170,7 +176,13 @@ public class GameManager : MonoBehaviour
         //추후 엔딩 연출 추가
         Debug.Log("엔딩 페이즈 진입");
         Debug.Log($"{finalEnding}에 진입하였습니다.");
-
+        EndingData endingData = _saveManager.LoadMeta(); // loadmeta에 있는 if (!File.Exists(path)) return new EndingData();가 엔딩데이터가 없으면 새로 만들어줌
+        if (!endingData.unlockedEndings.Contains(finalEnding)) // 엔딩 수집 정보에 현재 엔딩이 없으면
+        {
+            endingData.unlockedEndings.Add(finalEnding); // 추가해주고
+            _saveManager.SaveMeta(endingData); // 세이브해줌
+            Debug.Log($"새로운 엔딩이 저장되었습니다 {finalEnding}");
+        }
         OnGameEnded?.Invoke(finalEnding);
     }
 
@@ -183,7 +195,7 @@ public class GameManager : MonoBehaviour
             OnInGameTimeUpdated?.Invoke(patrolDurationSeconds);
             yield return null;
         }
-        if (patrolDurationSeconds < 0)
+        if (patrolDurationSeconds <= 0f)
         {
             patrolDurationSeconds = 0;
             ChangePhase(GamePhase.Settlement);
@@ -236,12 +248,12 @@ public class GameManager : MonoBehaviour
     {
         if (riotGauge >= maxRiotGauge)
         {
-            if (currentDay <= maxDay)
+            if (currentDay < maxDay)
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // 산업 재해(7일 이전에 폭동 100 이상)
                 Debug.Log("BadEnding2");
             }
-            if (currentDay >= maxDay)
+            else
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // 위기 회피(7일차에 폭동 100 이상으로 퇴근)
                 Debug.Log("BadEnding3");

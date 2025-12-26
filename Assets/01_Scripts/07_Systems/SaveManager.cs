@@ -51,9 +51,16 @@ public class SaveManager
     // 엔딩 메타 정보 저장/로드 (루프 리셋 시에도 유지됨)
     public void SaveMeta(EndingData meta) // 엔딩 저장.
     {
-        string json = JsonUtility.ToJson(meta, true);
-        File.WriteAllText(GetPath(MetaSaveFileName), json);
-        Debug.Log($"[Meta] 엔딩 정보 저장 완료: {GetPath(MetaSaveFileName)}");
+        try
+        {
+            string json = JsonUtility.ToJson(meta, true);
+            File.WriteAllText(GetPath(MetaSaveFileName), json);
+            Debug.Log($"[Meta] 엔딩 정보 저장 완료: {GetPath(MetaSaveFileName)}");
+        }
+        catch(System.Exception e)
+        {
+            Debug.LogError($"엔딩저장실패 {e.Message}");
+        }
     }
 
     public EndingData LoadMeta()
