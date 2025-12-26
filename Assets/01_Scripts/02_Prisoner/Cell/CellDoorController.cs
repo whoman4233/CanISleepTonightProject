@@ -76,11 +76,6 @@ public class CellDoorController : MonoBehaviour
             return;
         }
 
-        if (anchorRegistry.TryGet(cellId, out var anchor) && anchor.playerEnterSpawn != null)
-        {
-            playerRoot.SetPositionAndRotation(anchor.playerEnterSpawn.position, anchor.playerEnterSpawn.rotation);
-        }
-
         if (verboseLog) Debug.Log($"[Door] Enter SUCCESS cell={cellId}");
         // TODO: 문 열림/닫힘 연출, 철창 SFX
     }
@@ -93,11 +88,6 @@ public class CellDoorController : MonoBehaviour
             if (verboseLog) Debug.Log($"[Door] Exit blocked cell={cellId}");
             // TODO: 잠김 UI/SFX (진압 중 성공 전)
             return;
-        }
-
-        if (anchorRegistry.TryGet(cellId, out var anchor) && anchor.playerExitSpawn != null)
-        {
-            playerRoot.SetPositionAndRotation(anchor.playerExitSpawn.position, anchor.playerExitSpawn.rotation);
         }
 
         if (verboseLog) Debug.Log($"[Door] Exit SUCCESS cell={cellId}");
