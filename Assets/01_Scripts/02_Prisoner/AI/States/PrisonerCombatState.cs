@@ -14,12 +14,14 @@ public class PrisonerCombatState : BasePrisonerState
         if (dist <= 1.5f) // 공격 사거리
         {
             agent.isStopped = true;
+            anim.SetBool("Run", false);
             anim.SetTrigger("Attack");
         }
         else
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
+            anim.SetBool("Run",true);
         }
     }
 
