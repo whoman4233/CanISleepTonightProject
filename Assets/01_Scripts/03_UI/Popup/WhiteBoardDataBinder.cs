@@ -11,7 +11,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
 
     private PrisonCellManager _cellManager;
 
-    // 정산 완료 / Result UI 표시 시점을 갱신 트리거로만 사용
+    // 정산 완료 / Result UI 표시 시점 트리거
     private Action<ResultUIShowRequestedEvent> _onResultUIShow;
 
     private void Awake()
@@ -24,7 +24,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         EventBus.Subscribe(_onResultUIShow);
 
-        // 이미 활성화된 상태라면 즉시 한 번 반영
+        // 이미 활성화된 경우 즉시 반영
         Refresh();
     }
 
@@ -35,7 +35,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
 
     private void OnResultUIShow(ResultUIShowRequestedEvent e)
     {
-        // 정산 직후 한 번 더 보정
+        // 정산 직후 1회 보정
         Refresh();
     }
 
@@ -48,22 +48,10 @@ public class WhiteBoardDataBinder : MonoBehaviour
                 return;
         }
 
-        int floor1 = 0;
-        int floor2 = 0;
 
-        foreach (var cell in _cellManager.Cells)
-        {
-            if (!cell.IsSuspicious)
-                continue;
-
-            if (cell.Floor == 1)
-                floor1++;
-            else if (cell.Floor == 2)
-                floor2++;
-        }
-
-        floor1Text.text = floor1.ToString();
-        floor2Text.text = floor2.ToString();
+        // PrisonCellManager가 계산한 값을 그대로 사용
+        floor1Text.text = _cellManager.ActiveCell1f.ToString();
+        floor2Text.text = _cellManager.ActiveCell2f.ToString();
 
         if (GameManager.Instance != null)
         {
@@ -71,6 +59,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
         }
     }
 }
+
 
 
 

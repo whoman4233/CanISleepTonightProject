@@ -42,6 +42,7 @@ public class UIStateManager : MonoBehaviour
 
         bool isGameplay =
             phase == GamePhase.Briefing ||
+            phase == GamePhase.Standby ||
             phase == GamePhase.Patrol;
 
         hudUI.SetActive(isGameplay);

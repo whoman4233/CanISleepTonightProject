@@ -29,7 +29,7 @@ public class PrisonerInspectionState : BasePrisonerState
                 // ✅ 수정 포인트: 
                 // 1. "Prisoner_Standing01" 대신 Animator 창에 있는 정확한 State 이름을 넣으세요. (예: "StandUp")
                 // 2. Tag를 사용하는 것이 더 안전할 수도 있습니다. (예: stateInfo.IsTag("StandUp"))
-                if (stateInfo.IsName("Prisoner_Standing01") && !anim.IsInTransition(0) && stateInfo.normalizedTime >= 0.95f)
+                if (stateInfo.IsName("Prisoner_Standing01") && !anim.IsInTransition(0) && stateInfo.normalizedTime >= 0.1f)
                 {
                     StartMoving();
                 }
