@@ -7,7 +7,8 @@ public class CellContentRegistry : MonoBehaviour
     {
         public PrisonerActor prisoner;
         public readonly List<GameObject> anomalies = new();
-        public string prisonerInstanceId;
+        public string prisonerInstanceId; 
+        public GameObject prop;
     }
 
     private readonly Dictionary<string, CellContent> _contentByCell = new();
@@ -27,6 +28,7 @@ public class CellContentRegistry : MonoBehaviour
         }
 
         _contentByCell.Remove(cellId);
+        if (c.prop != null) Destroy(c.prop);
     }
 
     public void ClearAll()
