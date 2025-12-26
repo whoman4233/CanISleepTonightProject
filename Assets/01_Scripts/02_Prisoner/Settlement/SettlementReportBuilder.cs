@@ -133,6 +133,8 @@ public class SettlementReportBuilder : MonoBehaviour
         // 예: resultPanel.ShowResult(uiData);
         // 또는 EventBus를 통해 UI에 데이터를 발행할 수도 있습니다.
         // EventBus.Publish(new SettlementDataCreatedEvent(uiData));
+
+
     }
 
     private SettlementResultUIData BuildResultUIData(SettlementUIData uiData)
