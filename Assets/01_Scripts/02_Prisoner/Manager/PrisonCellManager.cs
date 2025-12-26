@@ -26,6 +26,10 @@ public class PrisonCellManager : MonoBehaviour
     public event Action<string, bool> OnNoiseChanged; // (cellId, isNoisy)
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
+    //현재 활성화 된 1층,2층 감방 수
+    public int ActiveCell1f = 0;
+    public int ActiveCell2f = 0;
+
     private void Awake()
     {
         if (autoBuildOnAwake)
@@ -107,17 +111,25 @@ public class PrisonCellManager : MonoBehaviour
         var shuffled = _cells.OrderBy(_ => UnityEngine.Random.value).ToList();
         var active = shuffled.Take(activeCount).ToList();
 
+        ActiveCell1f = 0;
+        ActiveCell2f = 0;
+
         foreach (var c in active)
         {
             c.IsActiveToday = true;
             SetNoisy(c, true);
             c.State = CellState.ActiveNoisy;
+
+            if (c.Floor == 1) ActiveCell1f++;
+            else if (c.Floor == 2) ActiveCell2f++;
         }
 
         // Pick suspicious among active
         var suspicious = active.OrderBy(_ => UnityEngine.Random.value).Take(suspiciousCount).ToList();
         foreach (var c in suspicious)
             c.IsSuspicious = true;
+
+        if (verboseLog) Debug.Log($"[CellManager] Setup Complete. 1F: {ActiveCell1f}, 2F: {ActiveCell2f}");
     }
 
     public void ResolveAndDeactivateCell(string cellId)
@@ -169,9 +181,6 @@ public class PrisonCellManager : MonoBehaviour
 
         cell.WasResolvedToday = true;
         cell.DidSuppress = didSuppress;
-
-        // ✅ 직접 false를 넣지 말고 SetNoisy를 통해 이벤트를 발생시킵니다.
-        // 그래야 복도의 소음 파동(Wave) 이펙트가 즉시 사라집니다.
         SetNoisy(cell, false);
 
         // 오늘 재입장 금지 및 상태 변경

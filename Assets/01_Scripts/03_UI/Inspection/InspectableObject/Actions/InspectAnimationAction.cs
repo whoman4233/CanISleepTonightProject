@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class InspectAnimationAction : MonoBehaviour, IInspectAction
 {
@@ -9,7 +7,11 @@ public class InspectAnimationAction : MonoBehaviour, IInspectAction
 
     public void InspectAction(IInspectable owner)
     {
-        if (animator != null)
-            animator.SetTrigger(triggerName);
+        if (animator == null)
+            return;
+
+        animator.SetTrigger(triggerName);
     }
 }
+
+
