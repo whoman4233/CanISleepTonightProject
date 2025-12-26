@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 {
@@ -28,10 +29,21 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Settings")]
     [SerializeField] private float interactCooldown = 0.8f; // 문 여닫는 쿨타임 (애니메이션 길이와 비슷하게 설정)
     private float _lastInteractTime = -999f; // 마지막 상호작용 시간
+    [SerializeField] private bool useRedOutlineOnCloseOnlySlidingDoor = false;
+    [SerializeField] private InteractableOutliner outliner;
 
     // [상태]
     [SerializeField] private bool _isPlayerInside;
     private bool _isSimpleDoorOpen = false;
+
+    private void Awake()
+    {
+        if (outliner == null)
+            outliner = GetComponentInChildren<InteractableOutliner>(true);
+
+        if (outliner == null)
+            outliner = GetComponent<InteractableOutliner>();
+    }
 
     public void Interact(Player player)
     {
@@ -161,6 +173,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(AnimParams.CloseTrigger);
         doorAnimator.SetTrigger(AnimParams.OpenTrigger);
+
     }
 
     private void PlayClose()
@@ -168,12 +181,19 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(AnimParams.OpenTrigger);
         doorAnimator.SetTrigger(AnimParams.CloseTrigger);
+
+        if (useRedOutlineOnCloseOnlySlidingDoor && outliner != null)
+            outliner.SetHighlight(true, Color.red);
     }
 
     private void PlayLocked()
     {
-        if (doorAnimator == null) return;
-        if (HasParam(AnimParams.LockedTrigger)) doorAnimator.SetTrigger(AnimParams.LockedTrigger);
+        if (doorAnimator != null && HasParam(AnimParams.LockedTrigger))
+            doorAnimator.SetTrigger(AnimParams.LockedTrigger);
+
+        if (outliner == null) return;
+
+        outliner.SetHighlight(true, Color.red);
     }
 
     private bool Validate()
