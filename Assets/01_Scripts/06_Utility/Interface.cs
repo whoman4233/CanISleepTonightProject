@@ -26,3 +26,9 @@ public interface IHiddenItemInteractable
 {
     void TryRevealItem(HiddenItemStateSO itemDefinition);
 }
+
+//휴지처럼 가린 것 상세보기에서 제거용
+public interface IInspectAction
+{
+    void InspectAction(IInspectable owner);
+}
