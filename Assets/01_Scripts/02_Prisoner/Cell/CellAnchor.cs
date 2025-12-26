@@ -8,7 +8,8 @@ public class CellAnchor : MonoBehaviour
     [Header("Spawns")]
     public Transform prisonerSpawn;
     public Transform inspectionPoint;
-    public Transform propSpawnPoint;
+    public Transform playerEnterSpawn;
+    public Transform playerExitSpawn;
 
     [Header("Anomaly")]
     [Tooltip("슬롯이 없거나 fallback이 필요할 때 사용되는 루트(비워도 됨)")]
