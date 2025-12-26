@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public sealed class PlayerInteractor : MonoBehaviour
 {
@@ -30,6 +31,15 @@ public sealed class PlayerInteractor : MonoBehaviour
     private Collider _currentHitCollider;
     private float _currentHitDistance;
 
+    // =========================
+    // Crosshair Hover 이벤트/상태 제어
+    // =========================
+    private bool _lastHoverState;
+    private bool _inspectionActive;
+
+    private Action<InspectionStartedEvent> _onInspectionStarted;
+    private Action<InspectionEndedEvent> _onInspectionEnded;
+
     private void Awake()
     {
         _player = GetComponent<Player>();
@@ -48,10 +58,56 @@ public sealed class PlayerInteractor : MonoBehaviour
             Debug.LogError("[PlayerInteractor] Camera가 비어있습니다. Inspector에 할당하거나 MainCamera 태그를 확인하세요.");
             enabled = false;
         }
+
+        // =========================
+        // [ADDED] 이벤트 핸들러 캐싱 (람다 unsubscribe 문제 방지)
+        // =========================
+        _onInspectionStarted = _ =>
+        {
+            _inspectionActive = true;
+            ForceClearScanAndPublishOff();
+        };
+
+        _onInspectionEnded = _ =>
+        {
+            _inspectionActive = false;
+            ForceClearScanAndPublishOff(); // 재진입 시 잔상 방지
+        };
+
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onInspectionStarted);
+        EventBus.Subscribe(_onInspectionEnded);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onInspectionStarted);
+        EventBus.Unsubscribe(_onInspectionEnded);
+
+        // 비활성화 시 잔상 정리
+        ForceClearScanAndPublishOff();
     }
 
     private void Update()
     {
+
+        // Inspection 중이면 스캔 금지
+        if (_inspectionActive)
+        {
+            ForceClearScanAndPublishOff();
+            return;
+        }
+
+        // UIOnly 상태면 스캔 금지 (InputManager)
+        if (InputManager.Instance != null && InputManager.Instance.CurrentState == InputState.UIOnly)
+        {
+            ForceClearScanAndPublishOff();
+            return;
+        }
+
         // 상시 스캔(감지)
         Scan();
     }
@@ -78,6 +134,7 @@ public sealed class PlayerInteractor : MonoBehaviour
                 _currentOutliner.SetHighlight(false);
                 _currentOutliner = null;
             }
+            PublishHoverIfChanged(false); // 타겟없을 때(맞추지 않았을 때 이벤트 발행해야 크로스헤어에 이상없음)
             return;
         }
 
@@ -100,6 +157,12 @@ public sealed class PlayerInteractor : MonoBehaviour
             if (_currentOutliner != null)
                 _currentOutliner.SetHighlight(true);
         }
+
+        // =========================
+        // 타겟 유무 변화 시 Hover 이벤트 발행
+        // =========================
+
+        PublishHoverIfChanged(_currentInteractable != null);
     }
 
     /// <summary>
@@ -118,5 +181,39 @@ public sealed class PlayerInteractor : MonoBehaviour
 
         _currentInteractable.Interact(_player);
         return true;
+    }
+
+    private void PublishHoverIfChanged(bool nowHasTarget)
+    {
+        if (_lastHoverState == nowHasTarget)
+            return;
+
+        _lastHoverState = nowHasTarget;
+        EventBus.Publish(new InteractableHoverChangedEvent(nowHasTarget));
+    }
+
+    // =========================
+    // Hover 이벤트 발행
+    // =========================
+    private void ForceClearScanAndPublishOff()
+    {
+        // Outliner 끄기
+        if (_currentOutliner != null)
+        {
+            _currentOutliner.SetHighlight(false);
+            _currentOutliner = null;
+        }
+
+        // 캐시 비우기
+        _currentInteractable = null;
+        _currentHitCollider = null;
+        _currentHitDistance = 0f;
+
+        // Hover가 켜져 있었다면 false 발행
+        if (_lastHoverState)
+        {
+            _lastHoverState = false;
+            EventBus.Publish(new InteractableHoverChangedEvent(false));
+        }
     }
 }

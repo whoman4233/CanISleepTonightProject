@@ -23,8 +23,11 @@ public class HUDRootController : MonoBehaviour
 
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
-        bool isPatrol = e.Phase == GamePhase.Patrol;
-        SetPatrolHUD(isPatrol);
+        bool showHUD =
+            e.Phase == GamePhase.Briefing ||
+            e.Phase == GamePhase.Patrol;
+
+        SetPatrolHUD(showHUD);
     }
 
     private void SetPatrolHUD(bool active)
@@ -36,3 +39,4 @@ public class HUDRootController : MonoBehaviour
             crosshairUI.SetActive(active);
     }
 }
+
