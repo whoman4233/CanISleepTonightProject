@@ -44,6 +44,16 @@ public struct RequestSceneReloadEvent // 씬 재로딩 요청 이벤트
 
 }
 
+public struct EndingUIShowRequestedEvent
+{
+    public EndingUIData Data;
+    public EndingUIShowRequestedEvent(EndingUIData data)
+    {
+        Data = data;
+    }
+}
+
+
 //==========================================
 //게임 신 관련 이벤트 목록
 //==========================================
@@ -123,6 +133,18 @@ public struct HideWhiteBoardPopupEvent
 {
 
 }
+
+//화이트보드 데이터
+public struct SettlementUIDataCreatedEvent
+{
+    public SettlementUIData Data;
+
+    public SettlementUIDataCreatedEvent(SettlementUIData data)
+    {
+        Data = data;
+    }
+}
+
 
 // Popup UI ESC로 닫을 때
 

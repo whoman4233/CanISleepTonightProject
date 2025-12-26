@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PauseMenuInputController : MonoBehaviour
@@ -6,29 +7,34 @@ public class PauseMenuInputController : MonoBehaviour
     private PlayerInputs _inputs;
     private bool _menuOpen;
 
-    // [추가] PopupRoot 참조
+    private Action<PauseMenuOpenedEvent> _onOpened;
+    private Action<PauseMenuClosedEvent> _onClosed;
+
+    
     private PopupCanvasRootController popupRoot;
 
     private void Awake()
     {
         _inputs = InputManager.Instance.Inputs;
 
-        // [추가] PopupRoot 캐싱
+        
         popupRoot = FindObjectOfType<PopupCanvasRootController>();
+        _onOpened = _ => _menuOpen = true;
+        _onClosed = _ => _menuOpen = false;
     }
 
     private void OnEnable()
     {
         _inputs.UI.Setting.performed += OnEsc;
-        EventBus.Subscribe<PauseMenuOpenedEvent>(_ => _menuOpen = true);
-        EventBus.Subscribe<PauseMenuClosedEvent>(_ => _menuOpen = false);
+        EventBus.Subscribe(_onOpened);
+        EventBus.Subscribe(_onClosed);
     }
 
     private void OnDisable()
     {
         _inputs.UI.Setting.performed -= OnEsc;
-        EventBus.Unsubscribe<PauseMenuOpenedEvent>(_ => { });
-        EventBus.Unsubscribe<PauseMenuClosedEvent>(_ => { });
+        EventBus.Unsubscribe(_onOpened);
+        EventBus.Unsubscribe(_onClosed);
     }
 
     private void OnEsc(InputAction.CallbackContext ctx)

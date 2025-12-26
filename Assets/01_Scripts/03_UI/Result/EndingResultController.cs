@@ -9,21 +9,26 @@ public class EndingResultController : MonoBehaviour
     [SerializeField] private GameObject bad3;
 
     private Action<EndingConditionMetEvent> _onEnding;
+    private Action<ReturnToTitleRequestedEvent> _onReturnToTitle;
 
     private void Awake()
     {
         _onEnding = OnEnding;
+        _onReturnToTitle = _ => CloseEnding();
+
         HideAll();
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onEnding);
+        EventBus.Subscribe(_onReturnToTitle);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onEnding);
+        EventBus.Unsubscribe(_onReturnToTitle);
     }
 
     private void OnEnding(EndingConditionMetEvent e)
@@ -46,8 +51,26 @@ public class EndingResultController : MonoBehaviour
                 break;
         }
 
+        if (GameManager.Instance != null)
+        {
+            EndingUIData data = new EndingUIData
+            {
+                WorkingDay = GameManager.Instance.CurrentDay
+            };
+
+            EventBus.Publish(new EndingUIShowRequestedEvent(data));
+        }
+
         Time.timeScale = 0f;
         EventBus.Publish(new GlobalInputLockRequestedEvent());
+    }
+
+    private void CloseEnding()
+    {
+        HideAll();
+
+        Time.timeScale = 1f;
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
     }
 
     private void HideAll()
@@ -58,3 +81,4 @@ public class EndingResultController : MonoBehaviour
         bad3.SetActive(false);
     }
 }
+

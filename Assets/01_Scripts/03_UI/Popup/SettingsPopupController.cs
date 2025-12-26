@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class SettingsPopupController : MonoBehaviour
@@ -24,21 +25,8 @@ public class SettingsPopupController : MonoBehaviour
     {
         // ===== 입력 차단 =====
         EventBus.Publish(new GlobalInputLockRequestedEvent());
-
-        var audio = AudioManager.Instance;
-        if (audio == null) return;
-
-        // ===== 슬라이더 초기값 =====
-        masterSlider.SetValueWithoutNotify(audio.GetMasterVolume());
-        bgmSlider.SetValueWithoutNotify(audio.GetBgmVolume());
-        sfxSlider.SetValueWithoutNotify(audio.GetSfxVolume());
-
-        // ===== 슬라이더 바인딩 =====
-        masterSlider.onValueChanged.AddListener(audio.SetMasterVolume);
-        bgmSlider.onValueChanged.AddListener(audio.SetBgmVolume);
-        sfxSlider.onValueChanged.AddListener(audio.SetSfxVolume);
+        StartCoroutine(InitSlidersNextFrame());
     }
-
     private void OnDisable()
     {
         // ===== 입력 복구 =====
@@ -50,6 +38,21 @@ public class SettingsPopupController : MonoBehaviour
         sfxSlider.onValueChanged.RemoveAllListeners();
     }
 
+    private IEnumerator InitSlidersNextFrame()
+    {
+        yield return null; 
+
+        var audio = AudioManager.Instance;
+        if (audio == null) yield break;
+
+        masterSlider.SetValueWithoutNotify(audio.GetMasterVolume());
+        bgmSlider.SetValueWithoutNotify(audio.GetBgmVolume());
+        sfxSlider.SetValueWithoutNotify(audio.GetSfxVolume());
+
+        masterSlider.onValueChanged.AddListener(audio.SetMasterVolume);
+        bgmSlider.onValueChanged.AddListener(audio.SetBgmVolume);
+        sfxSlider.onValueChanged.AddListener(audio.SetSfxVolume);
+    }
     public void Show()
     {
         if (IsOpen) return;

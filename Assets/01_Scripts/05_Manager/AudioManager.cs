@@ -29,6 +29,13 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)] private float sfxVolume = 1f;
     private bool isMuted;
 
+    // =========================
+    // UI 초기화용 Getter
+    // =========================
+    public float GetMasterVolume() => masterVolume;
+    public float GetBgmVolume() => bgmVolume;
+    public float GetSfxVolume() => sfxVolume;
+    public bool IsMuted() => isMuted;
     private void Awake()
     {
         if (Instance != null)
@@ -41,6 +48,10 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         LoadSettings();
+        ApplyVolumes();
+    }
+    private void Start()
+    {
         ApplyVolumes();
     }
 
@@ -75,11 +86,6 @@ public class AudioManager : MonoBehaviour
         ApplyVolumes();
         SaveSettings();
     }
-
-    public bool IsMuted() => isMuted;
-    public float GetMasterVolume() => masterVolume;
-    public float GetBgmVolume() => bgmVolume;
-    public float GetSfxVolume() => sfxVolume;
 
     // =========================
     // BGM/SFX

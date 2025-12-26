@@ -68,6 +68,7 @@ public class FlowController : MonoBehaviour
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName)); // 씬 활성화
         yield return null; //new WaitForSeconds(1.0f);
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
+        isBusy = false;
         Debug.Log("씬 재로딩 완료");
     }
 
