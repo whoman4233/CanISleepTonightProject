@@ -23,9 +23,6 @@ public class WhiteBoardDataBinder : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe(_onResultUIShow);
-
-        // 이미 활성화된 경우 즉시 반영
-        Refresh();
     }
 
     private void OnDisable()
