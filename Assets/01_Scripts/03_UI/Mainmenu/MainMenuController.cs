@@ -51,7 +51,10 @@ public class MainMenuController : MonoBehaviour
         mainButtonGroup.SetActive(false);
         startButtonGroup.SetActive(true);
     }
-
+    private void OnClickLoadGame()
+    {
+        EventBus.Publish(new LoadGameEvent());
+    }
     private void OnClickSettings()
     {
         // Settings는 전역 Popup
@@ -71,11 +74,6 @@ public class MainMenuController : MonoBehaviour
     private void OnClickNewGame()
     {
         EventBus.Publish(new RequestStartNewGameEvent());
-    }
-
-    private void OnClickLoadGame()
-    {
-        EventBus.Publish(new LoadGameEvent());
     }
 }
 
