@@ -20,7 +20,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         _cellManager = FindObjectOfType<PrisonManager>();
         _onResultUIShow = OnResultUIShow;
-        _onContextReady = OnGameContextReady;
+        //_onContextReady = OnGameContextReady;
         _onPhaseChanged = OnPhaseChanged;
     }
 
@@ -45,12 +45,12 @@ public class WhiteBoardDataBinder : MonoBehaviour
     // =========================
     // Context Ready
     // =========================
-    private void OnGameContextReady(GameContextReadyEvent e)
-    {
-        // 씬 재로딩으로 PrisonCellManager 인스턴스가 바뀌었을 수 있으니 재획득
-        _cellManager = FindObjectOfType<PrisonCellManager>();
-        Refresh();
-    }
+    //private void OnGameContextReady(GameContextReadyEvent e)
+    //{
+    //    // 씬 재로딩으로 PrisonCellManager 인스턴스가 바뀌었을 수 있으니 재획득
+    //    _cellManager = FindObjectOfType<PrisonCellManager>();
+    //    Refresh();
+    //}
 
     private void OnResultUIShow(ResultUIShowRequestedEvent e)
     {
