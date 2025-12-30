@@ -1,6 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using System;
 
 public class HUDTimer : MonoBehaviour
 {
@@ -12,21 +12,21 @@ public class HUDTimer : MonoBehaviour
 
     private bool _isActive;
     private float _currentSeconds;
-
-    // =========================
-    // 라이프 타임
-    // =========================
+    
+    private Action<GameContextReadyEvent> _onContextReady;
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
     private void Awake()
     {
-        // Awake에서는 상태만 초기화
         _isActive = false;
         _currentSeconds = 0f;
+
+        _onContextReady = OnGameContextReady;
+        _onPhaseChanged = OnPhaseChanged;
     }
 
     private void OnEnable()
     {
-        // UI 참조 방어
         if (timerText == null)
         {
             Debug.LogError("[HUDTimer] timerText is not assigned.");
@@ -36,14 +36,21 @@ public class HUDTimer : MonoBehaviour
 
         timerText.gameObject.SetActive(false);
 
+        // 컨텍스트 준비 이벤트 구독
+        EventBus.Subscribe(_onContextReady);
+        EventBus.Subscribe(_onPhaseChanged);
         EventBus.Subscribe<PatrolTimerResetEvent>(OnTimerReset);
 
         if (GameManager.Instance != null)
             GameManager.Instance.OnInGameTimeUpdated += OnTimeUpdated;
+        // DDOL UI는 이미 Phase가 정해진 상태로 들어올 수 있으므로 즉시 재적용
+        ApplyPhaseFromGameManager();
     }
 
     private void OnDisable()
     {
+        EventBus.Unsubscribe(_onContextReady);
+        EventBus.Unsubscribe(_onPhaseChanged);
         EventBus.Unsubscribe<PatrolTimerResetEvent>(OnTimerReset);
 
         if (GameManager.Instance != null)
@@ -51,8 +58,62 @@ public class HUDTimer : MonoBehaviour
     }
 
     // =========================
-    // Event handlers
+    // Context Ready
     // =========================
+    private void OnGameContextReady(GameContextReadyEvent e)
+    {
+        // 씬 재로딩/루프 변경의 기준점
+        Deactivate();          // 이전 루프 상태 제거
+    }
+    private void ApplyPhaseFromGameManager() //게임 매니저와 페이즈 동기화
+    {
+        if (GameManager.Instance == null)
+            return;
+
+        ApplyPhase(GameManager.Instance.CurrentPhase);
+    }
+    private void ApplyPhase(GamePhase phase)
+    {
+        if (phase == GamePhase.Patrol)
+        {
+            SyncFromGameManager(); // Patrol이면 켠다
+        }
+        else
+        {
+            Deactivate(); // 그 외는 끈다 (원하는 정책에 맞게 조정 가능)
+        }
+    }
+    /// <summary>
+    /// GameManager에서 현재 상태를 Pull해 UI 복구
+    /// </summary>
+    private void SyncFromGameManager()
+    {
+        if (GameManager.Instance == null)
+            return;
+
+        if (GameManager.Instance.CurrentPhase != GamePhase.Patrol)
+            return;
+
+        _isActive = true;
+        _currentSeconds = GameManager.Instance.CurrentInGameSeconds;
+
+        timerText.gameObject.SetActive(true);
+        UpdateText(_currentSeconds);
+    }
+    /// <summary>
+    /// Patrol 시작 시 1회 호출
+    /// </summary>
+    private void OnPhaseChanged(GamePhaseChangedEvent e)
+    {
+        if (e.Phase == GamePhase.Patrol)
+        {
+            SyncFromGameManager();
+        }
+        else
+        {
+            Deactivate();
+        }
+    }
 
     /// <summary>
     /// Patrol 시작 시 1회 호출
@@ -78,10 +139,6 @@ public class HUDTimer : MonoBehaviour
         UpdateText(_currentSeconds);
     }
 
-    // =========================
-    // 타이머 표시
-    // =========================
-
     private void UpdateText(float seconds)
     {
         if (seconds < 0f)
@@ -100,10 +157,6 @@ public class HUDTimer : MonoBehaviour
             timerText.text = $"{min:00}:{sec:00}";
         }
     }
-
-    // =========================
-    // 비활성화
-    // =========================
 
     public void Deactivate()
     {
