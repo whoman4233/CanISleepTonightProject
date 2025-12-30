@@ -8,6 +8,7 @@ public class PauseMenuInputController : MonoBehaviour
 
     private bool _menuOpen;
     private bool _playerPresent;
+    private bool _escSubscribed;
 
     private PopupCanvasRootController popupRoot;
 
@@ -28,8 +29,6 @@ public class PauseMenuInputController : MonoBehaviour
 
     private void OnEnable()
     {
-        _inputs.UI.Setting.performed += OnEsc;
-
         EventBus.Subscribe(_onMenuOpened);
         EventBus.Subscribe(_onMenuClosed);
         EventBus.Subscribe(_onPlayerPresence);
@@ -37,7 +36,7 @@ public class PauseMenuInputController : MonoBehaviour
 
     private void OnDisable()
     {
-        _inputs.UI.Setting.performed -= OnEsc;
+        UnsubscribeEsc();
 
         EventBus.Unsubscribe(_onMenuOpened);
         EventBus.Unsubscribe(_onMenuClosed);
@@ -51,11 +50,44 @@ public class PauseMenuInputController : MonoBehaviour
     {
         _playerPresent = e.IsPresent;
 
-        // Intro(플레이어 없음)로 돌아갔는데 메뉴가 열린 상태로 남아있으면 닫기 요청
-        if (!_playerPresent && _menuOpen)
+        // =========================
+        // 플레이어 상태에 따라 ESC 입력 활성/비활성
+        // =========================
+        if (_playerPresent)
         {
-            EventBus.Publish(new PauseMenuCloseRequestedEvent());
+            SubscribeEsc();
         }
+        else
+        {
+            UnsubscribeEsc();
+
+            // Intro로 돌아갔는데 메뉴가 열린 상태면 닫기 요청
+            if (_menuOpen)
+            {
+                EventBus.Publish(new PauseMenuCloseRequestedEvent());
+            }
+        }
+    }
+
+    // =========================
+    // [ADDED] ESC 구독 관리
+    // =========================
+    private void SubscribeEsc()
+    {
+        if (_escSubscribed)
+            return;
+
+        _inputs.UI.Setting.performed += OnEsc;
+        _escSubscribed = true;
+    }
+
+    private void UnsubscribeEsc()
+    {
+        if (!_escSubscribed)
+            return;
+
+        _inputs.UI.Setting.performed -= OnEsc;
+        _escSubscribed = false;
     }
 
     private void OnEsc(InputAction.CallbackContext ctx)
@@ -67,11 +99,7 @@ public class PauseMenuInputController : MonoBehaviour
             return;
         }
 
-        // 2) 플레이어가 없으면(=Intro/MainMenu 컨텍스트) ESC로 인게임메뉴를 절대 열지 않는다
-        if (!_playerPresent)
-            return;
-
-        // 3) InGameMenu 토글
+        // 2) InGameMenu 토글 (이 시점엔 플레이어 있음이 보장됨)
         if (!_menuOpen)
             EventBus.Publish(new PauseMenuOpenRequestedEvent());
         else

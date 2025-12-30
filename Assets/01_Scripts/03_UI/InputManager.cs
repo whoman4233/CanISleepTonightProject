@@ -23,6 +23,7 @@ public class InputManager : MonoBehaviour
     private Action<GlobalInputLockRequestedEvent> _onGlobalLockRequested;
     private Action<GlobalInputLockReleasedEvent> _onGlobalLockReleased;
     private Action<InputHardResetEvent> _onInputHardReset;
+    private Action<GameContextReadyEvent> _onGameContextReady;
 
     // =============================
     // Unity Lifecycle
@@ -52,6 +53,7 @@ public class InputManager : MonoBehaviour
         _onGlobalLockRequested = OnGlobalLockRequested;
         _onGlobalLockReleased = OnGlobalLockReleased;
         _onInputHardReset = OnInputHardReset;
+        _onGameContextReady = OnGameContextReady;
 
         ApplyState(force: true);
     }
@@ -64,6 +66,7 @@ public class InputManager : MonoBehaviour
         EventBus.Subscribe(_onGlobalLockRequested);
         EventBus.Subscribe(_onGlobalLockReleased);
         EventBus.Subscribe(_onInputHardReset);
+        EventBus.Subscribe(_onGameContextReady);
     }
 
     private void OnDisable()
@@ -74,6 +77,7 @@ public class InputManager : MonoBehaviour
         EventBus.Unsubscribe(_onGlobalLockRequested);
         EventBus.Unsubscribe(_onGlobalLockReleased);
         EventBus.Unsubscribe(_onInputHardReset);
+        EventBus.Unsubscribe(_onGameContextReady);
     }
 
     private void OnDestroy()
@@ -116,6 +120,18 @@ public class InputManager : MonoBehaviour
         ApplyState();
     }
 
+    /// <summary>
+    /// 강제 입력 초기화
+    /// </summary>
+    private void OnGameContextReady(GameContextReadyEvent e)
+    {
+        Debug.Log("[InputManager] GameContextReady → Force Input Reset");
+
+        _inspectionActive = false;
+        _uiLockCount = 0;
+
+        ApplyState(force: true);
+    }
     /// <summary>
     /// 세션 종료 / 타이틀 복귀 / 강제 리셋용
     /// </summary>
