@@ -4,7 +4,7 @@ using UnityEngine;
 public class InspectionStateMachine : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private PrisonCellManager cellManager;
+    [SerializeField] private PrisonManager cellManager;
     [SerializeField] private CellContentRegistry contentRegistry; // 죄수 FSM을 찾기 위해 필요
 
     public string CurrentInspectingCellId { get; private set; }
@@ -20,7 +20,7 @@ public class InspectionStateMachine : MonoBehaviour
 
     private void Awake()
     {
-        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+        if (cellManager == null) cellManager = FindObjectOfType<PrisonManager>();
         if (contentRegistry == null) contentRegistry = FindObjectOfType<CellContentRegistry>();
         cellManager?.BuildCellsIfNeeded();
     }
@@ -53,14 +53,16 @@ public class InspectionStateMachine : MonoBehaviour
         if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
 
         var cellId = CurrentInspectingCellId;
-        var cell = cellManager.GetCell(cellId);
 
-        // ✅ 추가: 시간 다 되면 죄수를 다시 Idle(앉기) 상태로 돌려보냄
+        // 죄수 상태 원복
         SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.IdleState));
 
-        if (cell != null) cellManager.ForceReleaseInspectingOnly(cellId);
+        // 매니저에게 강제 퇴거 알림
+        cellManager.ForceReleaseInspectingOnly(cellId);
 
-        CurrentInspectingCellId = null;
+        // 내부 변수 초기화 (직접 null 대입 대신 EndInspection 활용)
+        EndInspection();
+
         Debug.Log($"[ISSM] Time Expired. Force Released cell {cellId}");
     }
 

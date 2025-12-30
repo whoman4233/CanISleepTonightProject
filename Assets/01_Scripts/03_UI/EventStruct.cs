@@ -1,6 +1,24 @@
 ﻿using UnityEngine;
 using System;
 //==========================================
+//게임 루프관련 이벤트 목록
+//==========================================
+public struct GameContextReadyEvent //신 재로딩시 인스턴스가 달라지는걸 확인하는 이벤트
+{
+    public int CurrentDay;      // 이번 루프/Day의 기준값
+    public int MaxDay;
+    public GamePhase Phase;
+
+    public GameContextReadyEvent(int currentDay, int maxDay, GamePhase phase)
+    {
+        CurrentDay = currentDay;
+        MaxDay = maxDay;
+        Phase = phase;
+    }
+}
+
+
+//==========================================
 //GamePhase관련 이벤트 목록
 //==========================================
 

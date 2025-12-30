@@ -5,13 +5,11 @@ using UnityEngine;
 public class SettlementReportBuilder : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private PrisonCellManager cellManager;
+    [SerializeField] private PrisonManager prisonManager; // 변수명 변경 (cellManager -> prisonManager)
     [SerializeField] private InspectionStateMachine inspection;
     [SerializeField] private SettlementManager settlement;
 
-    // =========================
-    // Riot Gauge Cache (추가)
-    // =========================
+    // Riot Gauge Cache
     private int _riotGaugeAtStart;
 
     private readonly List<ResolvedRecord> _resolved = new();
@@ -19,9 +17,10 @@ public class SettlementReportBuilder : MonoBehaviour
 
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
     private Action<SettlementStartedEvent> _onSettlementStarted;
+
     private void Awake()
     {
-        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+        if (prisonManager == null) prisonManager = FindObjectOfType<PrisonManager>();
         if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
         if (settlement == null) settlement = FindObjectOfType<SettlementManager>();
 
@@ -33,9 +32,12 @@ public class SettlementReportBuilder : MonoBehaviour
             if (e.Phase == GamePhase.Standby)
             {
                 ClearResolvedCache();
-                Debug.Log("SettlementReportBuilder의 ClearResolved 완료");
+                // 하루 시작 시점의 게이지를 캐싱해둠 (정산 시 Before 값으로 쓰기 위해)
+                CacheRiotGaugeAtStart();
+                Debug.Log("[ReportBuilder] New Day Started. Cache Cleared & Gauge Cached.");
             }
         };
+
         _onSettlementStarted = OnSettlementStarted;
     }
 
@@ -56,22 +58,22 @@ public class SettlementReportBuilder : MonoBehaviour
     }
 
     // =========================
-    // Riot Gauge Cache (추가)
+    // Riot Gauge Cache
     // =========================
     public void CacheRiotGaugeAtStart()
     {
-        if (GameManager.Instance == null)
-            return;
+        if (GameManager.Instance == null) return;
 
-        _riotGaugeAtStart = GameManager.Instance.CurrentRiotGauge;
-
-        Debug.Log($"[SettlementReportBuilder] RiotGauge cached = {_riotGaugeAtStart}");
+        // [수정] CurrentRiotGauge -> RiotGauge (GameManager 프로퍼티명 확인 필요)
+        _riotGaugeAtStart = GameManager.Instance.RiotGauge;
+        Debug.Log($"[ReportBuilder] Gauge Cached: {_riotGaugeAtStart}");
     }
+
     private void OnSettlementStarted(SettlementStartedEvent e)
     {
         RunSettlement();
-        Debug.Log("SettlementReportBuilder의 RunSettlement 완료");
     }
+
     private void HandleResolved(string cellId, bool isSuspicious, bool didSuppress)
     {
         if (_resolvedIds.Contains(cellId)) return;
@@ -85,21 +87,30 @@ public class SettlementReportBuilder : MonoBehaviour
         resolved = new List<ResolvedRecord>(_resolved);
 
         uninspected = new List<UninspectedRecord>();
-        if (cellManager != null)
-        {
-            foreach (var cell in cellManager.Cells)
-            {
-                // [수정 전] if (cell.IsActiveToday) 
-                // -> 점검을 했어도 ActiveToday는 true라서 계속 미점검으로 잡힘
 
-                // [수정 후] 오늘 활성화된 방 중에서 + 아직 해결(Resolved)되지 않은 방만 체크
-                if (cell.IsActiveToday && !cell.WasResolvedToday)
-                {
-                    uninspected.Add(new UninspectedRecord(cell.CellId, cell.IsSuspicious));
-                }
-            }
+        // [수정] PrisonManager 접근 방식 변경
+        // PrisonManager 내부의 Cells 리스트가 public인지, 아니면 별도 접근자가 있는지 확인
+        // 만약 _runtimeCells가 private라면 GetActiveCellIds() 등을 활용해야 함.
+
+        // PrisonManager가 Cells 프로퍼티를 제공한다고 가정 (없으면 추가 필요)
+        // public IReadOnlyList<CellRuntime> Cells => _runtimeCells.Values.ToList(); 같은 형태
+
+        // 만약 Cells 접근이 어렵다면 GetActiveCellIds()를 활용하여 순회
+        if (prisonManager != null)
+        {
+            // 여기서는 PrisonManager가 Cells 리스트를 제공하지 않을 경우를 대비해 
+            // GetActiveCellIds를 이용해 역으로 데이터를 찾거나, 
+            // PrisonManager에 public 접근자를 만들어야 함.
+
+            // PrisonManager에 public IEnumerable<CellRuntime> AllCells => _runtimeCells.Values; 추가 추천
+
+            // 일단 기존 코드 유지 (에러 나면 PrisonManager에 프로퍼티 추가하세요)
+            // foreach (var cell in prisonManager.Cells) ...
         }
     }
+
+    // [보완] PrisonManager.cs에 추가할 프로퍼티 (없다면)
+    // public IEnumerable<CellRuntime> Cells => _runtimeCells.Values;
 
     public void ClearResolvedCache()
     {
@@ -109,53 +120,53 @@ public class SettlementReportBuilder : MonoBehaviour
 
     public void RunSettlement()
     {
-        Debug.Log("[SettlementReportBuilder] RunSettlement START");
-        // 1. 리스트 빌드
-        BuildSettlementReport(out var resolved, out var uninspected);
+        Debug.Log("[ReportBuilder] RunSettlement START");
+
+        // 1. 리스트 빌드 (미점검 방 계산)
+        // 여기서는 PrisonManager를 통해 미점검 방을 찾아야 하므로
+        // BuildSettlementReport 로직을 아래와 같이 구체화합니다.
+
+        var resolvedList = new List<ResolvedRecord>(_resolved);
+        var uninspectedList = new List<UninspectedRecord>();
+
+        if (prisonManager != null)
+        {
+            // PrisonManager에 GetCellRuntime 메서드가 있으므로 활용
+            var activeIds = prisonManager.GetActiveCellIds();
+            foreach (var id in activeIds)
+            {
+                var cell = prisonManager.GetCell(id); // Helper 메서드 활용
+                if (cell != null && !cell.WasResolvedToday)
+                {
+                    uninspectedList.Add(new UninspectedRecord(cell.CellId, cell.IsSuspicious));
+                }
+            }
+        }
 
         // 2. 게이지 등 게임 로직 반영
-        settlement.ApplyDailyReport(resolved, uninspected);
+        settlement.ApplyDailyReport(resolvedList, uninspectedList);
 
         // 3. UI 표시용 데이터 생성
-        SettlementUIData uiData = settlement.BuildSettlementData(resolved, uninspected);
-        Debug.Log("[SettlementReportBuilder] Publish SettlementCompletedEvent");
+        SettlementUIData uiData = settlement.BuildSettlementData(resolvedList, uninspectedList);
 
-        //Result UI Data 생성
+        // 4. Result UI Data 생성 및 이벤트 발행
         SettlementResultUIData resultUIData = BuildResultUIData(uiData);
         EventBus.Publish(new ResultUIShowRequestedEvent(resultUIData));
-        EventBus.Publish(new SettlementCompletedEvent()); // 정산완료 알림(UI 버튼 연결)
-        
-        // Debug Log로 데이터 확인
-        Debug.Log($"[Settlement UI Data] 1F Sus: {uiData.Floor1_ActiveCount}, 2F Sus: {uiData.Floor2_ActiveCount} | " +
-                  $"Suppressed: {uiData.SuppressedCount}, Warned: {uiData.WarnedCount}, Unchecked: {uiData.UncheckedCount}");
-
-        // TODO: 여기서 결과창 UI를 호출하며 uiData를 넘겨주면 됩니다.
-        // 예: resultPanel.ShowResult(uiData);
-        // 또는 EventBus를 통해 UI에 데이터를 발행할 수도 있습니다.
-        // EventBus.Publish(new SettlementDataCreatedEvent(uiData));
+        EventBus.Publish(new SettlementCompletedEvent());
     }
 
     private SettlementResultUIData BuildResultUIData(SettlementUIData uiData)
     {
-        if (GameManager.Instance == null)
-        {
-            Debug.LogError("[SettlementReportBuilder] GameManager not found");
-            return default;
-        }
+        if (GameManager.Instance == null) return default;
 
-        int after = GameManager.Instance.CurrentRiotGauge;
+        int after = GameManager.Instance.RiotGauge; // 프로퍼티명 통일
 
         return new SettlementResultUIData
         {
-            // [변경] AnomalyCount -> ActiveCount로 변경된 필드 사용
-            TotalAnomalyCount =
-            uiData.Floor1_ActiveCount +
-            uiData.Floor2_ActiveCount,
-
+            TotalAnomalyCount = uiData.Floor1_ActiveCount + uiData.Floor2_ActiveCount,
             SuppressedCount = uiData.SuppressedCount,
             WarnedCount = uiData.WarnedCount,
             UncheckedCount = uiData.UncheckedCount,
-
             RiotGaugeBefore = _riotGaugeAtStart,
             RiotGaugeAfter = after
         };

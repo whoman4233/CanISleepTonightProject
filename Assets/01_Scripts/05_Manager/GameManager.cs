@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
 
     [Header("순찰 페이즈 타임어택")]
     [SerializeField] private float patrolDurationSeconds = 480f; // 480초
+    public float CurrentInGameSeconds { get; private set; } //Timer HUD 참조할 값
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
     private void Awake()
@@ -79,12 +80,37 @@ public class GameManager : MonoBehaviour
         //인게임 메뉴 팝업시 시간정지
         EventBus.Subscribe<PauseGameRequestedEvent>(_ => Time.timeScale = 0f);
         EventBus.Subscribe<ResumeGameRequestedEvent>(_ => Time.timeScale = 1f);
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_requestPhaseChange);
         EventBus.Unsubscribe(_onEndingConditionMet);
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 씬 재로딩 후, 씬 종속 매니저들이 모두 생성된 다음
+        StartCoroutine(CoPublishGameContextReady());
+    }
+
+    private IEnumerator CoPublishGameContextReady()
+    {
+        yield return null; // 중요: 1프레임 대기
+
+        PublishGameContextReady();
+    }
+
+    private void PublishGameContextReady() //게임 루프 체크용(날짜로 확인)
+    {
+        Debug.Log($"[GameManager] GameContextReady | Day {currentDay}/{maxDay}, Phase={currentPhase}");
+
+        EventBus.Publish(new GameContextReadyEvent(currentDay, maxDay, currentPhase));
+
+        // 중요: 씬 리로드/재진입 시 DDOL UI들이 현재 페이즈를 다시 적용할 수 있도록
+        EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
     }
     public void ChangePhase(GamePhase newPhase)
     {
@@ -147,6 +173,8 @@ public class GameManager : MonoBehaviour
     {
         patrolDurationSeconds = 480;
 
+        CurrentInGameSeconds = patrolDurationSeconds;
+
         EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds)); // UI 시간초기화 (기존 페이즈의 잔존시간 보이지 않도록)
 
         // =========================
@@ -193,6 +221,7 @@ public class GameManager : MonoBehaviour
         while (CurrentPhase == GamePhase.Patrol && patrolDurationSeconds > 0)
         {
             patrolDurationSeconds -= Time.deltaTime;
+            CurrentInGameSeconds = patrolDurationSeconds;
             OnInGameTimeUpdated?.Invoke(patrolDurationSeconds);
             yield return null;
         }
