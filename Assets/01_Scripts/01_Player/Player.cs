@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour
 {
+    public PlayerInteractor Interactor { get; private set; }
     [field: SerializeField] public PlayerSO Data { get; private set; }
     [field: SerializeField] public PlayerAnimationData AnimationData { get; private set; }
 
@@ -53,6 +54,8 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
+        Interactor = GetComponent<PlayerInteractor>(); // 캐싱용
+
         Animator = GetComponentInChildren<Animator>();
         Controller = GetComponent<CharacterController>();
         ForceReceiver = GetComponent<ForceReceiver>();
