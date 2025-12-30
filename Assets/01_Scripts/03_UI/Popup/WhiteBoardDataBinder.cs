@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -23,6 +24,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe(_onResultUIShow);
+        StartCoroutine(DelayedRefresh());
     }
 
     private void OnDisable()
@@ -33,6 +35,13 @@ public class WhiteBoardDataBinder : MonoBehaviour
     private void OnResultUIShow(ResultUIShowRequestedEvent e)
     {
         // 정산 직후 1회 보정
+        Refresh();
+    }
+
+    private IEnumerator DelayedRefresh()
+    {
+        // 최소 1프레임 대기 (PrisonCellManager / GameManager 초기화 보장)
+        yield return null;
         Refresh();
     }
 
