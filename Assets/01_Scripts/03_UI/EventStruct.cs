@@ -141,8 +141,10 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 
 }
 
-//보고서 상호작용 시
-public struct ShowTimedTextPopupEvent
+//==========================================
+//경고 텍스트 팝업
+//==========================================
+public struct ShowTimedTextPopupEvent 
 {
     public string Message;
     public float Duration;
@@ -153,10 +155,30 @@ public struct ShowTimedTextPopupEvent
         Duration = duration;
     }
 }
+
+//==========================================
+//보고서 팝업
+//==========================================
+public struct ShowSettlementConfirmPopupEvent // 보고서 제출 확인용 이벤트
+{
+
+}
+
+public struct SettlementConfirmAcceptedEvent // 예 -> 보고서 팝업 활성화
+{
+
+}
+
+public struct SettlementConfirmCancelledEvent // 아니오 -> 이전 상황으로 돌아가기
+{
+
+}
+
 public struct PopupCloseRequestedEvent
 {
 
 }
+
 //==========================================
 //WhiteBoadrd이벤트 목록
 //==========================================

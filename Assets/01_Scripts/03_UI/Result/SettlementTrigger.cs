@@ -15,6 +15,6 @@ public class SettlementTrigger : MonoBehaviour, IInteractable
             return;
         }
 
-        EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Settlement));
+        EventBus.Publish(new ShowSettlementConfirmPopupEvent());
     }
 }

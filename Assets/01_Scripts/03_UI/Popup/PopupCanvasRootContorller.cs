@@ -9,6 +9,7 @@ public class PopupCanvasRootController : MonoBehaviour
     [SerializeField] private ExitConfirmPopupController exitConfirmPopup;
     [SerializeField] private SettingsPopupController settingsPopup;
     [SerializeField] private WhiteBoardPopupController whiteBoardPopup;
+    [SerializeField] private SettlementConfirmPopupController settlementConfirmPopup;
 
     private Action<ShowExitConfirmPopupEvent> _onShowExit;
     private Action<ShowSettingsPopupEvent> _onShowSettings;
@@ -16,6 +17,7 @@ public class PopupCanvasRootController : MonoBehaviour
     private Action<ShowWhiteBoardPopupEvent> _onShowWhiteBoard;
     private Action<HideWhiteBoardPopupEvent> _onHideWhiteBoard;
     private Action<PopupCloseRequestedEvent> _onPopupCloseRequested;
+    private Action<ShowSettlementConfirmPopupEvent> _onShowSettlementConfirm;
 
     public bool HasAnyPopupOpen =>
      (exitConfirmPopup != null && exitConfirmPopup.gameObject.activeInHierarchy) ||
@@ -30,6 +32,7 @@ public class PopupCanvasRootController : MonoBehaviour
         _onShowWhiteBoard = OnShowWhiteBoard;
         _onHideWhiteBoard = OnHideWhiteBoard;
         _onPopupCloseRequested = OnPopupCloseRequested;
+        _onShowSettlementConfirm = OnShowSettlementConfirm;
     }
 
     private void OnEnable()
@@ -40,6 +43,7 @@ public class PopupCanvasRootController : MonoBehaviour
         EventBus.Subscribe(_onShowWhiteBoard);
         EventBus.Subscribe(_onHideWhiteBoard);
         EventBus.Subscribe(_onPopupCloseRequested);
+        EventBus.Subscribe(_onShowSettlementConfirm);
     }
 
     private void OnDisable()
@@ -50,6 +54,7 @@ public class PopupCanvasRootController : MonoBehaviour
         EventBus.Unsubscribe(_onShowWhiteBoard);
         EventBus.Unsubscribe(_onHideWhiteBoard);
         EventBus.Unsubscribe(_onPopupCloseRequested);
+        EventBus.Unsubscribe(_onShowSettlementConfirm);
     }
 
     private void OnShowExitConfirm(ShowExitConfirmPopupEvent e)
@@ -80,6 +85,11 @@ public class PopupCanvasRootController : MonoBehaviour
     {
         if (whiteBoardPopup == null) return;
         whiteBoardPopup.Hide();
+    }
+    private void OnShowSettlementConfirm(ShowSettlementConfirmPopupEvent e)
+    {
+        if (settlementConfirmPopup == null) return;
+        StartCoroutine(ShowPopupStable(settlementConfirmPopup.Show));
     }
 
     private IEnumerator ShowPopupStable(Action showAction)
