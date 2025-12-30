@@ -142,9 +142,16 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 }
 
 //보고서 상호작용 시
-public struct ShowWarningPopupEvent // 경고 팝업 노출
+public struct ShowTimedTextPopupEvent
 {
+    public string Message;
+    public float Duration;
 
+    public ShowTimedTextPopupEvent(string message, float duration = 1f)
+    {
+        Message = message;
+        Duration = duration;
+    }
 }
 public struct PopupCloseRequestedEvent
 {

@@ -11,7 +11,7 @@ public class SettlementTrigger : MonoBehaviour, IInteractable
     {
         if (!CanEnterSettlement())
         {
-            EventBus.Publish(new ShowWarningPopupEvent());
+            EventBus.Publish(new ShowTimedTextPopupEvent("순찰하지 않으면 보고 할 수 없어", 1f));
             return;
         }
 

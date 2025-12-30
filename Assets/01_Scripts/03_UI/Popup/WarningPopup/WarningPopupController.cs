@@ -5,45 +5,43 @@ using System.Collections;
 
 public class WarningPopupController : MonoBehaviour
 {
-    [SerializeField] private GameObject warningRoot;
-    [SerializeField] private TextMeshProUGUI warningText;
-    [SerializeField] private float displayDuration = 1f;
+    [SerializeField] private GameObject root;
+    [SerializeField] private TextMeshProUGUI text;
 
-    private Coroutine _currentRoutine;
-    private Action<ShowWarningPopupEvent> _onWarning;
+    private Coroutine _routine;
+    private Action<ShowTimedTextPopupEvent> _onShow;
 
     private void Awake()
     {
-        _onWarning = OnShowWarning;
-        warningRoot.SetActive(false);
+        root.SetActive(false);
+        _onShow = OnShow;
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe(_onWarning);
+        EventBus.Subscribe(_onShow);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onWarning);
+        EventBus.Unsubscribe(_onShow);
     }
 
-    private void OnShowWarning(ShowWarningPopupEvent e)
+    private void OnShow(ShowTimedTextPopupEvent e)
     {
-        if (_currentRoutine != null)
-            StopCoroutine(_currentRoutine);
+        if (_routine != null)
+            StopCoroutine(_routine);
 
-        _currentRoutine = StartCoroutine(ShowRoutine());
+        text.text = e.Message;
+        _routine = StartCoroutine(ShowRoutine(e.Duration));
     }
 
-    private IEnumerator ShowRoutine()
+    private IEnumerator ShowRoutine(float duration)
     {
-        warningRoot.SetActive(true);
-
-        yield return new WaitForSeconds(displayDuration);
-
-        warningRoot.SetActive(false);
-        _currentRoutine = null;
+        root.SetActive(true);
+        yield return new WaitForSeconds(duration);
+        root.SetActive(false);
+        _routine = null;
     }
 }
 
