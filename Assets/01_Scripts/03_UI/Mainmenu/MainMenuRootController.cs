@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class MainMenuRootController : MonoBehaviour
 {
@@ -12,11 +13,19 @@ public class MainMenuRootController : MonoBehaviour
     private Action<ShowSettingsPopupEvent> _onShowSettings;
     private Action<HideSettingsPopupEvent> _onHideSettings;
 
+    // =========================
+    //  Input
+    // =========================
+    private PlayerInputs _inputs;
+    private bool _settingsOpen;
+
     private void Awake()
     {
         _onRequestStartNewGame = OnRequestStartNewGame;
         _onShowSettings = OnShowSettings;
         _onHideSettings = OnHideSettings;
+
+        _inputs = InputManager.Instance.Inputs;
 
         if (menuRoot != null)
             menuRoot.SetActive(false);
@@ -28,6 +37,11 @@ public class MainMenuRootController : MonoBehaviour
         EventBus.Subscribe(_onShowSettings);
         EventBus.Subscribe(_onHideSettings);
 
+        // =========================
+        // 메인메뉴용 ESC 입력
+        // =========================
+        _inputs.UI.Setting.performed += OnEsc;
+
         Show(); // 앱 최초 진입 시 메인메뉴 표시
     }
 
@@ -36,6 +50,9 @@ public class MainMenuRootController : MonoBehaviour
         EventBus.Unsubscribe(_onRequestStartNewGame);
         EventBus.Unsubscribe(_onShowSettings);
         EventBus.Unsubscribe(_onHideSettings);
+
+        // [ADDED]
+        _inputs.UI.Setting.performed -= OnEsc;
     }
 
     // =========================
@@ -50,6 +67,8 @@ public class MainMenuRootController : MonoBehaviour
 
     private void OnShowSettings(ShowSettingsPopupEvent e)
     {
+        _settingsOpen = true; // [ADDED]
+
         // Popup이 열리는 동안 메인메뉴 Raycast 차단
         if (menuCanvasGroup != null)
             menuCanvasGroup.blocksRaycasts = false;
@@ -57,9 +76,23 @@ public class MainMenuRootController : MonoBehaviour
 
     private void OnHideSettings(HideSettingsPopupEvent e)
     {
+        _settingsOpen = false; //
+
         // Popup 닫히면 Raycast 복구
         if (menuCanvasGroup != null)
             menuCanvasGroup.blocksRaycasts = true;
+    }
+
+    // =========================
+    // ESC handler
+    // =========================
+    private void OnEsc(InputAction.CallbackContext ctx)
+    {
+        // 메인메뉴가 보이는 상태 + SettingsPopup이 열려 있을 때만 처리
+        if (menuRoot != null && menuRoot.activeInHierarchy && _settingsOpen)
+        {
+            EventBus.Publish(new HideSettingsPopupEvent());
+        }
     }
 
     // =========================
@@ -83,5 +116,6 @@ public class MainMenuRootController : MonoBehaviour
             menuRoot.SetActive(false);
     }
 }
+
 
 
