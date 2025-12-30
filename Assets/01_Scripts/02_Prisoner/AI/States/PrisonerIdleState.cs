@@ -6,21 +6,31 @@ public class PrisonerIdleState : BasePrisonerState
 
     public override void Enter()
     {
-        agent.isStopped = true;
+        // 1. [안전] 이동 애니메이션 끄기
+        Anim?.SetBool("IsMoving", false);
 
-        if (Controller.IsSuspicious)
+        // 2. [수정] NavMeshAgent 안전 처리
+        // agent가 있고 & NavMesh 위에 있을 때만 정지시킴
+        if (agent != null && agent.isOnNavMesh)
         {
-            Anim.SetBool("Suspicious", true);
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
         }
-        else
+
+        // [삭제됨] agent.isStopped = true; 
+        // -> 이 줄이 에러의 원인이었으므로 지웁니다.
+
+        // 3. [안전] 수상함 애니메이션 처리
+        // Controller나 Anim이 null일 경우를 대비해 ?. 연산자 사용
+        if (Controller != null)
         {
-            Anim.SetBool("Suspicious", false);
+            bool isSus = Controller.IsSuspicious;
+            Anim?.SetBool("Suspicious", isSus);
         }
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // Actor에서 차단하므로 여기까지 들어오지 않겠지만, 
-        // 만약 들어온다면 여기서 "비웃음"이나 "무시" 애니메이션 처리 가능
+        // ...
     }
 }

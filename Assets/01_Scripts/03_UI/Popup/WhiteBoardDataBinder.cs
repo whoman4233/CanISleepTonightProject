@@ -48,7 +48,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
     private void OnGameContextReady(GameContextReadyEvent e)
     {
         // 씬 재로딩으로 PrisonCellManager 인스턴스가 바뀌었을 수 있으니 재획득
-        _cellManager = FindObjectOfType<PrisonCellManager>();
+        _cellManager = FindObjectOfType<PrisonManager>();
         Refresh();
     }
 
