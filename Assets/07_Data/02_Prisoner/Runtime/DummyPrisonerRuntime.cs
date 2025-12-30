@@ -16,7 +16,7 @@ public class DummyPrisonerRuntime
     {
         InstanceId = instanceId;
         TemplateId = def.templateId;
-        Type = def.type;
+        Type = def.traitType;
 
         Hp = def.hp;
         Atk = def.atk;

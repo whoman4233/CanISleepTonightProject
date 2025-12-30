@@ -5,7 +5,7 @@ public class CellContentRegistry : MonoBehaviour
 {
     public class CellContent
     {
-        public PrisonerActor prisoner;
+        public PrisonerController prisoner;
         public readonly List<GameObject> anomalies = new();
         public string prisonerInstanceId; 
         public GameObject prop;

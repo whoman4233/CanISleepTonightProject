@@ -3,6 +3,19 @@ using UnityEngine;
 
 public sealed class PlayerInteractor : MonoBehaviour
 {
+
+    [Header("Carry Position")]
+    [SerializeField] private Transform carryParent; // 물체가 붙을 위치
+    private ICarryable _heldItem; // 들고 있는 물체
+
+    public bool IsCarrying => _heldItem != null; // helditem != null 이면 true
+    public Transform CarryParent => carryParent; // 읽기전용
+
+    public void SetHeldItem(ICarryable item) => _heldItem = item; // 물체를 손에 드는 함수, 물체 들고있음을 인지시켜줌, helditem에 item 넣어준다.
+    public void ClearHeldItem() => _heldItem = null; // 물체 비우는 함수, 물체 drop시 호출
+
+    // 호출순서 TryInteract - IsCarrying = false && ICarryable이면 들기, IsCarrying = true면 내려놓기 그 외는 기존과 동일
+
     private const float ViewportCenterX = 0.5f;
     private const float ViewportCenterY = 0.5f;
 
@@ -176,11 +189,24 @@ public sealed class PlayerInteractor : MonoBehaviour
             Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.red, 0.15f); // 0.15초만 보이게
         }
 
+        if (IsCarrying) // 들고있나?
+        {
+            DropHeldItem(); // 내려놔
+            return true;
+        }
+
         if (_currentInteractable == null)
             return false;
 
         _currentInteractable.Interact(_player);
         return true;
+    }
+    public void DropHeldItem()
+    {
+        if (_heldItem != null)
+        {
+            _heldItem.Drop(_player); // 물체에게 명령
+        }
     }
 
     private void PublishHoverIfChanged(bool nowHasTarget)

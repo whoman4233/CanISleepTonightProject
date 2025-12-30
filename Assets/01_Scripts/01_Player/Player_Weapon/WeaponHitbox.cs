@@ -58,7 +58,7 @@ public sealed class WeaponHitbox : MonoBehaviour
 
         _hitTargets.Add(id);
 
-        if (!other.TryGetComponent<PrisonerActor>(out var prisoner))
+        if (!other.TryGetComponent<PrisonerController>(out var prisoner))
             return;
 
         int damage = GetPlayerDamage();
