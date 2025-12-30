@@ -138,11 +138,11 @@ public class PrisonerDataBakerWindow : EditorWindow
     private static bool ParseBool(string s)
         => string.Equals(s.Trim(), "TRUE", StringComparison.OrdinalIgnoreCase);
 
-    private static PrisonerType ParseType(string s)
+    private static PrisonerAIType ParseType(string s)
     {
         return string.Equals(s.Trim(), "Bad", StringComparison.OrdinalIgnoreCase)
-            ? PrisonerType.Bad
-            : PrisonerType.Good;
+            ? PrisonerAIType.Bad
+            : PrisonerAIType.Good;
     }
 
     private void DrawHelpBox()

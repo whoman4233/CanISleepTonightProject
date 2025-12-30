@@ -4,21 +4,23 @@ using UnityEngine;
 public class DayDebugConsole : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private PrisonCellManager cellManager;
+    [SerializeField] private PrisonManager cellManager;
     [SerializeField] private InspectionStateMachine inspection;
     [SerializeField] private SettlementReportBuilder report;
-    [SerializeField] private GameBootstrap bootstrap; // ✅ 추가(자동 대상)
+    // [삭제] private GameBootstrap bootstrap; 
 
     [Header("Debug Target")]
-    [SerializeField] private bool followBootstrapTarget = true;
-    [SerializeField] private string testCellId = "C_1F_01";
+    [Tooltip("체크 시, 오늘 활성화된 첫 번째 방을 자동으로 타겟팅합니다.")]
+    [SerializeField] private bool autoPickActiveCell = true; // 이름 변경
+    [SerializeField] private string testCellId = "C_1F_01"; // 수동 타겟
 
     private void Awake()
     {
-        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+        if (cellManager == null) cellManager = FindObjectOfType<PrisonManager>();
         if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
         if (report == null) report = FindObjectOfType<SettlementReportBuilder>();
-        if (bootstrap == null) bootstrap = FindObjectOfType<GameBootstrap>();
+
+        // [삭제] bootstrap = FindObjectOfType<GameBootstrap>();
 
         if (cellManager != null)
         {
@@ -51,7 +53,6 @@ public class DayDebugConsole : MonoBehaviour
             Debug.Log($"[TryEnter] {target} => {ok}");
         }
 
-
         // F4: Suppress start (Lock)
         if (Input.GetKeyDown(KeyCode.F4))
         {
@@ -80,7 +81,7 @@ public class DayDebugConsole : MonoBehaviour
             Debug.Log("[TimeExpired] ForceReleaseOnTimeExpired()");
         }
 
-        // (선택) 리포트만 확인하고 싶으면 F9 같은 남는 키로
+        // F9: Report Preview
         if (Input.GetKeyDown(KeyCode.F9))
         {
             report.BuildSettlementReport(out List<ResolvedRecord> resolved, out List<UninspectedRecord> uninspected);
@@ -95,10 +96,21 @@ public class DayDebugConsole : MonoBehaviour
 
     private string ResolveTargetCellId()
     {
-        if (!followBootstrapTarget) return testCellId;
-        if (bootstrap == null) return testCellId;
+        // 1. 자동 타겟팅이 꺼져있으면 수동 ID 반환
+        if (!autoPickActiveCell) return testCellId;
 
-        var id = bootstrap.CurrentTestCellId;
-        return string.IsNullOrWhiteSpace(id) ? testCellId : id;
+        // 2. 매니저가 없으면 수동 ID 반환
+        if (cellManager == null) return testCellId;
+
+        // 3. [변경] PrisonManager에게 직접 활성 목록을 물어봄
+        // (PrisonManager에 GetActiveCellIds 메서드가 있어야 함)
+        var activeIds = cellManager.GetActiveCellIds();
+
+        if (activeIds != null && activeIds.Count > 0)
+        {
+            return activeIds[0]; // 첫 번째 활성 방 리턴
+        }
+
+        return testCellId; // 활성 방 없으면 기본값
     }
 }

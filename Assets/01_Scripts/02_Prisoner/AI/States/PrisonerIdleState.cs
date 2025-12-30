@@ -8,15 +8,13 @@ public class PrisonerIdleState : BasePrisonerState
     {
         agent.isStopped = true;
 
-        if (fsm.actor != null && fsm.actor.IsSuspicious)
+        if (Controller.IsSuspicious)
         {
-            // 수상한 행동 (예: 서성거리기, 벽 긁기 등)
-            anim.SetBool("Suspicious", true);
+            Anim.SetBool("Suspicious", true);
         }
         else
         {
-            // 일반 행동 (앉아있기)
-            anim.SetBool("Suspicious", false);
+            Anim.SetBool("Suspicious", false);
         }
     }
 

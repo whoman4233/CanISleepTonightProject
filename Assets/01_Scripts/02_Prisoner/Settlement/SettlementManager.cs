@@ -10,8 +10,7 @@ using UnityEngine;
 public class SettlementManager : MonoBehaviour
 {
     [Header("Riot Gauge")]
-    //[SerializeField] private int riotGauge = 30;
-    //[SerializeField] private int maxRiotGauge = 100;
+    // GameManager에서 가져오므로 SerializeField 제거됨
 
     [Header("Gauge Change Values")]
     [Tooltip("수상한 방 진압 성공 (감소)")]
@@ -33,8 +32,8 @@ public class SettlementManager : MonoBehaviour
     private int maxRiotGauge;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
-    // 층별 데이터 집계를 위한 참조
-    private PrisonCellManager _cellManager;
+    // [변경] PrisonManager 참조
+    private PrisonManager _prisonManager;
 
     private void Awake()
     {
@@ -61,8 +60,8 @@ public class SettlementManager : MonoBehaviour
             Debug.LogError("GameManager를 찾을 수 없습니다");
         }
 
-        // 층별 이상현상 집계를 위해 매니저 찾기
-        _cellManager = FindObjectOfType<PrisonCellManager>();
+        // [변경] PrisonManager 찾기
+        _prisonManager = FindObjectOfType<PrisonManager>();
     }
 
     private void OnEnable()
@@ -87,8 +86,6 @@ public class SettlementManager : MonoBehaviour
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
         // GameManager 업데이트
-        // (주의: AddRiotGauge를 쓰면 delta만큼 더해지고, SetRiotGauge는 값을 덮어씁니다. 중복 호출 방지 확인 필요)
-        // 여기서는 명확하게 Set으로 최종값을 맞춥니다.
         if (GameManager.Instance != null)
         {
             GameManager.Instance.SetRiotGauge(riotGauge);
@@ -112,30 +109,22 @@ public class SettlementManager : MonoBehaviour
         }
         data.UncheckedCount = uninspected.Count;
 
-        // 2. 층별 '활성 감방' 개수 집계
-        if (_cellManager != null)
+        // 2. [최적화] 층별 '활성 감방' 개수 집계
+        // PrisonManager가 이미 계산해둔 값을 가져옵니다. 반복문 불필요.
+        if (_prisonManager != null)
         {
-            foreach (var cell in _cellManager.Cells)
-
-            {
-                if (cell.IsActiveToday)
-                {
-                    if (cell.Floor == 1)
-                        data.Floor1_ActiveCount++;
-                    else if (cell.Floor == 2)
-                        data.Floor2_ActiveCount++;
-                }
-            }
+            data.Floor1_ActiveCount = _prisonManager.ActiveCell1f;
+            data.Floor2_ActiveCount = _prisonManager.ActiveCell2f;
         }
 
-        // 3. [핵심 수정] UI에 표시할 게이지 변화량 할당 (이 부분이 빠져 있어서 0으로 나왔던 것임)
+        // 3. UI에 표시할 게이지 변화량 할당
         data.RiotGaugeDelta = CalculateDelta(resolved, uninspected);
 
         return data;
     }
 
     /// <summary>
-    /// 점수(게이지 변화량) 계산 로직 (중복 방지용 헬퍼 함수)
+    /// 점수(게이지 변화량) 계산 로직
     /// </summary>
     private int CalculateDelta(List<ResolvedRecord> resolved, List<UninspectedRecord> uninspected)
     {
@@ -160,7 +149,7 @@ public class SettlementManager : MonoBehaviour
         foreach (var u in uninspected)
         {
             if (u.isSuspicious) delta += suspiciousIgnoreFailDelta;
-            else delta += normalSuppressFailDelta;
+            else delta += normalSuppressFailDelta; // 정상인데 안 봤으면? 일단 실패 패널티 (기획에 따라 0일 수도 있음)
         }
 
         return delta;
@@ -168,6 +157,7 @@ public class SettlementManager : MonoBehaviour
 
     public void ApplyDailyBaseIncrease()
     {
+        // Standby 페이즈에 하루 기본 증가량 적용
         riotGauge += dailyBaseIncrease;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
@@ -196,8 +186,8 @@ public class SettlementManager : MonoBehaviour
 public struct SettlementUIData
 {
     [Header("Floor Active Counts")]
-    public int Floor1_ActiveCount; // [변경] 1층 활성화된 감방 개수
-    public int Floor2_ActiveCount; // [변경] 2층 활성화된 감방 개수
+    public int Floor1_ActiveCount;
+    public int Floor2_ActiveCount;
 
     [Header("Player Actions")]
     public int SuppressedCount;
