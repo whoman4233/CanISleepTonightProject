@@ -9,14 +9,14 @@ public class WhiteBoardDataBinder : MonoBehaviour
     [SerializeField] private TextMeshProUGUI floor1Text;
     [SerializeField] private TextMeshProUGUI floor2Text;
 
-    private PrisonCellManager _cellManager;
+    private PrisonManager _cellManager;
 
     // 정산 완료 / Result UI 표시 시점 트리거
     private Action<ResultUIShowRequestedEvent> _onResultUIShow;
 
     private void Awake()
     {
-        _cellManager = FindObjectOfType<PrisonCellManager>();
+        _cellManager = FindObjectOfType<PrisonManager>();
         _onResultUIShow = OnResultUIShow;
     }
 
@@ -43,7 +43,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         if (_cellManager == null)
         {
-            _cellManager = FindObjectOfType<PrisonCellManager>();
+            _cellManager = FindObjectOfType<PrisonManager>();
             if (_cellManager == null)
                 return;
         }

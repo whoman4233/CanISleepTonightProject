@@ -1,18 +1,20 @@
-using System;
 using UnityEngine;
 
-[Serializable]
+[System.Serializable]
 public class PrisonerDefinition
 {
-    public string templateId;      // CSV: PrisonerID (종류 ID)
-    public string displayName;     // CSV: PrisonerName
-    public PrisonerAIType type;      // CSV: PrisonerType (Good/Bad)
+    public string templateId;
+    public string displayName;
 
-    public int hp;                 // CSV: PrisonerHP
-    public int atk;                // CSV: PrisonerATK
-    public int spd;                // CSV: PrisonerSpd
+    [Header("Types")]
+    public PrisonerAIType aiType;       // 기존 type -> aiType으로 명확히 변경 추천 (Good/Bad)
+    public PrisonerType traitType;      // [추가] 이상현상 매칭용 특성 (Muscular, Nervous...)
 
-    public bool isQte;             // CSV: IsQTE
-    public string qteId;           // CSV: QTEID
-    [TextArea] public string info; // CSV: Info
+    public int hp;
+    public int atk;
+    public int spd;
+
+    public bool isQte;
+    public string qteId;
+    [TextArea] public string info;
 }

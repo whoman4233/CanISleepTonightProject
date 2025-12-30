@@ -7,7 +7,7 @@ public class CellDoorController : MonoBehaviour
 
     [Header("Refs")]
     [SerializeField] private InspectionStateMachine inspection;
-    [SerializeField] private PrisonCellManager cellManager;
+    [SerializeField] private PrisonManager cellManager;
     [SerializeField] private CellAnchorRegistry anchorRegistry;
 
     [Header("Player")]
@@ -25,7 +25,7 @@ public class CellDoorController : MonoBehaviour
     private void Awake()
     {
         if (inspection == null) inspection = FindObjectOfType<InspectionStateMachine>();
-        if (cellManager == null) cellManager = FindObjectOfType<PrisonCellManager>();
+        if (cellManager == null) cellManager = FindObjectOfType<PrisonManager>();
         if (anchorRegistry == null) anchorRegistry = FindObjectOfType<CellAnchorRegistry>();
     }
 

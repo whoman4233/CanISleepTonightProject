@@ -19,8 +19,11 @@ public class CellAnchor : MonoBehaviour
 
     [Header("Runtime - Daily Assignment")]
     [Tooltip("매일 아침 AnomalyDistributor가 이 리스트를 채워줍니다. (공통 + 개별 + 특수)")]
-    // ✅ [핵심 추가] 오늘 이 방에 배정된 이상현상 후보군 리스트
     public List<AnomalyDefinitionSO> currentDailyAnomalies = new List<AnomalyDefinitionSO>();
+
+    // [추가] PrisonManager가 "빈 방"인지 체크할 때 사용합니다.
+    [Header("Runtime - State")]
+    public bool IsOccupied;
 
     /// <summary>
     /// 하루를 시작하기 전 기존 리스트 초기화
@@ -28,6 +31,8 @@ public class CellAnchor : MonoBehaviour
     public void ClearDailyAnomalies()
     {
         currentDailyAnomalies.Clear();
+        // 하루 시작 시 점유 상태도 초기화하고 싶다면 아래 주석 해제
+        // IsOccupied = false; 
     }
 
     /// <summary>

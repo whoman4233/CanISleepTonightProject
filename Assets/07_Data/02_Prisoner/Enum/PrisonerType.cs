@@ -3,7 +3,8 @@ public enum PrisonerType
     nervous,
     muscular,
     tattooed,
-    Intelligent
+    Intelligent,
+    None
 }
 
 public enum PrisonerAIType

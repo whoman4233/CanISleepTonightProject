@@ -80,7 +80,7 @@ public class PrisonerInspectionState : BasePrisonerState
         anim.SetTrigger("Hit");
 
         // 전략 패턴: 죄수 타입에 따라 상태 전환
-        if (actor.Type == PrisonerAIType.Bad)
+        if (Controller.AIType == PrisonerAIType.Bad)
             fsm.ChangeState(fsm.CombatState);
         else
             fsm.ChangeState(fsm.CowerState);
