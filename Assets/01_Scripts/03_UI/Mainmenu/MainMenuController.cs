@@ -17,9 +17,6 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Button btnLoadGame;
     [SerializeField] private Button btnStartBack;
 
-    [Header("Settings Buttons")]
-    [SerializeField] private Button btnSettingsBack;
-
     private void Awake()
     {
         BindButtons();
@@ -34,14 +31,20 @@ public class MainMenuController : MonoBehaviour
         btnNewGame.onClick.AddListener(OnClickNewGame);
         btnLoadGame.onClick.AddListener(OnClickLoadGame);
         btnStartBack.onClick.AddListener(OnClickBackToMain);
-
-        btnSettingsBack.onClick.AddListener(OnClickBackToMain);
     }
-    public void ResetState() //MainMenuRootController 에서 초기화
+
+    /// <summary>
+    /// MainMenuRootController에서 호출
+    /// </summary>
+    public void ResetState()
     {
         mainButtonGroup.SetActive(true);
         startButtonGroup.SetActive(false);
     }
+
+    // =========================
+    // Button Handlers
+    // =========================
 
     private void OnClickStart()
     {
@@ -51,6 +54,7 @@ public class MainMenuController : MonoBehaviour
 
     private void OnClickSettings()
     {
+        // Settings는 전역 Popup
         EventBus.Publish(new ShowSettingsPopupEvent());
     }
 
@@ -74,4 +78,5 @@ public class MainMenuController : MonoBehaviour
         EventBus.Publish(new LoadGameEvent());
     }
 }
+
 
