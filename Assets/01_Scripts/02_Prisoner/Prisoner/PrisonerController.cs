@@ -11,7 +11,7 @@ public class PrisonerController : MonoBehaviour
     // 2. 컴포넌트 참조
     [SerializeField] private Animator animator;
     [SerializeField] private RagdollSetting ragdoll;
-    [SerializeField] private PrisonerSfxController sfx;
+    [SerializeField] private PrisonerSfxController sfx; 
     private PrisonerFSM fsm;
     private NavMeshAgent agent;
 
@@ -22,12 +22,16 @@ public class PrisonerController : MonoBehaviour
 
     private void Awake()
     {
-        fsm = GetComponent<PrisonerFSM>();
-        agent = GetComponent<NavMeshAgent>();
+        // Awake에서는 컴포넌트 가져오기만 수행 (로직 실행 X)
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
 
-        // FSM 초기화 (자신을 넘겨줌)
-        fsm.Setup(this, agent, animator);
+        fsm = GetComponent<PrisonerFSM>();
+        if (fsm == null) fsm = gameObject.AddComponent<PrisonerFSM>();
+
     }
+
+
 
     // [Actor의 Init 대체] 스폰될 때 호출
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
@@ -37,7 +41,18 @@ public class PrisonerController : MonoBehaviour
         this.IsSuspicious = isSuspicious;
 
         // FSM 시작
+        if (fsm != null)
+        {
+            fsm.Setup(this, agent, animator);
+        }
         fsm.ChangeState(fsm.IdleState);
+
+        Debug.Log($"<color=yellow>[Spawn]</color> 죄수 생성됨! " +
+              $"ID: {data.definition.templateId} | " +
+              $"이름: {data.definition.displayName} | " +
+              $"특성(CSV): {data.definition.traitType} | " +
+              $"오늘성향(Schedule): {data.RuntimeAIType} | " +
+              $"수상함: {isSuspicious}");
     }
 
     // [Actor의 ApplyDamage 대체] 외부(총알 등)에서 호출하는 피격 함수

@@ -13,23 +13,143 @@ MonoBehaviour:
   m_Name: PrisonerDatabase
   m_EditorClassIdentifier: 
   prisoners:
-  - templateId: P_01
-    displayName: "\uC21C\uC751\uD615"
-    type: 0
-    hp: 40
+  - templateId: PSN_Skinny_01
+    displayName: "\uC2E0\uACBD\uC9C8\uC801 \uBA78\uCE58"
+    aiType: 0
+    traitType: 0
+    hp: 30
     atk: 10
-    spd: 0
+    spd: 1
     isQte: 0
     qteId: 
-    info: "\uC9C4\uC555 \uC2DC \uC81C\uC790\uB9AC\uC5D0\uC11C \uD50C\uB808\uC774\uC5B4\uC5D0\uAC8C
-      \uC5BB\uC5B4\uB9DE\uC74C"
-  - templateId: P_02
-    displayName: "\uBC18\uD56D\uD615"
-    type: 1
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Skinny_02
+    displayName: "\uC2E0\uACBD\uC9C8\uC801 \uBA78\uCE58"
+    aiType: 0
+    traitType: 0
+    hp: 30
+    atk: 10
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Skinny_03
+    displayName: "\uC2E0\uACBD\uC9C8\uC801 \uBA78\uCE58"
+    aiType: 0
+    traitType: 0
+    hp: 30
+    atk: 10
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Muscular_01
+    displayName: "\uADFC\uC721\uC9C8\uC758 \uAC70\uAD6C"
+    aiType: 0
+    traitType: 1
+    hp: 60
+    atk: 20
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Muscular_02
+    displayName: "\uADFC\uC721\uC9C8\uC758 \uAC70\uAD6C"
+    aiType: 0
+    traitType: 1
+    hp: 60
+    atk: 20
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Muscular_03
+    displayName: "\uADFC\uC721\uC9C8\uC758 \uAC70\uAD6C"
+    aiType: 0
+    traitType: 1
+    hp: 60
+    atk: 20
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Gang_01
+    displayName: "\uBB38\uC2E0\uD55C \uAC31\uB2E8\uC6D0"
+    aiType: 0
+    traitType: 0
+    hp: 50
+    atk: 15
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Gang_02
+    displayName: "\uBB38\uC2E0\uD55C \uAC31\uB2E8\uC6D0"
+    aiType: 0
+    traitType: 0
+    hp: 50
+    atk: 15
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Gang_03
+    displayName: "\uBB38\uC2E0\uD55C \uAC31\uB2E8\uC6D0"
+    aiType: 0
+    traitType: 0
+    hp: 50
+    atk: 15
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Elite_01
+    displayName: "\uC778\uD154\uB9AC \uC0AC\uAE30\uAFBC"
+    aiType: 0
+    traitType: 0
     hp: 40
+    atk: 15
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Elite_02
+    displayName: "\uC778\uD154\uB9AC \uC0AC\uAE30\uAFBC"
+    aiType: 0
+    traitType: 0
+    hp: 40
+    atk: 15
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Elite_03
+    displayName: "\uC778\uD154\uB9AC \uC0AC\uAE30\uAFBC"
+    aiType: 0
+    traitType: 0
+    hp: 40
+    atk: 15
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC560\uB2C8\uBA54\uC774\uC158 \uBD84\uB9AC"
+  - templateId: PSN_Goat_01
+    displayName: "\uC5FC\uC18C"
+    aiType: 0
+    traitType: 0
+    hp: 30
     atk: 0
     spd: 1
     isQte: 0
     qteId: 
-    info: "\uC9C4\uC555 \uC2DC \uD50C\uB808\uC774\uC5B4\uC5D0\uAC8C \uB2E4\uAC00\uC624\uBA70
-      \uD50C\uB808\uC774\uC5B4\uB97C \uACF5\uACA9"
+    info: "\uC774\uBCA4\uD2B8 \uAC1C\uCCB4"
+  - templateId: PSN_Bikini_01
+    displayName: "\uADFC\uC721\uBE44\uD0A4\uB2C8"
+    aiType: 0
+    traitType: 0
+    hp: 60
+    atk: 0
+    spd: 1
+    isQte: 0
+    qteId: 
+    info: "\uC774\uBCA4\uD2B8 \uAC1C\uCCB4"

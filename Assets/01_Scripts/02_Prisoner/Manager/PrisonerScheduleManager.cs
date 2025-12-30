@@ -3,19 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+// [필수] SpawnController와 통신하기 위한 구조체
+public struct PrisonerAssignment
+{
+    public string templateId; // Roster에서 가져옴 (누구인가)
+    public PrisonerAIType aiType; // Schedule에서 가져옴 (오늘 기분이 어떤가)
+}
+
 // [신규] 하루 배정 정보를 담는 구조체 (그날의 수상함 + 그날의 기분)
 [System.Serializable]
 public struct DailyCellAssignment
 {
     public bool isSuspicious;
-    public PrisonerAIType dailyAIType; // 매일 바뀌는 성향
+    public PrisonerAIType dailyAIType;
 }
 
 [System.Serializable]
 public class DailyScheduleData
 {
     public int dayNumber;
-    // [변경] Key: CellId, Value: 상세 배정 정보 (기존 bool -> 구조체)
     public Dictionary<string, DailyCellAssignment> cellAssignments = new Dictionary<string, DailyCellAssignment>();
 }
 
@@ -30,11 +36,14 @@ public class PrisonerScheduleManager : MonoBehaviour
     [SerializeField] private int dailyActiveCount = 6;
     [SerializeField] private int dailySuspiciousCount = 3;
 
-    // [변경] Roster는 이제 '누구인가(TemplateId)'만 기억합니다. (성향 삭제)
+    // Roster: '누구인가(TemplateId)' (불변)
     private Dictionary<string, string> _weeklyRoster = new Dictionary<string, string>();
 
-    // 스케줄 데이터
+    // Schedule: '오늘 상태는 어떤가' (매일 변동)
     private List<DailyScheduleData> _weeklySchedule = new List<DailyScheduleData>();
+
+    // [최적화] 오늘 날짜의 스케줄을 빠르게 찾기 위한 캐시
+    private Dictionary<string, DailyCellAssignment> _todayCache = new Dictionary<string, DailyCellAssignment>();
 
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
@@ -53,9 +62,34 @@ public class PrisonerScheduleManager : MonoBehaviour
     private void OnEnable() => EventBus.Subscribe(_onPhaseChanged);
     private void OnDisable() => EventBus.Unsubscribe(_onPhaseChanged);
 
-    // -----------------------------------------------------------------------
-    // 1. Roster Logic (누가 어디 사나? - 불변)
-    // -----------------------------------------------------------------------
+    // =======================================================================
+    // [핵심] SpawnController가 호출하는 메서드 (데이터 병합)
+    // =======================================================================
+    public PrisonerAssignment? GetAssignment(string cellId)
+    {
+        // 1. 이 방에 죄수가 배정되어 있는가? (Roster 확인)
+        if (!_weeklyRoster.TryGetValue(cellId, out string tid))
+        {
+            return null; // 아무도 안 사는 방
+        }
+
+        // 2. 이 방이 오늘 활성화(출근/감방체류) 상태인가? (Cache 확인)
+        if (!_todayCache.TryGetValue(cellId, out DailyCellAssignment dailyData))
+        {
+            return null; // 오늘은 비번이거나 빈 방 취급
+        }
+
+        // 3. 두 정보를 합쳐서 반환
+        return new PrisonerAssignment
+        {
+            templateId = tid,
+            aiType = dailyData.dailyAIType
+        };
+    }
+
+    // =======================================================================
+    // 1. Roster Logic
+    // =======================================================================
     [ContextMenu("Generate Roster Now")]
     public void GenerateWeeklyRoster()
     {
@@ -68,7 +102,6 @@ public class PrisonerScheduleManager : MonoBehaviour
 
         foreach (string cellId in allCellIds)
         {
-            // 죄수 템플릿(외형/특성)만 고정
             var randomDef = prisonerDatabase.GetRandomDefinition();
             if (randomDef != null)
             {
@@ -78,20 +111,9 @@ public class PrisonerScheduleManager : MonoBehaviour
         Debug.Log($"[Schedule] Roster Generated for {allCellIds.Count} cells.");
     }
 
-    // 외부에서 죄수 정보(Trait 등) 확인할 때 사용
-    public PrisonerDefinition GetAssignedPrisonerDef(string cellId)
-    {
-        if (_weeklyRoster.TryGetValue(cellId, out string templateId))
-        {
-            if (prisonerDatabase.TryGet(templateId, out var def))
-                return def;
-        }
-        return null;
-    }
-
-    // -----------------------------------------------------------------------
-    // 2. Schedule Logic (오늘 상태는 어떤가? - 매일 변동)
-    // -----------------------------------------------------------------------
+    // =======================================================================
+    // 2. Schedule Logic
+    // =======================================================================
     [ContextMenu("Generate Schedule Now")]
     public void GenerateWeeklySchedule()
     {
@@ -115,7 +137,7 @@ public class PrisonerScheduleManager : MonoBehaviour
                 {
                     bool isSuspicious = (i < dailySuspiciousCount);
 
-                    // [핵심] 여기서 매일매일 성향을 50:50으로 새로 뽑습니다.
+                    // [수정] Enum 값은 본인의 프로젝트 정의에 맞게 수정하세요 (예: Normal, Aggressive)
                     PrisonerAIType dailyMood = (UnityEngine.Random.value > 0.5f)
                                                ? PrisonerAIType.Good
                                                : PrisonerAIType.Bad;
@@ -131,25 +153,43 @@ public class PrisonerScheduleManager : MonoBehaviour
             }
             _weeklySchedule.Add(dayData);
         }
-        Debug.Log($"[Schedule] Generated Daily Schedules (AIType Randomized Daily).");
+        Debug.Log($"[Schedule] Generated Daily Schedules.");
     }
 
-    public Dictionary<string, DailyCellAssignment> GetScheduleForDay(int dayNumber)
+    // 오늘 스케줄(Active 목록) 가져오기
+    public Dictionary<string, bool> GetScheduleForDay(int dayNumber)
     {
+        var result = new Dictionary<string, bool>();
         var data = _weeklySchedule.Find(x => x.dayNumber == dayNumber);
-        return data != null ? data.cellAssignments : new Dictionary<string, DailyCellAssignment>();
+
+        if (data != null)
+        {
+            foreach (var kvp in data.cellAssignments)
+            {
+                // Key: CellID, Value: IsSuspicious
+                result.Add(kvp.Key, kvp.Value.isSuspicious);
+            }
+        }
+        return result;
     }
 
     private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
     {
         if (evt.Phase == GamePhase.Briefing && GameManager.Instance != null)
         {
-            var plan = GetScheduleForDay(GameManager.Instance.CurrentDay);
-            if (plan.Count > 0)
+            int currentDay = GameManager.Instance.CurrentDay;
+
+            // 1. 오늘의 스케줄 데이터를 찾아서 캐싱 (GetAssignment 최적화용)
+            _todayCache.Clear();
+            var daySchedule = _weeklySchedule.Find(x => x.dayNumber == currentDay);
+            if (daySchedule != null)
             {
-                // PrisonManager에게 변경된 구조체(DailyCellAssignment)를 전달
-                prisonManager.ApplyDailySchedule(plan);
+                _todayCache = daySchedule.cellAssignments;
             }
+
+            // 2. PrisonManager 등 외부 시스템에 알림
+            // (필요 시 구현)
+            // prisonManager.ApplyDailySchedule(_todayCache); 
         }
     }
 
@@ -162,5 +202,21 @@ public class PrisonerScheduleManager : MonoBehaviour
             list[i] = list[rnd];
             list[rnd] = temp;
         }
+    }
+
+    public PrisonerDefinition GetAssignedPrisonerDef(string cellId)
+    {
+        // 1. Roster(명부)에서 해당 방에 누가 사는지 ID 확인
+        if (_weeklyRoster.TryGetValue(cellId, out string templateId))
+        {
+            // 2. 데이터베이스에서 ID로 실제 데이터(SO)를 찾아서 반환
+            if (prisonerDatabase.TryGet(templateId, out var def))
+            {
+                return def;
+            }
+        }
+
+        // 해당 방에 배정된 죄수가 없거나, DB에 데이터가 없으면 null 반환
+        return null;
     }
 }
