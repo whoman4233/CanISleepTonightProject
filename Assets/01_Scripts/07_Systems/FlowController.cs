@@ -72,7 +72,7 @@ public class FlowController : MonoBehaviour
         yield return null; //new WaitForSeconds(1.0f);
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
         isBusy = false;
-        yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌
+        yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
         SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         Debug.Log("씬 재로딩 완료");
     }
