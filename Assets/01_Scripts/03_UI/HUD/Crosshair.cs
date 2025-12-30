@@ -36,7 +36,7 @@ public class Crosshair : MonoBehaviour
     private Action<PlayerPresenceChangedEvent> _onPlayerPresenceChanged;   
     private Action<InspectionStartedEvent> _onInspectionStart;
     private Action<InspectionEndedEvent> _onInspectionEnd;
-
+    private Action<GameContextReadyEvent> _onContextReady;
     private void Awake()
     {
         if (canvasGroup == null)
@@ -75,6 +75,17 @@ public class Crosshair : MonoBehaviour
         _onInspectionEnd = _ =>
         {
             _inspectionActive = false;
+            RefreshVisibility();
+        };
+        _onContextReady = _ =>
+        {
+            // 씬 리로드 기준점 초기화
+            _inspectionActive = false;
+            _playerPresent = false;
+
+            if (GameManager.Instance != null)
+                _currentPhase = GameManager.Instance.CurrentPhase;
+
             RefreshVisibility();
         };
     }

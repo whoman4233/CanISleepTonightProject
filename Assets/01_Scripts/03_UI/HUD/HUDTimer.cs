@@ -76,13 +76,23 @@ public class HUDTimer : MonoBehaviour
     {
         if (phase == GamePhase.Patrol)
         {
-            SyncFromGameManager(); // Patrol이면 켠다
+            Activate(); // Patrol이면 켠다
         }
         else
         {
             Deactivate(); // 그 외는 끈다 (원하는 정책에 맞게 조정 가능)
         }
     }
+    private void Activate()
+    {
+        _isActive = true;
+
+        if (timerText != null)
+            timerText.gameObject.SetActive(true);
+
+        SyncFromGameManager(); // 값만 복구
+    }
+
     /// <summary>
     /// GameManager에서 현재 상태를 Pull해 UI 복구
     /// </summary>
@@ -120,11 +130,10 @@ public class HUDTimer : MonoBehaviour
     /// </summary>
     private void OnTimerReset(PatrolTimerResetEvent e)
     {
-        _isActive = true;
         _currentSeconds = e.InitialSeconds;
 
-        timerText.gameObject.SetActive(true);
-        UpdateText(_currentSeconds);
+        if (_isActive)
+            UpdateText(_currentSeconds);
     }
 
     /// <summary>
