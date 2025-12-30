@@ -40,7 +40,6 @@ public class PrisonCellManager : MonoBehaviour
         {
             if (e.Phase == GamePhase.Standby)
             {
-                RunStandbySetup();
                 Debug.Log("PrisonCellManager의 BuildCellsIfNeeded 완료");
             }
         };
@@ -93,43 +92,39 @@ public class PrisonCellManager : MonoBehaviour
         return _byId.TryGetValue(cellId, out var cell) ? cell : null;
     }
 
-    public void RunStandbySetup(int? overrideActiveCount = null, int? overrideSuspiciousCount = null)
+    public void ApplyDailySchedule(Dictionary<string, bool> assignments)
     {
         BuildCellsIfNeeded();
 
-        int activeCount = overrideActiveCount ?? todayActiveCount;
-        int suspiciousCount = overrideSuspiciousCount ?? todaySuspiciousCount;
-
-        activeCount = Mathf.Clamp(activeCount, 0, _cells.Count);
-        suspiciousCount = Mathf.Clamp(suspiciousCount, 0, activeCount);
-
-        // Reset all
+        // 1. 모든 방 초기화
         foreach (var c in _cells)
             c.ResetForNewDay();
 
-        // Pick active
-        var shuffled = _cells.OrderBy(_ => UnityEngine.Random.value).ToList();
-        var active = shuffled.Take(activeCount).ToList();
-
+        // 2. 카운트 초기화
         ActiveCell1f = 0;
         ActiveCell2f = 0;
 
-        foreach (var c in active)
+        // 3. 스케줄대로 적용
+        foreach (var kvp in assignments)
         {
-            c.IsActiveToday = true;
-            SetNoisy(c, true);
-            c.State = CellState.ActiveNoisy;
+            string cellId = kvp.Key;
+            bool isSuspicious = kvp.Value;
 
-            if (c.Floor == 1) ActiveCell1f++;
-            else if (c.Floor == 2) ActiveCell2f++;
+            var cell = GetCell(cellId);
+            if (cell == null) continue;
+
+            // 활성 상태 설정
+            cell.IsActiveToday = true;
+            cell.IsSuspicious = isSuspicious;
+            SetNoisy(cell, true);
+            cell.State = CellState.ActiveNoisy;
+
+            // 층별 카운트 집계
+            if (cell.Floor == 1) ActiveCell1f++;
+            else if (cell.Floor == 2) ActiveCell2f++;
         }
 
-        // Pick suspicious among active
-        var suspicious = active.OrderBy(_ => UnityEngine.Random.value).Take(suspiciousCount).ToList();
-        foreach (var c in suspicious)
-            c.IsSuspicious = true;
-
-        if (verboseLog) Debug.Log($"[CellManager] Setup Complete. 1F: {ActiveCell1f}, 2F: {ActiveCell2f}");
+        if (verboseLog) Debug.Log($"[CellManager] Schedule Applied. 1F: {ActiveCell1f}, 2F: {ActiveCell2f}");
     }
 
     public void ResolveAndDeactivateCell(string cellId)

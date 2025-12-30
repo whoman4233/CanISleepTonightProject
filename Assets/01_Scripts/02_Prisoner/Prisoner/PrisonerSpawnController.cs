@@ -9,6 +9,8 @@ public class PrisonerSpawnController : MonoBehaviour
     [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
     [SerializeField] private CellAnchorRegistry anchorRegistry;
     [SerializeField] private CellContentRegistry contentRegistry;
+    [SerializeField] private PrisonerScheduleManager scheduleManager;
+    [SerializeField] private AnomalyDistributor anomalyDistributor;
 
     [Header("Prisoner Prefab")]
     [SerializeField] private GameObject prisonerPrefab;
@@ -48,15 +50,26 @@ public class PrisonerSpawnController : MonoBehaviour
 
     private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
     {
-        if (evt.Phase == GamePhase.Briefing)
+        if (evt.Phase == GamePhase.Briefing) // 하루 시작
         {
-            if (verboseLog) Debug.Log("[Spawn] Briefing Phase Started. Spawning Prisoners...");
+            int currentDay = GameManager.Instance.CurrentDay; // 현재 날짜 가져오기
 
+            // 1. [기획 2번] 오늘 각 방에서 일어날 수 있는 이상현상 목록 배포
+            anomalyDistributor.DistributeAnomaliesForDay(currentDay);
+
+            // 2. [기획 1번] 미리 짜둔 스케줄표(Assignment) 가져오기
+            var todaysPlan = scheduleManager.GetScheduleForDay(currentDay);
+
+            // 3. 스케줄대로 생성 (Dictionary 키(CellId)가 활성 방 목록임)
             ClearAllForNewDay();
 
-            List<string> allCellIds = anchorRegistry.GetAllCellIds(); // AnchorRegistry에 이 메서드가 있다고 가정
+            foreach (var kvp in todaysPlan)
+            {
+                string cellId = kvp.Key;
+                bool isSuspicious = kvp.Value; // 미리 정해진 수상함 여부
 
-            SpawnForToday(allCellIds, (cellId) => UnityEngine.Random.value > 0.5f);
+                SpawnForCell(cellId, isSuspicious);
+            }
         }
     }
 
@@ -116,7 +129,7 @@ public class PrisonerSpawnController : MonoBehaviour
         }
 
         // 3. 이상현상 요소 생성
-        SpawnAllAnomaliesInSlots(cellId, anchor, isSuspicious, content);
+        SpawnAnomaliesLogic(cellId, anchor, isSuspicious, content);
 
         contentRegistry.Set(cellId, content);
     }
@@ -150,35 +163,54 @@ public class PrisonerSpawnController : MonoBehaviour
         return pGo;
     }
 
-    private void SpawnAllAnomaliesInSlots(string cellId, CellAnchor anchor, bool roomIsSuspicious, CellContentRegistry.CellContent content)
+    private void SpawnAnomaliesLogic(string cellId, CellAnchor anchor, bool isSuspicious, CellContentRegistry.CellContent content)
     {
-        if (anchor.anomalySlots == null || anchor.anomalySlots.Count == 0) return;
-        if (anomalyDatabase == null || anomalyDatabase.defs == null) return;
+        // 오늘 배정된 리스트가 없으면 리턴
+        if (anchor.currentDailyAnomalies == null || anchor.currentDailyAnomalies.Count == 0) return;
 
-        var slots = anchor.anomalySlots;
-        int suspiciousSlotIndex = roomIsSuspicious ? UnityEngine.Random.Range(0, slots.Count) : -1;
-
-        for (int i = 0; i < slots.Count; i++)
+        // 이 방이 수상하다면, 배정된 리스트 중 '누가 범인(진짜 이상현상)'일지 하나 정함
+        AnomalyDefinitionSO culpritDef = null;
+        if (isSuspicious)
         {
-            var slot = slots[i];
-            if (slot == null) continue;
+            int rndIndex = UnityEngine.Random.Range(0, anchor.currentDailyAnomalies.Count);
+            culpritDef = anchor.currentDailyAnomalies[rndIndex];
+        }
 
-            var matches = anomalyDatabase.defs.FindAll(d => d.kind == slot.kind);
-            if (matches.Count == 0) continue;
+        // [중요] 배정된 모든 이상현상 요소를 순회하며 생성 (없으면 Normal이라도 생성해야 함)
+        foreach (var def in anchor.currentDailyAnomalies)
+        {
+            // 1. 이 데이터(def)가 들어갈 수 있는 슬롯 찾기
+            // (예: kind가 BrickColor면 벽돌 슬롯을 찾아야 함)
+            // 리스트에서 FindAll을 쓰면 여러 개일 경우 대응 가능
+            var validSlots = anchor.anomalySlots.FindAll(slot => slot.kind == def.kind);
 
-            var def = matches[UnityEngine.Random.Range(0, matches.Count)];
-            bool isThisOneSuspicious = (i == suspiciousSlotIndex);
-            GameObject prefab = isThisOneSuspicious ? def.suspiciousPrefab : def.normalPrefab;
-            if (prefab == null) continue;
+            if (validSlots.Count == 0)
+            {
+                Debug.LogWarning($"[Spawn] Cell {cellId} has anomaly {def.anomalyId} assigned but no slot of kind {def.kind}");
+                continue;
+            }
 
-            var go = Instantiate(prefab, slot.transform.position, slot.transform.rotation, slot.transform);
-            go.name = $"Anomaly_{cellId}_{def.anomalyId}_{(isThisOneSuspicious ? "S" : "N")}";
+            // 2. 슬롯 중 하나 랜덤 선택 (보통 종류당 슬롯 하나겠지만)
+            var targetSlot = validSlots[UnityEngine.Random.Range(0, validSlots.Count)];
 
-            var actor = go.GetComponent<AnomalyActor>();
-            if (actor == null) actor = go.AddComponent<AnomalyActor>();
-            actor.Init(cellId, def, isThisOneSuspicious);
+            // 3. 진짜 이상현상인지 판별
+            // (방이 수상함 AND 현재 루프 도는 데이터가 아까 정한 범인임)
+            bool isRealAnomaly = isSuspicious && (def == culpritDef);
 
-            content.anomalies.Add(go);
+            // 4. 프리팹 결정
+            GameObject prefabToSpawn = isRealAnomaly ? def.suspiciousPrefab : def.normalPrefab;
+
+            if (prefabToSpawn != null)
+            {
+                var go = Instantiate(prefabToSpawn, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
+                go.name = isRealAnomaly ? $"Anomaly_{def.anomalyId}_SUS" : $"Prop_{def.anomalyId}_Normal";
+
+                // Interaction이나 Actor 컴포넌트 초기화
+                var actor = go.GetComponent<AnomalyActor>();
+                if (actor != null) actor.Init(cellId, def, isRealAnomaly);
+
+                content.anomalies.Add(go);
+            }
         }
     }
 

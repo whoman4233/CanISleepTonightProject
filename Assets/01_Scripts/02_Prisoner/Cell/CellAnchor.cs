@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class CellAnchor : MonoBehaviour
@@ -10,23 +10,45 @@ public class CellAnchor : MonoBehaviour
     public Transform inspectionPoint;
     public Transform propSpawnPoint;
 
-    [Header("Anomaly")]
-    [Tooltip("½½·ÔÀÌ ¾ø°Å³ª fallbackÀÌ ÇÊ¿äÇÒ ¶§ »ç¿ëµÇ´Â ·çÆ®(ºñ¿öµµ µÊ)")]
+    [Header("Anomaly Configuration")]
+    [Tooltip("ìŠ¬ë¡¯ì´ ì—†ê±°ë‚˜ fallbackì´ í•„ìš”í•  ë•Œ ì‚¬ìš©ë˜ëŠ” ë£¨íŠ¸(ë¹„ì›Œë„ ë¨)")]
     public Transform anomalyRoot;
 
-    [Tooltip("°¨¹æ ÇÁ¸®ÆÕ ¾È¿¡ ¹èÄ¡µÈ ÀÌ»óÇö»ó ½ºÆù Æ÷ÀÎÆ®µé(AnomalySpawnSlot)")]
+    [Tooltip("ê°ë°© í”„ë¦¬íŒ¹ ì•ˆì— ë°°ì¹˜ëœ ì´ìƒí˜„ìƒ ìŠ¤í° í¬ì¸íŠ¸ë“¤(AnomalySpawnSlot)")]
     public List<AnomalySpawnSlot> anomalySlots = new();
+
+    [Header("Runtime - Daily Assignment")]
+    [Tooltip("ë§¤ì¼ ì•„ì¹¨ AnomalyDistributorê°€ ì´ ë¦¬ìŠ¤íŠ¸ë¥¼ ì±„ì›Œì¤ë‹ˆë‹¤. (ê³µí†µ + ê°œë³„ + íŠ¹ìˆ˜)")]
+    // âœ… [í•µì‹¬ ì¶”ê°€] ì˜¤ëŠ˜ ì´ ë°©ì— ë°°ì •ëœ ì´ìƒí˜„ìƒ í›„ë³´êµ° ë¦¬ìŠ¤íŠ¸
+    public List<AnomalyDefinitionSO> currentDailyAnomalies = new List<AnomalyDefinitionSO>();
+
+    /// <summary>
+    /// í•˜ë£¨ë¥¼ ì‹œì‘í•˜ê¸° ì „ ê¸°ì¡´ ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
+    /// </summary>
+    public void ClearDailyAnomalies()
+    {
+        currentDailyAnomalies.Clear();
+    }
+
+    /// <summary>
+    /// íŠ¹ì • ì¢…ë¥˜(Kind)ì— í•´ë‹¹í•˜ëŠ” ì˜¤ëŠ˜ ë°°ì •ëœ ì´ìƒí˜„ìƒë“¤ì„ ë°˜í™˜ (ìŠ¤í¬ë„ˆì—ì„œ ì‚¬ìš©)
+    /// </summary>
+    public List<AnomalyDefinitionSO> GetAnomaliesByKind(AnomalyKind kind)
+    {
+        if (currentDailyAnomalies == null) return new List<AnomalyDefinitionSO>();
+        return currentDailyAnomalies.FindAll(x => x.kind == kind);
+    }
 
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        // ÇÁ¸®ÆÕ ÀÛ¾÷ ½Ã ½½·ÔÀ» ÀÚµ¿À¸·Î ²ø¾î¸ğÀ¸°í ½ÍÀ¸¸é »ç¿ë(¿øÄ¡ ¾ÊÀ¸¸é Á¦°Å)
+        // í”„ë¦¬íŒ¹ ì‘ì—… ì‹œ ìŠ¬ë¡¯ì„ ìë™ìœ¼ë¡œ ëŒì–´ëª¨ìœ¼ê³  ì‹¶ìœ¼ë©´ ì‚¬ìš©
         if (anomalySlots == null) anomalySlots = new List<AnomalySpawnSlot>();
 
-        // null Á¦°Å
+        // null ì œê±°
         anomalySlots.RemoveAll(x => x == null);
 
-        // ÀÚ½Ä¿¡ ½½·ÔÀÌ ÀÖ´Âµ¥ ¸®½ºÆ®¿¡ ¾ø´Ù¸é Ãß°¡
+        // ìì‹ì— ìŠ¬ë¡¯ì´ ìˆëŠ”ë° ë¦¬ìŠ¤íŠ¸ì— ì—†ë‹¤ë©´ ì¶”ê°€
         var found = GetComponentsInChildren<AnomalySpawnSlot>(true);
         foreach (var s in found)
         {

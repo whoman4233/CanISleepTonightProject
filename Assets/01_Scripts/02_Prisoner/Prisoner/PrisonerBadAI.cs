@@ -31,7 +31,7 @@ public class PrisonerBadAI : MonoBehaviour
         if (!_actor.CombatEnabled) return;
 
         if (!_actor.IsAlive) return;
-        if (_actor.Type != PrisonerType.Bad) return;
+        if (_actor.Type != PrisonerAIType.Bad) return;
 
         // 이동(직선)
         var dir = (_player.position - transform.position);

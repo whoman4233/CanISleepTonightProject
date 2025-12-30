@@ -66,7 +66,6 @@ public class GameBootstrap : MonoBehaviour
     private void StartNewDay()
     {
         spawner?.ClearAllForNewDay();
-        cellManager.RunStandbySetup();
 
         var activeIds = cellManager.GetActiveCellIds();
         spawner?.SpawnForToday(activeIds, id => cellManager.GetCell(id).IsSuspicious);

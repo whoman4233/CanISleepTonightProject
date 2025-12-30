@@ -6,7 +6,7 @@ public class PrisonerDefinition
 {
     public string templateId;      // CSV: PrisonerID (Á¾·ù ID)
     public string displayName;     // CSV: PrisonerName
-    public PrisonerType type;      // CSV: PrisonerType (Good/Bad)
+    public PrisonerAIType type;      // CSV: PrisonerType (Good/Bad)
 
     public int hp;                 // CSV: PrisonerHP
     public int atk;                // CSV: PrisonerATK

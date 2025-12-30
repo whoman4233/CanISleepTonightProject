@@ -11,7 +11,7 @@ public class PrisonerActor : MonoBehaviour
 
     public string InstanceId { get; private set; }
     public string CellId { get; private set; }
-    public PrisonerType Type { get; private set; }
+    public PrisonerAIType Type { get; private set; }
 
     public int Hp { get; private set; }
     public int Atk { get; private set; }
@@ -35,7 +35,7 @@ public class PrisonerActor : MonoBehaviour
     [SerializeField] private int fallbackHp = Defaults.Hp;
     [SerializeField] private int fallbackAtk = Defaults.Atk;
     [SerializeField] private int fallbackSpd = Defaults.Spd;
-    [SerializeField] private PrisonerType fallbackType = PrisonerType.Bad;
+    [SerializeField] private PrisonerAIType fallbackType = PrisonerAIType.Bad;
 
     [Header("Debug (Minimal)")]
     [SerializeField] private bool debugHit;
@@ -166,6 +166,6 @@ public class PrisonerActor : MonoBehaviour
 
         var badAi = GetComponent<PrisonerBadAI>();
         if (badAi != null)
-            badAi.enabled = enabled && (Type == PrisonerType.Bad);
+            badAi.enabled = enabled && (Type == PrisonerAIType.Bad);
     }
 }
