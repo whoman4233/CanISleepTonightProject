@@ -18,7 +18,6 @@ public class SettingsPopupController : MonoBehaviour
     {
         btnBack.onClick.AddListener(OnClickBack);
         IsOpen = false;
-        gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -55,16 +54,12 @@ public class SettingsPopupController : MonoBehaviour
     }
     public void Show()
     {
-        if (IsOpen) return;
-
         IsOpen = true;
         gameObject.SetActive(true);
     }
 
     public void Hide()
     {
-        if (!IsOpen) return;
-
         IsOpen = false;
         gameObject.SetActive(false);
     }
