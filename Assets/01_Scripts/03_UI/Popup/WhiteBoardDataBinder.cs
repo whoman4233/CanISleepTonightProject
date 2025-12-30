@@ -48,16 +48,18 @@ public class WhiteBoardDataBinder : MonoBehaviour
                 return;
         }
 
-
-        // PrisonCellManager가 계산한 값을 그대로 사용
         floor1Text.text = _cellManager.ActiveCell1f.ToString();
         floor2Text.text = _cellManager.ActiveCell2f.ToString();
 
         if (GameManager.Instance != null)
         {
-            dayText.text = GameManager.Instance.CurrentDay.ToString();
+            int currentDay = GameManager.Instance.CurrentDay;
+            int maxDay = GameManager.Instance.MaxDay;
+
+            dayText.text = $"Day: {currentDay} / {maxDay}";
         }
     }
+
 }
 
 
