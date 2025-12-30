@@ -30,7 +30,10 @@ public class InspectableObject : MonoBehaviour, IInteractable, IInspectable, IHi
 
     public void Interact(Player player)
     {
-        player.TryEnterInspection(this);
+        EventBus.Publish(new InspectionRequestedEvent
+        {
+            Target = this
+        });
     }
 
     // =========================

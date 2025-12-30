@@ -284,6 +284,11 @@ public struct PlayerPresenceChangedEvent         //
 //Inspection(상세보기) 이벤트 목록
 //==========================================
 
+public struct InspectionRequestedEvent //상세보기 요청
+{
+    public IInspectable Target;
+}
+
 public struct InspectionStartedEvent // 상세보기 시작
 {
     public IInspectable Target;
