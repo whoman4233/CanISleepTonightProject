@@ -7,22 +7,29 @@ public class AnomalyDistributor : MonoBehaviour
     [Header("Database")]
     [SerializeField] private AnomalyDatabaseSO masterDatabase;
     [SerializeField] private CellAnchorRegistry anchorRegistry;
-    // cellManager는 이제 죄수 타입 조회용으로는 안 쓰이지만, 
-    // 나중에 폭동 게이지 등 다른 정보 조회용으로 필요할 수 있으니 유지
-    [SerializeField] private PrisonManager cellManager;
+    [SerializeField] private PrisonManager prisonManager; // 폭동 게이지 확인용
 
     [Header("Distribution Settings")]
-    [SerializeField] private int commonCount = 2; // 공통 요소 개수
-    [SerializeField] private int individualCount = 1; // 개별/특수 요소 개수
+    [Tooltip("공통 요소(낙서, 파이프 등) 배치 개수")]
+    [SerializeField] private int commonCount = 2; 
 
-    [SerializeField] private PrisonerScheduleManager scheduleManager; // [핵심] 죄수 정보 조회용
+    [Tooltip("죄수 개인 특성(아령, 책 등) 배치 개수")]
+    [SerializeField] private int individualCount = 1;
 
-    // 하루 시작 시 호출 (매개변수: 현재 폭동 게이지)
+    [Tooltip("폭동/특수 이벤트(피묻은 벽, 경고문 등) 최대 배치 개수")]
+    [SerializeField] private int specialCount = 1; 
+
+    [SerializeField] private PrisonerScheduleManager scheduleManager;
+
+    // 하루 시작 시 호출 (GameManager에서 currentDay와 함께 호출)
     public void DistributeAnomaliesForDay(int currentDay)
     {
-        // 폭동 게이지는 GameManager 등에서 가져온다고 가정하거나, 인자로 받으세요.
-        // 일단 임시로 0으로 둡니다. 필요시 인자 추가: DistributeAnomalies(int riotGauge)
-        int currentRiotGauge = 0;
+        // 1. 현재 폭동 게이지 가져오기
+        // (PrisonManager에 CurrentRiotGauge 프로퍼티가 있다고 가정)
+        int currentRiotGauge = prisonManager != null ? GameManager.Instance.CurrentRiotGauge : 0;
+        
+        // 혹은 테스트용 임시 값
+        // int currentRiotGauge = 50; 
 
         var allCellIds = anchorRegistry.GetAllCellIds();
 
@@ -33,42 +40,53 @@ public class AnomalyDistributor : MonoBehaviour
             // 1. 리스트 초기화
             anchor.ClearDailyAnomalies();
 
-            // 2. 죄수 타입 확인 (ScheduleManager에게 물어봄)
-            PrisonerType pType = PrisonerType.None;
+            // 2. 죄수 특성 확인 (ScheduleManager에게 물어봄 - 재사용 데이터)
+            PrisonerDefinition assignedDef = scheduleManager.GetAssignedPrisonerDef(cellId);
+            PrisonerType pType = (assignedDef != null) ? assignedDef.traitType : PrisonerType.None;
 
-            var assignedDef = scheduleManager.GetAssignedPrisonerDef(cellId);
-            if (assignedDef != null)
-            {
-                // [수정] 에러 해결 부분
-                // assignedDef.type (Good/Bad)가 아니라, 새로 추가한 특성(traitType)을 가져옵니다.
-                pType = assignedDef.traitType;
-            }
+            // -----------------------------------------------------------
+            // 3. 후보군 필터링 (로직 분리!)
+            // -----------------------------------------------------------
 
-            // 3. [복구됨] 데이터베이스에서 후보군 필터링 (여기가 없어서 에러 났었음)
-
-            // A. 공통 후보군 (Category == Common)
+            // A. 공통 (Common) - 누구나 겪음
             var commonCandidates = masterDatabase.defs
                 .Where(d => d.category == AnomalyCategory.Common)
                 .ToList();
 
-            // B. 특수/개별 후보군
-            // (Category == Individual AND 죄수타입 일치) OR (Category == Special AND 폭동게이지 조건 충족)
-            var specialCandidates = masterDatabase.defs
-                .Where(d =>
-                    (d.category == AnomalyCategory.Individual && d.targetPrisoner == pType) ||
-                    (d.category == AnomalyCategory.Special && currentRiotGauge >= d.minRiotGauge)
-                ).ToList();
+            // B. 개별 (Individual) - 죄수 특성에 맞음 (Ex: Muscular -> 아령)
+            var individualCandidates = masterDatabase.defs
+                .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
+                .ToList();
 
-            // 4. 랜덤 픽 (중복 방지 셔플)
+            // C. 특수 (Special) - 폭동 게이지 조건 충족 (Ex: RiotGauge >= 50 -> 폭동 포스터)
+            var specialCandidates = masterDatabase.defs
+                .Where(d => d.category == AnomalyCategory.Special && currentRiotGauge >= d.minRiotGauge)
+                .ToList();
+
+            // -----------------------------------------------------------
+            // 4. 랜덤 픽 & 담기
+            // -----------------------------------------------------------
+
+            // 셔플 (순서 섞기)
             Shuffle(commonCandidates);
+            Shuffle(individualCandidates);
             Shuffle(specialCandidates);
 
-            // 5. 최종 리스트 구성 (공통 N개 + 개별 M개)
+            // A. 공통 요소 N개
             anchor.currentDailyAnomalies.AddRange(commonCandidates.Take(commonCount));
-            anchor.currentDailyAnomalies.AddRange(specialCandidates.Take(individualCount));
+
+            // B. 개별 요소 M개
+            anchor.currentDailyAnomalies.AddRange(individualCandidates.Take(individualCount));
+
+            // C. [추가됨] 특수 요소 K개 (조건이 맞을 때만 추가됨)
+            // 이렇게 하면 평소엔 3개(2+1)였다가, 폭동 임박하면 4개(2+1+1)가 됩니다.
+            if (specialCandidates.Count > 0)
+            {
+                anchor.currentDailyAnomalies.AddRange(specialCandidates.Take(specialCount));
+            }
 
             // 디버그
-            // Debug.Log($"[Distributor] Cell {cellId} (Type:{pType}): Assigned {anchor.currentDailyAnomalies.Count} items.");
+            // Debug.Log($"[Distributor] {cellId}: Common({commonCount}) + Individual({individualCount}) + Special({specialCandidates.Count > 0})");
         }
     }
 
