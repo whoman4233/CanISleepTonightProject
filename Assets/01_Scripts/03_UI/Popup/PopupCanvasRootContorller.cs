@@ -96,6 +96,9 @@ public class PopupCanvasRootController : MonoBehaviour
 
     private void OnPopupCloseRequested(PopupCloseRequestedEvent e)
     {
+        if (!HasAnyPopupOpen)
+            return;
+
         if (whiteBoardPopup != null && whiteBoardPopup.gameObject.activeInHierarchy)
         {
             whiteBoardPopup.Hide();
