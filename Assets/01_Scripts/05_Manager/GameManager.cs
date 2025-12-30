@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     public int CurrentRiotGauge => riotGauge;
     public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
+    public int MaxDay => maxDay;
 
     private Coroutine patrolTimerCoroutine;
 

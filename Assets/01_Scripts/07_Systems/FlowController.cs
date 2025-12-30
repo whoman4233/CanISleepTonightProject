@@ -10,6 +10,7 @@ public class FlowController : MonoBehaviour
     [Header("Configuration")]
     [SerializeField] private string playSceneName = "02_PlayScene"; // 플레이 씬
     [SerializeField] private string introSceneName = "01_IntroScene"; // 인트로(타이틀) 씬
+    [SerializeField] private string loadingSceneName = "07_LoadingScene_LSG"; // 로딩씬
 
     private bool isBusy = false;
 
@@ -55,9 +56,11 @@ public class FlowController : MonoBehaviour
     private IEnumerator ReloadPlaySceneRoutine() // 씬 재로딩 코루틴
     {
         isBusy = true;
+        Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
         Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.isLoaded)
         {
+            yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩씬 로드
             yield return SceneManager.UnloadSceneAsync(playScene); // 현재 씬 언로드
         }
         yield return Resources.UnloadUnusedAssets(); // 메모리 정리
@@ -69,6 +72,8 @@ public class FlowController : MonoBehaviour
         yield return null; //new WaitForSeconds(1.0f);
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
         isBusy = false;
+        yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌
+        SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         Debug.Log("씬 재로딩 완료");
     }
 

@@ -1,48 +1,87 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
+using UnityEngine;
 
 public class MainMenuRootController : MonoBehaviour
 {
+    [Header("Menu Root")]
     [SerializeField] private GameObject menuRoot;
+    [SerializeField] private CanvasGroup menuCanvasGroup;
     [SerializeField] private MainMenuController menuController;
 
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<RequestStartNewGameEvent> _onRequestStartNewGame;
+    private Action<ShowSettingsPopupEvent> _onShowSettings;
+    private Action<HideSettingsPopupEvent> _onHideSettings;
 
     private void Awake()
     {
+        _onRequestStartNewGame = OnRequestStartNewGame;
+        _onShowSettings = OnShowSettings;
+        _onHideSettings = OnHideSettings;
+
         if (menuRoot != null)
             menuRoot.SetActive(false);
-
-        _onPhaseChanged = OnPhaseChanged;
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_onRequestStartNewGame);
+        EventBus.Subscribe(_onShowSettings);
+        EventBus.Subscribe(_onHideSettings);
 
-        // 현재 페이즈 즉시 반영 (DDOL / 씬 복귀 대응)
-        if (GameManager.Instance != null)
-        {
-            OnPhaseChanged(new GamePhaseChangedEvent(GameManager.Instance.CurrentPhase));
-        }
+        Show(); // 앱 최초 진입 시 메인메뉴 표시
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_onRequestStartNewGame);
+        EventBus.Unsubscribe(_onShowSettings);
+        EventBus.Unsubscribe(_onHideSettings);
     }
 
-    private void OnPhaseChanged(GamePhaseChangedEvent e)
+    // =========================
+    // Event Handlers
+    // =========================
+
+    private void OnRequestStartNewGame(RequestStartNewGameEvent e)
     {
-        bool isMenuPhase = e.Phase == GamePhase.NotStarted;
+        Debug.Log("[MainMenu] RequestStartNewGameEvent → Hide");
+        Hide();
+    }
 
+    private void OnShowSettings(ShowSettingsPopupEvent e)
+    {
+        // Popup이 열리는 동안 메인메뉴 Raycast 차단
+        if (menuCanvasGroup != null)
+            menuCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void OnHideSettings(HideSettingsPopupEvent e)
+    {
+        // Popup 닫히면 Raycast 복구
+        if (menuCanvasGroup != null)
+            menuCanvasGroup.blocksRaycasts = true;
+    }
+
+    // =========================
+    // Visibility
+    // =========================
+
+    private void Show()
+    {
         if (menuRoot != null)
-            menuRoot.SetActive(isMenuPhase);
+            menuRoot.SetActive(true);
 
-        // 메뉴 페이즈 진입 시 내부 상태 초기화
-        if (isMenuPhase && menuController != null)
-        {
-            menuController.ResetState();
-        }
+        if (menuCanvasGroup != null)
+            menuCanvasGroup.blocksRaycasts = true;
+
+        menuController?.ResetState();
+    }
+
+    private void Hide()
+    {
+        if (menuRoot != null)
+            menuRoot.SetActive(false);
     }
 }
+
+
