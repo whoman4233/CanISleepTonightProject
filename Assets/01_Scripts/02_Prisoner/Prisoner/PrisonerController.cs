@@ -1,14 +1,15 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
+using static UnityEngine.ProBuilder.AutoUnwrapSettings;
 
-// [ÅëÇÕµÊ] ActorÀÇ ±â´ÉÀ» ¸ğµÎ Æ÷ÇÔÇÑ ¸ŞÀÎ ÄÁÆ®·Ñ·¯
+// [í†µí•©ë¨] Actorì˜ ê¸°ëŠ¥ì„ ëª¨ë‘ í¬í•¨í•œ ë©”ì¸ ì»¨íŠ¸ë¡¤ëŸ¬
 public class PrisonerController : MonoBehaviour
 {
-    // 1. µ¥ÀÌÅÍ (±âÁ¸ ActorÀÇ º¯¼öµé ´ëÃ¼)
+    // 1. ë°ì´í„° (ê¸°ì¡´ Actorì˜ ë³€ìˆ˜ë“¤ ëŒ€ì²´)
     public PrisonerData Data { get; private set; }
     public CellAnchor AssignedCell { get; private set; }
 
-    // 2. ÄÄÆ÷³ÍÆ® ÂüÁ¶
+    // 2. ì»´í¬ë„ŒíŠ¸ ì°¸ì¡°
     [SerializeField] private Animator animator;
     [SerializeField] private RagdollSetting ragdoll;
     [SerializeField] private PrisonerSfxController sfx; 
@@ -16,13 +17,13 @@ public class PrisonerController : MonoBehaviour
     private NavMeshAgent agent;
 
 
-    // FSM¿¡¼­ Á¢±ÙÇÏ±â ½±µµ·Ï ÇÁ·ÎÆÛÆ¼ Á¦°ø
-    public bool IsSuspicious { get; private set; } // ¼ö»óÇÔ ¿©ºÎ
+    // FSMì—ì„œ ì ‘ê·¼í•˜ê¸° ì‰½ë„ë¡ í”„ë¡œí¼í‹° ì œê³µ
+    public bool IsSuspicious { get; private set; } // ìˆ˜ìƒí•¨ ì—¬ë¶€
     public PrisonerAIType AIType => Data.RuntimeAIType;
 
     private void Awake()
     {
-        // Awake¿¡¼­´Â ÄÄÆ÷³ÍÆ® °¡Á®¿À±â¸¸ ¼öÇà (·ÎÁ÷ ½ÇÇà X)
+        // Awakeì—ì„œëŠ” ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°ë§Œ ìˆ˜í–‰ (ë¡œì§ ì‹¤í–‰ X)
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
@@ -33,40 +34,50 @@ public class PrisonerController : MonoBehaviour
 
 
 
-    // [ActorÀÇ Init ´ëÃ¼] ½ºÆùµÉ ¶§ È£Ãâ
+    // [Actorì˜ Init ëŒ€ì²´] ìŠ¤í°ë  ë•Œ í˜¸ì¶œ
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
     {
         this.Data = data;
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
 
-        // FSM ½ÃÀÛ
+        var fsm = GetComponent<PrisonerFSM>();
         if (fsm != null)
         {
-            fsm.Setup(this, agent, animator);
+            // ğŸ‘‡ [í•µì‹¬] ì•µì»¤ì— ì„¤ì •ëœ ì ê²€ ìœ„ì¹˜ë¥¼ FSMì— ì£¼ì…!
+            if (cell.inspectionPoint != null)
+            {
+                fsm.InspectionPoint = cell.inspectionPoint;
+            }
+            else
+            {
+                Debug.LogError($"[Controller] {cell.name}ì— inspectionPoint í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
+                // ì„ì‹œ ë°©í¸: ì•µì»¤ ìœ„ì¹˜ë¼ë„ ì“°ê²Œ ì„¤ì •
+                fsm.InspectionPoint = cell.transform;
+            }
         }
         fsm.ChangeState(fsm.IdleState);
 
-        Debug.Log($"<color=yellow>[Spawn]</color> ÁË¼ö »ı¼ºµÊ! " +
+        Debug.Log($"<color=yellow>[Spawn]</color> ì£„ìˆ˜ ìƒì„±ë¨! " +
               $"ID: {data.definition.templateId} | " +
-              $"ÀÌ¸§: {data.definition.displayName} | " +
-              $"Æ¯¼º(CSV): {data.definition.traitType} | " +
-              $"¿À´Ã¼ºÇâ(Schedule): {data.RuntimeAIType} | " +
-              $"¼ö»óÇÔ: {isSuspicious}");
+              $"ì´ë¦„: {data.definition.displayName} | " +
+              $"íŠ¹ì„±(CSV): {data.definition.traitType} | " +
+              $"ì˜¤ëŠ˜ì„±í–¥(Schedule): {data.RuntimeAIType} | " +
+              $"ìˆ˜ìƒí•¨: {isSuspicious}");
     }
 
-    // [ActorÀÇ ApplyDamage ´ëÃ¼] ¿ÜºÎ(ÃÑ¾Ë µî)¿¡¼­ È£ÃâÇÏ´Â ÇÇ°İ ÇÔ¼ö
+    // [Actorì˜ ApplyDamage ëŒ€ì²´] ì™¸ë¶€(ì´ì•Œ ë“±)ì—ì„œ í˜¸ì¶œí•˜ëŠ” í”¼ê²© í•¨ìˆ˜
     public bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
         if (Data.CurrentHealth <= 0) return false;
 
-        // 1. ¹«Àû »óÅÂ Ã¼Å© (FSM¿¡°Ô ¹°¾îº½)
+        // 1. ë¬´ì  ìƒíƒœ ì²´í¬ (FSMì—ê²Œ ë¬¼ì–´ë´„)
         if (fsm.IsInvulnerable) return false;
 
-        // 2. µ¥ÀÌÅÍ °»½Å
+        // 2. ë°ì´í„° ê°±ì‹ 
         Data.CurrentHealth -= dmg;
 
-        // 3. »ç¸Á Ã³¸®
+        // 3. ì‚¬ë§ ì²˜ë¦¬
         if (Data.CurrentHealth <= 0)
         {
             Data.CurrentHealth = 0;
@@ -74,7 +85,7 @@ public class PrisonerController : MonoBehaviour
         }
         else
         {
-            // 4. »ıÁ¸ ½Ã FSM¿¡ ¾Ë¸² (¹İ°İ or ¿õÅ©¸®±â)
+            // 4. ìƒì¡´ ì‹œ FSMì— ì•Œë¦¼ (ë°˜ê²© or ì›…í¬ë¦¬ê¸°)
             fsm.OnDamaged(dmg, hitPoint, hitDirection);
             if (sfx != null) sfx.PlayHitAndRandomMoan();
         }
@@ -84,15 +95,15 @@ public class PrisonerController : MonoBehaviour
 
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
-        fsm.ChangeState(fsm.DeadState); // »óÅÂ ÀüÈ¯
+        fsm.ChangeState(fsm.DeadState); // ìƒíƒœ ì „í™˜
 
         if (sfx != null) sfx.PlayRandomDieOnce();
 
-        // ·¡±×µ¹ Ã³¸®
+        // ë˜ê·¸ëŒ ì²˜ë¦¬
         if (ragdoll != null)
             ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
 
-        // ÀÌº¥Æ® ¹ß»ı µî Ãß°¡ ·ÎÁ÷
+        // ì´ë²¤íŠ¸ ë°œìƒ ë“± ì¶”ê°€ ë¡œì§
         // PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 }

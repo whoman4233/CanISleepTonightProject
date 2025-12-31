@@ -30,20 +30,54 @@ public class InspectionStateMachine : MonoBehaviour
 
     public bool TryEnterCell(string cellId)
     {
-        if (cellManager == null || !string.IsNullOrEmpty(CurrentInspectingCellId)) return false;
+        // 1. 매니저 확인
+        if (cellManager == null)
+        {
+            Debug.LogError($"[ISSM] {cellId}: CellManager가 연결되지 않았습니다.");
+            return false;
+        }
+
+        // 2. 중복 점검 방지 (가장 유력한 원인)
+        // 이미 다른 방(CurrentInspectingCellId)을 점검 중이라면 새로운 방을 열 수 없습니다.
+        if (!string.IsNullOrEmpty(CurrentInspectingCellId))
+        {
+            Debug.LogWarning($"[ISSM] 진입 거부: 이미 '{CurrentInspectingCellId}'를 점검 중입니다. (요청된 방: {cellId})");
+            return false;
+        }
 
         var cell = cellManager.GetCell(cellId);
-        if (cell == null || !cell.IsActiveToday || cell.IsLockedForDay) return false;
 
-        // 시스템 상태 변경
+        // 3. 셀 존재 여부
+        if (cell == null)
+        {
+            Debug.LogError($"[ISSM] CellManager에서 ID '{cellId}'를 찾을 수 없습니다.");
+            return false;
+        }
+
+        // 4. 금일 활성화 여부 (IsActiveToday)
+        if (!cell.IsActiveToday)
+        {
+            Debug.LogWarning($"[ISSM] {cellId}는 오늘 비활성화(IsActiveToday == false) 상태입니다.");
+            return false;
+        }
+
+        // 5. 이미 잠긴 방인지 (IsLockedForDay)
+        if (cell.IsLockedForDay)
+        {
+            Debug.LogWarning($"[ISSM] {cellId}는 이미 완료되어 잠긴(IsLockedForDay) 상태입니다.");
+            return false;
+        }
+
+        // === 통과: 상태 변경 시작 ===
         cell.IsInspectingNow = true;
         cell.State = CellState.Inspecting;
         CurrentInspectingCellId = cellId;
         _isSuppressionCleared = false;
 
-        // ✅ [살려야 할 로직 1] 죄수 FSM을 Inspection(일어서기) 상태로 전환
+        // 죄수 FSM 상태 변경
         SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.InspectionState));
 
+        Debug.Log($"[ISSM] {cellId}: 점검 시작 승인 (CurrentInspectingCellId 갱신됨)");
         OnEnteredCell?.Invoke(cellId);
         return true;
     }
