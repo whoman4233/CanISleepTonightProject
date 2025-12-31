@@ -14,7 +14,12 @@ public class PlayerManager : MonoBehaviour
 
     private void Awake()
     {
-        _phaseChangedHandler = (e) => OnPhaseChanged(e);
+        //_phaseChangedHandler = (e) => OnPhaseChanged(e);
+    }
+
+    private void Start()
+    {
+        SpawnPlayer();
     }
 
     private void OnEnable()
@@ -27,21 +32,21 @@ public class PlayerManager : MonoBehaviour
         EventBus.Unsubscribe(_phaseChangedHandler);
     }
 
-    private void OnPhaseChanged(GamePhaseChangedEvent e)
-    {
-        // 스탠바이 페이즈로 진입할 때 플레이어 생성
-        if (e.Phase == GamePhase.Standby)
-        {
-            SpawnPlayer();
-        }
-        // 타이틀로 돌아갈 때(NotStarted) 기존 플레이어 삭제
-        else if (e.Phase == GamePhase.NotStarted)
-        {
-            CleanupPlayer();
-        }
-    }
+    //private void OnPhaseChanged(GamePhaseChangedEvent e)
+    //{
+    //    // 스탠바이 페이즈로 진입할 때 플레이어 생성
+    //    if (e.Phase == GamePhase.Standby)
+    //    {
+    //        SpawnPlayer();
+    //    }
+    //    // 타이틀로 돌아갈 때(NotStarted) 기존 플레이어 삭제
+    //    else if (e.Phase == GamePhase.NotStarted)
+    //    {
+    //        CleanupPlayer();
+    //    }
+    //}
 
-    private void SpawnPlayer()
+    public void SpawnPlayer()
     {
         // 이미 플레이어가 있다면 중복 생성 방지
         if (currentPlayer != null) return;
