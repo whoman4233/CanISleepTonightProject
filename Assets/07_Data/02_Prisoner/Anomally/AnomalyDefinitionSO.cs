@@ -20,6 +20,10 @@ public class AnomalyDefinitionSO : ScriptableObject
     public string anomalyId;
     public AnomalyKind kind; // 어디에 스폰될지(슬롯 타입)
 
+    [Header("Spawn Settings")]
+    [Tooltip("Slot: 빈 곳에 생성, Bed/Toilet...: 기존 가구 교체")]
+    public AnomalyTargetType targetType = AnomalyTargetType.Slot;
+
     [Header("Category Settings")]
     public AnomalyCategory category;
 
@@ -36,4 +40,7 @@ public class AnomalyDefinitionSO : ScriptableObject
     [Header("Inspect Text")]
     [TextArea] public string normalDesc;
     [TextArea] public string suspiciousDesc;
+
+    [Tooltip("체크하면 이상현상이 아닐 때도 NormalPrefab을 생성합니다. (예: 벽시계, 달력)")]
+    public bool alwaysSpawnNormal = false;
 }
