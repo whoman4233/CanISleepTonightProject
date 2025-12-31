@@ -145,6 +145,9 @@ public class GameManager : MonoBehaviour
             case GamePhase.Ending:
                 OnEnterEnding();
                 break;
+            case GamePhase.Tutorial:
+                OnEnterTutorial();
+                break;
             default:
                 break;
         }
@@ -318,5 +321,10 @@ public class GameManager : MonoBehaviour
     public void OnClickSettlementButton() // 보고서 nextday 버튼 클릭 시 호출 될 함수
     {
         StartCoroutine(SettlementProcessRoutine());
+    }
+
+    public void OnEnterTutorial()
+    {
+
     }
 }

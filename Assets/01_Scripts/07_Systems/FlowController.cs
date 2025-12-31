@@ -11,6 +11,7 @@ public class FlowController : MonoBehaviour
     [SerializeField] private string playSceneName = "02_PlayScene"; // 플레이 씬
     [SerializeField] private string introSceneName = "01_IntroScene"; // 인트로(타이틀) 씬
     [SerializeField] private string loadingSceneName = "07_LoadingScene_LSG"; // 로딩씬
+    [SerializeField] private string tutorialSceneName = "08_TutorialScene"; // 튜토리얼 씬
 
     private bool isBusy = false;
 
@@ -85,29 +86,49 @@ public class FlowController : MonoBehaviour
 
     private IEnumerator LoadPlaySceneSequence()
     {
-        isBusy = true; 
+        isBusy = true;
 
+        // 튜토리얼 씬 로드
+        yield return SceneManager.LoadSceneAsync(tutorialSceneName, LoadSceneMode.Additive);
+        Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
+        if (tutorialScene.IsValid()) SceneManager.SetActiveScene(tutorialScene);
+
+        Scene introScene = SceneManager.GetSceneByName(introSceneName);
+        if (introScene.isLoaded) yield return SceneManager.UnloadSceneAsync(introScene);
+
+        GameManager.Instance.ChangePhase(GamePhase.Tutorial);
+
+        isBusy = false;
+    }
+
+    private IEnumerator LoadActualPlaySceneRoutine() // 튜토리얼 이후 플레이 진입
+    {
+        isBusy = true;
+        // 신규 씬 활성화
+        Scene playScene = SceneManager.GetSceneByName(playSceneName);
+        Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
+        Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
+
+        SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩씬 로드
+                                                                               
+        if (tutorialScene.isLoaded) // 튜토리얼 씬 언로드
+        {
+            yield return SceneManager.UnloadSceneAsync(tutorialScene);
+        }
         // 플레이 씬 비동기 로딩
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive);
         while (!asyncLoad.isDone) yield return null;
 
-        // 신규 씬 활성화
-        Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.IsValid()) SceneManager.SetActiveScene(playScene);
-
-        // 인트로 씬 언로드
-        Scene introScene = SceneManager.GetSceneByName(introSceneName);
-        if (introScene.isLoaded) yield return SceneManager.UnloadSceneAsync(introScene);
 
         GameManager.Instance.ResetTimer(); // 시간 초기화
 
         // 페이즈 변경
         GameManager.Instance.ChangePhase(GamePhase.Standby);
-
+        SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         isBusy = false;
         Debug.Log($"{playSceneName} 전환 완료 및 Standby 진입");
     }
-
     public void ReturnToTitle()
     {
         if (isBusy) return;
@@ -139,6 +160,10 @@ public class FlowController : MonoBehaviour
         GameManager.Instance.ChangePhase(GamePhase.NotStarted);
 
         isBusy = false;
+    }
+    public void EnterPlayFromTutorial() // 튜토리얼에서 플레이씬 진입
+    {
+        if (!isBusy) StartCoroutine(LoadActualPlaySceneRoutine());
     }
 
 
