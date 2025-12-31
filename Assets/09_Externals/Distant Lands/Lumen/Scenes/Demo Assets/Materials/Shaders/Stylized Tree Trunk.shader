@@ -1,4 +1,4 @@
-// Made with Amplify Shader Editor
+// Made with Amplify Shader Editor v1.9.5.1
 // Available at the Unity Asset Store - http://u3d.as/y3X 
 Shader "Distant Lands/Stlylized Tree Trunk"
 {
@@ -73,39 +73,39 @@ Shader "Distant Lands/Stlylized Tree Trunk"
 		}
 
 
-		float2 voronoihash5_g1( float2 p )
-		{
-			
-			p = float2( dot( p, float2( 127.1, 311.7 ) ), dot( p, float2( 269.5, 183.3 ) ) );
-			return frac( sin( p ) *43758.5453);
-		}
+float2 voronoihash5_g1( float2 p )
+{
+	
+	p = float2( dot( p, float2( 127.1, 311.7 ) ), dot( p, float2( 269.5, 183.3 ) ) );
+	return frac( sin( p ) *43758.5453);
+}
 
 
-		float voronoi5_g1( float2 v, float time, inout float2 id, inout float2 mr, float smoothness, inout float2 smoothId )
-		{
-			float2 n = floor( v );
-			float2 f = frac( v );
-			float F1 = 8.0;
-			float F2 = 8.0; float2 mg = 0;
-			for ( int j = -1; j <= 1; j++ )
-			{
-				for ( int i = -1; i <= 1; i++ )
-			 	{
-			 		float2 g = float2( i, j );
-			 		float2 o = voronoihash5_g1( n + g );
-					o = ( sin( time + o * 6.2831 ) * 0.5 + 0.5 ); float2 r = f - g - o;
-					float d = 0.5 * dot( r, r );
-			 		if( d<F1 ) {
-			 			F2 = F1;
-			 			F1 = d; mg = g; mr = r; id = o;
-			 		} else if( d<F2 ) {
-			 			F2 = d;
-			
-			 		}
-			 	}
-			}
-			return F1;
-		}
+float voronoi5_g1( float2 v, float time, inout float2 id, inout float2 mr, float smoothness, inout float2 smoothId )
+{
+	float2 n = floor( v );
+	float2 f = frac( v );
+	float F1 = 8.0;
+	float F2 = 8.0; float2 mg = 0;
+	for ( int j = -1; j <= 1; j++ )
+	{
+		for ( int i = -1; i <= 1; i++ )
+	 	{
+	 		float2 g = float2( i, j );
+	 		float2 o = voronoihash5_g1( n + g );
+			o = ( sin( time + o * 6.2831 ) * 0.5 + 0.5 ); float2 r = f - g - o;
+			float d = 0.5 * dot( r, r );
+	 		if( d<F1 ) {
+	 			F2 = F1;
+	 			F1 = d; mg = g; mr = r; id = o;
+	 		} else if( d<F2 ) {
+	 			F2 = d;
+	
+	 		}
+	 	}
+	}
+	return F1;
+}
 
 
 		void vertexDataFunc( inout appdata_full v, out Input o )
@@ -133,11 +133,11 @@ Shader "Distant Lands/Stlylized Tree Trunk"
 			float simplePerlin2D7_g1 = snoise( appendResult3_g1*temp_output_6_0_g1 );
 			simplePerlin2D7_g1 = simplePerlin2D7_g1*0.5 + 0.5;
 			float time5_g1 = 0.0;
-			float2 voronoiSmoothId0 = 0;
+			float2 voronoiSmoothId5_g1 = 0;
 			float2 coords5_g1 = appendResult3_g1 * ( temp_output_6_0_g1 / 0.1 );
 			float2 id5_g1 = 0;
 			float2 uv5_g1 = 0;
-			float voroi5_g1 = voronoi5_g1( coords5_g1, time5_g1, id5_g1, uv5_g1, 0, voronoiSmoothId0 );
+			float voroi5_g1 = voronoi5_g1( coords5_g1, time5_g1, id5_g1, uv5_g1, 0, voronoiSmoothId5_g1 );
 			float4 lerpResult19_g1 = lerp( ( CZY_SnowColor * tex2D( CZY_SnowTexture, uvCZY_SnowTexture ) ) , _MainColor , ( ( pow( ( pow( ase_worldNormal.y , 7.0 ) * ( simplePerlin2D7_g1 * ( 1.0 - voroi5_g1 ) ) ) , 0.5 ) * _SnowAttraction1 ) > ( 1.0 - CZY_SnowAmount ) ? 0.0 : 1.0 ));
 			o.Albedo = lerpResult19_g1.rgb;
 			o.Alpha = 1;
@@ -222,12 +222,11 @@ Shader "Distant Lands/Stlylized Tree Trunk"
 	Fallback "Diffuse"
 }
 /*ASEBEGIN
-Version=18912
-0;1080;2194;606;1244.507;195.9742;1;True;False
+Version=19501
 Node;AmplifyShaderEditor.CommentaryNode;62;-3102.156,612.8757;Inherit;False;2459.885;1017.709;;18;83;80;76;77;74;72;75;70;69;85;71;68;66;84;67;64;65;63;Main Wind Noise;1,1,1,1;0;0
 Node;AmplifyShaderEditor.ObjectToWorldTransfNode;63;-3007.333,877.1843;Inherit;False;1;0;FLOAT4;0,0,0,1;False;5;FLOAT4;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleTimeNode;65;-2918.32,1342.237;Inherit;False;1;0;FLOAT;1;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;64;-2937.719,1215.111;Inherit;False;Global;CZY_WindSpeed;CZY_WindSpeed;3;0;Create;True;0;0;0;False;0;False;1;0.9741876;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;64;-2937.719,1215.111;Inherit;False;Global;CZY_WindSpeed;CZY_WindSpeed;3;0;Create;True;0;0;0;False;0;False;1;2.66;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;67;-2751.335,933.0962;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleDivideOpNode;84;-2613.434,1007.712;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;10;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;66;-2665.806,1223.224;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
@@ -240,15 +239,15 @@ Node;AmplifyShaderEditor.NoiseGeneratorNode;74;-1964.967,1051.765;Inherit;True;S
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;75;-1652.344,1278.744;Inherit;False;2;2;0;FLOAT;0.1;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;72;-1763.848,918.5268;Inherit;False;Property;_WindStrength;Wind Strength;3;0;Create;True;0;0;0;False;0;False;1;0.5;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;77;-1473.783,1037.75;Inherit;False;3;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.Vector3Node;76;-1465.965,811.3168;Inherit;False;Global;CZY_WindDirection;CZY_WindDirection;3;0;Create;True;0;0;0;False;0;False;0,0,0;-0.9339403,0,-0.2771224;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
+Node;AmplifyShaderEditor.Vector3Node;76;-1465.965,811.3168;Inherit;False;Global;CZY_WindDirection;CZY_WindDirection;3;0;Create;True;0;0;0;False;0;False;0,0,0;0,0,0;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;80;-1137.27,830.1246;Inherit;True;2;2;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.RegisterLocalVarNode;83;-886.0038,849.5569;Inherit;False;MainWind;-1;True;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.RangedFloatNode;88;-387.5068,-48.97424;Inherit;False;Property;_SnowAttraction1;Snow Attraction;5;0;Create;True;0;0;0;False;0;False;1;1;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.GetLocalVarNode;60;-217.3257,387.7493;Inherit;False;83;MainWind;1;0;OBJECT;;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.ColorNode;1;-326.4081,55.64683;Inherit;False;Property;_MainColor;Color;0;0;Create;False;0;0;0;False;0;False;0,0,0,0;0.509434,0.2775341,0.1658063,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;1;-326.4081,55.64683;Inherit;False;Property;_MainColor;Color;0;0;Create;False;0;0;0;False;0;False;0,0,0,0;0.509434,0.2775341,0.1658063,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.TransformDirectionNode;61;-4.122723,373.3203;Inherit;False;World;Object;False;Fast;False;1;0;FLOAT3;0,0,0;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.FunctionNode;86;-67.50684,36.02577;Inherit;False;Stylized Snow Blend;1;;1;359b695eb7172584f9df5a0d55bd52e9;0;2;34;FLOAT;1;False;22;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;271.3246,41.95449;Float;False;True;-1;2;;0;0;Standard;Distant Lands/Stlylized Tree Trunk;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;False;-1;0;False;-1;False;0;False;-1;0;False;-1;False;0;Opaque;0.5;True;True;0;False;Opaque;;Geometry;All;18;all;True;True;True;True;0;False;-1;False;0;False;-1;255;False;-1;255;False;-1;0;False;-1;0;False;-1;0;False;-1;0;False;-1;0;False;-1;0;False;-1;0;False;-1;0;False;-1;False;2;15;10;25;False;0.5;True;0;0;False;-1;0;False;-1;0;0;False;-1;0;False;-1;0;False;-1;0;False;-1;0;False;0;0,0,0,0;VertexOffset;True;False;Cylindrical;False;Relative;0;;-1;-1;-1;-1;0;False;0;0;False;-1;-1;0;False;-1;0;0;0;False;0.1;False;-1;0;False;-1;False;16;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0;False;9;FLOAT;0;False;10;FLOAT;0;False;13;FLOAT3;0,0,0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;271.3246,41.95449;Float;False;True;-1;2;;0;0;Standard;Distant Lands/Stlylized Tree Trunk;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;False;;0;False;;False;0;False;;0;False;;False;0;Opaque;0.5;True;True;0;False;Opaque;;Geometry;All;12;all;True;True;True;True;0;False;;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;2;15;10;25;False;0.5;True;0;0;False;;0;False;;0;0;False;;0;False;;0;False;;0;False;;0;False;0;0,0,0,0;VertexOffset;True;False;Cylindrical;False;True;Relative;0;;-1;-1;-1;-1;0;False;0;0;False;;-1;0;False;;0;0;0;False;0.1;False;;0;False;;False;17;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0;False;9;FLOAT;0;False;10;FLOAT;0;False;13;FLOAT3;0,0,0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;16;FLOAT4;0,0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
 WireConnection;67;0;63;1
 WireConnection;67;1;63;3
 WireConnection;84;0;67;0
@@ -273,4 +272,4 @@ WireConnection;86;22;1;0
 WireConnection;0;0;86;0
 WireConnection;0;11;61;0
 ASEEND*/
-//CHKSM=FF3678B7DDC83C93F88108C90AF33AD8ECBBBD5C
+//CHKSM=CB72730D40D228B93776C6DCC09849A7908CA577

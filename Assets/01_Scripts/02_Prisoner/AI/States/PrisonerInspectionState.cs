@@ -58,7 +58,13 @@ public class PrisonerInspectionState : BasePrisonerState
 
     private void StartMoving()
     {
-        if (fsm.InspectionPoint == null) return;
+        // 👇 null 체크를 강화하여 로그를 띄웁니다.
+        if (fsm.InspectionPoint == null)
+        {
+            Debug.LogError($"[InspectionState] 이동 실패: {fsm.name}의 InspectionPoint가 null입니다! (Controller.Initialize 확인 필요)");
+            return;
+        }
+
         _currentStep = SubStep.Moving;
         agent.isStopped = false;
         agent.SetDestination(fsm.InspectionPoint.position);

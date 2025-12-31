@@ -16,7 +16,9 @@ public abstract class BasePrisonerState : IPrisonerState
         // fsm.Controller 프로퍼티를 통해 런타임에 접근하도록 설계하거나,
         // Setup 이후에 접근한다고 가정합니다.
 
-        this.player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        this.player = GameObject.FindGameObjectWithTag("Player")?.transform; 
+        this.anim = fsm.GetComponentInChildren<Animator>();
+        this.agent = fsm.GetComponent<UnityEngine.AI.NavMeshAgent>();
     }
 
     // 편의를 위한 프로퍼티 (매번 fsm.Controller 쓰기 귀찮으므로)

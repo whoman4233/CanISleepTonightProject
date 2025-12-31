@@ -69,7 +69,9 @@ public class PrisonManager : MonoBehaviour
                     CellId = id,
                     Floor = f,
                     Number = n,
-                    State = CellState.Inactive
+
+                    IsActiveToday = true,
+                    State = CellState.ActiveNoisy
                 };
                 _runtimeCells[id] = cell;
             }
