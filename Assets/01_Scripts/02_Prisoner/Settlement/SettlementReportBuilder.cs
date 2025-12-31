@@ -160,13 +160,15 @@ public class SettlementReportBuilder : MonoBehaviour
         if (GameManager.Instance == null) return default;
 
         int after = GameManager.Instance.RiotGauge; // 프로퍼티명 통일
+        int currentDay = GameManager.Instance.CurrentDay;
 
         return new SettlementResultUIData
         {
-            TotalAnomalyCount = uiData.Floor1_ActiveCount + uiData.Floor2_ActiveCount,
+            ReportCurrentDay = currentDay,
+            TotalCheckCount = uiData.SuppressedCount + uiData.WarnedCount,
             SuppressedCount = uiData.SuppressedCount,
             WarnedCount = uiData.WarnedCount,
-            UncheckedCount = uiData.UncheckedCount,
+            UncheckedCount = (uiData.Floor1_ActiveCount + uiData.Floor2_ActiveCount) - (uiData.SuppressedCount + uiData.WarnedCount) ,
             RiotGaugeBefore = _riotGaugeAtStart,
             RiotGaugeAfter = after
         };

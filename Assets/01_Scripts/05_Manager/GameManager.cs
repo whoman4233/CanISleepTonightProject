@@ -174,6 +174,8 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterPatrol() // 순찰 페이즈
     {
+        EventBus.Publish(new ShowTimedTextPopupEvent("순찰 시작", 1.5f));
+
         patrolDurationSeconds = 480;
 
         CurrentInGameSeconds = patrolDurationSeconds;

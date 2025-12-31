@@ -18,13 +18,20 @@ public class InspectionManager : MonoBehaviour
     [SerializeField] private float inspectRayDistance = 5f;
     [SerializeField] private float inspectHoverRadius = 0.08f;
 
+    // =========================
+    // 이벤트 핸들러 캐시
+    // =========================
     private Action<InspectionViewReadyEvent> _onViewReady;
+    private Action<InspectionRequestedEvent> _onInspectionRequested;
 
     private InteractableOutliner _currentOutlined;
     private RectTransform inspectionViewRect;
 
+    // =========================
+    // Input / State
+    // =========================
     private PlayerInputs _inputs;                     // 외부 주입만 받음
-
+    private bool _initialized; // 초기화 완료 여부
     public bool IsInspecting => _isInspecting;
     private bool _isInspecting;
 
@@ -41,11 +48,13 @@ public class InspectionManager : MonoBehaviour
         inspectionCamera.gameObject.SetActive(false);
 
         _onViewReady = OnViewReady;
+        _onInspectionRequested = OnInspectionRequested;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onViewReady);
+        EventBus.Subscribe(_onInspectionRequested);
     }
 
     private void OnDisable()
@@ -59,6 +68,7 @@ public class InspectionManager : MonoBehaviour
         }
 
         EventBus.Unsubscribe(_onViewReady);
+        EventBus.Unsubscribe(_onInspectionRequested);
     }
 
     // =========================
@@ -68,15 +78,29 @@ public class InspectionManager : MonoBehaviour
     // Player에서 Inputs 주입
     public void Initialize(PlayerInputs inputs)
     {
+        if (inputs == null)
+        {
+            Debug.LogError("[InspectionManager] Initialize failed: inputs is null");
+            return;
+        }
+
         _inputs = inputs;
+        _initialized = true;
+
+        Debug.Log("[InspectionManager] Initialized");
     }
 
     private void Update()
     {
-        if (!_isInspecting || _inputs == null)
+        if (!_isInspecting)
             return;
 
-        // Exit 입력은 소비만 함 (Enable/Disable X)
+        if (!_initialized || _inputs == null)
+        {
+            Debug.LogError("[InspectionManager] Update called while not initialized");
+            return;
+        }
+
         if (_inputs.Inspection.Exit.WasPressedThisFrame())
         {
             ExitInspection();
@@ -88,12 +112,20 @@ public class InspectionManager : MonoBehaviour
         HandleInspectClick();
     }
 
+
     // =========================
     // Inspection Lifecycle
     // =========================
 
     public void EnterInspection(IInspectable inspectable)
     {
+        // 이벤트 외 직접 호출 대비 안전장치
+        if (!_initialized)
+        {
+            Debug.LogWarning("[InspectionManager] EnterInspection called before initialization");
+            return;
+        }
+
         if (inspectable == null || _isInspecting)
             return;
 
@@ -119,7 +151,17 @@ public class InspectionManager : MonoBehaviour
         yield return null;
         EventBus.Publish(new InspectionViewRequestedEvent());
     }
+    private void OnInspectionRequested(InspectionRequestedEvent e)
+    {
+        // 초기화 이전 요청 차단
+        if (!_initialized)
+        {
+            Debug.LogWarning("[InspectionManager] Inspection requested before initialization");
+            return;
+        }
 
+        EnterInspection(e.Target);
+    }
     public void ExitInspection()
     {
         if (!_isInspecting)

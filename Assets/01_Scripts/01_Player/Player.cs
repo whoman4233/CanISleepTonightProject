@@ -87,17 +87,6 @@ public class Player : MonoBehaviour
         _onInspectionStarted = OnInspectionStarted;
         _onInspectionEnded = OnInspectionEnded;
 
-        _inspectionManager = GetComponentInChildren<InspectionManager>();
-        if (_inspectionManager != null)
-        {
-            _inspectionManager.Initialize(_inputs);        // Inputs 주입 유지
-        }
-        else
-        {
-            Debug.LogError("[Player] InspectionManager not found", this);
-        }
-
-
         Sfx = GetComponent<PlayerSfxController>();
     }
 

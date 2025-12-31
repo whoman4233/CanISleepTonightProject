@@ -5,7 +5,8 @@ using TMPro;
 [Serializable]
 public struct SettlementResultUIData
 {
-    public int TotalAnomalyCount;
+    public int ReportCurrentDay;
+    public int TotalCheckCount;
 
     public int SuppressedCount;
     public int WarnedCount;
@@ -17,7 +18,8 @@ public struct SettlementResultUIData
 public class ResultUI : MonoBehaviour
 {
     [Header("Counts")]
-    [SerializeField] private TextMeshProUGUI totalAnomalyText;
+    [SerializeField] private TextMeshProUGUI dayText;
+    [SerializeField] private TextMeshProUGUI totalCheckText;
     [SerializeField] private TextMeshProUGUI suppressedText;
     [SerializeField] private TextMeshProUGUI warnedText;
     [SerializeField] private TextMeshProUGUI uncheckedText;
@@ -49,7 +51,8 @@ public class ResultUI : MonoBehaviour
 
     public void Bind(SettlementResultUIData data)
     {
-        totalAnomalyText.text = data.TotalAnomalyCount.ToString();
+        dayText.text = data.ReportCurrentDay.ToString($"{data.ReportCurrentDay}일차 업무 결과");
+        totalCheckText.text = data.TotalCheckCount.ToString();
         suppressedText.text = data.SuppressedCount.ToString();
         warnedText.text = data.WarnedCount.ToString();
         uncheckedText.text = data.UncheckedCount.ToString();

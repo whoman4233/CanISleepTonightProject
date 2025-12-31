@@ -141,15 +141,44 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 
 }
 
-//보고서 상호작용 시
-public struct ShowWarningPopupEvent // 경고 팝업 노출
+//==========================================
+//경고 텍스트 팝업
+//==========================================
+public struct ShowTimedTextPopupEvent 
+{
+    public string Message;
+    public float Duration;
+
+    public ShowTimedTextPopupEvent(string message, float duration = 1f)
+    {
+        Message = message;
+        Duration = duration;
+    }
+}
+
+//==========================================
+//보고서 팝업
+//==========================================
+public struct ShowSettlementConfirmPopupEvent // 보고서 제출 확인용 이벤트
 {
 
 }
+
+public struct SettlementConfirmAcceptedEvent // 예 -> 보고서 팝업 활성화
+{
+
+}
+
+public struct SettlementConfirmCancelledEvent // 아니오 -> 이전 상황으로 돌아가기
+{
+
+}
+
 public struct PopupCloseRequestedEvent
 {
 
 }
+
 //==========================================
 //WhiteBoadrd이벤트 목록
 //==========================================
@@ -254,6 +283,11 @@ public struct PlayerPresenceChangedEvent         //
 //==========================================
 //Inspection(상세보기) 이벤트 목록
 //==========================================
+
+public struct InspectionRequestedEvent //상세보기 요청
+{
+    public IInspectable Target;
+}
 
 public struct InspectionStartedEvent // 상세보기 시작
 {
