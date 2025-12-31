@@ -25,6 +25,14 @@ public class CellAnchor : MonoBehaviour
     [Header("Runtime - State")]
     public bool IsOccupied;
 
+    [Header("Refs")]
+    public CellStructure structure;
+
+    private void Awake()
+    {
+        if (structure == null) structure = GetComponentInChildren<CellStructure>();
+    }
+
     /// <summary>
     /// 하루를 시작하기 전 기존 리스트 초기화
     /// </summary>

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,10 +6,9 @@ using UnityEngine;
 public class PrisonManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private GameObject prisonerPrefab; // ÁË¼ö ÇÁ¸®ÆÕ
-    [SerializeField] private PrisonerDatabaseSO prisonerDatabase; // µ¥ÀÌÅÍº£ÀÌ½º (·£´ı ÇÈ¿ë)
+    [SerializeField] private GameObject prisonerPrefab;
+    [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
 
-    // ¾ŞÄ¿´Â ¾À¿¡ ¹èÄ¡µÈ ¹°¸®Àû À§Ä¡µé (Inspector¿¡¼­ ÇÒ´ç)
     [SerializeField] private List<CellAnchor> cellAnchors;
 
     [Header("Grid Config")]
@@ -19,43 +18,44 @@ public class PrisonManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool verboseLog = false;
 
-    // -------------------------------------------------------------
-    // ³»ºÎ µ¥ÀÌÅÍ °ü¸®
-    // -------------------------------------------------------------
-    // ³í¸®Àû ¼¿ µ¥ÀÌÅÍ (»óÅÂ °ü¸®¿ë)
+    // ë‚´ë¶€ ë°ì´í„°
     private readonly Dictionary<string, CellRuntime> _runtimeCells = new();
-
-    // ¹°¸®Àû ¾ŞÄ¿ Ä³½Ì (ID·Î ºü¸£°Ô Ã£±â À§ÇÔ)
     private Dictionary<string, CellAnchor> _anchorMap = new();
-
-    // ÇöÀç È°¼ºÈ­µÈ ÁË¼ö ÄÁÆ®·Ñ·¯ ¸ñ·Ï (Á¤»ê/°ü¸®¿ë)
     private List<PrisonerController> _activePrisoners = new List<PrisonerController>();
 
     public IReadOnlyList<PrisonerController> ActivePrisoners => _activePrisoners;
 
-    // ÀÌº¥Æ®
-    public event Action<string, bool> OnNoiseChanged; // (cellId, isNoisy)
+    public event Action<string, bool> OnNoiseChanged;
 
-    // Ãşº° È°¼º Ä«¿îÆ®
     public int ActiveCell1f { get; private set; }
     public int ActiveCell2f { get; private set; }
 
     private void Awake()
     {
-        // 1. ¹°¸® ¾ŞÄ¿ ¸ÊÇÎ
         foreach (var anchor in cellAnchors)
         {
             if (anchor != null)
                 _anchorMap[anchor.cellId] = anchor;
         }
-
-        // 2. ³í¸® ¼¿ µ¥ÀÌÅÍ ±¸Ãà
         BuildRuntimeCells();
     }
 
-    // -------------------------------------------------------------
-    // 1. ÃÊ±âÈ­ ¹× ±×¸®µå ±¸Ãà (Logic)
-    // -------------------------------------------------------------
+    // [í…ŒìŠ¤íŠ¸ìš© Start ì¶”ê°€] ë°”ë¡œ í…ŒìŠ¤íŠ¸í•˜ê³  ì‹¶ìœ¼ì‹œë©´ ì´ ì£¼ì„ì„ í‘¸ì„¸ìš”.
+    /*
+    private void Start()
+    {
+        // ëª¨ë“  ë°© í™œì„±í™” í…ŒìŠ¤íŠ¸
+        var testAssignments = new Dictionary<string, DailyCellAssignment>();
+        foreach(var key in _runtimeCells.Keys) 
+        {
+            testAssignments[key] = new DailyCellAssignment { 
+                isSuspicious = false, dailyAIType = PrisonerAIType.Normal 
+            };
+        }
+        ApplyDailySchedule(testAssignments);
+    }
+    */
+
     private void BuildRuntimeCells()
     {
         _runtimeCells.Clear();
@@ -69,9 +69,8 @@ public class PrisonManager : MonoBehaviour
                     CellId = id,
                     Floor = f,
                     Number = n,
-
-                    IsActiveToday = true,
-                    State = CellState.ActiveNoisy
+                    IsActiveToday = false, // ê¸°ë³¸ê°’ false (ìŠ¤ì¼€ì¤„ì—ì„œ trueë¡œ ë³€ê²½ë¨)
+                    State = CellState.Inactive
                 };
                 _runtimeCells[id] = cell;
             }
@@ -79,25 +78,17 @@ public class PrisonManager : MonoBehaviour
     }
 
     public static string MakeCellId(int floor, int number) => $"C_{floor}F_{number:00}";
-
-    public CellRuntime GetCellRuntime(string cellId)
-    {
-        return _runtimeCells.TryGetValue(cellId, out var cell) ? cell : null;
-    }
-
-    public CellAnchor GetCellAnchor(string cellId)
-    {
-        return _anchorMap.TryGetValue(cellId, out var anchor) ? anchor : null;
-    }
+    public CellRuntime GetCellRuntime(string cellId) => _runtimeCells.TryGetValue(cellId, out var cell) ? cell : null;
+    public CellAnchor GetCellAnchor(string cellId) => _anchorMap.TryGetValue(cellId, out var anchor) ? anchor : null;
 
     // -------------------------------------------------------------
-    // 2. ÇÏ·ç ½ºÄÉÁÙ Àû¿ë ¹× ÁË¼ö ½ºÆù (Core Logic)
+    // ìŠ¤ì¼€ì¤„ ì ìš©
     // -------------------------------------------------------------
     public void ApplyDailySchedule(Dictionary<string, DailyCellAssignment> assignments)
     {
         DespawnAllPrisoners();
         ResetCellsForNewDay();
-        ClearAllAnomalies();
+        ClearAllAnomalies(); // ê¸°ì¡´ ì´ìƒí˜„ìƒ ë° ê°€êµ¬ ë³µêµ¬
 
         ActiveCell1f = 0;
         ActiveCell2f = 0;
@@ -105,120 +96,144 @@ public class PrisonManager : MonoBehaviour
         foreach (var kvp in assignments)
         {
             string cellId = kvp.Key;
-            DailyCellAssignment info = kvp.Value; // ±¸Á¶Ã¼ °¡Á®¿À±â
+            DailyCellAssignment info = kvp.Value;
 
             var cellRuntime = GetCellRuntime(cellId);
             var cellAnchor = GetCellAnchor(cellId);
 
             if (cellRuntime == null || cellAnchor == null) continue;
 
-            // 1. ¹æ »óÅÂ ¼³Á¤
+            // 1. ë°© ìƒíƒœ ì„¤ì •
             cellRuntime.IsActiveToday = true;
-            cellRuntime.IsSuspicious = info.isSuspicious; // ¼ö»óÇÔ ¿©ºÎ
+            cellRuntime.IsSuspicious = info.isSuspicious;
             SetNoisy(cellRuntime, true);
             cellRuntime.State = CellState.ActiveNoisy;
 
             if (cellRuntime.Floor == 1) ActiveCell1f++;
             else if (cellRuntime.Floor == 2) ActiveCell2f++;
 
-            // 2. ÁË¼ö ½ºÆù (¿À´ÃÀÇ ¼ºÇâ Àü´Ş)
+            // 2. ì£„ìˆ˜ ìŠ¤í°
             SpawnPrisonerInCell(cellAnchor, info);
 
-            // 3. ÀÌ»óÇö»ó ½ºÆù
+            // 3. ì´ìƒí˜„ìƒ ìŠ¤í° (í•µì‹¬ ë¡œì§)
             SpawnAnomaliesInCell(cellId, cellAnchor, info.isSuspicious);
         }
 
         if (verboseLog) Debug.Log($"[PrisonManager] Day Started. Active: {assignments.Count}");
     }
 
-    // [½Å±Ô] ·ÎÁ÷ 3¹ø ±¸Çö: ÀÌ»óÇö»ó ¿ÀºêÁ§Æ® ½ÇÁ¦ »ı¼º
+    // -------------------------------------------------------------
+    // [í•µì‹¬] ì´ìƒí˜„ìƒ ìŠ¤í° & êµì²´ ë¡œì§
+    // -------------------------------------------------------------
     private void SpawnAnomaliesInCell(string cellId, CellAnchor anchor, bool isSuspicious)
     {
-        // ¿À´Ã ¹èÁ¤µÈ ¸®½ºÆ®°¡ ¾øÀ¸¸é ÇÒ ÀÏ ¾øÀ½
-        if (anchor.currentDailyAnomalies == null || anchor.currentDailyAnomalies.Count == 0) return;
+        if (anchor.currentDailyAnomalies == null) return;
 
-        // [ÇÙ½É ·ÎÁ÷ 2¹ø ÇØ°á]
-        // 1. ¹üÀÎ(ÁøÂ¥ ÀÌ»óÇö»ó) Áö¸ñ
-        // ¹æÀÌ ¼ö»óÇÏ´Ù¸é(isSuspicious == true) -> ¸®½ºÆ® Áß 1°³¸¦ ·£´ıÀ¸·Î °ñ¶ó ¹üÀÎÀ¸·Î ÁöÁ¤.
-        // ¹æÀÌ ¾È ¼ö»óÇÏ´Ù¸é -> ¹üÀÎÀº ¾øÀ½ (null).
+        // 1. ë²”ì¸ ì§€ëª©
         AnomalyDefinitionSO culpritDef = null;
-
-        if (isSuspicious)
+        if (isSuspicious && anchor.currentDailyAnomalies.Count > 0)
         {
             int rndIndex = UnityEngine.Random.Range(0, anchor.currentDailyAnomalies.Count);
             culpritDef = anchor.currentDailyAnomalies[rndIndex];
         }
 
-        // 2. ¸®½ºÆ®¿¡ ÀÖ´Â ¸ğµç ¿ä¼Ò¸¦ »ı¼º (¹İº¹¹®)
+        // 2. ë¦¬ìŠ¤íŠ¸ ìˆœíšŒ
         foreach (var def in anchor.currentDailyAnomalies)
         {
-            // µé¾î°¥ ½½·Ô Ã£±â
-            var validSlots = anchor.anomalySlots.FindAll(slot => slot.kind == def.kind);
-            if (validSlots.Count == 0) continue;
-
-            // ½½·Ô ·£´ı ¼±ÅÃ
-            var targetSlot = validSlots[UnityEngine.Random.Range(0, validSlots.Count)];
-
-            // [Áß¿ä ÆÇº° ·ÎÁ÷]
-            // "³»°¡ Áö±İ ¸¸µå´Â ÀÌ ³à¼®(def)ÀÌ ¾Æ±î Áö¸ñÇÑ ¹üÀÎ(culpritDef)ÀÎ°¡?"
-            // ÂüÀÌ¸é -> ÁøÂ¥ ÀÌ»óÇö»ó ÇÁ¸®ÆÕ »ç¿ë
-            // °ÅÁşÀÌ¸é -> (¹üÀÎÀÌ ¾Æ´Ï°Å³ª, ¹æ ÀÚÃ¼°¡ ¾È ¼ö»óÇÔ) -> Á¤»ó ÇÁ¸®ÆÕ »ç¿ë
             bool isRealAnomaly = (def == culpritDef);
 
-            // ÇÁ¸®ÆÕ °áÁ¤
-            GameObject prefabToSpawn = isRealAnomaly ? def.suspiciousPrefab : def.normalPrefab;
-
-            if (prefabToSpawn != null)
+            // CASE A: êµì²´í˜• (ì¹¨ëŒ€, ë²½ ë“±) -> ì„±ëŠ¥ ìµœì í™” (ì§„ì§œì¼ ë•Œë§Œ êµì²´)
+            if (def.targetType != AnomalyTargetType.Slot)
             {
-                var go = Instantiate(prefabToSpawn, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
-
-                // ÃÊ±âÈ­
-                var actor = go.GetComponent<AnomalyActor>();
-                if (actor != null) actor.Init(cellId, def, isRealAnomaly);
+                if (isRealAnomaly)
+                {
+                    ReplaceObject(cellId, anchor, def, def.suspiciousPrefab, true);
+                }
+            }
+            // CASE B: ìŠ¬ë¡¯í˜• (ì‹œê³„ ë“±) -> ì§„ì§œê±°ë‚˜, 'í•­ìƒ ë³´ì—¬ì¤˜ì•¼ í•˜ëŠ”' ê²½ìš° ìƒì„±
+            else
+            {
+                if (isRealAnomaly || def.alwaysSpawnNormal)
+                {
+                    GameObject prefab = isRealAnomaly ? def.suspiciousPrefab : def.normalPrefab;
+                    SpawnAtRandomSlot(cellId, anchor, def, prefab, isRealAnomaly);
+                }
             }
         }
     }
 
-    // [½Å±Ô] ÇÏ·ç ½ÃÀÛ ½Ã ±âÁ¸ ÀÌ»óÇö»ó »èÁ¦
+    // [ìˆ˜ì •ë¨] Switchë¬¸ ì‚­ì œ! Structureì—ì„œ ë°”ë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
+    private void ReplaceObject(string cellId, CellAnchor anchor, AnomalyDefinitionSO def, GameObject prefab, bool isReal)
+    {
+        if (prefab == null) return;
+        if (anchor.structure == null) return;
+
+        // ğŸ”¥ CellStructureì—ê²Œ "ì´ íƒ€ì…ì— í•´ë‹¹í•˜ëŠ” ê¸°ë³¸ ì˜¤ë¸Œì íŠ¸ ì¤˜" ë¼ê³  ìš”ì²­
+        GameObject targetObj = anchor.structure.GetDefaultObject(def.targetType);
+
+        if (targetObj != null)
+        {
+            targetObj.SetActive(false); // ê¸°ì¡´ ë„ê¸°
+
+            // ìƒˆ í”„ë¦¬íŒ¹ ìƒì„± (ë¶€ëª¨ ìœ ì§€)
+            var go = Instantiate(prefab, targetObj.transform.position, targetObj.transform.rotation, targetObj.transform.parent);
+
+            var actor = go.GetComponent<AnomalyActor>();
+            if (actor != null) actor.Init(cellId, def, isReal);
+        }
+    }
+
+    private void SpawnAtRandomSlot(string cellId, CellAnchor anchor, AnomalyDefinitionSO def, GameObject prefab, bool isReal)
+    {
+        if (prefab == null) return;
+        if (anchor.anomalySlots == null || anchor.anomalySlots.Count == 0) return;
+
+        // ëœë¤ ìŠ¬ë¡¯ ì„ íƒ
+        var targetSlot = anchor.anomalySlots[UnityEngine.Random.Range(0, anchor.anomalySlots.Count)];
+
+        // ğŸ”´ [ìˆ˜ì •] targetSlot ë’¤ì— .transform ì„ ë¶™ì—¬ì•¼ í•©ë‹ˆë‹¤!
+        var go = Instantiate(prefab, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
+
+        var actor = go.GetComponent<AnomalyActor>();
+        if (actor != null) actor.Init(cellId, def, isReal);
+    }
+
+    // [ìˆ˜ì •ë¨] ì²­ì†Œ ë° ë³µêµ¬ ë¡œì§
     private void ClearAllAnomalies()
     {
-        // ¸ğµç ¾ŞÄ¿¸¦ µ¹¸é¼­ »ı¼ºµÈ AnomalyActorµéÀ» Ã£¾Æ »èÁ¦
         foreach (var anchor in _anchorMap.Values)
         {
-            // AnomalyActor°¡ ºÙÀº ¸ğµç ÀÚ½Ä ÆÄ±«
-            var anomalies = anchor.GetComponentsInChildren<AnomalyActor>();
-            foreach (var a in anomalies)
+            // 1. ìƒì„±ëœ ì´ìƒí˜„ìƒ ì œê±°
+            var anomalies = anchor.GetComponentsInChildren<AnomalyActor>(true);
+            foreach (var a in anomalies) Destroy(a.gameObject);
+
+            // 2. êº¼ë’€ë˜ ê¸°ë³¸ ê°€êµ¬ë“¤ ì¼ê´„ ë³µêµ¬ (Structure ì´ìš©)
+            if (anchor.structure != null)
             {
-                Destroy(a.gameObject);
+                anchor.structure.ResetAllDefaults();
             }
         }
     }
 
-    // ½ÇÁ¦ »ı¼º ·ÎÁ÷ (Instantiate)
+    // -------------------------------------------------------------
+    // ì£„ìˆ˜ ë° ê¸°íƒ€ ë¡œì§ (ê¸°ì¡´ ìœ ì§€)
+    // -------------------------------------------------------------
     private void SpawnPrisonerInCell(CellAnchor anchor, DailyCellAssignment info)
     {
-        // 1. ½ºÄÉÁÙ ¸Å´ÏÀú¿¡°Ô "ÀÌ ¹æ ÁÖÀÎ(Template) ´©±¸¾ß?" ¹°¾îº¸±â
         var scheduleMgr = FindObjectOfType<PrisonerScheduleManager>();
-        var def = scheduleMgr.GetAssignedPrisonerDef(anchor.cellId); // ÀÌÁ¦ Def¸¸ °¡Á®¿È
+        // í˜¹ì‹œ ìŠ¤ì¼€ì¤„ ë§¤ë‹ˆì € ì—†ìœ¼ë©´ null ì²˜ë¦¬
+        var def = scheduleMgr != null ? scheduleMgr.GetAssignedPrisonerDef(anchor.cellId) : null;
 
         if (def != null)
         {
-            // 2. [ÇÙ½É] ¿À´Ã °áÁ¤µÈ ¼ºÇâ(info.dailyAIType)À» ÁÖÀÔ!
             PrisonerData newData = new PrisonerData(def, info.dailyAIType);
-
             Transform spawnTr = anchor.prisonerSpawn != null ? anchor.prisonerSpawn : anchor.transform;
             GameObject pObj = Instantiate(prisonerPrefab, spawnTr.position, spawnTr.rotation);
             PrisonerController controller = pObj.GetComponent<PrisonerController>();
 
-            // 3. ÃÊ±âÈ­ (¼ö»óÇÔ ¿©ºÎµµ °°ÀÌ Àü´Ş)
             controller.Initialize(newData, anchor, info.isSuspicious);
-
             _activePrisoners.Add(controller);
             anchor.IsOccupied = true;
-        }
-        else
-        {
-            Debug.LogError($"[PrisonManager] No roster found for cell {anchor.cellId}");
         }
     }
 
@@ -230,11 +245,8 @@ public class PrisonManager : MonoBehaviour
         }
         _activePrisoners.Clear();
 
-        // ¾ŞÄ¿ Á¡À¯ »óÅÂ ÇØÁ¦
         foreach (var anchor in _anchorMap.Values)
-        {
             anchor.IsOccupied = false;
-        }
     }
 
     private void ResetCellsForNewDay()
@@ -243,10 +255,6 @@ public class PrisonManager : MonoBehaviour
             c.ResetForNewDay();
     }
 
-
-    // -------------------------------------------------------------
-    // 3. »óÅÂ °ü¸® ¹× Ã³¸® ·ÎÁ÷ (Resolving)
-    // -------------------------------------------------------------
     public void ResolveAndDeactivateCell(string cellId)
     {
         var cell = GetCellRuntime(cellId);
@@ -255,9 +263,6 @@ public class PrisonManager : MonoBehaviour
         cell.IsActiveToday = false;
         SetNoisy(cell, false);
         cell.State = CellState.Inactive;
-
-        // ÁÖÀÇ: ÁË¼ö ¿ÀºêÁ§Æ®¸¦ ¿©±â¼­ ¹Ù·Î ÆÄ±«ÇÒÁö, ÇÏ·ç ³¡³¯ ¶§ ÆÄ±«ÇÒÁö´Â ±âÈ¹¿¡ µû¶ó °áÁ¤.
-        // º¸ÅëÀº 'Ã³¸®µÊ(Locked)' »óÅÂ·Î µÎ°í ¹ã¿¡ ÇÑ²¨¹ø¿¡ Ä¡¿ì´Â °ÍÀÌ ÀÏ¹İÀûÀÔ´Ï´Ù.
     }
 
     public void MarkResolvedAndLockForDay(string cellId, bool didSuppress)
@@ -268,14 +273,12 @@ public class PrisonManager : MonoBehaviour
         cell.WasResolvedToday = true;
         cell.DidSuppress = didSuppress;
         SetNoisy(cell, false);
-
         cell.IsLockedForDay = true;
         cell.State = CellState.LockedForDay;
 
-        if (verboseLog) Debug.Log($"[PrisonManager] Cell {cellId} resolved. Locked.");
+        if (verboseLog) Debug.Log($"[PrisonManager] Cell {cellId} resolved.");
     }
 
-    // ¼ÒÀ½ »óÅÂ º¯°æ
     private void SetNoisy(CellRuntime cell, bool noisy)
     {
         if (cell.IsNoisy == noisy) return;
@@ -283,48 +286,23 @@ public class PrisonManager : MonoBehaviour
         OnNoiseChanged?.Invoke(cell.CellId, noisy);
     }
 
-    public CellRuntime GetCell(string cellId)
-    {
-        return GetCellRuntime(cellId);
-    }
-
-    // -------------------------------------------------------------
-    // 4. Inspection Flow Support (State Machine¿¡¼­ È£Ãâ)
-    // -------------------------------------------------------------
-
-    /// <summary>
-    /// [ÇÊ¼ö] ÃÊ±âÈ­°¡ ¾È µÇ¾î ÀÖ´Ù¸é °­Á¦·Î ºôµå (¾ÈÀüÀåÄ¡)
-    /// InspectionStateMachineÀÇ Awake µî¿¡¼­ È£ÃâµÊ
-    /// </summary>
     public void BuildCellsIfNeeded()
     {
-        if (_runtimeCells.Count > 0) return; // ÀÌ¹Ì ºôµåµÊ
+        if (_runtimeCells.Count > 0) return;
         BuildRuntimeCells();
     }
 
-    /// <summary>
-    /// [ÇÊ¼ö] ½Ã°£ ÃÊ°ú µîÀ¸·Î ÀÎÇØ Á¡°ËÀ» °­Á¦·Î Áß´ÜÇÏ°í 'ÅğÀå' Ã³¸®¸¸ ÇÒ ¶§ »ç¿ë
-    /// (¿Ï·á Ã³¸®°¡ ¾Æ´Ï¶ó, ´Ü¼øÈ÷ Inspecting »óÅÂ¸¸ ÇØÁ¦ÇÏ°í ´Ù½Ã Active »óÅÂ·Î µÇµ¹¸²)
-    /// </summary>
     public void ForceReleaseInspectingOnly(string cellId)
     {
         var cell = GetCellRuntime(cellId);
         if (cell == null) return;
 
-        // 1. Á¡°Ë/Áø¾Ğ ÇÃ·¡±× ÇØÁ¦
         cell.IsInspectingNow = false;
         cell.IsSuppressing = false;
-        cell.SuppressSuccess = false; // Áø¾Ğ ¼º°ø ¿©ºÎµµ ÃÊ±âÈ­
+        cell.SuppressSuccess = false;
 
-        // 2. »óÅÂ º¹±¸
-        // ¿À´Ã È°¼º ¹æÀÌ¾ú´Ù¸é ´Ù½Ã ActiveNoisy·Î (ÀçÁøÀÔ °¡´ÉÇÏ°Ô)
-        // ºñÈ°¼º ¹æÀÌ¾ú´Ù¸é Inactive·Î
-        if (cell.IsActiveToday)
-            cell.State = CellState.ActiveNoisy;
-        else
-            cell.State = CellState.Inactive;
-
-        if (verboseLog) Debug.Log($"[PrisonManager] Force released cell {cellId} (Timeout)");
+        if (cell.IsActiveToday) cell.State = CellState.ActiveNoisy;
+        else cell.State = CellState.Inactive;
     }
 
     public List<string> GetActiveCellIds()
@@ -332,9 +310,11 @@ public class PrisonManager : MonoBehaviour
         var list = new List<string>();
         foreach (var cell in _runtimeCells.Values)
         {
-            if (cell.IsActiveToday)
-                list.Add(cell.CellId);
+            if (cell.IsActiveToday) list.Add(cell.CellId);
         }
         return list;
     }
+
+
+    public CellRuntime GetCell(string cellId) => GetCellRuntime(cellId);
 }
