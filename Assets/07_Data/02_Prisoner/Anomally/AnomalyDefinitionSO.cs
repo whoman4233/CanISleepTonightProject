@@ -1,46 +1,48 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public enum AnomalyCategory
 {
-    Common,     // °øÅë (´©±¸³ª, ¾ğÁ¦³ª µîÀå °¡´É)
-    Individual, // °³º° (Æ¯Á¤ ÁË¼ö Å¸ÀÔ Àü¿ë)
-    Special     // Æ¯¼ö (Æøµ¿ °ÔÀÌÁö Á¶°Ç)
+    Common,     // ê³µí†µ (ëˆ„êµ¬ë‚˜, ì–¸ì œë‚˜ ë“±ì¥ ê°€ëŠ¥)
+    Individual, // ê°œë³„ (íŠ¹ì • ì£„ìˆ˜ íƒ€ì… ì „ìš©)
+    Special     // íŠ¹ìˆ˜ (í­ë™ ê²Œì´ì§€ ì¡°ê±´)
 }
 
-// (±âÁ¸ AnomalyKind´Â ½½·Ô ¸ÅÄª¿ëÀ¸·Î À¯Áö)
+// (ê¸°ì¡´ AnomalyKindëŠ” ìŠ¬ë¡¯ ë§¤ì¹­ìš©ìœ¼ë¡œ ìœ ì§€)
 public enum AnomalyKind
 {
-    BrickColor, BedLegThickness, PosterFlap, ToiletCleanSpot, ItemInspect, // ... ±âÅ¸ µîµî
-    GeneralProp // ¹ü¿ë ÇÁ·Ó À§Ä¡ (Ã¥»ó À§ µî)
+    Floor, FrontWall, LeftWall, RightWall, SteelBarred, Poster, Tile, Vent,
+    Toilet, Sink, Bed, Table, Trash,
+    ItemInspect, GeneralProp, // ... ê¸°íƒ€ ë“±ë“±
+                              
 }
 
 [CreateAssetMenu(menuName = "GameData/Anomaly Definition", fileName = "AnomalyDef")]
 public class AnomalyDefinitionSO : ScriptableObject
 {
     public string anomalyId;
-    public AnomalyKind kind; // ¾îµğ¿¡ ½ºÆùµÉÁö(½½·Ô Å¸ÀÔ)
+    public AnomalyKind kind; // ì–´ë””ì— ìŠ¤í°ë ì§€(ìŠ¬ë¡¯ íƒ€ì…)
 
     [Header("Spawn Settings")]
-    [Tooltip("Slot: ºó °÷¿¡ »ı¼º, Bed/Toilet...: ±âÁ¸ °¡±¸ ±³Ã¼")]
+    [Tooltip("Slot: ë¹ˆ ê³³ì— ìƒì„±, Bed/Toilet...: ê¸°ì¡´ ê°€êµ¬ êµì²´")]
     public AnomalyTargetType targetType = AnomalyTargetType.Slot;
 
     [Header("Category Settings")]
     public AnomalyCategory category;
 
-    // °³º°(Individual)ÀÏ °æ¿ì ´ë»ó ÁË¼ö Å¸ÀÔ (¾øÀ¸¸é None)
+    // ê°œë³„(Individual)ì¼ ê²½ìš° ëŒ€ìƒ ì£„ìˆ˜ íƒ€ì… (ì—†ìœ¼ë©´ None)
     public PrisonerType targetPrisoner = PrisonerType.None;
 
-    // Æ¯¼ö(Special)ÀÏ °æ¿ì ÇÊ¿äÇÑ ÃÖ¼Ò Æøµ¿ °ÔÀÌÁö
+    // íŠ¹ìˆ˜(Special)ì¼ ê²½ìš° í•„ìš”í•œ ìµœì†Œ í­ë™ ê²Œì´ì§€
     public int minRiotGauge = 0;
 
     [Header("Assets")]
-    public GameObject normalPrefab;      // Á¤»ó »óÅÂ ÇÁ¸®ÆÕ (ÇÊ¼ö)
-    public GameObject suspiciousPrefab;  // ÀÌ»óÇö»ó ÇÁ¸®ÆÕ (ÇÊ¼ö)
+    public GameObject normalPrefab;      // ì •ìƒ ìƒíƒœ í”„ë¦¬íŒ¹ (í•„ìˆ˜)
+    public GameObject suspiciousPrefab;  // ì´ìƒí˜„ìƒ í”„ë¦¬íŒ¹ (í•„ìˆ˜)
 
     [Header("Inspect Text")]
     [TextArea] public string normalDesc;
     [TextArea] public string suspiciousDesc;
 
-    [Tooltip("Ã¼Å©ÇÏ¸é ÀÌ»óÇö»óÀÌ ¾Æ´Ò ¶§µµ NormalPrefabÀ» »ı¼ºÇÕ´Ï´Ù. (¿¹: º®½Ã°è, ´Ş·Â)")]
+    [Tooltip("ì²´í¬í•˜ë©´ ì´ìƒí˜„ìƒì´ ì•„ë‹ ë•Œë„ NormalPrefabì„ ìƒì„±í•©ë‹ˆë‹¤. (ì˜ˆ: ë²½ì‹œê³„, ë‹¬ë ¥)")]
     public bool alwaysSpawnNormal = false;
 }
