@@ -11,16 +11,6 @@ public class CellStructure : MonoBehaviour
     public GameObject steelBarred;
     public GameObject vent;
 
-    [Header("2. Furnitures")]
-    public GameObject toilet;
-    public GameObject bedSet;
-    public GameObject baseSet;
-
-    [Header("3. Props")]
-    public GameObject pillow;
-    public GameObject toothBrushSet;
-    public GameObject trashCan;
-
     // 내부 매핑용 딕셔너리
     private Dictionary<AnomalyTargetType, GameObject> _objectMap;
 
@@ -39,14 +29,6 @@ public class CellStructure : MonoBehaviour
             { AnomalyTargetType.CellFloor,      floor },
             { AnomalyTargetType.SteelBarred,    steelBarred },
             { AnomalyTargetType.Vent,           vent },
-
-            { AnomalyTargetType.Toilet,         toilet },
-            { AnomalyTargetType.BedSet,         bedSet },
-            { AnomalyTargetType.BaseSet,        baseSet },
-
-            { AnomalyTargetType.Pillow,         pillow },
-            { AnomalyTargetType.ToothBrushSet,  toothBrushSet },
-            { AnomalyTargetType.TrashCan,       trashCan }
         };
     }
 

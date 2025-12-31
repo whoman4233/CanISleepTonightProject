@@ -6,8 +6,12 @@ using UnityEngine;
 public class PrisonManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private GameObject prisonerPrefab;
-    [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
+    // 🔥 [추가] 생성 담당자 연결
+    [SerializeField] private PrisonerSpawnController spawnController;
+
+    // [삭제] 직접 생성 안 하므로 프리팹/DB 필요 없음 (SpawnController가 가짐)
+    // [SerializeField] private GameObject prisonerPrefab; 
+    // [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
 
     [SerializeField] private List<CellAnchor> cellAnchors;
 
@@ -21,40 +25,95 @@ public class PrisonManager : MonoBehaviour
     // 내부 데이터
     private readonly Dictionary<string, CellRuntime> _runtimeCells = new();
     private Dictionary<string, CellAnchor> _anchorMap = new();
-    private List<PrisonerController> _activePrisoners = new List<PrisonerController>();
 
+    // [참고] 이제 ActivePrisoners 리스트는 SpawnController(Registry)가 관리하므로
+    // PrisonManager에서는 직접적인 리스트 관리가 필요 없어졌습니다.
+    // 하지만 외부에서 접근하는 코드가 있을 수 있으므로 빈 리스트로 남겨두거나, 
+    // 필요하다면 Registry에서 조회하도록 구조를 바꿔야 합니다. 
+    // 여기서는 일단 컴파일 에러 방지를 위해 남겨두지만, 실제로는 비어있게 됩니다.
+    private List<PrisonerController> _activePrisoners = new List<PrisonerController>();
     public IReadOnlyList<PrisonerController> ActivePrisoners => _activePrisoners;
 
     public event Action<string, bool> OnNoiseChanged;
+
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+
+    private int _lastLoadedDay = -1;
 
     public int ActiveCell1f { get; private set; }
     public int ActiveCell2f { get; private set; }
 
     private void Awake()
     {
+        // 앵커 자동 할당
+        if (cellAnchors == null || cellAnchors.Count == 0)
+        {
+            cellAnchors = FindObjectsOfType<CellAnchor>().ToList();
+            if (verboseLog) Debug.Log($"[PrisonManager] 앵커 {cellAnchors.Count}개 자동 할당됨.");
+        }
+
+        // 1. 물리 앵커 맵핑
+        _anchorMap.Clear();
         foreach (var anchor in cellAnchors)
         {
             if (anchor != null)
-                _anchorMap[anchor.cellId] = anchor;
+            {
+                if (!string.IsNullOrEmpty(anchor.cellId))
+                    _anchorMap[anchor.cellId] = anchor;
+                else
+                    Debug.LogWarning($"[PrisonManager] {anchor.name}의 CellID가 비어있습니다.");
+            }
         }
+
+        // 2. 논리 셀 데이터 구축
         BuildRuntimeCells();
+
+        // 🔥 스폰 컨트롤러 찾기
+        if (spawnController == null) spawnController = FindObjectOfType<PrisonerSpawnController>();
+
+        _onPhaseChanged = HandleGamePhaseChanged;
     }
 
-    // [테스트용 Start 추가] 바로 테스트하고 싶으시면 이 주석을 푸세요.
-    /*
-    private void Start()
+    private void OnEnable() => EventBus.Subscribe(_onPhaseChanged);
+    private void OnDisable() => EventBus.Unsubscribe(_onPhaseChanged);
+
+    private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
     {
-        // 모든 방 활성화 테스트
-        var testAssignments = new Dictionary<string, DailyCellAssignment>();
-        foreach(var key in _runtimeCells.Keys) 
+        if (evt.Phase == GamePhase.Standby)
         {
-            testAssignments[key] = new DailyCellAssignment { 
-                isSuspicious = false, dailyAIType = PrisonerAIType.Normal 
-            };
+            int currentDay = (GameManager.Instance != null) ? GameManager.Instance.CurrentDay : 1;
+            if (currentDay <= 0) currentDay = 1;
+
+            if (_lastLoadedDay == currentDay)
+            {
+                // 이미 로드된 날짜라면 스킵 (단, 강제 리로드 필요시 로직 수정 가능)
+                if (verboseLog) Debug.Log($"[PrisonManager] {currentDay}일차 스케줄은 이미 로드되었습니다.");
+                return;
+            }
+
+            _lastLoadedDay = currentDay;
+            LoadAndApplyTodaySchedule(currentDay);
         }
-        ApplyDailySchedule(testAssignments);
     }
-    */
+
+    private void LoadAndApplyTodaySchedule(int day)
+    {
+        var scheduleMgr = FindObjectOfType<PrisonerScheduleManager>();
+        if (scheduleMgr == null) return;
+
+        Debug.Log($"[PrisonManager] {day}일차 스탠바이 진입 -> 스케줄 로드 시작");
+
+        var todaysAssignments = scheduleMgr.GetAssignmentsForDay(day);
+
+        if (todaysAssignments != null && todaysAssignments.Count > 0)
+        {
+            ApplyDailySchedule(todaysAssignments);
+        }
+        else
+        {
+            Debug.LogError($"[PrisonManager] 스케줄 로드 실패 (Day: {day})");
+        }
+    }
 
     private void BuildRuntimeCells()
     {
@@ -69,7 +128,7 @@ public class PrisonManager : MonoBehaviour
                     CellId = id,
                     Floor = f,
                     Number = n,
-                    IsActiveToday = false, // 기본값 false (스케줄에서 true로 변경됨)
+                    IsActiveToday = false,
                     State = CellState.Inactive
                 };
                 _runtimeCells[id] = cell;
@@ -82,13 +141,18 @@ public class PrisonManager : MonoBehaviour
     public CellAnchor GetCellAnchor(string cellId) => _anchorMap.TryGetValue(cellId, out var anchor) ? anchor : null;
 
     // -------------------------------------------------------------
-    // 스케줄 적용
+    // 스케줄 적용 (핵심)
     // -------------------------------------------------------------
     public void ApplyDailySchedule(Dictionary<string, DailyCellAssignment> assignments)
     {
-        DespawnAllPrisoners();
+        // 1. 기존 생성물 초기화 (SpawnController에게 위임)
+        if (spawnController != null)
+        {
+            spawnController.ClearAllForNewDay();
+        }
+
+        // 2. 논리적 상태 초기화
         ResetCellsForNewDay();
-        ClearAllAnomalies(); // 기존 이상현상 및 가구 복구
 
         ActiveCell1f = 0;
         ActiveCell2f = 0;
@@ -99,11 +163,11 @@ public class PrisonManager : MonoBehaviour
             DailyCellAssignment info = kvp.Value;
 
             var cellRuntime = GetCellRuntime(cellId);
-            var cellAnchor = GetCellAnchor(cellId);
 
-            if (cellRuntime == null || cellAnchor == null) continue;
+            // Anchor가 없으면 생성 불가
+            if (cellRuntime == null || GetCellAnchor(cellId) == null) continue;
 
-            // 1. 방 상태 설정
+            // 3. 방 상태 설정 (논리)
             cellRuntime.IsActiveToday = true;
             cellRuntime.IsSuspicious = info.isSuspicious;
             SetNoisy(cellRuntime, true);
@@ -112,142 +176,21 @@ public class PrisonManager : MonoBehaviour
             if (cellRuntime.Floor == 1) ActiveCell1f++;
             else if (cellRuntime.Floor == 2) ActiveCell2f++;
 
-            // 2. 죄수 스폰
-            SpawnPrisonerInCell(cellAnchor, info);
-
-            // 3. 이상현상 스폰 (핵심 로직)
-            SpawnAnomaliesInCell(cellId, cellAnchor, info.isSuspicious);
+            // 4. 🔥 [핵심] 실제 생성은 스폰 컨트롤러에게 명령!
+            if (spawnController != null)
+            {
+                spawnController.SpawnForCell(cellId, info.isSuspicious);
+            }
         }
 
         if (verboseLog) Debug.Log($"[PrisonManager] Day Started. Active: {assignments.Count}");
     }
 
     // -------------------------------------------------------------
-    // [핵심] 이상현상 스폰 & 교체 로직
+    // 🔥 [삭제됨] 생성 관련 로직은 모두 SpawnController로 이동했습니다.
     // -------------------------------------------------------------
-    private void SpawnAnomaliesInCell(string cellId, CellAnchor anchor, bool isSuspicious)
-    {
-        if (anchor.currentDailyAnomalies == null) return;
-
-        // 1. 범인 지목
-        AnomalyDefinitionSO culpritDef = null;
-        if (isSuspicious && anchor.currentDailyAnomalies.Count > 0)
-        {
-            int rndIndex = UnityEngine.Random.Range(0, anchor.currentDailyAnomalies.Count);
-            culpritDef = anchor.currentDailyAnomalies[rndIndex];
-        }
-
-        // 2. 리스트 순회
-        foreach (var def in anchor.currentDailyAnomalies)
-        {
-            bool isRealAnomaly = (def == culpritDef);
-
-            // CASE A: 교체형 (침대, 벽 등) -> 성능 최적화 (진짜일 때만 교체)
-            if (def.targetType != AnomalyTargetType.Slot)
-            {
-                if (isRealAnomaly)
-                {
-                    ReplaceObject(cellId, anchor, def, def.suspiciousPrefab, true);
-                }
-            }
-            // CASE B: 슬롯형 (시계 등) -> 진짜거나, '항상 보여줘야 하는' 경우 생성
-            else
-            {
-                if (isRealAnomaly || def.alwaysSpawnNormal)
-                {
-                    GameObject prefab = isRealAnomaly ? def.suspiciousPrefab : def.normalPrefab;
-                    SpawnAtRandomSlot(cellId, anchor, def, prefab, isRealAnomaly);
-                }
-            }
-        }
-    }
-
-    // [수정됨] Switch문 삭제! Structure에서 바로 가져옵니다.
-    private void ReplaceObject(string cellId, CellAnchor anchor, AnomalyDefinitionSO def, GameObject prefab, bool isReal)
-    {
-        if (prefab == null) return;
-        if (anchor.structure == null) return;
-
-        // 🔥 CellStructure에게 "이 타입에 해당하는 기본 오브젝트 줘" 라고 요청
-        GameObject targetObj = anchor.structure.GetDefaultObject(def.targetType);
-
-        if (targetObj != null)
-        {
-            targetObj.SetActive(false); // 기존 끄기
-
-            // 새 프리팹 생성 (부모 유지)
-            var go = Instantiate(prefab, targetObj.transform.position, targetObj.transform.rotation, targetObj.transform.parent);
-
-            var actor = go.GetComponent<AnomalyActor>();
-            if (actor != null) actor.Init(cellId, def, isReal);
-        }
-    }
-
-    private void SpawnAtRandomSlot(string cellId, CellAnchor anchor, AnomalyDefinitionSO def, GameObject prefab, bool isReal)
-    {
-        if (prefab == null) return;
-        if (anchor.anomalySlots == null || anchor.anomalySlots.Count == 0) return;
-
-        // 랜덤 슬롯 선택
-        var targetSlot = anchor.anomalySlots[UnityEngine.Random.Range(0, anchor.anomalySlots.Count)];
-
-        // 🔴 [수정] targetSlot 뒤에 .transform 을 붙여야 합니다!
-        var go = Instantiate(prefab, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
-
-        var actor = go.GetComponent<AnomalyActor>();
-        if (actor != null) actor.Init(cellId, def, isReal);
-    }
-
-    // [수정됨] 청소 및 복구 로직
-    private void ClearAllAnomalies()
-    {
-        foreach (var anchor in _anchorMap.Values)
-        {
-            // 1. 생성된 이상현상 제거
-            var anomalies = anchor.GetComponentsInChildren<AnomalyActor>(true);
-            foreach (var a in anomalies) Destroy(a.gameObject);
-
-            // 2. 꺼뒀던 기본 가구들 일괄 복구 (Structure 이용)
-            if (anchor.structure != null)
-            {
-                anchor.structure.ResetAllDefaults();
-            }
-        }
-    }
-
-    // -------------------------------------------------------------
-    // 죄수 및 기타 로직 (기존 유지)
-    // -------------------------------------------------------------
-    private void SpawnPrisonerInCell(CellAnchor anchor, DailyCellAssignment info)
-    {
-        var scheduleMgr = FindObjectOfType<PrisonerScheduleManager>();
-        // 혹시 스케줄 매니저 없으면 null 처리
-        var def = scheduleMgr != null ? scheduleMgr.GetAssignedPrisonerDef(anchor.cellId) : null;
-
-        if (def != null)
-        {
-            PrisonerData newData = new PrisonerData(def, info.dailyAIType);
-            Transform spawnTr = anchor.prisonerSpawn != null ? anchor.prisonerSpawn : anchor.transform;
-            GameObject pObj = Instantiate(prisonerPrefab, spawnTr.position, spawnTr.rotation);
-            PrisonerController controller = pObj.GetComponent<PrisonerController>();
-
-            controller.Initialize(newData, anchor, info.isSuspicious);
-            _activePrisoners.Add(controller);
-            anchor.IsOccupied = true;
-        }
-    }
-
-    public void DespawnAllPrisoners()
-    {
-        foreach (var p in _activePrisoners)
-        {
-            if (p != null) Destroy(p.gameObject);
-        }
-        _activePrisoners.Clear();
-
-        foreach (var anchor in _anchorMap.Values)
-            anchor.IsOccupied = false;
-    }
+    // SpawnAnomaliesInCell, ReplaceObject, SpawnAtRandomSlot, 
+    // ClearAllAnomalies, SpawnPrisonerInCell, DespawnAllPrisoners 삭제됨.
 
     private void ResetCellsForNewDay()
     {
@@ -314,7 +257,6 @@ public class PrisonManager : MonoBehaviour
         }
         return list;
     }
-
 
     public CellRuntime GetCell(string cellId) => GetCellRuntime(cellId);
 }

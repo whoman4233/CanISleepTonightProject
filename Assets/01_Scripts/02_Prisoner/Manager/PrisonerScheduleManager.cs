@@ -1,12 +1,9 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-// [º¯°æ] SpawnController´Â ÀÌÁ¦ ±¸Á¶Ã¼ ´ë½Å PrisonerData °´Ã¼¸¦ Á÷Á¢ ¹Ş¾Æ°©´Ï´Ù.
-// public struct PrisonerAssignment { ... } // (´õ ÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î »èÁ¦ °¡´É)
-
-// ÇÏ·ç ¹èÁ¤ Á¤º¸¸¦ ´ã´Â ±¸Á¶Ã¼ (±×³¯ÀÇ ¼ö»óÇÔ + ±×³¯ÀÇ ±âºĞ)
+// í•˜ë£¨ ë°°ì • ì •ë³´ë¥¼ ë‹´ëŠ” êµ¬ì¡°ì²´
 [System.Serializable]
 public struct DailyCellAssignment
 {
@@ -32,14 +29,9 @@ public class PrisonerScheduleManager : MonoBehaviour
     [SerializeField] private int dailyActiveCount = 6;
     [SerializeField] private int dailySuspiciousCount = 3;
 
-    // [ÇÙ½É º¯°æ] ID(string)¸¸ ÀúÀåÇÏ´Â °Ô ¾Æ´Ï¶ó, '¸¸µé¾îÁø ÁË¼ö µ¥ÀÌÅÍ(PrisonerData)' ÀÚÃ¼¸¦ ÀúÀåÇÕ´Ï´Ù.
-    // Key: CellID, Value: PrisonerData (ID, HP, Name µîÀÌ º¸Á¸µÊ)
+    // ë°ì´í„° ì €ì¥ì†Œ
     private Dictionary<string, PrisonerData> _weeklyInstances = new Dictionary<string, PrisonerData>();
-
-    // Schedule: '¿À´Ã »óÅÂ´Â ¾î¶²°¡' (¸ÅÀÏ º¯µ¿)
     private List<DailyScheduleData> _weeklySchedule = new List<DailyScheduleData>();
-
-    // [ÃÖÀûÈ­] ¿À´Ã ³¯Â¥ÀÇ ½ºÄÉÁÙÀ» ºü¸£°Ô Ã£±â À§ÇÑ Ä³½Ã
     private Dictionary<string, DailyCellAssignment> _todayCache = new Dictionary<string, DailyCellAssignment>();
 
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
@@ -48,10 +40,8 @@ public class PrisonerScheduleManager : MonoBehaviour
     {
         if (prisonManager == null) prisonManager = FindObjectOfType<PrisonManager>();
         _onPhaseChanged = HandleGamePhaseChanged;
-    }
 
-    private void Start()
-    {
+        // ë°ì´í„° ë¯¸ë¦¬ ìƒì„±
         GenerateWeeklyRoster();
         GenerateWeeklySchedule();
     }
@@ -60,47 +50,61 @@ public class PrisonerScheduleManager : MonoBehaviour
     private void OnDisable() => EventBus.Unsubscribe(_onPhaseChanged);
 
     // =======================================================================
-    // [ÇÙ½É] SpawnController°¡ È£ÃâÇÏ´Â ¸Ş¼­µå (µ¥ÀÌÅÍ Àç»ç¿ë)
+    // [í•µì‹¬ ìˆ˜ì •] PrisonManagerê°€ í˜¸ì¶œí•  ë•Œ ìºì‹œë„ ê°™ì´ ê°±ì‹ í•©ë‹ˆë‹¤!
+    // =======================================================================
+    public Dictionary<string, DailyCellAssignment> GetAssignmentsForDay(int dayNumber)
+    {
+        if (dayNumber <= 0) dayNumber = 1;
+
+        var dayData = _weeklySchedule.Find(x => x.dayNumber == dayNumber);
+
+        if (dayData != null)
+        {
+            // ğŸ”¥ [ìˆ˜ì •] ë°ì´í„°ë¥¼ ë‚´ë³´ë‚´ë©´ì„œ "ì˜¤ëŠ˜ì˜ ìºì‹œ"ë¡œ ë“±ë¡í•©ë‹ˆë‹¤.
+            // ì´ë ‡ê²Œ í•˜ë©´ Standby í˜ì´ì¦ˆì—ì„œë„ ìºì‹œê°€ ì¦‰ì‹œ ì±„ì›Œì§‘ë‹ˆë‹¤.
+            _todayCache = dayData.cellAssignments;
+
+            return dayData.cellAssignments;
+        }
+
+        Debug.LogError($"[ScheduleManager] {dayNumber}ì¼ì°¨ ìŠ¤ì¼€ì¤„ ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤!");
+        return new Dictionary<string, DailyCellAssignment>();
+    }
+
+    // =======================================================================
+    // [í•µì‹¬ ìˆ˜ì •] ìºì‹œê°€ ì—†ì–´ë„ ì£½ì§€ ì•Šë„ë¡ ì•ˆì „ì¥ì¹˜ ì¶”ê°€
     // =======================================================================
     public PrisonerData GetPrisonerData(string cellId)
     {
-        // 1. ÀúÀåµÈ ÁË¼ö µ¥ÀÌÅÍ°¡ ÀÖ´ÂÁö È®ÀÎ
-        if (!_weeklyInstances.TryGetValue(cellId, out PrisonerData data))
+        if (!_weeklyInstances.TryGetValue(cellId, out PrisonerData data)) return null;
+
+        // 1. ì˜¤ëŠ˜ ìºì‹œ í™•ì¸
+        if (_todayCache.TryGetValue(cellId, out DailyCellAssignment dailyInfo))
         {
-            return null;
+            data.RuntimeAIType = dailyInfo.dailyAIType;
+        }
+        else
+        {
+            // ğŸ”¥ [ìˆ˜ì •] ìºì‹œê°€ ì—†ë‹¤ê³  null ë¦¬í„´í•˜ë©´ ì•ˆ ë©ë‹ˆë‹¤! (ë°ì´í„°ëŠ” ìˆìœ¼ë‹ˆê¹Œìš”)
+            // ëŒ€ì‹  ê¸°ë³¸ê°’ì´ë‚˜ ê¸°ì¡´ ê°’ì„ ìœ ì§€í•œ ì±„ ë¦¬í„´í•©ë‹ˆë‹¤.
+            // Debug.LogWarning($"[Schedule] {cellId}ì˜ ì˜¤ëŠ˜ ìŠ¤ì¼€ì¤„ ìºì‹œê°€ ì—†ìŠµë‹ˆë‹¤. ê¸°ë³¸ AIë¡œ ì§„í–‰í•©ë‹ˆë‹¤.");
         }
 
-        // 2. ¿À´Ã ½ºÄÉÁÙ È®ÀÎ
-        if (!_todayCache.TryGetValue(cellId, out DailyCellAssignment dailyInfo))
-        {
-            return null;
-        }
-
-        // 3. [±âÁ¸] ¿À´ÃÀÇ ¼ºÇâ ¾÷µ¥ÀÌÆ®
-        data.RuntimeAIType = dailyInfo.dailyAIType;
-
-        // 4. [½Å±Ô Ãß°¡] ¸ÅÀÏ ¾ÆÄ§ »óÅÂ ¸®¼Â (ÀÌ ºÎºĞÀÌ HP ÃÊ±âÈ­ ÇÙ½É!)
-        data.CurrentHealth = data.MaxHealth; // Ã¼·Â Ç®È¸º¹
-        data.IsSuppressed = false;           // Á¦¾Ğ »óÅÂ ÇØÁ¦
+        // 2. ìƒíƒœ ì´ˆê¸°í™” (HP íšŒë³µ ë“±)
+        data.CurrentHealth = data.MaxHealth;
+        data.IsSuppressed = false;
 
         return data;
     }
 
-    // =======================================================================
-    // 1. Roster Logic (µ¥ÀÌÅÍ »ı¼º - ÀÏÁÖÀÏ¿¡ ÇÑ ¹ø¸¸!)
-    // =======================================================================
+    // ... (ì´í•˜ Generate í•¨ìˆ˜ ë“±ì€ ê¸°ì¡´ê³¼ ë™ì¼) ...
+
     [ContextMenu("Generate Roster Now")]
     public void GenerateWeeklyRoster()
     {
-        // [¹æ¾î ÄÚµå] ÀÌ¹Ì µ¥ÀÌÅÍ°¡ ÀÖ´Ù¸é ´Ù½Ã ¸¸µéÁö ¾ÊÀ½ (ÀÏÁÖÀÏ À¯Áö)
-        if (_weeklyInstances.Count > 0)
-        {
-            Debug.Log("[Schedule] ÀÌ¹Ì »ı¼ºµÈ ÁÖ°£ ¸íºÎ°¡ ÀÖ½À´Ï´Ù. »ı·«ÇÕ´Ï´Ù.");
-            return;
-        }
+        if (_weeklyInstances.Count > 0) return;
 
         _weeklyInstances.Clear();
-
         if (prisonerDatabase == null || prisonerDatabase.prisoners.Count == 0) return;
 
         var allAnchors = FindObjectsOfType<CellAnchor>();
@@ -111,28 +115,18 @@ public class PrisonerScheduleManager : MonoBehaviour
             var randomDef = prisonerDatabase.GetRandomDefinition();
             if (randomDef != null)
             {
-                // [¿©±â¼­ »ı¼º!] new PrisonerData¸¦ ¿©±â¼­ µü ÇÑ ¹ø¸¸ ÇÕ´Ï´Ù.
-                // ÃÊ±â ¼ºÇâÀº Good(È¤Àº Normal)À¸·Î ¼³Á¤ (¸ÅÀÏ ¾ÆÄ§ ¹Ù²ñ)
                 PrisonerData newData = new PrisonerData(randomDef, PrisonerAIType.Good);
-
-                // »ı¼ºµÈ µ¥ÀÌÅÍ¸¦ µñ¼Å³Ê¸®¿¡ º¸°ü -> ÀÏÁÖÀÏ ³»³» ²¨³» ¾¸
                 _weeklyInstances[cellId] = newData;
             }
         }
-        Debug.Log($"[Schedule] Roster Generated for {allCellIds.Count} cells (Fixed for Week).");
+        Debug.Log($"[Schedule] {allCellIds.Count}ê°œ ê°ë°© ëª…ë¶€ ì‘ì„± ì™„ë£Œ.");
     }
 
-    // =======================================================================
-    // 2. Schedule Logic
-    // =======================================================================
     [ContextMenu("Generate Schedule Now")]
     public void GenerateWeeklySchedule()
     {
         _weeklySchedule.Clear();
-
-        // [º¯°æ] _weeklyInstances Å°¸¦ ±â¹İÀ¸·Î ½ºÄÉÁÙ »ı¼º
         var allCellIds = _weeklyInstances.Keys.ToList();
-
         if (allCellIds.Count == 0) return;
 
         for (int day = 1; day <= daysInWeek; day++)
@@ -149,65 +143,50 @@ public class PrisonerScheduleManager : MonoBehaviour
                 if (isActive)
                 {
                     bool isSuspicious = (i < dailySuspiciousCount);
-
-                    // [À¯Áö] ÀÛ¼ºÇÏ½Å Enum °ª (Good/Bad) »ç¿ë
-                    PrisonerAIType dailyMood = (UnityEngine.Random.value > 0.5f)
-                                               ? PrisonerAIType.Good
-                                               : PrisonerAIType.Bad;
+                    PrisonerAIType dailyMood = (UnityEngine.Random.value > 0.5f) ? PrisonerAIType.Good : PrisonerAIType.Bad;
 
                     DailyCellAssignment assignment = new DailyCellAssignment
                     {
                         isSuspicious = isSuspicious,
                         dailyAIType = dailyMood
                     };
-
                     dayData.cellAssignments.Add(id, assignment);
                 }
             }
             _weeklySchedule.Add(dayData);
         }
-        Debug.Log($"[Schedule] Generated Daily Schedules.");
+        Debug.Log($"[Schedule] 1~{daysInWeek}ì¼ì°¨ ìŠ¤ì¼€ì¤„ ìƒì„± ì™„ë£Œ.");
     }
 
-    // ¿À´Ã ½ºÄÉÁÙ(Active ¸ñ·Ï) °¡Á®¿À±â
     public Dictionary<string, bool> GetScheduleForDay(int dayNumber)
     {
         var result = new Dictionary<string, bool>();
-        var data = _weeklySchedule.Find(x => x.dayNumber == dayNumber);
-
-        if (data != null)
+        var assignments = GetAssignmentsForDay(dayNumber);
+        foreach (var kvp in assignments)
         {
-            foreach (var kvp in data.cellAssignments)
-            {
-                result.Add(kvp.Key, kvp.Value.isSuspicious);
-            }
+            result.Add(kvp.Key, kvp.Value.isSuspicious);
         }
         return result;
     }
 
     private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
     {
+        // Standbyì—ì„œ ì´ë¯¸ ìºì‹œê°€ ì—…ë°ì´íŠ¸ë˜ì—ˆìœ¼ë¯€ë¡œ ì—¬ê¸°ëŠ” ì•ˆì „ì¥ì¹˜ ì—­í• ë§Œ í•©ë‹ˆë‹¤.
         if (evt.Phase == GamePhase.Briefing && GameManager.Instance != null)
         {
-            int currentDay = GameManager.Instance.CurrentDay;
-
-            // 1. ¿À´ÃÀÇ ½ºÄÉÁÙ µ¥ÀÌÅÍ¸¦ Ã£¾Æ¼­ Ä³½Ì
-            _todayCache.Clear();
-            var daySchedule = _weeklySchedule.Find(x => x.dayNumber == currentDay);
-            if (daySchedule != null)
+            // í˜¹ì‹œ ëª¨ë¥´ë‹ˆ í•œ ë²ˆ ë” í™•ì¸
+            if (_todayCache.Count == 0)
             {
-                _todayCache = daySchedule.cellAssignments;
+                int currentDay = GameManager.Instance.CurrentDay;
+                GetAssignmentsForDay(currentDay);
             }
         }
     }
 
-    // [Ãß°¡] AnomalyDistributor°¡ ÂüÁ¶ÇÏ´Â ¸Ş¼­µå (µ¥ÀÌÅÍ ±â¹İÀ¸·Î º¯°æ)
     public PrisonerDefinition GetAssignedPrisonerDef(string cellId)
     {
         if (_weeklyInstances.TryGetValue(cellId, out PrisonerData data))
-        {
             return data.definition;
-        }
         return null;
     }
 
