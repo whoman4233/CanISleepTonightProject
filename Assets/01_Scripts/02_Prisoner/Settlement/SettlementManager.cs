@@ -185,9 +185,12 @@ public class SettlementManager : MonoBehaviour
 [System.Serializable]
 public struct SettlementUIData
 {
+    [Header("Day")]
+    public int ReportCurrentDay;
+
     [Header("Floor Active Counts")]
-    public int Floor1_ActiveCount;
-    public int Floor2_ActiveCount;
+    public int Floor1_ActiveCount; 
+    public int Floor2_ActiveCount; 
 
     [Header("Player Actions")]
     public int SuppressedCount;
