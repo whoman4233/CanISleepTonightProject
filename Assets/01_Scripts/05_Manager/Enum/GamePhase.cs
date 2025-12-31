@@ -2,6 +2,7 @@
 public enum GamePhase
 {
     NotStarted,     // 메인 메뉴 등 게임 시작 전
+    Tutorial,
     Standby,        // 오늘 점검해야 할 요주의 감방이 결정되는 단계, 날짜 카운트 +1
     Briefing,       // 1. 브리핑 페이즈 (요주의 감방 결정 및 배치)
     Patrol,         // 2. 순찰 페이즈 (플레이 시간, 제한 시간 8분)
