@@ -201,6 +201,7 @@ public class GameManager : MonoBehaviour
             StopCoroutine(patrolTimerCoroutine);
             patrolTimerCoroutine = null;
         }
+        _saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
         EventBus.Publish(new SettlementStartedEvent());
         //StartCoroutine(SettlementProcessRoutine());
     }
@@ -239,7 +240,6 @@ public class GameManager : MonoBehaviour
     private IEnumerator SettlementProcessRoutine() // 다른 매니저들 초기화 기다림
     {
         yield return new WaitForSeconds(1.0f);
-        _saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
         EndTrigger();
     }
 

@@ -72,6 +72,12 @@ public class FlowController : MonoBehaviour
             isBusy = false;
             yield break;
         }
+        SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
+
+        // 3. IntroScene 언로드
+        Scene introScene = SceneManager.GetSceneByName(introSceneName);
+        if (introScene.isLoaded)
+            yield return SceneManager.UnloadSceneAsync(introScene);
 
         // 2. PlayScene 로딩 (NewGame과 동일)
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive);
@@ -81,20 +87,16 @@ public class FlowController : MonoBehaviour
         if (playScene.IsValid())
             SceneManager.SetActiveScene(playScene);
 
-        // 3. IntroScene 언로드
-        Scene introScene = SceneManager.GetSceneByName(introSceneName);
-        if (introScene.isLoaded)
-            yield return SceneManager.UnloadSceneAsync(introScene);
-
         // 4. 저장된 Phase로 재진입
         var phase = GameManager.Instance.CurrentPhase;
 
-        if (phase == GamePhase.NotStarted || phase == GamePhase.Settlement)
-        {
-            phase = GamePhase.Standby;
-        }
+        //if (phase == GamePhase.NotStarted || phase == GamePhase.Settlement)
+        //{
+        //    phase = GamePhase.Standby;
+        //}
 
-        GameManager.Instance.ChangePhase(phase);
+        //GameManager.Instance.ChangePhase(phase);
+        SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
 
         isBusy = false;
         Debug.Log("이어하기 완료");
