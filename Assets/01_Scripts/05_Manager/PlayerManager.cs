@@ -17,6 +17,14 @@ public class PlayerManager : MonoBehaviour
         _phaseChangedHandler = (e) => OnPhaseChanged(e);
     }
 
+    //private void Start()
+    //{
+    //    if(GameManager.Instance != null && GameManager.Instance.CurrentPhase != GamePhase.NotStarted)
+    //    {
+    //        SpawnPlayer();
+    //    }
+    //}
+
     private void OnEnable()
     {
         EventBus.Subscribe(_phaseChangedHandler);
@@ -30,7 +38,7 @@ public class PlayerManager : MonoBehaviour
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
         // 스탠바이 페이즈로 진입할 때 플레이어 생성
-        if (e.Phase == GamePhase.Standby)
+        if (e.Phase == GamePhase.Standby || e.Phase == GamePhase.Settlement)
         {
             SpawnPlayer();
         }
@@ -41,7 +49,7 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private void SpawnPlayer()
+    public void SpawnPlayer()
     {
         // 이미 플레이어가 있다면 중복 생성 방지
         if (currentPlayer != null) return;

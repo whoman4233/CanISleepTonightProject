@@ -18,6 +18,7 @@ public class FlowController : MonoBehaviour
     private Action<RequestStartNewGameEvent> _startNewGameHandler;
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
     private Action<RequestSceneReloadEvent> _reloadHandler;
+    private Action<LoadGameEvent> _loadGameHandler; // 이어하기 이벤트
 
     private void Awake()
     {
@@ -28,6 +29,7 @@ public class FlowController : MonoBehaviour
             _startNewGameHandler = e => StartNewGame();
             _returnToTitleHandler = e => ReturnToTitle();
             _reloadHandler = e => StartCoroutine(ReloadPlaySceneRoutine());
+            _loadGameHandler = e => StartCoroutine(LoadGameSequence());
         }
         else
         {
@@ -45,6 +47,7 @@ public class FlowController : MonoBehaviour
         EventBus.Subscribe(_startNewGameHandler);
         EventBus.Subscribe(_returnToTitleHandler);
         EventBus.Subscribe(_reloadHandler);
+        EventBus.Subscribe(_loadGameHandler);
     }
     private void OnDisable()
     {
@@ -52,6 +55,51 @@ public class FlowController : MonoBehaviour
         EventBus.Unsubscribe(_startNewGameHandler);
         EventBus.Unsubscribe(_returnToTitleHandler);
         EventBus.Unsubscribe(_reloadHandler);
+        EventBus.Unsubscribe(_loadGameHandler);
+    }
+
+    private IEnumerator LoadGameSequence()
+    {
+        if (isBusy) yield break;
+        isBusy = true;
+
+        // 1. 세이브 데이터 로드
+        bool loaded = GameManager.Instance.LoadPlayerData();
+        if (!loaded)
+        {
+            Debug.LogWarning("LoadGame 실패: 세이브 데이터 없음");
+            EventBus.Publish(new ShowTimedTextPopupEvent("저장된 데이터가 없습니다.", 1f));
+            isBusy = false;
+            yield break;
+        }
+        SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
+
+        // 3. IntroScene 언로드
+        Scene introScene = SceneManager.GetSceneByName(introSceneName);
+        if (introScene.isLoaded)
+            yield return SceneManager.UnloadSceneAsync(introScene);
+
+        // 2. PlayScene 로딩 (NewGame과 동일)
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive);
+        while (!asyncLoad.isDone) yield return null;
+
+        Scene playScene = SceneManager.GetSceneByName(playSceneName);
+        if (playScene.IsValid())
+            SceneManager.SetActiveScene(playScene);
+
+        // 4. 저장된 Phase로 재진입
+        var phase = GameManager.Instance.CurrentPhase;
+
+        //if (phase == GamePhase.NotStarted || phase == GamePhase.Settlement)
+        //{
+        //    phase = GamePhase.Standby;
+        //}
+
+        //GameManager.Instance.ChangePhase(phase);
+        SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
+
+        isBusy = false;
+        Debug.Log("이어하기 완료");
     }
 
     private IEnumerator ReloadPlaySceneRoutine() // 씬 재로딩 코루틴
@@ -73,7 +121,7 @@ public class FlowController : MonoBehaviour
         yield return null; //new WaitForSeconds(1.0f);
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
         isBusy = false;
-        yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
+        //yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
         SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         Debug.Log("씬 재로딩 완료");
     }
