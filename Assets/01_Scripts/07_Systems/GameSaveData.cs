@@ -7,6 +7,7 @@ public class GameSaveData // 세이브 데이터에 저장 할 것들
     public int currentDay;
     public GamePhase currentPhase;
     public int riotGauge;
+    public int currentHp;
 }
 
 [System.Serializable]

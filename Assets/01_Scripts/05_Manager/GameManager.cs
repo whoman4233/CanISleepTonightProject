@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
-    [SerializeField] private int riotGauge = 10;
+    [SerializeField] private int riotGauge = 20;
     [SerializeField] private int maxRiotGauge = 100;
     [SerializeField] public int maxDay = 7;
     public int RiotGauge => riotGauge;
@@ -37,7 +37,19 @@ public class GameManager : MonoBehaviour
     public float CurrentInGameSeconds { get; private set; } //Timer HUD 참조할 값
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
-    [SerializeField] public int PlayerHP { get; set; } = 70; 
+    private int playerHP = 70;
+    public int PlayerHP
+    {
+        get => playerHP;
+        set
+        {
+            playerHP = value;
+            if (playerHP <= 0 && currentPhase == GamePhase.Patrol)
+            {
+                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // [순찰 페이즈] 중 HP가 0이 되었을 때 활성화
+            }
+        }
+    }
 
     private void Awake()
     {
@@ -64,6 +76,7 @@ public class GameManager : MonoBehaviour
         };
 
     }
+
     //public void Initialize() // Bootstrap에서 GameContext.RegisterService<GameManager>(this) 이후 호출
     //{
     //    StartCoroutine(StartFirstPhase());
@@ -163,7 +176,8 @@ public class GameManager : MonoBehaviour
     private void OnEnterNotStarted() // 루프 시 초기화 및 메인으로(인트로씬) 돌아가면 초기화
     {
         currentDay = 0;
-        riotGauge = 10;
+        riotGauge = 20;
+        playerHP = 70;
     }
     private void OnEnterStandby() // 준비 페이즈
     {
@@ -171,7 +185,7 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnterBriefing() // 브리핑 페이즈
     {
-
+        StandbyEndTrigger();
     }
 
     private void OnEnterPatrol() // 순찰 페이즈
@@ -256,7 +270,8 @@ public class GameManager : MonoBehaviour
         {
             currentDay = this.currentDay,
             riotGauge = this.riotGauge,
-            currentPhase = this.currentPhase
+            currentPhase = this.currentPhase,
+            currentHp = this.playerHP
         };
     }
 
@@ -268,6 +283,7 @@ public class GameManager : MonoBehaviour
             this.currentDay = data.currentDay;
             this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
+            this.playerHP = data.currentHp;
             Debug.Log("세이브 파일을 성공적으로 불러왔습니다.");
             return true;
         }
@@ -285,26 +301,29 @@ public class GameManager : MonoBehaviour
     {
         if (riotGauge >= maxRiotGauge)
         {
-            if (currentDay < maxDay)
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // 산업 재해(7일 이전에 폭동 100 이상)
-                Debug.Log("BadEnding2");
-            }
-            else
-            {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // 위기 회피(7일차에 폭동 100 이상으로 퇴근)
-                Debug.Log("BadEnding3");
-            }
+            EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3)); // [정산 페이즈]의 폭동 게이지 증감 결과 폭동 게이지가 100 이상이 되었을 때 활성화
+            Debug.Log("BadEnding3");
         }
         else
         {
-            if(currentDay >= maxDay)
+            if (currentDay >= maxDay)
             {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1)); // 7일차까지 무사히 완료
+                if (riotGauge < 30)
+                {
+                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 30 미만인 경우
+                }
+                else if (30 <= riotGauge && riotGauge < 80)
+                {
+                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding1)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 30 이상 80 미만인 경우
+                }
+                else if (riotGauge >= 80)
+                {
+                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding2)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 80 이상인 경우
+                }
             }
             else
             {
-                EventBus.Publish(new RequestSceneReloadEvent());
+                EventBus.Publish(new RequestSceneReloadEvent()); // 다음날로
             }
         }
     }
@@ -330,5 +349,14 @@ public class GameManager : MonoBehaviour
     public void OnEnterTutorial()
     {
 
+    }
+
+    public void StandbyEndTrigger() // [준비 페이즈] 도중 폭동 게이지가 100 이상이 되었을 때 활성화
+    {
+        if (riotGauge >= maxRiotGauge)
+        {
+            EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding1));
+        }
+        else return;
     }
 }
