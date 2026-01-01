@@ -58,13 +58,6 @@ public class PrisonerController : MonoBehaviour
             }
         }
         fsm.ChangeState(fsm.IdleState);
-
-        Debug.Log($"<color=yellow>[Spawn]</color> 죄수 생성됨! " +
-              $"ID: {data.definition.templateId} | " +
-              $"이름: {data.definition.displayName} | " +
-              $"특성(CSV): {data.definition.traitType} | " +
-              $"오늘성향(Schedule): {data.RuntimeAIType} | " +
-              $"수상함: {isSuspicious}");
     }
 
     // [Actor의 ApplyDamage 대체] 외부(총알 등)에서 호출하는 피격 함수
