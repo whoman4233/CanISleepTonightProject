@@ -98,6 +98,6 @@ public class PrisonerController : MonoBehaviour
             ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
 
         // 이벤트 발생 등 추가 로직
-        // PrisonerEventBus.RaisePrisonerDown(Data.ID);
+        PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 }

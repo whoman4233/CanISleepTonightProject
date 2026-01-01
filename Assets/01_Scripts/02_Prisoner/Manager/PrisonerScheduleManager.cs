@@ -115,7 +115,7 @@ public class PrisonerScheduleManager : MonoBehaviour
             var randomDef = prisonerDatabase.GetRandomDefinition();
             if (randomDef != null)
             {
-                PrisonerData newData = new PrisonerData(randomDef, PrisonerAIType.Good);
+                PrisonerData newData = new PrisonerData(randomDef, PrisonerAIType.Good, cellId);
                 _weeklyInstances[cellId] = newData;
             }
         }
