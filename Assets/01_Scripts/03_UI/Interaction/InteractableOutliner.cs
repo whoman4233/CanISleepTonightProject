@@ -18,8 +18,8 @@ public sealed class InteractableOutliner : MonoBehaviour
     [Header("Preview / Default")]
     [SerializeField] private bool outlineEnabled = false;
 
-    // 기본색 : 파랑색 (On 상태일 때만 사용됨)
-    [SerializeField] private Color defaultOutlineColor = new Color(0f, 0.8f, 1f, 1f);
+    // 기본색 : 흰색 (On 상태일 때만 사용됨)
+    [SerializeField] private Color defaultOutlineColor = new Color(255f, 255f, 255f, 255f);
 
     private Renderer[] _renderers;
     private MaterialPropertyBlock _mpb;
