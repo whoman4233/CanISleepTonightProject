@@ -28,7 +28,6 @@ public class CellStructure : MonoBehaviour
             { AnomalyTargetType.CellWall_Front, wallFront },
             { AnomalyTargetType.CellFloor,      floor },
             { AnomalyTargetType.SteelBarred,    steelBarred },
-            { AnomalyTargetType.Vent,           vent },
         };
     }
 
