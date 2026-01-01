@@ -20,10 +20,17 @@ public class SettlementManager : MonoBehaviour
     [SerializeField] private int normalIgnoreSuccessDelta = -5;
 
     [Tooltip("수상한 방 경고/무시 실패 (증가)")]
-    [SerializeField] private int suspiciousIgnoreFailDelta = +10;
+    [SerializeField] private int suspiciousFailDelta = +10;
 
     [Tooltip("정상 방 과잉 진압 실패 (증가)")]
     [SerializeField] private int normalSuppressFailDelta = +10;
+
+    [Tooltip("이상방 무시")]
+    [SerializeField] private int suspiciousIgnoreDelta = +10;
+
+    [Tooltip("정상방 무시")]
+    [SerializeField] private int normalIgnoreDelta = +10;
+
 
     [Header("Daily Base Increase (Standby)")]
     [SerializeField] private int dailyBaseIncrease = 20;
@@ -130,26 +137,36 @@ public class SettlementManager : MonoBehaviour
     {
         int delta = 0;
 
-        // 1. 해결된 방 점수 계산
+        // 1. 해결된 방 (Resolved) 점수 계산
         foreach (var r in resolved)
         {
             if (r.isSuspicious)
             {
-                if (r.didSuppress) delta += suspiciousSuppressSuccessDelta; // 성공 (감소)
-                else delta += suspiciousIgnoreFailDelta; // 실패 (증가)
+                // 수상한 방 -> 진압했으면 성공(-), 무시했으면 실패(+)
+                if (r.didSuppress) delta += suspiciousSuppressSuccessDelta;
+                else delta += suspiciousFailDelta;
             }
             else
             {
-                if (r.didSuppress) delta += normalSuppressFailDelta; // 과잉진압 (증가)
-                else delta += normalIgnoreSuccessDelta; // 성공 (감소)
+                // 정상 방 -> 진압했으면 과잉진압(+), 무시했으면 성공(-)
+                if (r.didSuppress) delta += normalSuppressFailDelta;
+                else delta += normalIgnoreSuccessDelta;
             }
         }
 
-        // 2. 미점검 방 점수 계산 (전부 실패 취급)
+        // 2. 미점검 방 (Uninspected) 점수 계산 - 🔥 [수정됨]
         foreach (var u in uninspected)
         {
-            if (u.isSuspicious) delta += suspiciousIgnoreFailDelta;
-            else delta += normalSuppressFailDelta; // 정상인데 안 봤으면? 일단 실패 패널티 (기획에 따라 0일 수도 있음)
+            if (u.isSuspicious)
+            {
+                // 수상한 방을 안 보고 넘어감 -> 큰일 남! (전용 패널티 적용)
+                delta += suspiciousIgnoreDelta;
+            }
+            else
+            {
+                // 정상인 방을 안 보고 넘어감 -> 소폭 증가 or 0 (기획에 따라 설정)
+                delta += normalIgnoreDelta;
+            }
         }
 
         return delta;
