@@ -24,69 +24,64 @@ public class AnomalyDistributor : MonoBehaviour
     // 하루 시작 시 호출 (GameManager에서 currentDay와 함께 호출)
     public void DistributeAnomaliesForDay(int currentDay)
     {
-        // 1. 현재 폭동 게이지 가져오기
-        // (PrisonManager에 CurrentRiotGauge 프로퍼티가 있다고 가정)
         int currentRiotGauge = prisonManager != null ? GameManager.Instance.CurrentRiotGauge : 0;
-        
-        // 혹은 테스트용 임시 값
-        // int currentRiotGauge = 50; 
-
         var allCellIds = anchorRegistry.GetAllCellIds();
+
+        // [최적화] 공통/특수 후보군은 밖에서 한 번만 추출
+        var globalCommons = masterDatabase.defs.Where(d => d.category == AnomalyCategory.Common).ToList();
+        var globalSpecials = masterDatabase.defs.Where(d => d.category == AnomalyCategory.Special && currentRiotGauge >= d.minRiotGauge).ToList();
 
         foreach (var cellId in allCellIds)
         {
             if (!anchorRegistry.TryGet(cellId, out var anchor)) continue;
 
-            // 1. 리스트 초기화
             anchor.ClearDailyAnomalies();
 
-            // 2. 죄수 특성 확인 (ScheduleManager에게 물어봄 - 재사용 데이터)
+            // 이번 감방에서 사용된 타겟(침대, 책상 등)을 추적하는 Set
+            HashSet<AnomalyTargetType> usedTargets = new HashSet<AnomalyTargetType>();
+
             PrisonerDefinition assignedDef = scheduleManager.GetAssignedPrisonerDef(cellId);
             PrisonerType pType = (assignedDef != null) ? assignedDef.traitType : PrisonerType.None;
 
-            // -----------------------------------------------------------
-            // 3. 후보군 필터링 (로직 분리!)
-            // -----------------------------------------------------------
+            // 1. 특수(Special) 먼저 배정 (우선순위 높음)
+            // (폭동 포스터가 붙어야 하는데, 일반 포스터 때문에 자리가 없으면 안 되니까)
+            var cellSpecials = new List<AnomalyDefinitionSO>(globalSpecials);
+            Shuffle(cellSpecials);
+            AddUniqueAnomalies(cellSpecials, anchor.currentDailyAnomalies, specialCount, usedTargets);
 
-            // A. 공통 (Common) - 누구나 겪음
-            var commonCandidates = masterDatabase.defs
-                .Where(d => d.category == AnomalyCategory.Common)
-                .ToList();
-
-            // B. 개별 (Individual) - 죄수 특성에 맞음 (Ex: Muscular -> 아령)
-            var individualCandidates = masterDatabase.defs
+            // 2. 개별(Individual) 배정
+            // (얘는 죄수 특화라 루프 안에서 필터링해야 함)
+            var cellIndividual = masterDatabase.defs
                 .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
                 .ToList();
+            Shuffle(cellIndividual);
+            AddUniqueAnomalies(cellIndividual, anchor.currentDailyAnomalies, individualCount, usedTargets);
 
-            // C. 특수 (Special) - 폭동 게이지 조건 충족 (Ex: RiotGauge >= 50 -> 폭동 포스터)
-            var specialCandidates = masterDatabase.defs
-                .Where(d => d.category == AnomalyCategory.Special && currentRiotGauge >= d.minRiotGauge)
-                .ToList();
+            // 3. 공통(Common) 배정 (남는 자리에 채워넣기)
+            var cellCommons = new List<AnomalyDefinitionSO>(globalCommons);
+            Shuffle(cellCommons);
+            AddUniqueAnomalies(cellCommons, anchor.currentDailyAnomalies, commonCount, usedTargets);
+        }
+    }
 
-            // -----------------------------------------------------------
-            // 4. 랜덤 픽 & 담기
-            // -----------------------------------------------------------
+    // [핵심] 중복 타겟 방지하며 추가하는 함수
+    private void AddUniqueAnomalies(List<AnomalyDefinitionSO> source, List<AnomalyDefinitionSO> dest, int maxCount, HashSet<AnomalyTargetType> usedSet)
+    {
+        int count = 0;
+        foreach (var def in source)
+        {
+            if (count >= maxCount) break;
 
-            // 셔플 (순서 섞기)
-            Shuffle(commonCandidates);
-            Shuffle(individualCandidates);
-            Shuffle(specialCandidates);
-
-            // A. 공통 요소 N개
-            anchor.currentDailyAnomalies.AddRange(commonCandidates.Take(commonCount));
-
-            // B. 개별 요소 M개
-            anchor.currentDailyAnomalies.AddRange(individualCandidates.Take(individualCount));
-
-            // C. [추가됨] 특수 요소 K개 (조건이 맞을 때만 추가됨)
-            // 이렇게 하면 평소엔 3개(2+1)였다가, 폭동 임박하면 4개(2+1+1)가 됩니다.
-            if (specialCandidates.Count > 0)
+            // Slot 타입은 여러 개(벽에 포스터 여러 장) 붙을 수 있다고 가정한다면 예외 처리
+            // 하지만 침대/변기 같은 'Structure' 교체형은 반드시 하나만 있어야 함
+            if (def.targetType != AnomalyTargetType.Slot)
             {
-                anchor.currentDailyAnomalies.AddRange(specialCandidates.Take(specialCount));
+                if (usedSet.Contains(def.targetType)) continue; // 이미 자리 참 -> 패스
+                usedSet.Add(def.targetType);
             }
 
-            // 디버그
-            // Debug.Log($"[Distributor] {cellId}: Common({commonCount}) + Individual({individualCount}) + Special({specialCandidates.Count > 0})");
+            dest.Add(def);
+            count++;
         }
     }
 
