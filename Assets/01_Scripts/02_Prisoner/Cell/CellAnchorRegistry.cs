@@ -26,4 +26,12 @@ public class CellAnchorRegistry : MonoBehaviour
         // 혹은 List<CellAnchor> _anchors 라면:
         // return _anchors.Select(a => a.cellId).ToList();
     }
+
+    // [추가] 모든 앵커 리스트 반환 (초기화 로직용)
+    public IEnumerable<CellAnchor> GetAllAnchors()
+    {
+        // _anchorMap은 스크립트 상단에 선언된 Dictionary<string, CellAnchor> 변수 이름입니다.
+        // 만약 이름이 _anchors 라면 return _anchors.Values; 로 바꿔주세요.
+        return _byId.Values;
+    }
 }
