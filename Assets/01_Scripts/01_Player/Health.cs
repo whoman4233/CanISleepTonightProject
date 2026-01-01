@@ -4,15 +4,20 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 100;
-    private int health;
+    private int health // 게임매니저에서 가져도록 변경
+    {
+        get => GameManager.Instance.PlayerHP;
+        set => GameManager.Instance.PlayerHP = value;
+    }
+
     public event Action OnDie;
 
     public bool IsDie = false;
 
-    private void Start()
-    {
-        health = maxHealth;
-    }
+    //private void Start()
+    //{
+    //    health = maxHealth;
+    //}
 
     public void TakeDamage(int damage)
     {
