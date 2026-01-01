@@ -48,6 +48,7 @@ public class PrisonerController : MonoBehaviour
             if (cell.inspectionPoint != null)
             {
                 fsm.InspectionPoint = cell.inspectionPoint;
+                fsm.Setup(this, agent, animator);
             }
             else
             {
