@@ -312,13 +312,13 @@ public class GameManager : MonoBehaviour
                 {
                     EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 30 미만인 경우
                 }
-                else if (30 <= riotGauge && riotGauge < 80)
+                else if (30 <= riotGauge && riotGauge < 90)
                 {
-                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding1)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 30 이상 80 미만인 경우
+                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding1)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 30 이상 90 미만인 경우
                 }
-                else if (riotGauge >= 80)
+                else if (riotGauge >= 90)
                 {
-                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding2)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 80 이상인 경우
+                    EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding2)); // 7일 간의 근무를 모두 마쳤고, 최종 폭동 게이지가 90 이상인 경우
                 }
             }
             else
