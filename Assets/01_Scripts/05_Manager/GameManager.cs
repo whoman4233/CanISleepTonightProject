@@ -37,6 +37,8 @@ public class GameManager : MonoBehaviour
     public float CurrentInGameSeconds { get; private set; } //Timer HUD 참조할 값
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
+    [SerializeField] public int PlayerHP { get; set; } = 70; 
+
     private void Awake()
     {
         if (Instance == null)
