@@ -11,7 +11,8 @@ public enum AnomalyCategory
 public enum AnomalyKind
 {
     Floor, FrontWall, LeftWall, RightWall, SteelBarred, Poster, Tile, Vent,
-    Toilet, Sink, Bed, Table, Trash,
+    Toilet, Sink, Bed, Book, Trash,
+    pot, weightDisc, dumbel,
     ItemInspect, GeneralProp, // ... 기타 등등
                               
 }
