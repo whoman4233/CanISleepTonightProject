@@ -137,19 +137,21 @@ public class PrisonerSpawnController : MonoBehaviour
         {
             // 1. DB에서 'Slot'이 아닌(교체형) 모든 이상현상을 가져옴
             var replacementAnomalies = anomalyDatabase.defs
-     .Where(a => a.targetType != AnomalyTargetType.Slot)
-     .Where(a => CheckCategoryAndType(a, prisonerType))
-     .GroupBy(a => a.targetType); // 타겟 타입별로 묶음
+                .Where(a => a.targetType != AnomalyTargetType.Slot)
+                .Where(a => CheckCategoryAndType(a, prisonerType))
+                .ToList();
 
-
-            foreach (var group in replacementAnomalies)
+            foreach (var def in replacementAnomalies)
             {
-                // 해당 가구가 실제로 있는지 확인
-                if (anchor.structure.GetDefaultObject(group.Key) != null)
+                // 2. 현재 감방(Anchor)에 그 가구가 실제로 있는지 확인
+                // (예: 이 방에 Bed가 있는지?)
+                if (anchor.structure.GetDefaultObject(def.targetType) != null)
                 {
-                    // 그 타입의 이상현상 중 하나만 랜덤으로 선정
-                    var picked = group.ElementAt(UnityEngine.Random.Range(0, group.Count()));
-                    anchor.currentDailyAnomalies.Add(picked);
+                    // 3. 있으면 리스트에 추가 (확률적으로 넣고 싶으면 Random 체크 추가)
+                    if (!anchor.currentDailyAnomalies.Contains(def))
+                    {
+                        anchor.currentDailyAnomalies.Add(def);
+                    }
                 }
             }
         }
