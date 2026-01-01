@@ -82,13 +82,40 @@ public class PrisonerInspectionState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
+        // [안전장치 1] FSM 참조가 있는지 확인
+        if (fsm == null)
+        {
+            Debug.LogError("[InspectionState] OnDamaged: fsm is null!");
+            return;
+        }
+
         // 점검 중 맞았을 때의 공통 반응 (애니메이션 등)
         anim.SetTrigger("Hit");
 
+        // [안전장치 2] 컨트롤러 참조가 있는지 확인 (AIType 접근 전)
+        if (Controller == null)
+        {
+            Debug.LogError("[InspectionState] OnDamaged: Controller is null!");
+            // 컨트롤러가 없어도 일단 전투 상태로라도 보내는 게 나을 수 있음 (선택 사항)
+            if (fsm.CombatState != null) fsm.ChangeState(fsm.CombatState);
+            return;
+        }
+
         // 전략 패턴: 죄수 타입에 따라 상태 전환
         if (Controller.AIType == PrisonerAIType.Bad)
-            fsm.ChangeState(fsm.CombatState);
+        {
+            // [안전장치 3] 전환할 상태가 존재하는지 확인
+            if (fsm.CombatState != null)
+                fsm.ChangeState(fsm.CombatState);
+            else
+                Debug.LogError("[InspectionState] CombatState is null!");
+        }
         else
-            fsm.ChangeState(fsm.CowerState);
+        {
+            if (fsm.CowerState != null)
+                fsm.ChangeState(fsm.CowerState);
+            else
+                Debug.LogError("[InspectionState] CowerState is null!");
+        }
     }
 }

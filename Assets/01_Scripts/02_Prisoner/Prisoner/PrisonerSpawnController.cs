@@ -108,28 +108,70 @@ public class PrisonerSpawnController : MonoBehaviour
         anchor.currentDailyAnomalies.Clear();
 
         if (anomalyDatabase == null || anomalyDatabase.defs == null) return;
-        if (anchor.anomalySlots == null) return;
 
-        foreach (var slot in anchor.anomalySlots)
+
+        // ================================================================
+        // PART 1. 슬롯형 (기존 로직 유지) - 빈 공간에 생성되는 것들
+        // ================================================================
+        if (anchor.anomalySlots != null)
         {
-            // 🔥 [핵심 수정] 작성하신 SO 구조에 맞춰 필터링
-            var possibleAnomalies = anomalyDatabase.defs
-                .Where(a => a.kind == slot.kind) // 1. 슬롯 타입 일치 (침대 자리에 침대)
-                .Where(a =>
-                    // 2. 카테고리 및 죄수 타입 체크
-                    a.category == AnomalyCategory.Common || // 공통이면 무조건 OK
-                    (a.category == AnomalyCategory.Individual && a.targetPrisoner == prisonerType) // 개별이면 죄수 타입 일치해야 함
-                )
-                .ToList();
-
-            if (possibleAnomalies.Count > 0)
+            foreach (var slot in anchor.anomalySlots)
             {
-                var picked = possibleAnomalies[UnityEngine.Random.Range(0, possibleAnomalies.Count)];
-                if (!anchor.currentDailyAnomalies.Contains(picked))
+                var possibleAnomalies = anomalyDatabase.defs
+                    .Where(a => a.kind == slot.kind)
+                    .Where(a => a.targetType == AnomalyTargetType.Slot) // 명시적으로 Slot 타입만
+                    .Where(a => CheckCategoryAndType(a, prisonerType))  // 조건 체크 함수로 분리 추천
+                    .ToList();
+
+                if (possibleAnomalies.Count > 0)
                 {
-                    anchor.currentDailyAnomalies.Add(picked);
+                    AddUniqueAnomaly(anchor, possibleAnomalies);
                 }
             }
+        }
+
+        // ================================================================
+        // PART 2. [추가됨] 교체형 (Structure) - 침대, 변기 등 가구 교체
+        // ================================================================
+        if (anchor.structure != null)
+        {
+            // 1. DB에서 'Slot'이 아닌(교체형) 모든 이상현상을 가져옴
+            var replacementAnomalies = anomalyDatabase.defs
+                .Where(a => a.targetType != AnomalyTargetType.Slot)
+                .Where(a => CheckCategoryAndType(a, prisonerType))
+                .ToList();
+
+            foreach (var def in replacementAnomalies)
+            {
+                // 2. 현재 감방(Anchor)에 그 가구가 실제로 있는지 확인
+                // (예: 이 방에 Bed가 있는지?)
+                if (anchor.structure.GetDefaultObject(def.targetType) != null)
+                {
+                    // 3. 있으면 리스트에 추가 (확률적으로 넣고 싶으면 Random 체크 추가)
+                    if (!anchor.currentDailyAnomalies.Contains(def))
+                    {
+                        anchor.currentDailyAnomalies.Add(def);
+                    }
+                }
+            }
+        }
+    }
+
+    // [도우미 함수 1] 조건 체크 (코드 중복 방지)
+    private bool CheckCategoryAndType(AnomalyDefinitionSO a, PrisonerType pType)
+    {
+        return a.category == AnomalyCategory.Common ||
+               (a.category == AnomalyCategory.Individual && a.targetPrisoner == pType);
+    }
+
+    // [도우미 함수 2] 중복 없이 추가
+    private void AddUniqueAnomaly(CellAnchor anchor, List<AnomalyDefinitionSO> candidates)
+    {
+        if (candidates.Count == 0) return;
+        var picked = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        if (!anchor.currentDailyAnomalies.Contains(picked))
+        {
+            anchor.currentDailyAnomalies.Add(picked);
         }
     }
 
@@ -155,18 +197,25 @@ public class PrisonerSpawnController : MonoBehaviour
             // NormalPrefab이 없으면 null이 들어갑니다.
             GameObject prefabToSpawn = isRealAnomaly ? def.suspiciousPrefab : def.normalPrefab;
 
-            // CASE 1: 교체형 (TargetType != Slot) - 침대, 바닥, 벽 등
+            // CASE 1: 교체형 (TargetType != Slot)
             if (def.targetType != AnomalyTargetType.Slot)
             {
-                // 조건: 
-                // 1. 진짜 이상현상이거나 (Floor_A)
-                // 2. 가짜인데 '항상 생성' 체크가 되어있을 때 (Floor_N으로 굳이 바꿔야 할 때)
+                // 디버그 로그 추가
+                if (verboseLog)
+                {
+                    Debug.Log($"[SpawnCheck] Type: {def.targetType}, Real: {isRealAnomaly}, " +
+                              $"StructureExist: {anchor.structure != null}, Prefab: {prefabToSpawn}");
+                }
+
                 if (isRealAnomaly || def.alwaysSpawnNormal)
                 {
                     if (anchor.structure != null && prefabToSpawn != null)
                     {
-                        // 기존 가구(Floor)를 찾아서 끕니다.
                         GameObject defaultObj = anchor.structure.GetDefaultObject(def.targetType);
+
+                        // 디버그 로그 추가
+                        if (defaultObj == null) Debug.LogError($"[SpawnError] {def.targetType}에 해당하는 Default Object를 CellStructure에서 찾지 못했습니다.");
+
                         if (defaultObj != null)
                         {
                             defaultObj.SetActive(false); // 기존 끄기
