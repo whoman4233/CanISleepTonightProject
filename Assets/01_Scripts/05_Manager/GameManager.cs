@@ -37,6 +37,9 @@ public class GameManager : MonoBehaviour
     public float CurrentInGameSeconds { get; private set; } //Timer HUD 참조할 값
     public event Action<float> OnInGameTimeUpdated; // 타이머 관련 ui이벤트 
 
+    // [추가] ScheduleManager를 찾아서 연결하는 프로퍼티
+    public PrisonerScheduleManager ScheduleManager;
+
     private int playerHP = 70;
     public int PlayerHP
     {
@@ -173,12 +176,16 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new GamePhaseChangedEvent(newPhase));
     }
 
-    private void OnEnterNotStarted() // 루프 시 초기화 및 메인으로(인트로씬) 돌아가면 초기화
+    private void OnEnterNotStarted()
     {
         currentDay = 0;
         riotGauge = 20;
         playerHP = 70;
+
+        // 🔥 정적 데이터 초기화 (이거 안 하면 새 게임인데 이전 게임 스케줄이 나옴)
+        PrisonerScheduleManager.ResetStaticData();
     }
+
     private void OnEnterStandby() // 준비 페이즈
     {
         currentDay++;
@@ -266,16 +273,25 @@ public class GameManager : MonoBehaviour
     }
     public GameSaveData GetCurrentSaveData()
     {
-        return new GameSaveData
+        var data = new GameSaveData
         {
             currentDay = this.currentDay,
             riotGauge = this.riotGauge,
             currentPhase = this.currentPhase,
             currentHp = this.playerHP
         };
+
+        // 🔥 스케줄 매니저에게 "데이터 내놔" 요청
+        if (ScheduleManager != null)
+        {
+            ScheduleManager.ExtractDataForSave(out data.prisonerRoster, out data.weeklySchedule);
+        }
+
+        return data;
     }
 
-    public bool LoadPlayerData() // 이어하기 추가 시 호출 될 함수
+    // 2. 로드할 때 데이터 덮어쓰기 (LoadPlayerData 수정)
+    public bool LoadPlayerData()
     {
         var data = _saveManager.LoadGame();
         if (data != null)
@@ -284,10 +300,16 @@ public class GameManager : MonoBehaviour
             this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
-            Debug.Log("세이브 파일을 성공적으로 불러왔습니다.");
+
+            // 🔥 스케줄 매니저에게 "이 데이터로 갱신해" 요청
+            if (ScheduleManager != null)
+            {
+                ScheduleManager.OverrideScheduleFromSave(data.prisonerRoster, data.weeklySchedule);
+            }
+
+            Debug.Log("세이브 로드 및 스케줄 복원 완료");
             return true;
         }
-        Debug.LogWarning("세이브 파일이 없습니다");
         return false;
     }
 
@@ -359,5 +381,12 @@ public class GameManager : MonoBehaviour
             EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding1));
         }
         else return;
+    }
+
+    // 외부에서 등록할 수 있는 함수 제공
+    public void RegisterScheduleManager(PrisonerScheduleManager manager)
+    {
+        ScheduleManager = manager;
+        Debug.Log("GameManager: 스케줄 매니저가 연결되었습니다.");
     }
 }
