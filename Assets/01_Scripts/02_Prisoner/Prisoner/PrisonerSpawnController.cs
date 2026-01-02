@@ -188,6 +188,10 @@ public class PrisonerSpawnController : MonoBehaviour
         foreach (var def in anchor.currentDailyAnomalies)
         {
             bool isRealAnomaly = (def == culpritDef);
+            if (def.anomalyId == "10") // 스크린샷의 ID
+            {
+                Debug.Log($"[Bed Debug] isSuspicious: {isSuspicious}, isRealAnomaly: {isRealAnomaly}, Culprit: {(culpritDef != null ? culpritDef.name : "null")}");
+            }
 
             // 🔥 [수정] 생성할 프리팹 결정 (진짜면 Suspicious, 아니면 Normal)
             // NormalPrefab이 없으면 null이 들어갑니다.
