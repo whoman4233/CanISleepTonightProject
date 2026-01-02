@@ -217,7 +217,7 @@ public class GameManager : MonoBehaviour
             StopCoroutine(patrolTimerCoroutine);
             patrolTimerCoroutine = null;
         }
-        _saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
+        //_saveManager.SaveGame(GetCurrentSaveData()); // 퇴근페이즈에서 오토세이브
         EventBus.Publish(new SettlementStartedEvent());
         //StartCoroutine(SettlementProcessRoutine());
     }
@@ -343,6 +343,7 @@ public class GameManager : MonoBehaviour
 
     public void OnClickSettlementButton() // 보고서 nextday 버튼 클릭 시 호출 될 함수
     {
+        _saveManager.SaveGame(GetCurrentSaveData());
         StartCoroutine(SettlementProcessRoutine());
     }
 
