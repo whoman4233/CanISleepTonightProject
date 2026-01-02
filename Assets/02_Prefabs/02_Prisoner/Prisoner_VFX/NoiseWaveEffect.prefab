@@ -1,3 +1,131 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4599e9fe52906d055767b9d37294ed00af64af733a06c52af1521b3c4d5cbe54
-size 4547
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3543182500089591635
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5640850245238908753}
+  - component: {fileID: 5039434605799487443}
+  m_Layer: 0
+  m_Name: NoiseWaveEffect
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5640850245238908753
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3543182500089591635}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.979726, y: 1.9527032, z: 0.8388304}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5219289321563449748}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5039434605799487443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3543182500089591635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f22f0474ad28fe41a4c520c66638ed1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onDuration: 0.5
+  offDuration: 0.5
+  visualRoot: {fileID: 4094577714022203950}
+--- !u!1001 &6318361211861427806
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5640850245238908753}
+    m_Modifications:
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8033727631706629232, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+        type: 3}
+      propertyPath: m_Name
+      value: NoiseWaveVFX
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 7809980269123704388, guid: c9d1de2b2725dbc4da9af0fa8b74c381, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c9d1de2b2725dbc4da9af0fa8b74c381, type: 3}
+--- !u!1 &4094577714022203950 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8033727631706629232, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+    type: 3}
+  m_PrefabInstance: {fileID: 6318361211861427806}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5219289321563449748 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2288382729875361738, guid: c9d1de2b2725dbc4da9af0fa8b74c381,
+    type: 3}
+  m_PrefabInstance: {fileID: 6318361211861427806}
+  m_PrefabAsset: {fileID: 0}
