@@ -90,12 +90,12 @@ public class FlowController : MonoBehaviour
         // 4. 저장된 Phase로 재진입
         var phase = GameManager.Instance.CurrentPhase;
 
-        //if (phase == GamePhase.NotStarted || phase == GamePhase.Settlement)
-        //{
-        //    phase = GamePhase.Standby;
-        //}
+        if (phase == GamePhase.NotStarted || phase == GamePhase.Settlement)
+        {
+            phase = GamePhase.Standby;
+        }
 
-        //GameManager.Instance.ChangePhase(phase);
+        GameManager.Instance.ChangePhase(phase);
         SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
 
         isBusy = false;
