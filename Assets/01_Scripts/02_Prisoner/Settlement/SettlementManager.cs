@@ -35,6 +35,10 @@ public class SettlementManager : MonoBehaviour
     [Header("Daily Base Increase (Standby)")]
     [SerializeField] private int dailyBaseIncrease = 20;
 
+    [Header("화이트보드에 적용될 폭동게이지 수치")]
+    private int standbyDelta;
+    private int settlementDelta;
+
     private int riotGauge;
     private int maxRiotGauge;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
@@ -48,6 +52,7 @@ public class SettlementManager : MonoBehaviour
         {
             if (e.Phase == GamePhase.Standby)
             {
+                standbyDelta = dailyBaseIncrease;
                 ApplyDailyBaseIncrease();
                 Debug.Log("SettlementManager의 ApplyDailyBaseIncrease 완료");
             }
@@ -89,7 +94,9 @@ public class SettlementManager : MonoBehaviour
         int delta = CalculateDelta(resolved, uninspected);
 
         // 2. 게이지 적용
-        riotGauge += delta;
+        settlementDelta = CalculateDelta(resolved, uninspected);
+
+        riotGauge += settlementDelta;
         riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
 
         // GameManager 업데이트
@@ -125,7 +132,9 @@ public class SettlementManager : MonoBehaviour
         }
 
         // 3. UI에 표시할 게이지 변화량 할당
-        data.RiotGaugeDelta = CalculateDelta(resolved, uninspected);
+        data.BaseIncreaseDelta = standbyDelta;
+        data.ActionResultDelta = settlementDelta;
+        data.TotalDelta = standbyDelta + settlementDelta;
 
         return data;
     }
@@ -181,6 +190,9 @@ public class SettlementManager : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.SetRiotGauge(riotGauge);
 
+        EventBus.Publish(new RiotGaugeChangedEvent(riotGauge, maxRiotGauge));
+
+
         Debug.Log($"[Standby] RiotGauge +{dailyBaseIncrease} => {riotGauge}/{maxRiotGauge}");
     }
 
@@ -214,5 +226,8 @@ public struct SettlementUIData
     public int WarnedCount;
     public int UncheckedCount;
 
-    public float RiotGaugeDelta;
+    [Header("Riot Gauge Delta")]
+    public int BaseIncreaseDelta;      
+    public int ActionResultDelta;      
+    public int TotalDelta;             
 }

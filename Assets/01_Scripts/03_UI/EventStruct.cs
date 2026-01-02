@@ -16,6 +16,17 @@ public struct GameContextReadyEvent //신 재로딩시 인스턴스가 달라지
         Phase = phase;
     }
 }
+public struct RiotGaugeChangedEvent // 폭동게이지 변화 데이터 전달용 이벤트
+{
+    public int Current;
+    public int Max;
+
+    public RiotGaugeChangedEvent(int current, int max)
+    {
+        Current = current;
+        Max = max;
+    }
+}
 
 
 //==========================================

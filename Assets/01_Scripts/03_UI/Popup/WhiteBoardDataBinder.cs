@@ -14,23 +14,35 @@ public class WhiteBoardDataBinder : MonoBehaviour
 
     private Action<ResultUIShowRequestedEvent> _onResultUIShow;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<RiotGaugeChangedEvent> _onGaugeChanged;
 
     private void Awake()
     {
         _onResultUIShow = OnResultUIShow;
         _onPhaseChanged = OnPhaseChanged;
+        _onGaugeChanged = OnGaugeChanged;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onResultUIShow);
         EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_onGaugeChanged);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onResultUIShow);
         EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_onGaugeChanged);
+    }
+
+    // =========================
+    // Riot Gauge 변경 이벤트
+    // =========================
+    private void OnGaugeChanged(RiotGaugeChangedEvent e)
+    {
+        Refresh(); // 게이지 값이 실제로 바뀐 "이후" 호출
     }
 
     private void OnResultUIShow(ResultUIShowRequestedEvent e)
@@ -69,7 +81,6 @@ public class WhiteBoardDataBinder : MonoBehaviour
         }
     }
 
-
     // =========================
     // Phase 변경
     // =========================
@@ -77,10 +88,13 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         if (e.Phase == GamePhase.Standby)
         {
-            Refresh(); // Day가 증가한 직후
+            // Day 증가 표시용
+            // RiotGauge는 RiotGaugeChangedEvent에서 갱신됨
+            Refresh();
         }
     }
 }
+
 
 
 
