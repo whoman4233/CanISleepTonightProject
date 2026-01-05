@@ -18,6 +18,7 @@ public class HUDTimer : MonoBehaviour
 
     private bool _isActive;
     private float _currentSeconds;
+    private float _lastSeconds;
     private float _initialSeconds;
 
     private Action<GameContextReadyEvent> _onContextReady;
@@ -90,14 +91,18 @@ public class HUDTimer : MonoBehaviour
 
     private void Activate()
     {
+        if (_isActive)
+            return;
+
         _isActive = true;
         SetUIActive(true);
         SyncFromGameManager();
     }
-
     private void Deactivate()
     {
         _isActive = false;
+        _lastSeconds = 0f;
+        _initialSeconds = -1f; // 다음 Patrol 대비
         SetUIActive(false);
     }
 
@@ -156,9 +161,24 @@ public class HUDTimer : MonoBehaviour
         if (!_isActive)
             return;
 
+        if (_lastSeconds > 0f)
+        {
+            float delta = Mathf.Abs(seconds - _lastSeconds);
+
+            // 정상적인 감소(Time.deltaTime)보다 훨씬 큰 변화면
+            if (delta > 1.0f)
+            {
+                // 기준값 재설정
+                _initialSeconds = Mathf.Max(0.01f, seconds);
+            }
+        }
+
+        _lastSeconds = seconds;
         _currentSeconds = seconds;
-        UpdateVisuals(_currentSeconds);
+
+        UpdateVisuals(seconds);
     }
+
 
     // =========================
     // UI Update
@@ -179,10 +199,12 @@ public class HUDTimer : MonoBehaviour
 
         timerText.text = $"{min:00}:{sec:00}";
     }
-
     private void UpdateFill(float seconds)
     {
         if (timerFillImage == null)
+            return;
+
+        if (_initialSeconds <= 0f)
             return;
 
         float normalized = Mathf.Clamp01(seconds / _initialSeconds);
