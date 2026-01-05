@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 
 public class HUDTimer : MonoBehaviour
@@ -7,12 +8,18 @@ public class HUDTimer : MonoBehaviour
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI timerText;
 
-    [Header("Format")]
-    [SerializeField] private bool showMilliseconds = true;
+    [Header("Fill Bar")]
+    [SerializeField] private Image timerFillImage;   // Image Type = Filled
+    [SerializeField] private Color startColor = new Color(0f, 1f, 0f, 1f);
+    [SerializeField] private Color endColor = new Color(1f, 0f, 0f, 1f);
+
+    [Header("Icon")]
+    [SerializeField] private Image timerIcon;
 
     private bool _isActive;
     private float _currentSeconds;
-    
+    private float _initialSeconds;
+
     private Action<GameContextReadyEvent> _onContextReady;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
@@ -20,6 +27,7 @@ public class HUDTimer : MonoBehaviour
     {
         _isActive = false;
         _currentSeconds = 0f;
+        _initialSeconds = -1f; // 아직 기준값 없음 표시
 
         _onContextReady = OnGameContextReady;
         _onPhaseChanged = OnPhaseChanged;
@@ -29,21 +37,19 @@ public class HUDTimer : MonoBehaviour
     {
         if (timerText == null)
         {
-            Debug.LogError("[HUDTimer] timerText is not assigned.");
             enabled = false;
             return;
         }
 
-        timerText.gameObject.SetActive(false);
+        SetUIActive(false);
 
-        // 컨텍스트 준비 이벤트 구독
         EventBus.Subscribe(_onContextReady);
         EventBus.Subscribe(_onPhaseChanged);
         EventBus.Subscribe<PatrolTimerResetEvent>(OnTimerReset);
 
         if (GameManager.Instance != null)
             GameManager.Instance.OnInGameTimeUpdated += OnTimeUpdated;
-        // DDOL UI는 이미 Phase가 정해진 상태로 들어올 수 있으므로 즉시 재적용
+
         ApplyPhaseFromGameManager();
     }
 
@@ -58,44 +64,59 @@ public class HUDTimer : MonoBehaviour
     }
 
     // =========================
-    // Context Ready
+    // Context
     // =========================
+
     private void OnGameContextReady(GameContextReadyEvent e)
     {
-        // 씬 재로딩/루프 변경의 기준점
-        Deactivate();          // 이전 루프 상태 제거
+        Deactivate();
     }
-    private void ApplyPhaseFromGameManager() //게임 매니저와 페이즈 동기화
+
+    private void ApplyPhaseFromGameManager()
     {
         if (GameManager.Instance == null)
             return;
 
         ApplyPhase(GameManager.Instance.CurrentPhase);
     }
+
     private void ApplyPhase(GamePhase phase)
     {
         if (phase == GamePhase.Patrol)
-        {
-            Activate(); // Patrol이면 켠다
-        }
+            Activate();
         else
-        {
-            Deactivate(); // 그 외는 끈다 (원하는 정책에 맞게 조정 가능)
-        }
+            Deactivate();
     }
+
     private void Activate()
     {
         _isActive = true;
-
-        if (timerText != null)
-            timerText.gameObject.SetActive(true);
-
-        SyncFromGameManager(); // 값만 복구
+        SetUIActive(true);
+        SyncFromGameManager();
     }
 
-    /// <summary>
-    /// GameManager에서 현재 상태를 Pull해 UI 복구
-    /// </summary>
+    private void Deactivate()
+    {
+        _isActive = false;
+        SetUIActive(false);
+    }
+
+    private void SetUIActive(bool active)
+    {
+        if (timerText != null)
+            timerText.gameObject.SetActive(active);
+
+        if (timerFillImage != null)
+            timerFillImage.gameObject.SetActive(active);
+
+        if (timerIcon != null)
+            timerIcon.gameObject.SetActive(active);
+    }
+
+    // =========================
+    // Sync
+    // =========================
+
     private void SyncFromGameManager()
     {
         if (GameManager.Instance == null)
@@ -104,73 +125,74 @@ public class HUDTimer : MonoBehaviour
         if (GameManager.Instance.CurrentPhase != GamePhase.Patrol)
             return;
 
-        _isActive = true;
         _currentSeconds = GameManager.Instance.CurrentInGameSeconds;
 
-        timerText.gameObject.SetActive(true);
-        UpdateText(_currentSeconds);
+        // Reset 이벤트 이전 진입 대비
+        if (_initialSeconds <= 0f)
+            _initialSeconds = Mathf.Max(0.01f, _currentSeconds);
+
+        UpdateVisuals(_currentSeconds);
     }
-    /// <summary>
-    /// Patrol 시작 시 1회 호출
-    /// </summary>
+
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
         if (e.Phase == GamePhase.Patrol)
-        {
-            SyncFromGameManager();
-        }
+            Activate();
         else
-        {
             Deactivate();
-        }
     }
 
-    /// <summary>
-    /// Patrol 시작 시 1회 호출
-    /// </summary>
     private void OnTimerReset(PatrolTimerResetEvent e)
     {
+        _initialSeconds = Mathf.Max(0.01f, e.InitialSeconds);
         _currentSeconds = e.InitialSeconds;
 
         if (_isActive)
-            UpdateText(_currentSeconds);
+            UpdateVisuals(_currentSeconds);
     }
 
-    /// <summary>
-    /// Patrol 중 시간 업데이트
-    /// </summary>
     private void OnTimeUpdated(float seconds)
     {
         if (!_isActive)
             return;
 
         _currentSeconds = seconds;
-        UpdateText(_currentSeconds);
+        UpdateVisuals(_currentSeconds);
+    }
+
+    // =========================
+    // UI Update
+    // =========================
+
+    private void UpdateVisuals(float seconds)
+    {
+        UpdateText(seconds);
+        UpdateFill(seconds);
     }
 
     private void UpdateText(float seconds)
     {
-        if (seconds < 0f)
-            seconds = 0f;
+        seconds = Mathf.Max(0f, seconds);
 
         int min = Mathf.FloorToInt(seconds / 60f);
         int sec = Mathf.FloorToInt(seconds % 60f);
 
-        if (showMilliseconds)
-        {
-            int ms = Mathf.FloorToInt((seconds - Mathf.Floor(seconds)) * 100f);
-            timerText.text = $"{min:00}:{sec:00}";
-        }
+        timerText.text = $"{min:00}:{sec:00}";
     }
 
-    public void Deactivate()
+    private void UpdateFill(float seconds)
     {
-        _isActive = false;
+        if (timerFillImage == null)
+            return;
 
-        if (timerText != null)
-            timerText.gameObject.SetActive(false);
+        float normalized = Mathf.Clamp01(seconds / _initialSeconds);
+
+        timerFillImage.fillAmount = normalized;
+        timerFillImage.color = Color.Lerp(endColor, startColor, normalized);
     }
 }
+
+
 
 
 
