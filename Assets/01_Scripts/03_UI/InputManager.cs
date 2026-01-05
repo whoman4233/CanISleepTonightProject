@@ -10,6 +10,7 @@ public class InputManager : MonoBehaviour
     private bool _playerPresent;
     private bool _inspectionActive;
     private int _uiLockCount; // Pause / Popup / Result 등
+    private bool _dialogueActive; // 대화상태 변수
 
     private InputState _currentState;
     public InputState CurrentState => _currentState;
@@ -181,6 +182,9 @@ public class InputManager : MonoBehaviour
         if (_uiLockCount > 0)
             return InputState.UIOnly;
 
+        if (_dialogueActive)
+            return InputState.Dialogue;
+
         if (_inspectionActive)
             return InputState.Inspection;
 
@@ -203,6 +207,12 @@ public class InputManager : MonoBehaviour
         bool gameplay = state == InputState.Gameplay;
         Cursor.lockState = gameplay ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !gameplay;
+    }
+
+    public void SetDialogueActive(bool isActive) // 대화 상태를 켜고 끄는 메서드
+    {
+        _dialogueActive = isActive;
+        ApplyState();
     }
 }
 
