@@ -189,7 +189,9 @@ public class GameManager : MonoBehaviour
     private void OnEnterStandby() // 준비 페이즈
     {
         currentDay++;
+        EventBus.Publish(new DayChangedEvent(currentDay)); //게임매니저 날짜변경 이벤트 발행(HUD Day 수신)
     }
+
     private void OnEnterBriefing() // 브리핑 페이즈
     {
         StandbyEndTrigger();

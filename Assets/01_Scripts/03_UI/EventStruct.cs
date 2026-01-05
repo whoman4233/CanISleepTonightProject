@@ -27,6 +27,16 @@ public struct RiotGaugeChangedEvent // 폭동게이지 변화 데이터 전달�
         Max = max;
     }
 }
+public struct DayChangedEvent // 게임매니저 날짜 변경(HUD Day) 이벤트
+{
+    public int CurrentDay;
+
+    public DayChangedEvent(int currentDay)
+    {
+        CurrentDay = currentDay;
+    }
+}
+
 
 
 //==========================================
