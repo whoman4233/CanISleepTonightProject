@@ -46,7 +46,16 @@ public class GameManager : MonoBehaviour
         get => playerHP;
         set
         {
-            playerHP = value;
+            int clamped = Mathf.Clamp(value, 0, 100);
+
+            if (playerHP == clamped)
+                return;
+
+            playerHP = clamped;
+
+            // HP 변경 이벤트 발행
+            EventBus.Publish(new PlayerHpChangedEvent(playerHP));
+
             if (playerHP <= 0 && currentPhase == GamePhase.Patrol)
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2)); // [순찰 페이즈] 중 HP가 0이 되었을 때 활성화
@@ -182,6 +191,8 @@ public class GameManager : MonoBehaviour
         riotGauge = 20;
         playerHP = 70;
 
+        EventBus.Publish(new PlayerHpChangedEvent(playerHP)); // HP동기화를 위한 이벤트
+
         // 🔥 정적 데이터 초기화 (이거 안 하면 새 게임인데 이전 게임 스케줄이 나옴)
         PrisonerScheduleManager.ResetStaticData();
     }
@@ -302,6 +313,8 @@ public class GameManager : MonoBehaviour
             this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
+
+            EventBus.Publish(new PlayerHpChangedEvent(playerHP)); //저장된 HP 값 불러올 때
 
             // 🔥 스케줄 매니저에게 "이 데이터로 갱신해" 요청
             if (ScheduleManager != null)
