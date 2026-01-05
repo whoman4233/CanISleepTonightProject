@@ -121,8 +121,14 @@ public sealed class PlayerInteractor : MonoBehaviour
             return;
         }
 
-        // 상시 스캔(감지)
-        Scan();
+        if (InputManager.Instance != null && InputManager.Instance.CurrentState == InputState.Dialogue) // 대화중이면 스캔 금지
+        {
+            ForceClearScanAndPublishOff();
+            return;
+        }
+
+            // 상시 스캔(감지)
+            Scan();
     }
 
     /// <summary>
