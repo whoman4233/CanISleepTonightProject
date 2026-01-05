@@ -12,7 +12,7 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dialogueContentText;
 
     [Header("Settings")]
-    [SerializeField] private float typingSpeed = 0.05f; // 타이핑 속도
+    [SerializeField] private float typingSpeed = 0.05f; // 타이핑 속도 (추후 조절 가능)
 
     private Queue<DialogueLine> dialogueQueue;
     private Coroutine dialogueRoutine;
@@ -28,7 +28,11 @@ public class DialogueManager : MonoBehaviour
     public void StartDialogue(DialogueData data) //NPC가 대화를 시작할 때 호출하는 진입점
     {
         if (dialoguePanel.activeSelf) return; // 이미 대화중이면 무시
-        //추후 플레이어 이동 제한 이벤트 발행
+        if (data == null || data.Lines == null || data.Lines.Length == 0)
+        {
+            Debug.LogWarning("대화 데이터가 비어있습니다.");
+            return;
+        }
         if (InputManager.Instance != null)
             InputManager.Instance.SetDialogueActive(true);
         dialogueQueue.Clear();
