@@ -184,7 +184,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
-  m_FillAmount: 1
+  m_FillAmount: 0.9
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -5540,7 +5540,7 @@ GameObject:
   - component: {fileID: 726334271}
   - component: {fileID: 726334270}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Day_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5585,7 +5585,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Day 1
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
@@ -7069,6 +7069,7 @@ GameObject:
   m_Component:
   - component: {fileID: 950082403}
   - component: {fileID: 950082404}
+  - component: {fileID: 950082405}
   m_Layer: 5
   m_Name: UI_HpBar
   m_TagString: Untagged
@@ -7113,6 +7114,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fillImage: {fileID: 358083}
   heartAnimator: {fileID: 1382657265}
+  canvasGroup: {fileID: 950082405}
+  fillMin: 0.09
+  fillMax: 0.9
+--- !u!225 &950082405
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 950082402}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &970265338
 GameObject:
   m_ObjectHideFlags: 0
@@ -9141,7 +9157,7 @@ GameObject:
   - component: {fileID: 1162897768}
   - component: {fileID: 1162897767}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Day_Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
