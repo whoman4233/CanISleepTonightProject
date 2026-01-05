@@ -143,6 +143,7 @@ public class InputManager : MonoBehaviour
         _playerPresent = false;
         _inspectionActive = false;
         _uiLockCount = 0;
+        _dialogueActive = false;
 
         _currentState = InputState.UIOnly;
 
