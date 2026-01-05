@@ -159,10 +159,6 @@ public class HUDTimer : MonoBehaviour
         if (showMilliseconds)
         {
             int ms = Mathf.FloorToInt((seconds - Mathf.Floor(seconds)) * 100f);
-            timerText.text = $"{min:00}:{sec:00}.{ms:00}";
-        }
-        else
-        {
             timerText.text = $"{min:00}:{sec:00}";
         }
     }

@@ -65,6 +65,9 @@ public class HUDDay : MonoBehaviour
 
         if (panelRoot != null)
             panelRoot.SetActive(show);
+
+        if (show)
+            SyncFromGameManager(); //게임매니저 상태와 동기화
     }
 
     // =========================
