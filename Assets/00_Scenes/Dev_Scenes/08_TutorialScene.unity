@@ -10572,59 +10572,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2013806551}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2016996132
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2016996134}
-  - component: {fileID: 2016996133}
-  m_Layer: 0
-  m_Name: PrisonerSpawnController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2016996133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2016996132}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8a2e01fc8e690449a4614a1d5199a8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  prisonerDatabase: {fileID: 11400000, guid: 2b112f9033548174e8788f03a4c6368d, type: 2}
-  anchorRegistry: {fileID: 425457071}
-  contentRegistry: {fileID: 795430439}
-  scheduleManager: {fileID: 0}
-  prisonerPrefab: {fileID: 6650839560293477269, guid: 0dd913650b94f464e8af9a06b13a5742,
-    type: 3}
-  cellPropPrefab: {fileID: 1673472249738765761, guid: 656e1c3ab321eed4ca78af1a5d3679da,
-    type: 3}
-  verboseLog: 1
---- !u!4 &2016996134
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2016996132}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.7557898, y: -7.4206896, z: 20.614204}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2025948686
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11352,7 +11299,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1573699356}
-  - {fileID: 2016996134}
   - {fileID: 25463459}
   - {fileID: 949730875}
   - {fileID: 1694098353}

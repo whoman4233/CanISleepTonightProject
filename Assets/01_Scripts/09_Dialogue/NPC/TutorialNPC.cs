@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TutorialNPC : MonoBehaviour
+public class TutorialNPC : MonoBehaviour , IInteractable
 {
     public enum TutorialSubStep
     {
@@ -30,17 +30,9 @@ public class TutorialNPC : MonoBehaviour
 
     private void Awake()
     {
-        _onStepChanged = e => 
+        _onStepChanged = e =>
         {
-            if (e.NewStep > currentSubStep)
-            {
-                currentSubStep = e.NewStep;
-                Debug.Log($"<color=green>튜토리얼 단계 업데이트: {currentSubStep}</color>");
-            }
-            else
-            {
-                Debug.Log($"<color=gray>이전 혹은 동일 단계 이벤트 무시됨: {e.NewStep}</color>");
-            }
+            UpdateStep(e.NewStep);
         };
     }
 
