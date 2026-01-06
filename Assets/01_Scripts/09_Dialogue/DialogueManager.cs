@@ -19,6 +19,7 @@ public class DialogueManager : MonoBehaviour
     private bool isTyping = false;
     private DialogueLine currentLine; // 한번에 문장표기 전용
     private readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>(); // WaitForSeconds 캐싱 (GC 최적화)
+    private bool canClick = false; // 문장 씹힘 방지
 
     private void Awake()
     {
@@ -41,8 +42,14 @@ public class DialogueManager : MonoBehaviour
         {
             dialogueQueue.Enqueue(line);
         }
+        if (InputManager.Instance != null) // 입력 초기화
+        {
+            InputManager.Instance.ResetPlayerInputs();
+        }
         dialoguePanel.SetActive(true);
+        canClick = false;
         DisplayNextLine();
+        StartCoroutine(EnableNextDelay(0.2f));
         Debug.Log("StartDialogue");
     }
 
@@ -59,28 +66,22 @@ public class DialogueManager : MonoBehaviour
         var entry = currentLine.Entry;
         if (entry == null)
         {
-            Debug.LogError($"데이터가 없습니다. 다음 문장 시도. 남은 큐: {dialogueQueue.Count}");
-            if (dialogueQueue.Count > 0)
-            {
-                DisplayNextLine();
-            }
-            else
-            {
-                EndDialogue();
-            }
+            Debug.LogWarning("대사가 없읍니다.");
             return;
         }
 
         speakerNameText.text = entry.speaker; // 엔트리에서 가져옴
 
-        // 4. 타이핑 시작
+        // 타이핑 시작
         ResetRoutine();
+        isTyping = true;
         dialogueRoutine = StartCoroutine(TypeSentence(currentLine.TranslatedContent));
 
     }
 
     private IEnumerator TypeSentence(string sentance)  // 타이핑 루틴
     {
+        
         isTyping = true;
         dialogueContentText.text = sentance;
         dialogueContentText.maxVisibleCharacters = 0;
@@ -103,12 +104,18 @@ public class DialogueManager : MonoBehaviour
         //speakerNameText.text = "";
         //dialogueContentText.text = "";
         if (InputManager.Instance != null)
+        {
             InputManager.Instance.SetDialogueActive(false);
+        }
+        speakerNameText.text = string.Empty; // 이름 지워주고
+        dialogueContentText.text = string.Empty; // 텍스트 지워주고
+        dialogueContentText.maxVisibleCharacters = 0; // 텍스트 숫자 0으로만들어주기
         Debug.Log("End Dialogue");
     }
 
     public void OnContinueClicked()  // 플레이어가 클릭하면 다음 대화 호출
     {
+        if (!canClick) return;
         if (isTyping)
         {
             StopCoroutine(dialogueRoutine);
@@ -139,5 +146,10 @@ public class DialogueManager : MonoBehaviour
             StopCoroutine(dialogueRoutine);
             dialogueRoutine = null;
         }
+    }
+    private IEnumerator EnableNextDelay(float delay)
+    {
+        yield return GetWait(delay);
+        canClick = true;
     }
 }

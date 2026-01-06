@@ -13,6 +13,9 @@ public abstract class DailyMissionStrategy : ScriptableObject
     [Header("Goals")]
     public int targetScore; // 목표 점수 (찾아야 할 개수 등)
 
+    [Header("Time Settings")]
+    public float missionTimeLimit = 480f; // 기본 480초, 1일차는 짧게 300초?
+
     public virtual void SetupDay(AnomalyDistributor anomalyDistributor, PrisonerScheduleManager scheduleManager)
     {
         // A. 이상현상 필터링 지시 (Distributor 담당)
@@ -24,6 +27,11 @@ public abstract class DailyMissionStrategy : ScriptableObject
             suspiciousCount: 0,
             defaultAI: PrisonerAIType.Good
         );
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SetDailyTimeLimit(missionTimeLimit);
+        }
     }
 
     // 2. 이벤트 발생 시 처리 (외부에서 호출: 예 - "흉기 찾음", "소음 해결")

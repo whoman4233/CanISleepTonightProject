@@ -122,6 +122,52 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 23800000, guid: 6441027dfd5b8bf4f86b3a7417c0d022, type: 2}
+--- !u!1 &973440
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 973441}
+  - component: {fileID: 973442}
+  m_Layer: 0
+  m_Name: TextManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &973441
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973440}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2105265944}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &973442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 785cee52a03029544b84106060743b1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textData: {fileID: 11400000, guid: cf9c04a53a708f24591c32b73e188f5c, type: 2}
+  currentLanguage: 0
 --- !u!1001 &21454928
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -332,7 +378,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7920dece89d4a054fa2bb5252aa459d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnController: {fileID: 2029310977}
   cellAnchors:
   - {fileID: 1598677885}
   - {fileID: 1858500408}
@@ -346,6 +391,7 @@ MonoBehaviour:
   - {fileID: 1198483122}
   - {fileID: 1401300478}
   - {fileID: 1517154934}
+  spawnController: {fileID: 2029310977}
   floors: 2
   cellsPerFloor: 6
   verboseLog: 1
@@ -846,11 +892,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc428276f857d6c4fafe8f6b2d538705, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prisonManager: {fileID: 65292951}
   prisonerDatabase: {fileID: 11400000, guid: 2b112f9033548174e8788f03a4c6368d, type: 2}
-  daysInWeek: 7
-  dailyActiveCount: 12
-  dailySuspiciousCount: 6
+  anchorRegistry: {fileID: 0}
 --- !u!1 &170895439
 GameObject:
   m_ObjectHideFlags: 0
@@ -1968,6 +2011,54 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 420276411}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &422971383
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 422971384}
+  - component: {fileID: 422971385}
+  m_Layer: 0
+  m_Name: DialogueManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &422971384
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 422971383}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2105265944}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &422971385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 422971383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c11546f44296f845967195b5cd4f4ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialoguePanel: {fileID: 0}
+  speakerNameText: {fileID: 0}
+  dialogueContentText: {fileID: 0}
+  typingSpeed: 0.05
 --- !u!1001 &423448713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7034,10 +7125,10 @@ MonoBehaviour:
   masterDatabase: {fileID: 11400000, guid: 1b34bf38cda3cab40ac0f04d18c240ae, type: 2}
   anchorRegistry: {fileID: 2005062747}
   prisonManager: {fileID: 65292951}
+  scheduleManager: {fileID: 168449258}
   commonCount: 2
   individualCount: 1
   specialCount: 1
-  scheduleManager: {fileID: 168449258}
 --- !u!1001 &1653337959
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9453,7 +9544,6 @@ MonoBehaviour:
   anchorRegistry: {fileID: 2005062747}
   contentRegistry: {fileID: 1392415037}
   scheduleManager: {fileID: 168449258}
-  anomalyDatabase: {fileID: 11400000, guid: 1b34bf38cda3cab40ac0f04d18c240ae, type: 2}
   prisonerPrefab: {fileID: 6650839560293477269, guid: 0dd913650b94f464e8af9a06b13a5742,
     type: 3}
   cellPropPrefab: {fileID: 1673472249738765761, guid: 656e1c3ab321eed4ca78af1a5d3679da,
@@ -10091,6 +10181,8 @@ Transform:
   - {fileID: 168449257}
   - {fileID: 1622626794}
   - {fileID: 627351600}
+  - {fileID: 422971384}
+  - {fileID: 973441}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2105265945

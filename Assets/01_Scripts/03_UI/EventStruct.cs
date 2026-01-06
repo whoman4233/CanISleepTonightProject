@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
+using UnityEngine;
+using static TutorialNPC;
 //==========================================
 //게임 루프관련 이벤트 목록
 //==========================================
@@ -381,6 +382,14 @@ public struct PlayerHpChangedEvent
     }
 }
 
+//==========================================
+// 튜토리얼 관련 이벤트
+//==========================================
+public struct TutorialStepChangedEvent
+{
+    public TutorialSubStep NewStep;
+    public TutorialStepChangedEvent(TutorialSubStep step) => NewStep = step;
+}
 //==========================================
 // 감방 관련 UI 이벤트 (HUD 수신)
 //==========================================

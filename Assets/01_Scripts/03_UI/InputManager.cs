@@ -215,6 +215,11 @@ public class InputManager : MonoBehaviour
         _dialogueActive = isActive;
         ApplyState();
     }
+    public void ResetPlayerInputs() // 입력 강제 초기화
+    {
+        Inputs.Player.Disable();
+        Inputs.Player.Enable();
+    }
 }
 
 
