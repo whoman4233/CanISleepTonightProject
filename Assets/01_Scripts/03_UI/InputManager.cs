@@ -7,11 +7,11 @@ public class InputManager : MonoBehaviour
     public static InputManager Instance { get; private set; }
     public PlayerInputs Inputs { get; private set; }
 
-    private bool _playerPresent;
-    private bool _inspectionActive;
+    private bool _playerPresent; // 플레이어 입력
+    private bool _inspectionActive; // 상세보기 활성
     private int _uiLockCount; // Pause / Popup / Result 등
     private bool _dialogueActive; // 대화상태 변수
-
+    private bool _qteActive; // QTE 활성 
     private InputState _currentState;
     public InputState CurrentState => _currentState;
 
@@ -25,7 +25,8 @@ public class InputManager : MonoBehaviour
     private Action<GlobalInputLockReleasedEvent> _onGlobalLockReleased;
     private Action<InputHardResetEvent> _onInputHardReset;
     private Action<GameContextReadyEvent> _onGameContextReady;
-
+    private Action<QTEStartedEvent> _onQTEStarted; 
+    private Action<QTEEndedEvent> _onQTEEnded;     
     // =============================
     // Unity Lifecycle
     // =============================
@@ -55,7 +56,8 @@ public class InputManager : MonoBehaviour
         _onGlobalLockReleased = OnGlobalLockReleased;
         _onInputHardReset = OnInputHardReset;
         _onGameContextReady = OnGameContextReady;
-
+        _onQTEStarted = OnQTEStarted; 
+        _onQTEEnded = OnQTEEnded;     
         ApplyState(force: true);
     }
 
@@ -68,6 +70,8 @@ public class InputManager : MonoBehaviour
         EventBus.Subscribe(_onGlobalLockReleased);
         EventBus.Subscribe(_onInputHardReset);
         EventBus.Subscribe(_onGameContextReady);
+        EventBus.Subscribe(_onQTEStarted);
+        EventBus.Subscribe(_onQTEEnded);
     }
 
     private void OnDisable()
@@ -79,6 +83,8 @@ public class InputManager : MonoBehaviour
         EventBus.Unsubscribe(_onGlobalLockReleased);
         EventBus.Unsubscribe(_onInputHardReset);
         EventBus.Unsubscribe(_onGameContextReady);
+        EventBus.Unsubscribe(_onQTEStarted);
+        EventBus.Unsubscribe(_onQTEEnded);
     }
 
     private void OnDestroy()
@@ -153,7 +159,17 @@ public class InputManager : MonoBehaviour
 
         ApplyCursor(InputState.UIOnly);
     }
+    private void OnQTEStarted(QTEStartedEvent e) // QTE
+    {
+        _qteActive = true;
+        ApplyState();
+    }
 
+    private void OnQTEEnded(QTEEndedEvent e) // QTE
+    {
+        _qteActive = false;
+        ApplyState();
+    }
     // =============================
     // Core: 상태 계산
     // =============================
@@ -169,7 +185,7 @@ public class InputManager : MonoBehaviour
         // Gameplay / Inspection만 Enable/Disable
         SetMap(Inputs.Player, next == InputState.Gameplay);
         SetMap(Inputs.Inspection, next == InputState.Inspection);
-
+        SetMap(Inputs.QTE, next == InputState.QTE);
         ApplyCursor(next);
 
         Debug.Log($"[InputManager] State={_currentState} UIAlwaysOn lock={_uiLockCount}");
@@ -188,6 +204,9 @@ public class InputManager : MonoBehaviour
 
         if (_inspectionActive)
             return InputState.Inspection;
+
+        if (_qteActive)
+            return InputState.QTE;
 
         return InputState.Gameplay;
     }
