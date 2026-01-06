@@ -8,7 +8,7 @@ using UnityEngine;
 [Serializable]
 public struct DialogueLine
 {
-    [SerializeField] private string textKey;
+    public string textKey;
   
     public TextEntry Entry => TextManager.Instance.GetEntry(textKey); // TextManager의 GetEntry를 사용하여 데이터 통째로 접근
 

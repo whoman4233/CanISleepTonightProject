@@ -38,7 +38,7 @@ public class PlayerManager : MonoBehaviour
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
         // 스탠바이 페이즈로 진입할 때 플레이어 생성
-        if (e.Phase == GamePhase.Standby || e.Phase == GamePhase.Settlement)
+        if (e.Phase == GamePhase.Standby || e.Phase == GamePhase.Settlement || e.Phase == GamePhase.Tutorial)
         {
             SpawnPlayer();
         }
