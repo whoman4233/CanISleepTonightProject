@@ -10,7 +10,9 @@ public class PrisonerData
     public PrisonerDefinition definition;
 
     // 실제 런타임에 적용될 성향
-    public PrisonerAIType RuntimeAIType;
+    public PrisonerAIType RuntimeAIType; 
+    
+    public DailyRoleData dailyRole;
 
     // 런타임 상태
     public float CurrentHealth;
@@ -20,14 +22,12 @@ public class PrisonerData
     // [변경] 생성자 인자에 'string instanceId' 추가
     public PrisonerData(PrisonerDefinition so, PrisonerAIType aiTypeOverride, string instanceId = "")
     {
-        // 인자로 받은 ID가 있으면 그걸 쓰고, 없으면(테스트 등) GUID 생성
         this.ID = string.IsNullOrEmpty(instanceId) ? System.Guid.NewGuid().ToString() : instanceId;
-
         this.Name = so.displayName;
-        this.definition = so; // 소문자로 변경 제안
+        this.definition = so;
 
-        // 스케줄러가 정해준 성향 적용
-        this.RuntimeAIType = aiTypeOverride;
+        // 초기화 시 Role 데이터도 기본값으로 생성
+        this.dailyRole = new DailyRoleData(false, aiTypeOverride, VisualAnomalyType.None);
 
         this.MaxHealth = so.hp;
         this.CurrentHealth = so.hp;
