@@ -108,15 +108,14 @@ public class PrisonerScheduleManager : MonoBehaviour
 
     // 🔥 매일 아침 GameFlowController(Strategy)가 호출해야 함
     public void AssignRolesForNewDay(
-    int suspiciousCount,
-    PrisonerAIType defaultAI,
-    List<PrisonerAIType> specialBehaviors = null,
-    List<VisualAnomalyType> specialVisuals = null)
+        int suspiciousCount,
+        PrisonerAIType defaultAI, // 이건 이제 '대표값'으로만 쓰고, 내부에서 섞음
+        List<PrisonerAIType> specialBehaviors = null,
+        List<VisualAnomalyType> specialVisuals = null)
     {
         _todayRoles.Clear();
         var cellIds = _residents.Keys.ToList();
 
-        // 1. 셔플 (랜덤 배정 위함)
         Shuffle(cellIds);
 
         int assignedSuspicious = 0;
@@ -125,44 +124,46 @@ public class PrisonerScheduleManager : MonoBehaviour
         {
             DailyRoleData role = new DailyRoleData();
 
-            // A. 범인 배정
+            // A. 범인(TargetSus) 배정
             if (assignedSuspicious < suspiciousCount)
             {
                 role.isSuspicious = true;
+                role.visualType = VisualAnomalyType.None;
+
+                // 특수 행동 (소리지르기 등) 랜덤 배정
+                if (specialBehaviors != null && specialBehaviors.Count > 0)
+                    role.dailyAIType = specialBehaviors[UnityEngine.Random.Range(0, specialBehaviors.Count)];
+                else
+                    role.dailyAIType = PrisonerAIType.Bad; // 없으면 그냥 Bad
+
+                // 특수 외형 랜덤 배정
+                if (specialVisuals != null && specialVisuals.Count > 0)
+                    role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
+
                 assignedSuspicious++;
             }
+            // B. 일반인(Default) 배정 -> 🔥 여기서 50:50 믹스!
             else
             {
                 role.isSuspicious = false;
-            }
+                role.visualType = VisualAnomalyType.None;
 
-            // B. AI 행동 패턴 배정
-            // 특수 행동 리스트가 있다면 랜덤 부여, 아니면 기본 AI
-            if (specialBehaviors != null && specialBehaviors.Count > 0)
-            {
-                role.dailyAIType = specialBehaviors[UnityEngine.Random.Range(0, specialBehaviors.Count)];
-            }
-            else
-            {
-                role.dailyAIType = defaultAI;
-            }
-
-            // [추가] 비주얼 배정 로직
-            if (specialVisuals != null && specialVisuals.Count > 0)
-            {
-                // 확률적으로 비주얼 변경 (예: 20% 확률 or 리스트에서 순차 배정)
-                // 여기서는 간단하게 "특수 행동을 하는 놈은 비주얼도 바뀐다" 등으로 커스텀 가능
-                // 예시: 랜덤 배정
-                if (UnityEngine.Random.value < 0.3f)
-                    role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
+                // "DefaultAI가 Good이면, Good/Bad를 50:50으로 섞어라" 라는 규칙 적용
+                if (defaultAI == PrisonerAIType.Good)
+                {
+                    // 50% 확률로 Good 또는 Bad
+                    role.dailyAIType = (UnityEngine.Random.value > 0.5f) ? PrisonerAIType.Good : PrisonerAIType.Bad;
+                }
                 else
-                    role.visualType = VisualAnomalyType.None;
+                {
+                    role.dailyAIType = defaultAI; // Good이 아니면 입력받은 값으로 통일
+                }
             }
 
             _todayRoles[cellId] = role;
         }
 
-        Debug.Log($"[Schedule] 오늘 역할 배정 완료. (범인: {assignedSuspicious}명)");
+        Debug.Log($"[Schedule] 역할 배정 완료. (범인: {assignedSuspicious}명, 일반인은 50:50 믹스)");
     }
 
     // =======================================================================
@@ -256,9 +257,17 @@ public class PrisonerScheduleManager : MonoBehaviour
 [System.Serializable]
 public struct DailyRoleData
 {
-    public bool isSuspicious;
-    public PrisonerAIType dailyAIType;
-    public VisualAnomalyType visualType; // 🔥 [추가] 오늘 입을 옷/외형
+    public bool isSuspicious;           // 범인 여부
+    public PrisonerAIType dailyAIType;  // 행동 패턴
+    public VisualAnomalyType visualType; // 외형 (비키니, 염소 등)
+
+    //[추가] 생성자: 값을 받아서 초기화
+    public DailyRoleData(bool suspicious, PrisonerAIType aiType, VisualAnomalyType visual)
+    {
+        this.isSuspicious = suspicious;
+        this.dailyAIType = aiType;
+        this.visualType = visual;
+    }
 }
 
 [System.Serializable]

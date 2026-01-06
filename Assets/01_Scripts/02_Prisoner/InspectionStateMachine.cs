@@ -157,11 +157,17 @@ public class InspectionStateMachine : MonoBehaviour
     public bool NotifySuppressSuccess(string cellId)
     {
         var cell = GetCurrentCellOrNull(cellId);
-        // 이미 완료되었거나 상태가 안 맞으면 리턴
-        if (cell == null) return false; // cell.State 체크는 유연하게 (타이밍 문제 방지)
+        if (cell == null) return false;
 
         cell.SuppressSuccess = true;
         OnSuppressSuccess?.Invoke(cellId);
+
+        // 🔥 [추가] 심판에게 알림: "이 방 죄수 처리했습니다!"
+        if (DailyMissionManager.Instance != null)
+        {
+            DailyMissionManager.Instance.NotifyPrisonerResolved(cellId);
+        }
+
         return true;
     }
 

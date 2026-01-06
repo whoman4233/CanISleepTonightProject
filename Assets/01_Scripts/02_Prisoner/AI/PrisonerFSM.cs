@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 public class PrisonerFSM : MonoBehaviour
@@ -6,46 +6,97 @@ public class PrisonerFSM : MonoBehaviour
     [Header("Points")]
     public Transform InspectionPoint;
 
-    // [º¯°æ] ¿ÜºÎ¿¡¼­ ÁÖÀÔ¹ÞÀ» ÄÄÆ÷³ÍÆ®µé
+    // [ë³€ê²½] ì™¸ë¶€ì—ì„œ ì£¼ìž…ë°›ì„ ì»´í¬ë„ŒíŠ¸ë“¤
     public PrisonerController Controller { get; private set; }
     public NavMeshAgent Agent { get; private set; }
     public Animator Anim { get; private set; }
 
     private IPrisonerState _currentState;
 
-    // »óÅÂ °´Ã¼µé
-    public PrisonerIdleState IdleState { get; private set; }
-    public PrisonerInspectionState InspectionState { get; private set; }
-    public PrisonerCombatState CombatState { get; private set; }
-    public PrisonerCowerState CowerState { get; private set; }
-    public PrisonerDeadState DeadState { get; private set; }
+    // ìƒíƒœ ê°ì²´ë“¤
+    public IPrisonerState IdleState { get; private set; }
+    public IPrisonerState CombatState { get; private set; }
+    public IPrisonerState CowerState { get; private set; }
+    public IPrisonerState DeadState { get; private set; }
+    public IPrisonerState InspectionState { get; private set; }
+
+    // ðŸ”¥ [ì¶”ê°€] íŠ¹ìˆ˜ í–‰ë™ ìƒíƒœë“¤
+    public IPrisonerState SingingState { get; private set; }
+    public IPrisonerState ScreamingState { get; private set; }
+    public IPrisonerState MumblingState { get; private set; }
+    public IPrisonerState HammeringState { get; private set; }
+    public IPrisonerState DeadliftingState { get; private set; }
+    public IPrisonerState CryingState { get; private set; }
 
     public bool IsInvulnerable => _currentState is PrisonerIdleState;
 
     private void Awake()
     {
-        // »óÅÂ °´Ã¼ »ý¼º (¿©±â¼­´Â this¸¸ ³Ñ±â°í, ½ÇÁ¦ ÄÄÆ÷³ÍÆ® Á¢±ÙÀº ÇÁ·ÎÆÛÆ¼·Î)
+        // ìƒíƒœ ê°ì²´ ìƒì„± (ì—¬ê¸°ì„œëŠ” thisë§Œ ë„˜ê¸°ê³ , ì‹¤ì œ ì»´í¬ë„ŒíŠ¸ ì ‘ê·¼ì€ í”„ë¡œí¼í‹°ë¡œ)
         IdleState = new PrisonerIdleState(this);
         InspectionState = new PrisonerInspectionState(this);
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);
+
+        // ðŸ”¥ [ì¶”ê°€] íŠ¹ìˆ˜ ìƒíƒœ ìƒì„±
+        SingingState = new PrisonerSingingState(this);
+        ScreamingState = new PrisonerScreamingState(this);
+        MumblingState = new PrisonerMumblingState(this);
+        HammeringState = new PrisonerHammeringState(this);
+        DeadliftingState = new PrisonerDeadliftingState(this);
+        CryingState = new PrisonerCryingState(this);
     }
 
-    // [ÇÙ½É] Controller¿¡¼­ È£ÃâÇÏ´Â ÃÊ±âÈ­ ÇÔ¼ö
+    // [í•µì‹¬] Controllerì—ì„œ í˜¸ì¶œí•˜ëŠ” ì´ˆê¸°í™” í•¨ìˆ˜
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
     {
         this.Controller = controller;
         this.Agent = agent;
         this.Anim = anim;
 
-        // Á¡°Ë À§Ä¡µµ Controller°¡ ¾Ë°í ÀÖ´Â Cell Á¤º¸¿¡¼­ °¡Á®¿È
+        // ì ê²€ ìœ„ì¹˜ë„ Controllerê°€ ì•Œê³  ìžˆëŠ” Cell ì •ë³´ì—ì„œ ê°€ì ¸ì˜´
         if (controller.AssignedCell != null)
         {
             this.InspectionPoint = controller.AssignedCell.inspectionPoint;
         }
 
         ChangeState(IdleState);
+    }
+
+    public void InitializeBehavior(PrisonerAIType aiType)
+    {
+        // 1. ìƒíƒœ ì „í™˜ ë¡œì§
+        switch (aiType)
+        {
+            // [1ì¼ì°¨ ì†ŒìŒ]
+            case PrisonerAIType.Singing:
+                ChangeState(SingingState);
+                break;
+            case PrisonerAIType.Screaming:
+                ChangeState(ScreamingState);
+                break;
+            case PrisonerAIType.Mumbling:
+                ChangeState(MumblingState);
+                break;
+            case PrisonerAIType.HammeringWall:
+                ChangeState(HammeringState);
+                break;
+            case PrisonerAIType.Deadlift:
+                ChangeState(DeadliftingState);
+                break;
+            case PrisonerAIType.Crying:
+                ChangeState(CryingState);
+                break;
+
+            // [ê¸°ë³¸]
+            case PrisonerAIType.Good:
+            case PrisonerAIType.Bad:
+            default:
+                ChangeState(IdleState);
+                break;
+        }
+        Debug.Log($"[FSM Init] {name} initialized with behavior: {aiType}");
     }
 
     private void Update() => _currentState?.Update();

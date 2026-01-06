@@ -326,4 +326,12 @@ public class GameManager : MonoBehaviour
         ScheduleManager = manager;
         Debug.Log("GameManager: 스케줄 매니저가 연결되었습니다.");
     }
+
+    public void SetDailyTimeLimit(float seconds)
+    {
+        this.patrolDurationSeconds = seconds;
+        // 필요하다면 UI 갱신 이벤트 즉시 발생
+        EventBus.Publish(new PatrolTimerResetEvent(seconds));
+        Debug.Log($"[GameManager] 오늘 제한시간 설정됨: {seconds}초");
+    }
 }
