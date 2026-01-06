@@ -46,4 +46,8 @@ public class AnomalyDefinitionSO : ScriptableObject
 
     [Tooltip("체크하면 이상현상이 아닐 때도 NormalPrefab을 생성합니다. (예: 벽시계, 달력)")]
     public bool alwaysSpawnNormal = false;
+
+    [Header("Spawn Settings")]
+    // 이 이상현상이 등장할 수 있는 테마들 (다중 체크 가능)
+    public MissionDayTheme validThemes;
 }
