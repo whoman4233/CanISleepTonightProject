@@ -91,6 +91,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             if (TryEnter())
             {
                 if(verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
+                //CellID 전달 이벤트 발행 -> 문열림 경고 HUD ON
+                EventBus.Publish(new CellInspectionInProgressEvent
+                {
+                    CellId = cellId
+                }); 
                 PlayOpen();
                 TriggerPrisonerInspection();
             }
@@ -113,6 +118,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             {
                 PlayClose();
                 inspection.CompleteInspection(cellId, inspection.IsSuppressionCleared);
+                //CellID 전달 이벤트 발행 -> 문열림 경고 HUD OFF
+                EventBus.Publish(new CellInspectionCompletedEvent
+                {
+                    CellId = cellId
+                });
             }
             else PlayLocked();
         }
