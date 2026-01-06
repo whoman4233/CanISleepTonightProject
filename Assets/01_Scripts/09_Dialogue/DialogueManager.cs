@@ -18,6 +18,7 @@ public class DialogueManager : MonoBehaviour
     private Coroutine dialogueRoutine;
     private bool isTyping = false;
     private DialogueLine currentLine; // 한번에 문장표기 전용
+    private readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>(); // WaitForSeconds 캐싱 (GC 최적화)
 
     private void Awake()
     {
@@ -27,12 +28,12 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(DialogueData data) //NPC가 대화를 시작할 때 호출하는 진입점
     {
-        if (dialoguePanel.activeSelf) return; // 이미 대화중이면 무시
         if (data == null || data.Lines == null || data.Lines.Length == 0)
         {
             Debug.LogWarning("대화 데이터가 비어있습니다.");
             return;
         }
+        if (dialoguePanel.activeSelf) return; // 이미 대화중이면 무시
         if (InputManager.Instance != null)
             InputManager.Instance.SetDialogueActive(true);
         dialogueQueue.Clear();
@@ -56,7 +57,7 @@ public class DialogueManager : MonoBehaviour
         currentLine = nextLine;
         speakerNameText.text = nextLine.SpeakerName;
 
-        if (dialogueRoutine != null) StopCoroutine(dialogueRoutine);
+        ResetRoutine();
         dialogueRoutine = StartCoroutine(TypeSentence(currentLine.Text));
         //dialogueRoutine = StartCoroutine(TypeSentence(line.Text));
 
@@ -65,20 +66,26 @@ public class DialogueManager : MonoBehaviour
     private IEnumerator TypeSentence(string sentance)  // 타이핑 루틴
     {
         isTyping = true;
-        dialogueContentText.text = "";
-        foreach (char letter in sentance.ToCharArray())
+        dialogueContentText.text = sentance;
+        dialogueContentText.maxVisibleCharacters = 0;
+        int totalChars = sentance.Length;
+        var wait = GetWait(typingSpeed);
+        for(int i = 0; i <= totalChars; i++)
         {
-            dialogueContentText.text += letter;
-            yield return new WaitForSeconds(typingSpeed);
+            dialogueContentText.maxVisibleCharacters = i;
+            yield return wait;
         }
         isTyping = false;
+        dialogueRoutine = null;
+        // 처음에 모든 문장을 text에 넣고 maxVisibleCharacters = i인 i값에 따라 문자 랜더링 개수만 바꿔준다. 메모리 최적화
     }
 
     private void EndDialogue()
     {
         dialoguePanel.SetActive(false);
-        speakerNameText.text = "";
-        dialogueContentText.text = "";
+        ResetRoutine();
+        //speakerNameText.text = "";
+        //dialogueContentText.text = "";
         if (InputManager.Instance != null)
             InputManager.Instance.SetDialogueActive(false);
         Debug.Log("End Dialogue");
@@ -91,12 +98,30 @@ public class DialogueManager : MonoBehaviour
             StopCoroutine(dialogueRoutine);
             //DialogueLine currentLine = dialogueQueue.Dequeue();
             //dialogueContentText.text = dialogueQueue.Peek().Text;
-            dialogueContentText.text = currentLine.Text;
+            //dialogueContentText.text = currentLine.Text;
+            dialogueContentText.maxVisibleCharacters = dialogueContentText.text.Length;
             isTyping = false;
         }
         else
         {
             DisplayNextLine();
+        }
+    }
+    private WaitForSeconds GetWait(float time)
+    {
+        if (!_waitCache.TryGetValue(time, out var wait))
+        {
+            wait = new WaitForSeconds(time);
+            _waitCache.Add(time, wait);
+        }
+        return wait;
+    }
+    private void ResetRoutine()
+    {
+        if (dialogueRoutine != null)
+        {
+            StopCoroutine(dialogueRoutine);
+            dialogueRoutine = null;
         }
     }
 }
