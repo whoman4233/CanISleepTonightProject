@@ -381,4 +381,15 @@ public struct PlayerHpChangedEvent
     }
 }
 
+//==========================================
+// 감방 관련 UI 이벤트 (HUD 수신)
+//==========================================
+public struct CellInspectionInProgressEvent
+{
+    public string CellId;
+}
 
+public struct CellInspectionCompletedEvent
+{
+    public string CellId;
+}
