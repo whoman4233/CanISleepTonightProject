@@ -48,7 +48,16 @@ public class GameManager : MonoBehaviour
         get => playerHP;
         set
         {
-            playerHP = value;
+            int clamped = Mathf.Clamp(value, 0, 100);
+
+            if (playerHP == clamped)
+                return;
+
+            playerHP = clamped;
+
+            // HP 변경 이벤트 발행
+            EventBus.Publish(new PlayerHpChangedEvent(playerHP));
+
             if (playerHP <= 0 && currentPhase == GamePhase.Patrol)
             {
                 EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2));

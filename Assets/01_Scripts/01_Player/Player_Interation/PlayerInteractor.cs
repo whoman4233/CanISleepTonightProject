@@ -43,6 +43,7 @@ public sealed class PlayerInteractor : MonoBehaviour
     private IInteractable _currentInteractable;
     private Collider _currentHitCollider;
     private float _currentHitDistance;
+    private DialogueManager _dialogueManager;
 
     // =========================
     // Crosshair Hover 이벤트/상태 제어
@@ -87,6 +88,11 @@ public sealed class PlayerInteractor : MonoBehaviour
             ForceClearScanAndPublishOff(); // 재진입 시 잔상 방지
         };
 
+    }
+
+    private void Start()
+    {
+        _dialogueManager = FindObjectOfType<DialogueManager>();
     }
 
     private void OnEnable()
@@ -189,6 +195,17 @@ public sealed class PlayerInteractor : MonoBehaviour
     /// </summary>
     public bool TryInteract()
     {
+
+        if (InputManager.Instance != null && InputManager.Instance.CurrentState == InputState.Dialogue) // e키 눌렀을 때 대화중이면 다른상호작용 무시하고 대화 진행
+        {
+            if (_dialogueManager != null)
+            {
+                _dialogueManager.OnContinueClicked();
+                return true; // 대화 넘기기에 성공했으므로 true 반환
+            }
+            return false;
+        }
+
         if (drawDebugRay || drawInteractAttemptRay)
         {
             Ray ray = targetCamera.ViewportPointToRay(new Vector3(ViewportCenterX, ViewportCenterY, 0f));
