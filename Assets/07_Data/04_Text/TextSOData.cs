@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,18 +9,20 @@ public enum Language
     English
 }
 
-// ÀÎ½ºÆåÅÍ¿¡¼­ ÀÔ·ÂÇÒ µ¥ÀÌÅÍ ´ÜÀ§ (Á÷·ÄÈ­ ÇÊ¼ö)
+// ì¸ìŠ¤í™í„°ì—ì„œ ì…ë ¥í•  ë°ì´í„° ë‹¨ìœ„ (ì§ë ¬í™” í•„ìˆ˜)
 [Serializable]
 public class TextEntry
 {
-    public string key;          // °Ë»ö¿ë °íÀ¯ Å° (¿¹: "ui_start_btn")
-    [TextArea] public string ko; // ÇÑ±¹¾î ÅØ½ºÆ®
-    [TextArea] public string en; // ¿µ¾î ÅØ½ºÆ®
+    public string key;          // ê²€ìƒ‰ìš© ê³ ìœ  í‚¤ (ì˜ˆ: "ui_start_btn")
+    public string speaker;
+    public string type;
+    [TextArea] public string ko; // í•œêµ­ì–´ í…ìŠ¤íŠ¸
+    [TextArea] public string en; // ì˜ì–´ í…ìŠ¤íŠ¸
 }
 
 [CreateAssetMenu(fileName = "TextData", menuName = "Data/TextSOData")]
 public class TextSOData : ScriptableObject
 {
-    [Header("ÅØ½ºÆ® µ¥ÀÌÅÍ ¸ñ·Ï")]
+    [Header("í…ìŠ¤íŠ¸ ë°ì´í„° ëª©ë¡")]
     public List<TextEntry> textList = new List<TextEntry>();
 }

@@ -48,18 +48,34 @@ public class DialogueManager : MonoBehaviour
 
     private void DisplayNextLine()
     {
-        if (dialogueQueue.Count == 0) // 남은대화 없으면
+        if (dialogueQueue.Count == 0)
         {
-            EndDialogue(); // 종료 매서드 실행
+            EndDialogue();
             return;
         }
-        DialogueLine nextLine = dialogueQueue.Dequeue();
-        currentLine = nextLine;
-        speakerNameText.text = nextLine.SpeakerName;
 
+        currentLine = dialogueQueue.Dequeue();
+
+        var entry = currentLine.Entry;
+        if (entry == null)
+        {
+            Debug.LogError($"데이터가 없습니다. 다음 문장 시도. 남은 큐: {dialogueQueue.Count}");
+            if (dialogueQueue.Count > 0)
+            {
+                DisplayNextLine();
+            }
+            else
+            {
+                EndDialogue();
+            }
+            return;
+        }
+
+        speakerNameText.text = entry.speaker; // 엔트리에서 가져옴
+
+        // 4. 타이핑 시작
         ResetRoutine();
-        dialogueRoutine = StartCoroutine(TypeSentence(currentLine.Text));
-        //dialogueRoutine = StartCoroutine(TypeSentence(line.Text));
+        dialogueRoutine = StartCoroutine(TypeSentence(currentLine.TranslatedContent));
 
     }
 
@@ -70,7 +86,7 @@ public class DialogueManager : MonoBehaviour
         dialogueContentText.maxVisibleCharacters = 0;
         int totalChars = sentance.Length;
         var wait = GetWait(typingSpeed);
-        for(int i = 0; i <= totalChars; i++)
+        for (int i = 0; i <= totalChars; i++)
         {
             dialogueContentText.maxVisibleCharacters = i;
             yield return wait;

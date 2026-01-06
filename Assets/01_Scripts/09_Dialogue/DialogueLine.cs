@@ -8,10 +8,10 @@ using UnityEngine;
 [Serializable]
 public struct DialogueLine
 {
-    [SerializeField] private string speakerKey; // npc이름
-    [SerializeField] private string textKey;    // 대화내용
+    [SerializeField] private string textKey;
+  
+    public TextEntry Entry => TextManager.Instance.GetEntry(textKey); // TextManager의 GetEntry를 사용하여 데이터 통째로 접근
 
-    // TextManager를 통해 번역된 텍스트를 반환
-    public string SpeakerName => TextManager.Instance.GetText(speakerKey);
-    public string Text => TextManager.Instance.GetText(textKey);
+    public string SpeakerName => Entry != null ? Entry.speaker : "Unknown";
+    public string TranslatedContent => TextManager.Instance.GetText(textKey);
 }

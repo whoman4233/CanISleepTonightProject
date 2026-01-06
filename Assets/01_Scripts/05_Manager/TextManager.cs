@@ -1,27 +1,27 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class TextManager : MonoBehaviour
 {
     public static TextManager Instance;
 
-    [Header("µ¥ÀÌÅÍ ÂüÁ¶")]
-    [SerializeField] private TextSOData textData; // SO ¿¬°á
+    [Header("ë°ì´í„° ì°¸ì¡°")]
+    [SerializeField] private TextSOData textData; // SO ì—°ê²°
 
-    [Header("¼³Á¤")]
+    [Header("ì„¤ì •")]
     [SerializeField] private Language currentLanguage = Language.Korean;
 
-    // ÇÙ½É: ·±Å¸ÀÓ Á¶È¸¿ë µñ¼Å³Ê¸® (Key -> ÇöÀç ¾ğ¾î ÅØ½ºÆ®)
-    private Dictionary<string, string> textDictionary = new Dictionary<string, string>();
+    // í•µì‹¬: ëŸ°íƒ€ì„ ì¡°íšŒìš© ë”•ì…”ë„ˆë¦¬ (Key -> í˜„ì¬ ì–¸ì–´ í…ìŠ¤íŠ¸)
+    private Dictionary<string, TextEntry> textDictionary = new Dictionary<string, TextEntry>();
 
     private void Awake()
     {
-        // ½Ì±ÛÅæ & DDoL ¼³Á¤
+        // ì‹±ê¸€í†¤ & DDoL ì„¤ì •
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            InitializeDictionary(); // ÃÖÃÊ ÃÊ±âÈ­
+            InitializeDictionary(); // ìµœì´ˆ ì´ˆê¸°í™”
         }
         else
         {
@@ -29,13 +29,13 @@ public class TextManager : MonoBehaviour
         }
     }
 
-    // µñ¼Å³Ê¸® ±¸Ãà (¾ğ¾î ¹Ù²ğ ¶§¸¶´Ù È£Ãâ)
+    // ë”•ì…”ë„ˆë¦¬ êµ¬ì¶• (ì–¸ì–´ ë°”ë€” ë•Œë§ˆë‹¤ í˜¸ì¶œ)
     public void SetLanguage(Language lang)
     {
         currentLanguage = lang;
         InitializeDictionary();
 
-        // ¿©±â¿¡ ¾ğ¾î º¯°æ ÀÌº¥Æ®(Event)¸¦ ¹ß»ı½ÃÄÑ UIµéÀÌ °»½ÅµÇ°Ô ÇÏ¸é ´õ ÁÁ½À´Ï´Ù.
+        // ì—¬ê¸°ì— ì–¸ì–´ ë³€ê²½ ì´ë²¤íŠ¸(Event)ë¥¼ ë°œìƒì‹œì¼œ UIë“¤ì´ ê°±ì‹ ë˜ê²Œ í•˜ë©´ ë” ì¢‹ìŠµë‹ˆë‹¤.
         Debug.Log($"Language changed to: {lang}");
     }
 
@@ -43,36 +43,62 @@ public class TextManager : MonoBehaviour
     {
         if (textData == null)
         {
-            Debug.LogError("TextSOData°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogError("TextSODataê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
             return;
         }
 
         textDictionary.Clear();
 
+        //foreach (var entry in textData.textList)
+        //{
+        //    // ì¤‘ë³µ í‚¤ ë°©ì§€ ì²´í¬
+        //    if (textDictionary.ContainsKey(entry.key))
+        //    {
+        //        Debug.LogWarning($"ì¤‘ë³µëœ í‚¤ê°€ ìˆìŠµë‹ˆë‹¤: {entry.key}");
+        //        continue;
+        //    }
+
+        //    // í˜„ì¬ ì–¸ì–´ ì„¤ì •ì— ë”°ë¼ ë°¸ë¥˜ ê²°ì •
+        //    string value = (currentLanguage == Language.Korean) ? entry.ko : entry.en;
+        //    textDictionary.Add(entry.key, value);
+        //}
         foreach (var entry in textData.textList)
         {
-            // Áßº¹ Å° ¹æÁö Ã¼Å©
-            if (textDictionary.ContainsKey(entry.key))
+            if (!textDictionary.ContainsKey(entry.key))
             {
-                Debug.LogWarning($"Áßº¹µÈ Å°°¡ ÀÖ½À´Ï´Ù: {entry.key}");
-                continue;
+                // valueì— entry(ê°ì²´ ì „ì²´)ë¥¼ ë„£ìŒ
+                textDictionary.Add(entry.key, entry);
             }
-
-            // ÇöÀç ¾ğ¾î ¼³Á¤¿¡ µû¶ó ¹ë·ù °áÁ¤
-            string value = (currentLanguage == Language.Korean) ? entry.ko : entry.en;
-            textDictionary.Add(entry.key, value);
         }
     }
 
-    // ¿ÜºÎ¿¡¼­ ÅØ½ºÆ® °¡Á®¿À´Â ÇÔ¼ö
-    public string GetText(string key)
+    // ì™¸ë¶€ì—ì„œ í…ìŠ¤íŠ¸ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
+    //public string GetText(string key)
+    //{
+    //    //if (textDictionary.TryGetValue(key, out string value))
+    //    //{
+    //    //    return value;
+    //    //}
+
+    //    //Debug.LogError($"í…ìŠ¤íŠ¸ í‚¤ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ: {key}");
+    //    //return key; // ì—ëŸ¬ ì‹œ í‚¤ê°’ì´ë¼ë„ ë°˜í™˜í•´ì„œ UIê°€ ë¹„ì§€ ì•Šê²Œ í•¨
+    //}
+
+    public TextEntry GetEntry(string key)
     {
-        if (textDictionary.TryGetValue(key, out string value))
+        if (textDictionary.TryGetValue(key, out var entry))
         {
-            return value;
+            return entry;
         }
 
-        Debug.LogError($"ÅØ½ºÆ® Å°¸¦ Ã£À» ¼ö ¾øÀ½: {key}");
-        return key; // ¿¡·¯ ½Ã Å°°ªÀÌ¶óµµ ¹İÈ¯ÇØ¼­ UI°¡ ºñÁö ¾Ê°Ô ÇÔ
+        Debug.LogError($"[TextManager] í‚¤ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ: {key}");
+        return null;
+    }
+    public string GetText(string key)
+    {
+        var entry = GetEntry(key);
+        if (entry == null) return key;
+
+        return currentLanguage == Language.Korean ? entry.ko : entry.en;
     }
 }
