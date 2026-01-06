@@ -10,7 +10,7 @@ public class PrisonerSpawnController : MonoBehaviour
     [SerializeField] private CellAnchorRegistry anchorRegistry;
     [SerializeField] private CellContentRegistry contentRegistry;
     [SerializeField] private PrisonerScheduleManager scheduleManager;
-    [SerializeField] private AnomalyDatabaseSO anomalyDatabase;
+    // [Removed] AnomalyDatabaseSO는 이제 Distributor만 봅니다.
 
     [Header("Prisoner Prefab")]
     [SerializeField] private GameObject prisonerPrefab;
@@ -47,10 +47,10 @@ public class PrisonerSpawnController : MonoBehaviour
                 {
                     anchor.structure.ResetAllDefaults();
                     anchor.IsOccupied = false;
+                    // anchor.ClearDailyAnomalies(); // 리스트 초기화는 Distributor가 수행함
                 }
             }
         }
-
         if (verboseLog) Debug.Log("[Spawn] Cleared all contents & Reset defaults for new day.");
     }
 
@@ -72,15 +72,15 @@ public class PrisonerSpawnController : MonoBehaviour
             return;
         }
 
-        // 3. 컨텐츠 등록
+        // 1. 컨텐츠 컨테이너 생성
         var content = new CellContentRegistry.CellContent();
         content.prisonerInstanceId = existingData.ID;
 
-        // 4. 죄수 생성
+        // 2. 죄수 생성
         PrisonerController controller = InstantiatePrisoner(anchor, existingData, isSuspicious);
         content.prisoner = controller;
 
-        // 5. 프롭 생성
+        // 3. 프롭 생성
         if (cellPropPrefab != null && anchor.propSpawnPoint != null)
         {
             var propGo = Instantiate(cellPropPrefab, anchor.propSpawnPoint.position, anchor.propSpawnPoint.rotation, anchor.transform);
@@ -88,8 +88,8 @@ public class PrisonerSpawnController : MonoBehaviour
             content.prop = propGo;
         }
 
-        // 🔥 6. 이상현상 배정 및 생성 (죄수 타입 전달)
-        AssignRandomAnomalies(anchor, existingData.definition.traitType);
+        // 🔥 4. 이상현상 소환 실행
+        // (이미 Distributor가 anchor.currentDailyAnomalies를 채워뒀다고 가정)
         SpawnAnomaliesLogic(cellId, anchor, isSuspicious, content);
 
         contentRegistry.Set(cellId, content);
@@ -97,86 +97,18 @@ public class PrisonerSpawnController : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------
-    // 내부 로직
+    // 내부 로직 (선택 로직은 제거되고 생성 로직만 남음)
     // -----------------------------------------------------------------------
-
-    private void AssignRandomAnomalies(CellAnchor anchor, PrisonerType prisonerType)
-    {
-        if (anchor.currentDailyAnomalies == null)
-            anchor.currentDailyAnomalies = new List<AnomalyDefinitionSO>();
-
-        anchor.currentDailyAnomalies.Clear();
-
-        if (anomalyDatabase == null || anomalyDatabase.defs == null) return;
-
-
-        // ================================================================
-        // PART 1. 슬롯형 (기존 로직 유지) - 빈 공간에 생성되는 것들
-        // ================================================================
-        if (anchor.anomalySlots != null)
-        {
-            foreach (var slot in anchor.anomalySlots)
-            {
-                var possibleAnomalies = anomalyDatabase.defs
-                    .Where(a => a.kind == slot.kind)
-                    .Where(a => a.targetType == AnomalyTargetType.Slot) // 명시적으로 Slot 타입만
-                    .Where(a => CheckCategoryAndType(a, prisonerType))  // 조건 체크 함수로 분리 추천
-                    .ToList();
-
-                if (possibleAnomalies.Count > 0)
-                {
-                    AddUniqueAnomaly(anchor, possibleAnomalies);
-                }
-            }
-        }
-
-        // ================================================================
-        // PART 2. [추가됨] 교체형 (Structure) - 침대, 변기 등 가구 교체
-        // ================================================================
-        if (anchor.structure != null)
-        {
-            var replacementAnomalies = anomalyDatabase.defs
-     .Where(a => a.targetType != AnomalyTargetType.Slot)
-     .Where(a => CheckCategoryAndType(a, prisonerType))
-     .GroupBy(a => a.targetType); // 타겟 타입별로 묶음
-
-            foreach (var group in replacementAnomalies)
-            {
-                // 해당 가구가 실제로 있는지 확인
-                if (anchor.structure.GetDefaultObject(group.Key) != null)
-                {
-                    // 그 타입의 이상현상 중 하나만 랜덤으로 선정
-                    var picked = group.ElementAt(UnityEngine.Random.Range(0, group.Count()));
-                    anchor.currentDailyAnomalies.Add(picked);
-                }
-            }
-        }
-    }
-
-    // [도우미 함수 1] 조건 체크 (코드 중복 방지)
-    private bool CheckCategoryAndType(AnomalyDefinitionSO a, PrisonerType pType)
-    {
-        return a.category == AnomalyCategory.Common ||
-               (a.category == AnomalyCategory.Individual && a.targetPrisoner == pType);
-    }
-
-    // [도우미 함수 2] 중복 없이 추가
-    private void AddUniqueAnomaly(CellAnchor anchor, List<AnomalyDefinitionSO> candidates)
-    {
-        if (candidates.Count == 0) return;
-        var picked = candidates[UnityEngine.Random.Range(0, candidates.Count)];
-        if (!anchor.currentDailyAnomalies.Contains(picked))
-        {
-            anchor.currentDailyAnomalies.Add(picked);
-        }
-    }
 
     private void SpawnAnomaliesLogic(string cellId, CellAnchor anchor, bool isSuspicious, CellContentRegistry.CellContent content)
     {
+        // 리스트가 비어있으면 할 일 없음
         if (anchor.currentDailyAnomalies == null || anchor.currentDailyAnomalies.Count == 0) return;
 
+        // Slot 위치 관리를 위해 복사본 사용
         List<AnomalySpawnSlot> availableSlots = new List<AnomalySpawnSlot>(anchor.anomalySlots);
 
+        // 범인(Culprit) 선정 로직
         AnomalyDefinitionSO culpritDef = null;
         if (isSuspicious)
         {
@@ -188,39 +120,25 @@ public class PrisonerSpawnController : MonoBehaviour
         foreach (var def in anchor.currentDailyAnomalies)
         {
             bool isRealAnomaly = (def == culpritDef);
-            if (def.anomalyId == "10") // 스크린샷의 ID
-            {
-                Debug.Log($"[Bed Debug] isSuspicious: {isSuspicious}, isRealAnomaly: {isRealAnomaly}, Culprit: {(culpritDef != null ? culpritDef.name : "null")}");
-            }
 
-            // 🔥 [수정] 생성할 프리팹 결정 (진짜면 Suspicious, 아니면 Normal)
-            // NormalPrefab이 없으면 null이 들어갑니다.
+            // 생성할 프리팹 결정 (진짜면 Suspicious, 아니면 Normal)
             GameObject prefabToSpawn = isRealAnomaly ? def.suspiciousPrefab : def.normalPrefab;
 
-            // CASE 1: 교체형 (TargetType != Slot)
+            // --------------------------------------------------
+            // CASE 1: 교체형 (가구 등)
+            // --------------------------------------------------
             if (def.targetType != AnomalyTargetType.Slot)
             {
-                // 디버그 로그 추가
-                if (verboseLog)
-                {
-                    Debug.Log($"[SpawnCheck] Type: {def.targetType}, Real: {isRealAnomaly}, " +
-                              $"StructureExist: {anchor.structure != null}, Prefab: {prefabToSpawn}");
-                }
-
                 if (isRealAnomaly || def.alwaysSpawnNormal)
                 {
                     if (anchor.structure != null && prefabToSpawn != null)
                     {
                         GameObject defaultObj = anchor.structure.GetDefaultObject(def.targetType);
-
-                        // 디버그 로그 추가
-                        if (defaultObj == null) Debug.LogError($"[SpawnError] {def.targetType}에 해당하는 Default Object를 CellStructure에서 찾지 못했습니다.");
-
                         if (defaultObj != null)
                         {
-                            defaultObj.SetActive(false); // 기존 끄기
+                            defaultObj.SetActive(false); // 기존 가구 숨김
 
-                            // 그 위치/회전/부모 그대로 새 놈(Floor_A or Floor_N) 생성
+                            // 새 가구 생성 (부모는 기존 가구의 부모로 설정)
                             var go = Instantiate(prefabToSpawn, defaultObj.transform.position, defaultObj.transform.rotation, defaultObj.transform.parent);
 
                             var actor = go.GetComponent<AnomalyActor>();
@@ -230,19 +148,20 @@ public class PrisonerSpawnController : MonoBehaviour
                         }
                     }
                 }
-                // else: 아무것도 안 하면 '기존 Scene 오브젝트(Floor)'가 그대로 보임 (성능 이득)
             }
-            // CASE 2: 추가형 (TargetType == Slot) - 시계, 포스터 등
+            // --------------------------------------------------
+            // CASE 2: 추가형 (Slot - 포스터, 시계 등)
+            // --------------------------------------------------
             else
             {
+                // 해당 종류(Kind)에 맞는 빈 슬롯 찾기
                 int slotIndex = availableSlots.FindIndex(s => s.kind == def.kind);
 
                 if (slotIndex != -1)
                 {
                     var targetSlot = availableSlots[slotIndex];
-                    availableSlots.RemoveAt(slotIndex);
+                    availableSlots.RemoveAt(slotIndex); // 슬롯 사용 처리
 
-                    // 조건: 진짜거나, 가짜여도 생성해야 하는 경우
                     if (isRealAnomaly || def.alwaysSpawnNormal)
                     {
                         if (prefabToSpawn != null)
@@ -283,6 +202,6 @@ public class PrisonerSpawnController : MonoBehaviour
     private bool ValidateRefs()
     {
         return prisonerDatabase != null && anchorRegistry != null && contentRegistry != null &&
-               prisonerPrefab != null && scheduleManager != null && anomalyDatabase != null;
+               prisonerPrefab != null && scheduleManager != null;
     }
 }

@@ -5,247 +5,261 @@ using UnityEngine;
 
 public class PrisonerScheduleManager : MonoBehaviour
 {
+    public static PrisonerScheduleManager Instance;
+
     [Header("References")]
-    [SerializeField] private PrisonManager prisonManager;
     [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
-
-    [Header("Settings")]
-    [SerializeField] private int daysInWeek = 7;
-    [SerializeField] private int dailyActiveCount = 6;
-    [SerializeField] private int dailySuspiciousCount = 3;
+    [SerializeField] private CellAnchorRegistry anchorRegistry; // 방 목록 파악용
 
     // ========================================================================
-    // [핵심] 씬이 바뀌어도 살아있는 데이터 저장소 (Static Cache)
+    // [데이터 저장소]
+    // 1. 거주자 명부 (Resident Roster): 게임 내내 유지 (체력, 템플릿 등)
+    // 2. 오늘의 역할 (Daily Roles): 하루마다 리셋 (범인 여부, AI 타입)
     // ========================================================================
-    private static Dictionary<string, PrisonerData> _cachedWeeklyInstances;
-    private static List<DailyScheduleData> _cachedWeeklySchedule;
 
-    // 현재 인스턴스에서 쓰는 참조 변수
-    private Dictionary<string, PrisonerData> _weeklyInstances;
-    private List<DailyScheduleData> _weeklySchedule;
+    // 정적 캐시 (씬 이동 시 데이터 유지용)
+    private static Dictionary<string, PrisonerData> _cachedResidents;
 
-    private Dictionary<string, DailyCellAssignment> _todayCache = new Dictionary<string, DailyCellAssignment>();
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    // 실제 런타임 사용 변수
+    private Dictionary<string, PrisonerData> _residents;
+    private Dictionary<string, DailyRoleData> _todayRoles = new Dictionary<string, DailyRoleData>();
 
     private void Awake()
     {
+        Instance = this;
+
+        // 1. 캐시 초기화 확인 (새 게임)
+        if (_cachedResidents == null)
+        {
+            _cachedResidents = new Dictionary<string, PrisonerData>();
+            Debug.Log("[Schedule] 새 게임: 거주자 명부 초기화됨");
+        }
+
+        // 2. 참조 연결
+        _residents = _cachedResidents;
+
+        // 3. 레지스트리 연결 (저장/로드 시스템용)
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RegisterScheduleManager(this);
         }
-        else
-        {
-            Debug.LogError("GameManager를 찾을 수 없습니다! IntroScene부터 시작했나요?");
-        }
-
-        if (prisonManager == null) prisonManager = FindObjectOfType<PrisonManager>();
-        _onPhaseChanged = HandleGamePhaseChanged;
-
-        // 1. 캐시(Static)가 비어있으면? -> 새 게임 (또는 초기화)
-        if (_cachedWeeklyInstances == null || _cachedWeeklySchedule == null)
-        {
-            _cachedWeeklyInstances = new Dictionary<string, PrisonerData>();
-            _cachedWeeklySchedule = new List<DailyScheduleData>();
-
-            // 여기서 바로 생성하지 않고, GameManager가 Load를 시도한 뒤에 
-            // 데이터가 없으면 Generate하도록 유도하거나, 
-            // 일단 비워두고 Start에서 판단합니다.
-        }
-
-        // 2. 현재 인스턴스에 정적 데이터 연결 (참조 공유)
-        _weeklyInstances = _cachedWeeklyInstances;
-        _weeklySchedule = _cachedWeeklySchedule;
     }
 
     private void Start()
     {
-        // 씬 로드 후, 데이터가 텅 비어있다면 (새 게임 시작 1일차) -> 생성!
-        // (만약 로드된 게임이라면 이미 데이터가 채워져 있을 것임)
-        if (_weeklyInstances.Count == 0)
+        // 씬 시작 시, 아직 입주민이 없으면 생성 (1일차 Intro 직후)
+        if (_residents.Count == 0)
         {
-            GenerateWeeklyRoster();
-            GenerateWeeklySchedule();
-            Debug.Log("[Schedule] 새 게임 스케줄 생성 완료 (Static Cache 저장됨)");
-        }
-        else
-        {
-            Debug.Log("[Schedule] 기존 스케줄 데이터 유지됨 (Day 2+ or Loaded)");
-        }
-
-        // 오늘자 캐시 갱신
-        if (GameManager.Instance != null)
-        {
-            GetAssignmentsForDay(GameManager.Instance.CurrentDay);
+            GenerateNewResidents();
         }
     }
 
-    private void OnEnable() => EventBus.Subscribe(_onPhaseChanged);
-    private void OnDisable() => EventBus.Unsubscribe(_onPhaseChanged);
-
     // =======================================================================
-    // [외부 호출] GameManager용 저장/로드/초기화 함수
+    // [1] 거주자 관리 (Residents) - 누가 어디 사는가?
     // =======================================================================
 
-    // 게임 완전히 껐다가 켜거나, 메인 메뉴로 나갈 때 호출 필요 (데이터 초기화)
-    public static void ResetStaticData()
+    // 게임 시작 시 한 번만 호출됨 (모든 방에 죄수 채워넣기)
+    private void GenerateNewResidents()
     {
-        _cachedWeeklyInstances = null;
-        _cachedWeeklySchedule = null;
-        Debug.Log("[Schedule] 정적 데이터 초기화됨");
-    }
+        _residents.Clear();
+        if (prisonerDatabase == null || anchorRegistry == null) return;
 
-    // 파일 로드 시 호출: 저장된 데이터로 덮어쓰기
-    public void OverrideScheduleFromSave(List<PrisonerSaveData> rosterData, List<DailyScheduleSaveData> scheduleData)
-    {
-        if (rosterData == null || rosterData.Count == 0) return;
-
-        _weeklyInstances.Clear();
-        _weeklySchedule.Clear();
-
-        // 1. 명부 복원
-        foreach (var pData in rosterData)
+        var allAnchors = anchorRegistry.GetAllCellIds();
+        foreach (var cellId in allAnchors)
         {
-            // ID로 SO 찾기 (임시로 이름 매칭, ID가 있다면 ID로 하세요)
-            var def = prisonerDatabase.prisoners.Find(p => p.templateId == pData.prisonerDefID);
+            // DB에서 랜덤 죄수 뽑기
+            var def = prisonerDatabase.GetRandomDefinition();
             if (def != null)
             {
-                PrisonerData newData = new PrisonerData(def, PrisonerAIType.Good, pData.cellId);
-                newData.CurrentHealth = pData.currentHealth;
-                newData.IsSuppressed = pData.isSuppressed;
-                _weeklyInstances[pData.cellId] = newData;
+                // 기본 데이터 생성 (ID, 체력 등)
+                PrisonerData newPrisoner = new PrisonerData(def, PrisonerAIType.Good, cellId);
+                _residents[cellId] = newPrisoner;
             }
         }
-
-        // 2. 스케줄 복원
-        foreach (var sData in scheduleData)
-        {
-            DailyScheduleData dayData = new DailyScheduleData { dayNumber = sData.dayNumber };
-            foreach (var entry in sData.assignmentList)
-            {
-                dayData.cellAssignments.Add(entry.cellId, entry.assignment);
-            }
-            _weeklySchedule.Add(dayData);
-        }
-
-        // 3. Static에도 반영 (중요)
-        _cachedWeeklyInstances = _weeklyInstances;
-        _cachedWeeklySchedule = _weeklySchedule;
-
-        Debug.Log("[Schedule] 세이브 파일 기반으로 스케줄 덮어쓰기 완료");
+        Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 배치 완료.");
     }
 
-    // 저장 시 호출: 현재 데이터를 리스트 형태로 반환
-    public void ExtractDataForSave(out List<PrisonerSaveData> outRoster, out List<DailyScheduleSaveData> outSchedule)
+    // 외부에서 특정 방의 죄수 정보를 요청할 때
+    public PrisonerData GetPrisonerData(string cellId)
     {
-        outRoster = new List<PrisonerSaveData>();
-        outSchedule = new List<DailyScheduleSaveData>();
+        if (_residents.TryGetValue(cellId, out var data))
+        {
+            // 데이터 반환 전, 오늘의 역할(AI)을 덮어씌워서 줌
+            if (_todayRoles.TryGetValue(cellId, out var role))
+            {
+                data.RuntimeAIType = role.dailyAIType;
+                // data.isSuspicious = role.isSuspicious; // 데이터 클래스에 이 필드가 있다면
+            }
+            return data;
+        }
+        return null; // 빈 방
+    }
 
-        foreach (var kvp in _weeklyInstances)
+    // 오늘의 역할 정보만 따로 요청할 때
+    public DailyRoleData GetDailyRole(string cellId)
+    {
+        if (_todayRoles.TryGetValue(cellId, out var role)) return role;
+        return new DailyRoleData(); // 기본값
+    }
+
+    // =======================================================================
+    // [2] 일일 역할 배정 (Daily Roles) - 오늘은 누가 무엇을 하는가?
+    // =======================================================================
+
+    // 🔥 매일 아침 GameFlowController(Strategy)가 호출해야 함
+    public void AssignRolesForNewDay(
+    int suspiciousCount,
+    PrisonerAIType defaultAI,
+    List<PrisonerAIType> specialBehaviors = null,
+    List<VisualAnomalyType> specialVisuals = null)
+    {
+        _todayRoles.Clear();
+        var cellIds = _residents.Keys.ToList();
+
+        // 1. 셔플 (랜덤 배정 위함)
+        Shuffle(cellIds);
+
+        int assignedSuspicious = 0;
+
+        foreach (var cellId in cellIds)
+        {
+            DailyRoleData role = new DailyRoleData();
+
+            // A. 범인 배정
+            if (assignedSuspicious < suspiciousCount)
+            {
+                role.isSuspicious = true;
+                assignedSuspicious++;
+            }
+            else
+            {
+                role.isSuspicious = false;
+            }
+
+            // B. AI 행동 패턴 배정
+            // 특수 행동 리스트가 있다면 랜덤 부여, 아니면 기본 AI
+            if (specialBehaviors != null && specialBehaviors.Count > 0)
+            {
+                role.dailyAIType = specialBehaviors[UnityEngine.Random.Range(0, specialBehaviors.Count)];
+            }
+            else
+            {
+                role.dailyAIType = defaultAI;
+            }
+
+            // [추가] 비주얼 배정 로직
+            if (specialVisuals != null && specialVisuals.Count > 0)
+            {
+                // 확률적으로 비주얼 변경 (예: 20% 확률 or 리스트에서 순차 배정)
+                // 여기서는 간단하게 "특수 행동을 하는 놈은 비주얼도 바뀐다" 등으로 커스텀 가능
+                // 예시: 랜덤 배정
+                if (UnityEngine.Random.value < 0.3f)
+                    role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
+                else
+                    role.visualType = VisualAnomalyType.None;
+            }
+
+            _todayRoles[cellId] = role;
+        }
+
+        Debug.Log($"[Schedule] 오늘 역할 배정 완료. (범인: {assignedSuspicious}명)");
+    }
+
+    // =======================================================================
+    // [3] 저장 / 로드 / 초기화 (GameManager 연동)
+    // =======================================================================
+
+    public static void ResetStaticData()
+    {
+        _cachedResidents = null;
+    }
+
+    public void ExtractDataForSave(out List<PrisonerSaveData> outRoster, out List<DailyRoleSaveData> outDailyRoles)
+    {
+        // 1. 명부 저장
+        outRoster = new List<PrisonerSaveData>();
+        foreach (var kvp in _residents)
         {
             outRoster.Add(new PrisonerSaveData
             {
                 cellId = kvp.Key,
-                prisonerDefID = kvp.Value.definition.templateId, // SO 이름 저장
+                prisonerDefID = kvp.Value.definition.templateId,
                 currentHealth = kvp.Value.CurrentHealth,
                 isSuppressed = kvp.Value.IsSuppressed
             });
         }
 
-        foreach (var sch in _weeklySchedule)
+        // 2. 오늘 역할 저장 (중간 저장 시 필요)
+        outDailyRoles = new List<DailyRoleSaveData>();
+        foreach (var kvp in _todayRoles)
         {
-            var sSave = new DailyScheduleSaveData { dayNumber = sch.dayNumber };
-            foreach (var assign in sch.cellAssignments)
+            outDailyRoles.Add(new DailyRoleSaveData
             {
-                sSave.assignmentList.Add(new CellAssignmentEntry
-                {
-                    cellId = assign.Key,
-                    assignment = assign.Value
-                });
-            }
-            outSchedule.Add(sSave);
+                cellId = kvp.Key,
+                roleData = kvp.Value
+            });
         }
     }
 
-    // =======================================================================
-    // [기존 로직 유지]
-    // =======================================================================
-    public Dictionary<string, DailyCellAssignment> GetAssignmentsForDay(int dayNumber)
+    public void OverrideScheduleFromSave(List<PrisonerSaveData> rosterData, List<DailyRoleSaveData> dailyData)
     {
-        if (dayNumber <= 0) dayNumber = 1;
-        var dayData = _weeklySchedule.Find(x => x.dayNumber == dayNumber);
-
-        if (dayData != null)
+        // 1. 명부 복원
+        _residents.Clear();
+        if (rosterData != null)
         {
-            _todayCache = dayData.cellAssignments;
-            return dayData.cellAssignments;
-        }
-        return new Dictionary<string, DailyCellAssignment>();
-    }
-
-    public PrisonerData GetPrisonerData(string cellId)
-    {
-        if (!_weeklyInstances.TryGetValue(cellId, out PrisonerData data)) return null;
-
-        if (_todayCache.TryGetValue(cellId, out DailyCellAssignment dailyInfo))
-            data.RuntimeAIType = dailyInfo.dailyAIType;
-        else
-            data.RuntimeAIType = PrisonerAIType.Good;
-
-        return data;
-    }
-
-    [ContextMenu("Generate Roster Now")]
-    public void GenerateWeeklyRoster()
-    {
-        _weeklyInstances.Clear();
-        if (prisonerDatabase == null) return;
-        var allAnchors = FindObjectsOfType<CellAnchor>();
-        foreach (var anchor in allAnchors)
-        {
-            var def = prisonerDatabase.GetRandomDefinition();
-            if (def != null) _weeklyInstances[anchor.cellId] = new PrisonerData(def, PrisonerAIType.Good, anchor.cellId);
-        }
-    }
-
-    public void GenerateWeeklySchedule()
-    {
-        _weeklySchedule.Clear();
-        var ids = _weeklyInstances.Keys.ToList();
-        for (int i = 1; i <= daysInWeek; i++)
-        {
-            DailyScheduleData dayData = new DailyScheduleData { dayNumber = i };
-            Shuffle(ids);
-            for (int k = 0; k < ids.Count; k++)
+            foreach (var pData in rosterData)
             {
-                if (k < dailyActiveCount)
+                var def = prisonerDatabase.prisoners.Find(p => p.templateId == pData.prisonerDefID);
+                if (def != null)
                 {
-                    bool suspicious = k < dailySuspiciousCount;
-                    var type = UnityEngine.Random.value > 0.5f ? PrisonerAIType.Good : PrisonerAIType.Bad;
-                    dayData.cellAssignments.Add(ids[k], new DailyCellAssignment { isSuspicious = suspicious, dailyAIType = type });
+                    PrisonerData newData = new PrisonerData(def, PrisonerAIType.Good, pData.cellId);
+                    newData.CurrentHealth = pData.currentHealth;
+                    newData.IsSuppressed = pData.isSuppressed;
+                    _residents[pData.cellId] = newData;
                 }
             }
-            _weeklySchedule.Add(dayData);
         }
+
+        // 2. 오늘 역할 복원
+        _todayRoles.Clear();
+        if (dailyData != null)
+        {
+            foreach (var dData in dailyData)
+            {
+                _todayRoles[dData.cellId] = dData.roleData;
+            }
+        }
+
+        // 캐시 동기화
+        _cachedResidents = _residents;
     }
 
-    private void Shuffle<T>(List<T> list) { /* (기존 셔플 코드 유지) */ }
-    public PrisonerDefinition GetAssignedPrisonerDef(string cellId)
+    // =======================================================================
+    // Utils
+    // =======================================================================
+    private void Shuffle<T>(List<T> list)
     {
-        if (_weeklyInstances.TryGetValue(cellId, out PrisonerData data)) return data.definition;
-        return null;
-    }
-    private void HandleGamePhaseChanged(GamePhaseChangedEvent evt)
-    {
-        if (evt.Phase == GamePhase.Briefing && GameManager.Instance != null)
+        for (int i = 0; i < list.Count; i++)
         {
-            if (_todayCache.Count == 0) GetAssignmentsForDay(GameManager.Instance.CurrentDay);
+            T temp = list[i];
+            int rnd = UnityEngine.Random.Range(i, list.Count);
+            list[i] = list[rnd];
+            list[rnd] = temp;
         }
     }
 }
 
 // =======================================================================
-// [저장용 데이터 구조체] (GameManager의 GameSaveData에서 씀)
+// [데이터 구조체]
 // =======================================================================
+
+[System.Serializable]
+public struct DailyRoleData
+{
+    public bool isSuspicious;
+    public PrisonerAIType dailyAIType;
+    public VisualAnomalyType visualType; // 🔥 [추가] 오늘 입을 옷/외형
+}
 
 [System.Serializable]
 public class PrisonerSaveData
@@ -257,30 +271,8 @@ public class PrisonerSaveData
 }
 
 [System.Serializable]
-public class DailyScheduleSaveData
-{
-    public int dayNumber;
-    public List<CellAssignmentEntry> assignmentList = new List<CellAssignmentEntry>();
-}
-
-[System.Serializable]
-public struct CellAssignmentEntry
+public class DailyRoleSaveData
 {
     public string cellId;
-    public DailyCellAssignment assignment;
-}
-
-[System.Serializable]
-public struct DailyCellAssignment
-{
-    public bool isSuspicious;       // 오늘 이 죄수가 '범인(이상현상)'인지 여부
-    public PrisonerAIType dailyAIType; // 오늘 이 죄수의 기분 (AI 패턴)
-}
-
-[System.Serializable]
-public class DailyScheduleData
-{
-    public int dayNumber;
-    // 하루치 감방 배정 정보를 담는 딕셔너리
-    public Dictionary<string, DailyCellAssignment> cellAssignments = new Dictionary<string, DailyCellAssignment>();
+    public DailyRoleData roleData;
 }
