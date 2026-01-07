@@ -58,26 +58,46 @@ public class PrisonerScheduleManager : MonoBehaviour
     // [1] 거주자 관리 (Residents) - 누가 어디 사는가?
     // =======================================================================
 
-    // 게임 시작 시 한 번만 호출됨 (모든 방에 죄수 채워넣기)
     public void GenerateNewResidents()
     {
-        _residents.Clear();
-        if (prisonerDatabase == null || anchorRegistry == null) return;
+        // 1. 초기화 확인
+        if (_residents == null) _residents = new Dictionary<string, PrisonerData>();
 
-        var allAnchors = anchorRegistry.GetAllCellIds(); // 방 ID 목록 (예: "101", "102"...)
+        // 2. 필수 참조 확인 (여기서 로그가 안 뜨면 연결 문제)
+        if (prisonerDatabase == null)
+        {
+            Debug.LogError("[Schedule] PrisonerDatabaseSO가 연결되지 않았습니다! (Inspector 확인)");
+            return;
+        }
+        if (anchorRegistry == null)
+        {
+            Debug.LogError("[Schedule] AnchorRegistry가 연결되지 않았습니다! (Inspector 확인)");
+            return;
+        }
+
+        // 3. 방 목록 가져오기
+        var allAnchors = anchorRegistry.GetAllCellIds();
+
+        // ★ [디버깅] 방 목록 개수 출력 (이게 0이면 AnchorRegistry 문제)
+        Debug.Log($"[Schedule] AnchorRegistry에서 가져온 방 개수: {allAnchors.Count}");
 
         foreach (var cellId in allAnchors)
         {
             var def = prisonerDatabase.GetRandomDefinition();
             if (def != null)
             {
-                // ★ [수정] 생성자에 cellId를 3번째 인자로 전달
                 PrisonerData newPrisoner = new PrisonerData(def, PrisonerAIType.Good, cellId);
-
                 _residents[cellId] = newPrisoner;
             }
+            else
+            {
+                Debug.LogWarning("[Schedule] 죄수 정의(Definition)를 가져오지 못했습니다. DB가 비어있나요?");
+            }
         }
-        Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 배치 완료.");
+
+        // 4. 최종 결과 출력
+        Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 데이터 생성 완료.");
+        _cachedResidents = _residents; // 캐시 동기화
     }
 
     // 외부에서 특정 방의 죄수 정보를 요청할 때
@@ -234,6 +254,23 @@ public class PrisonerScheduleManager : MonoBehaviour
 
         // 캐시 동기화
         _cachedResidents = _residents;
+    }
+
+    // ★ [신규 추가] 테스트용: 명부와 역할을 싹 초기화하고 새로 생성
+    public void ForceRebuildDatabase()
+    {
+        // 1. 기존 데이터 클리어
+        _residents.Clear();
+        _todayRoles.Clear();
+
+        // 2. 캐시도 클리어 (확실하게)
+        ResetStaticData();
+        _cachedResidents = _residents;
+
+        // 3. 신규 입주민 생성 (이게 안 되면 스폰할 때 에러 남)
+        GenerateNewResidents();
+
+        Debug.Log("[Schedule] 관리자 권한으로 거주자 DB 강제 재구축 완료.");
     }
 
     // =======================================================================
