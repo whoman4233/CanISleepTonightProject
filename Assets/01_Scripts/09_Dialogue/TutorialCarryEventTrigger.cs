@@ -26,6 +26,8 @@ public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
             Debug.Log("interactor가 존재하지 않음");
             return;
         }
+        TutorialNPC npc = FindObjectOfType<TutorialNPC>();
+        if (npc == null) return;
         rb.isKinematic = true; // 들면 물리,충돌 끄기
         col.enabled = false;
         transform.SetParent(interactor.CarryParent);
@@ -34,12 +36,16 @@ public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
 
         interactor.SetHeldItem(this); // SetHeldItem에 들린 물체 넣어줌
         Debug.Log("물체 들기 완료");
-        if (!_isTriggered)
+        if (!_isTriggered && (int)npc.currentSubStep == (int)stepToPublish - 1)
         {
-            EventBus.Publish(new TutorialStepChangedEvent(stepToPublish)); // 최초 1회만 이벤트 발행
+            EventBus.Publish(new TutorialStepChangedEvent(stepToPublish));
+            _isTriggered = true;
             Debug.Log("튜토리얼 이벤트 발행 완료");
         }
-        _isTriggered = true;
+        else
+        {
+            Debug.Log("현재 스텝이 맞지 않거나 이벤트가 이미 발행되었습니다");
+        }
     }
 
     public void Drop(Player player) // 놓기
