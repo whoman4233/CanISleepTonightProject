@@ -28,6 +28,8 @@ public class TutorialNPC : MonoBehaviour , IInteractable
     [SerializeField] private DialogueData step5_Book;      // 27~마지막
     [SerializeField] private DialogueManager dialogueManager;
 
+    private bool finishedDialogue = false; // 대사 다 봄?
+
     private void Awake()
     {
         _onStepChanged = e =>
@@ -36,11 +38,18 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         };
     }
 
-    private void OnEnable() => EventBus.Subscribe(_onStepChanged);
-    private void OnDisable() => EventBus.Unsubscribe(_onStepChanged);
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onStepChanged);
+    }
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onStepChanged);
+    }
     public void Interact(Player player)
     {
         if (GameManager.Instance.CurrentPhase != GamePhase.Tutorial) return; // 튜토리얼 페이즈에서만 실행
+        if (finishedDialogue) return;
 
         switch (currentSubStep) // 스텝에 맞는 대사 출력
         {
@@ -60,6 +69,7 @@ public class TutorialNPC : MonoBehaviour , IInteractable
                 dialogueManager.StartDialogue(step5_Book);
                 break;
         }
+        finishedDialogue = true;
     }
 
     private void UpdateStep(TutorialSubStep nextStep)
@@ -68,6 +78,7 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         if (nextStep > currentSubStep)
         {
             currentSubStep = nextStep;
+            finishedDialogue = false;
             Debug.Log($"튜토리얼 스텝이 업데이트 되었읍니다. {nextStep}");
         }
     }
