@@ -51,7 +51,8 @@ public class Player : MonoBehaviour
     private Action<GlobalInputLockReleasedEvent> _onGlobalInputUnlock;
     private Action<InspectionStartedEvent> _onInspectionStarted;
     private Action<InspectionEndedEvent> _onInspectionEnded;
-
+    private Action<QTEStartedEvent> _onQTEStarted;
+    private Action<QTEEndedEvent> _onQTEEnded;
     private void Awake()
     {
         Interactor = GetComponent<PlayerInteractor>(); // 캐싱용
@@ -86,7 +87,8 @@ public class Player : MonoBehaviour
         _onGlobalInputUnlock = OnGlobalInputUnlocked;
         _onInspectionStarted = OnInspectionStarted;
         _onInspectionEnded = OnInspectionEnded;
-
+        _onQTEStarted = OnQTEStarted;
+        _onQTEEnded = OnQTEEnded;
         Sfx = GetComponent<PlayerSfxController>();
     }
 
@@ -98,6 +100,8 @@ public class Player : MonoBehaviour
         EventBus.Subscribe(_onGlobalInputUnlock);
         EventBus.Subscribe(_onInspectionStarted);
         EventBus.Subscribe(_onInspectionEnded);
+        EventBus.Subscribe(_onQTEStarted);
+        EventBus.Subscribe(_onQTEEnded);
     }
 
     private void OnDisable()
@@ -108,6 +112,8 @@ public class Player : MonoBehaviour
         EventBus.Unsubscribe(_onGlobalInputUnlock);
         EventBus.Unsubscribe(_onInspectionStarted);
         EventBus.Unsubscribe(_onInspectionEnded);
+        EventBus.Unsubscribe(_onQTEStarted);
+        EventBus.Unsubscribe(_onQTEEnded);
     }
 
     // Player는 Input을 소유하지 않음
@@ -306,6 +312,16 @@ public class Player : MonoBehaviour
     }
 
     private void OnInspectionEnded(InspectionEndedEvent e)
+    {
+        StateMachine.SetPaused(false);
+    }
+    private void OnQTEStarted(QTEStartedEvent e)
+    {
+        OnEnterPause();
+        StateMachine.SetPaused(true);
+    }
+
+    private void OnQTEEnded(QTEEndedEvent e)
     {
         StateMachine.SetPaused(false);
     }

@@ -43,4 +43,11 @@ public class QTETriggerTest : MonoBehaviour
 
         Debug.Log("[QTE TEST] QTEStartedEvent published");
     }
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player"))
+            return;
+
+        _triggered = false;
+    }
 }

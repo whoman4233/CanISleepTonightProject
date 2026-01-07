@@ -4,9 +4,8 @@ using UnityEngine;
 public class QTEPresenter : MonoBehaviour
 {
     private QTEController _controller;
-    private string _currentQTEId;
     private QTEInputReader _inputReader;
-    
+
     [Header("QTE UI Root")]
     [SerializeField] private GameObject qteRoot;
 
@@ -41,36 +40,26 @@ public class QTEPresenter : MonoBehaviour
 
     private void OnQTEStarted(QTEStartedEvent e)
     {
-        Debug.Log("[QTEPresenter] OnQTEStarted");
-        // 이미 QTE 진행 중이면 무시
+        // 이미 진행 중이면 무시
         if (_controller != null)
             return;
 
-        // QTE UI 표시
+        Debug.Log("[QTEPresenter] OnQTEStarted");
+
+        // UI 표시
         if (qteRoot != null)
             qteRoot.SetActive(true);
-        Debug.Log("[QTEPresenter] Root Activated");
-        // 컨텍스트 저장
-        _currentQTEId = e.QTEId;
 
-        // 순수 로직 컨트롤러 생성
-        _controller = new QTEController(e.Config);
+        // QTEController 생성 (QTEId 전달)
+        _controller = new QTEController(e.QTEId, e.Config);
 
-        // QTE 전용 입력 리더 생성
+        // 입력 리더 생성
         _inputReader = new QTEInputReader(InputManager.Instance.Inputs, _controller);
     }
 
     private void OnQTEEnded(QTEEndedEvent e)
     {
-        // 외부 시스템용 QTE 종료 이벤트 재발행
-        if (!string.IsNullOrEmpty(_currentQTEId))
-        {
-            EventBus.Publish(new QTEEndedEvent
-            {
-                QTEId = _currentQTEId,
-                Result = e.Result
-            });
-        }
+        Debug.Log($"[QTEPresenter] OnQTEEnded : {e.QTEId} / {e.Result}");
 
         // 입력 해제
         _inputReader?.Dispose();
@@ -78,13 +67,15 @@ public class QTEPresenter : MonoBehaviour
 
         // 로직 정리
         _controller = null;
-        _currentQTEId = null;
 
-        // QTE UI 숨김
+        // UI 숨김
         if (qteRoot != null)
             qteRoot.SetActive(false);
+
+        // QTEEndedEvent는 Controller에서 이미 완성된 형태로 발행됨
     }
 }
+
 
 
 
