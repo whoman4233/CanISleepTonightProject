@@ -38,5 +38,15 @@ public abstract class DailyMissionStrategy : ScriptableObject
     public virtual void OnEventTriggered(string eventCode) { }
 
     // 3. 결산 (성공 여부 판단)
-    public abstract bool CheckWinCondition(int currentScore, out string failReason);
+    public virtual bool CheckWinCondition(int currentScore, out string failReason)
+    {
+        failReason = "";
+        return currentScore >= targetScore;
+    }
+
+    // 미션 시작 시 호출 (4일차 스폰, 타이머 시작 등)
+    public virtual void OnMissionStart() { }
+
+    // 미션 종료 시 호출 (정리용)
+    public virtual void OnMissionEnd() { }
 }

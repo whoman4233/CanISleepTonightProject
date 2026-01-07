@@ -59,20 +59,21 @@ public class PrisonerScheduleManager : MonoBehaviour
     // =======================================================================
 
     // 게임 시작 시 한 번만 호출됨 (모든 방에 죄수 채워넣기)
-    private void GenerateNewResidents()
+    public void GenerateNewResidents()
     {
         _residents.Clear();
         if (prisonerDatabase == null || anchorRegistry == null) return;
 
-        var allAnchors = anchorRegistry.GetAllCellIds();
+        var allAnchors = anchorRegistry.GetAllCellIds(); // 방 ID 목록 (예: "101", "102"...)
+
         foreach (var cellId in allAnchors)
         {
-            // DB에서 랜덤 죄수 뽑기
             var def = prisonerDatabase.GetRandomDefinition();
             if (def != null)
             {
-                // 기본 데이터 생성 (ID, 체력 등)
+                // ★ [수정] 생성자에 cellId를 3번째 인자로 전달
                 PrisonerData newPrisoner = new PrisonerData(def, PrisonerAIType.Good, cellId);
+
                 _residents[cellId] = newPrisoner;
             }
         }
