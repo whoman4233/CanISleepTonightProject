@@ -26,4 +26,9 @@ public static class PrisonerEventBus
     public static event Action<string> OnAllPrisonersDown;
     public static void RaiseAllPrisonersDown(string cellId)
         => OnAllPrisonersDown?.Invoke(cellId);
+
+    public static event Action<string> OnForceOpenDoor;
+    public static void PublishForceOpenDoor(string cellId)
+        => OnForceOpenDoor?.Invoke(cellId);
+
 }

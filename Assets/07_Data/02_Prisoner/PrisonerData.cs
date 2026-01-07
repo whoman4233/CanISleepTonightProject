@@ -2,31 +2,30 @@
 public class PrisonerData
 {
     // 고유 정보
-    public string ID;   // SpawnController에서 만든 ID ("Cell_01_Target_01")
+    public string ID;   // 죄수 고유 ID (예: GUID)
+    public string CellID; // ★ [추가] 이 죄수가 배정된 방 번호 (예: "Cell_101")
     public string Name;
 
-    // [중요] 외부 코드(PrisonerController 등)와 대소문자 일치 확인 필요!
-    // 기존 코드들이 .definition (소문자)를 쓴다면 아래처럼 바꾸세요.
     public PrisonerDefinition definition;
-
-    // 실제 런타임에 적용될 성향
-    public PrisonerAIType RuntimeAIType; 
-    
+    public PrisonerAIType RuntimeAIType;
     public DailyRoleData dailyRole;
 
-    // 런타임 상태
     public float CurrentHealth;
     public float MaxHealth;
     public bool IsSuppressed;
 
-    // [변경] 생성자 인자에 'string instanceId' 추가
-    public PrisonerData(PrisonerDefinition so, PrisonerAIType aiTypeOverride, string instanceId = "")
+    // [수정] 생성자에 string cellId 추가
+    public PrisonerData(PrisonerDefinition so, PrisonerAIType aiTypeOverride, string cellId, string instanceId = "")
     {
+        // 인스턴스 ID가 없으면 자동 생성, 있으면 그대로 사용
         this.ID = string.IsNullOrEmpty(instanceId) ? System.Guid.NewGuid().ToString() : instanceId;
+
+        this.CellID = cellId; // ★ [추가] 방 번호 저장
+
         this.Name = so.displayName;
         this.definition = so;
 
-        // 초기화 시 Role 데이터도 기본값으로 생성
+        // 초기화 시 Role 데이터 기본값
         this.dailyRole = new DailyRoleData(false, aiTypeOverride, VisualAnomalyType.None);
 
         this.MaxHealth = so.hp;

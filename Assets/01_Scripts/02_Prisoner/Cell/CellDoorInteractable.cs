@@ -41,6 +41,42 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             outliner = GetComponent<InteractableOutliner>();
     }
 
+    // ★ [추가] 이벤트 구독 (강제 개방 요청 수신)
+    private void OnEnable()
+    {
+        if (!string.IsNullOrWhiteSpace(cellId))
+        {
+            PrisonerEventBus.OnForceOpenDoor += HandleForceOpen;
+        }
+    }
+
+    // ★ [추가] 이벤트 해지
+    private void OnDisable()
+    {
+        if (!string.IsNullOrWhiteSpace(cellId))
+        {
+            PrisonerEventBus.OnForceOpenDoor -= HandleForceOpen;
+        }
+    }
+
+    // ★ [추가] 강제 개방 핸들러
+    private void HandleForceOpen(string targetCellId)
+    {
+        // 내 방 번호가 아니면 무시
+        if (this.cellId != targetCellId) return;
+
+        if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방 요청 수신 (Ambush)");
+
+        // 쿨타임이나 플레이어 상호작용 로직을 무시하고 즉시 문을 엽니다.
+        // 기습 상황이므로 InspectionStateMachine은 건드리지 않고 시각적인 개방만 수행합니다.
+
+        // 1. 단순 문 열기 애니메이션 재생
+        PlayOpen();
+
+        // 2. 필요하다면 상태 플래그 갱신 (단순 문으로 취급)
+        // _isSimpleDoorOpen = true; 
+    }
+
     public void Interact(Player player)
     {
         if (!Validate()) return;
@@ -90,12 +126,12 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             // [수정 2] TryEnter 실패 원인 파악을 위한 로그 추가
             if (TryEnter())
             {
-                if(verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
+                if (verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
                 //CellID 전달 이벤트 발행 -> 문열림 경고 HUD ON
                 EventBus.Publish(new CellInspectionInProgressEvent
                 {
                     CellId = cellId
-                }); 
+                });
                 PlayOpen();
                 TriggerPrisonerInspection();
             }

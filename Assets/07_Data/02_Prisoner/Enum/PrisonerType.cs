@@ -24,5 +24,8 @@ public enum PrisonerAIType
     Attacking,  // 공격하는 죄수 (바로 Combat)
     Graffiti,   // 낙서하는 죄수
     Escaping,   // 탈주하는 죄수 (감방 밖으로 뜀)
-    Digging     // 땅 파는 죄수
+    Digging,   // 땅 파는 죄수
+
+    Escaper,    // 땅 파는 놈 (Target)
+    Ambusher    // 기습하는 놈 (Enemy)
 }
