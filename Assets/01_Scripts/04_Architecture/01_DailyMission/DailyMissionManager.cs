@@ -80,4 +80,19 @@ public class DailyMissionManager : MonoBehaviour
         // 미션 SO에게 "나 오늘 이만큼(dailyResolvedCount) 했어, 합격이야?" 물어봄
         return CurrentMission.CheckWinCondition(dailyResolvedCount, out failReason);
     }
+
+    // [추가] 외부(테스트 콘솔 등)에서 특정 날짜의 미션 데이터를 요청할 때 사용
+    public DailyMissionStrategy GetMissionStrategy(int dayIndex)
+    {
+        // 1일차 = index 0 이므로 -1 처리
+        int listIndex = dayIndex - 1;
+
+        if (missionScenario != null && listIndex >= 0 && listIndex < missionScenario.Count)
+        {
+            return missionScenario[listIndex];
+        }
+
+        Debug.LogWarning($"[DailyMissionManager] {dayIndex}일차 미션 데이터가 없습니다.");
+        return null;
+    }
 }
