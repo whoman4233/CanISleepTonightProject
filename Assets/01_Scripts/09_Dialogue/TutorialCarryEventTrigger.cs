@@ -34,12 +34,12 @@ public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
 
         interactor.SetHeldItem(this); // SetHeldItem에 들린 물체 넣어줌
         Debug.Log("물체 들기 완료");
-        if (_isTriggered)
+        if (!_isTriggered)
         {
             EventBus.Publish(new TutorialStepChangedEvent(stepToPublish)); // 최초 1회만 이벤트 발행
+            Debug.Log("튜토리얼 이벤트 발행 완료");
         }
         _isTriggered = true;
-        Debug.Log("튜토리얼 이벤트 발행 완료");
     }
 
     public void Drop(Player player) // 놓기
