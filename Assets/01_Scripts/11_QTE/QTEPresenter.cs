@@ -6,8 +6,10 @@ public class QTEPresenter : MonoBehaviour
     private QTEController _controller;
     private string _currentQTEId;
     private QTEInputReader _inputReader;
+    
+    [Header("QTE UI Root")]
+    [SerializeField] private GameObject qteRoot;
 
-    // EventBus handlers (강한 참조)
     private Action<QTEStartedEvent> _onQTEStarted;
     private Action<QTEEndedEvent> _onQTEEnded;
 
@@ -15,6 +17,9 @@ public class QTEPresenter : MonoBehaviour
     {
         _onQTEStarted = OnQTEStarted;
         _onQTEEnded = OnQTEEnded;
+
+        if (qteRoot != null)
+            qteRoot.SetActive(false);
     }
 
     private void OnEnable()
@@ -36,19 +41,28 @@ public class QTEPresenter : MonoBehaviour
 
     private void OnQTEStarted(QTEStartedEvent e)
     {
+        Debug.Log("[QTEPresenter] OnQTEStarted");
+        // 이미 QTE 진행 중이면 무시
         if (_controller != null)
             return;
 
+        // QTE UI 표시
+        if (qteRoot != null)
+            qteRoot.SetActive(true);
+        Debug.Log("[QTEPresenter] Root Activated");
+        // 컨텍스트 저장
         _currentQTEId = e.QTEId;
-        _controller = new QTEController(e.Config);
-        _inputReader = new QTEInputReader(InputManager.Instance.Inputs, _controller);
 
+        // 순수 로직 컨트롤러 생성
+        _controller = new QTEController(e.Config);
+
+        // QTE 전용 입력 리더 생성
+        _inputReader = new QTEInputReader(InputManager.Instance.Inputs, _controller);
     }
 
     private void OnQTEEnded(QTEEndedEvent e)
     {
-        // Controller가 보낸 이벤트( QTEId 없음 )를
-        // Presenter가 "완성된 이벤트"로 재발행
+        // 외부 시스템용 QTE 종료 이벤트 재발행
         if (!string.IsNullOrEmpty(_currentQTEId))
         {
             EventBus.Publish(new QTEEndedEvent
@@ -58,11 +72,17 @@ public class QTEPresenter : MonoBehaviour
             });
         }
 
+        // 입력 해제
         _inputReader?.Dispose();
         _inputReader = null;
 
+        // 로직 정리
         _controller = null;
         _currentQTEId = null;
+
+        // QTE UI 숨김
+        if (qteRoot != null)
+            qteRoot.SetActive(false);
     }
 }
 
