@@ -35,6 +35,10 @@ public class InspectableObject : MonoBehaviour, IInteractable, IInspectable, IHi
             Target = this
         });
     }
+    public HiddenItemHolder GetHiddenItemHolder()
+    {
+        return _itemHolder;
+    }
 
     // =========================
     // IHiddenItemInteractable

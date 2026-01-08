@@ -27,7 +27,11 @@ public class InspectionManager : MonoBehaviour
 
     private InteractableOutliner _currentOutlined;
     private RectTransform inspectionViewRect;
-
+    /// <summary>
+    /// 상세보기 - 월드 오브젝트 연결
+    /// </summary>
+    private InspectableObject _currentWorldInspectable;
+    public InspectableObject CurrentWorldInspectable => _currentWorldInspectable;
     // =========================
     // Input / State
     // =========================
@@ -123,6 +127,7 @@ public class InspectionManager : MonoBehaviour
 
     public void EnterInspection(IInspectable inspectable)
     {
+        _currentWorldInspectable = inspectable as InspectableObject;
         // 이벤트 외 직접 호출 대비 안전장치
         if (!_initialized)
         {
@@ -168,6 +173,8 @@ public class InspectionManager : MonoBehaviour
     }
     public void ExitInspection()
     {
+        _currentWorldInspectable = null;
+
         if (!_isInspecting)
             return;
 
@@ -392,10 +399,15 @@ public class InspectionManager : MonoBehaviour
         {
             visualRoot = inspectInstance.transform;
         }
-
-        if (inspectInstance.TryGetComponent<IInspectionView>(out var view))
+        var view = inspectInstance.GetComponentInChildren<MonoBehaviour>(true) as IInspectionView;
+        if (view != null)
         {
+            Debug.Log($"[InspectionManager] IInspectionView found on {(view as MonoBehaviour).name}");
             view.Bind(currentInspectable);
+        }
+        else
+        {
+            Debug.LogWarning($"[InspectionManager] IInspectionView NOT found in inspect prefab: {inspectInstance.name}");
         }
     }
 }

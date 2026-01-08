@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InspectHiddenItemAction : MonoBehaviour, IInspectAction
 {
-    [SerializeField] private HiddenItemStateSO itemDefinition;
+    [SerializeField] private HiddenItemDefinitionSO itemDefinition;
 
     [Header("Mission Info")]
     [Tooltip("미션 전략(Strategy)에서 설정한 targetItemTag와 똑같이 적으세요.")]
@@ -12,18 +12,34 @@ public class InspectHiddenItemAction : MonoBehaviour, IInspectAction
 
     public void InspectAction(IInspectable owner)
     {
-        // 1. 기존 로직: 아이템 획득/공개 처리 (UI 갱신 등)
-        if (owner is IHiddenItemInteractable interactable)
+        Debug.Log("[InspectHiddenItemAction] called");
+
+        // 1. 상세보기에서 즉시 숨김
+        gameObject.SetActive(false);
+
+        // 2. 월드 상태 변경 (InspectionManager 기준)
+        var manager = FindObjectOfType<InspectionManager>();
+        if (manager == null || manager.CurrentWorldInspectable == null)
         {
-            interactable.TryRevealItem(itemDefinition);
+            Debug.LogError("[InspectHiddenItemAction] World Inspectable not found");
+            return;
         }
 
-        // 2. 🔥 [추가] 심판(GameFlowController)에게 점수 신고
+        var holder = manager.CurrentWorldInspectable.GetHiddenItemHolder();
+        if (holder == null)
+        {
+            Debug.LogError("[InspectHiddenItemAction] HiddenItemHolder not found on world object");
+            return;
+        }
+
+        holder.TryRevealItem(itemDefinition);
+
+        // 3. 🔥 [추가] 심판(GameFlowController)에게 점수 신고
         // "심판님! 저 방금 [Weapon] 태그가 달린 아이템을 찾았습니다!"
         if (DailyMissionManager.Instance != null)
         {
-            // 태그가 비어있지 않을 때만 알림
-            if (!string.IsNullOrEmpty(itemTag))
+            // 미션에 의미 있는 경우만 신고(ex:칼/망치/담배 등 미션용 아이템)
+            if (itemDefinition.AffectsMission && DailyMissionManager.Instance != null)
             {
                 DailyMissionManager.Instance.NotifyItemFound(itemTag);
                 Debug.Log($"[Action] 아이템 발견 신고함: {itemTag}");
