@@ -18,6 +18,7 @@ public abstract class HiddenItemStateSO : ScriptableObject
 
     public virtual void OnFound()
     {
+        Debug.Log($"[HiddenItemStateSO] OnFound name={name}");
         if (isFound)
             return;
 
