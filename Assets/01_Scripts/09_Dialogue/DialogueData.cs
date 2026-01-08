@@ -18,7 +18,7 @@ public class DialogueData : ScriptableObject
         for (int i = 0; i < count; i++)
         {
             int currentNum = start + i;
-            string key = $"Txt_KR_T_{currentNum:D2}";
+            string key = $"DTxt_KR_T_{currentNum:D2}";
 
             DialogueLine newLine = new DialogueLine();
             newLine.textKey = key;

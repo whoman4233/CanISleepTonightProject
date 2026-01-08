@@ -69,13 +69,24 @@ public class DialogueManager : MonoBehaviour
             Debug.LogWarning("대사가 없읍니다.");
             return;
         }
+        string speakerName = entry.speaker;
+        string dialogueContent = currentLine.TranslatedContent;
 
-        speakerNameText.text = entry.speaker; // 엔트리에서 가져옴
+        // DailyMissionManager를 통해 현재 미션이 Mission06Strategy인지 확인
+        if (DailyMissionManager.Instance != null &&
+            DailyMissionManager.Instance.CurrentMission is Mission06Strategy m06Strategy)
+        {
+            // 미션 06 전략 클래스에 만들어둔 GetProcessedText 함수를 사용하여 이름 치환
+            speakerName = m06Strategy.GetProcessedText(speakerName);
+            dialogueContent = m06Strategy.GetProcessedText(dialogueContent);
+        }
+
+        speakerNameText.text = speakerName; // 치환된 이름 적용
 
         // 타이핑 시작
         ResetRoutine();
         isTyping = true;
-        dialogueRoutine = StartCoroutine(TypeSentence(currentLine.TranslatedContent));
+        dialogueRoutine = StartCoroutine(TypeSentence(dialogueContent)); // 치환된 내용 적용
 
     }
 
@@ -101,8 +112,7 @@ public class DialogueManager : MonoBehaviour
     {
         dialoguePanel.SetActive(false);
         ResetRoutine();
-        //speakerNameText.text = "";
-        //dialogueContentText.text = "";
+
         if (InputManager.Instance != null)
         {
             InputManager.Instance.SetDialogueActive(false);
