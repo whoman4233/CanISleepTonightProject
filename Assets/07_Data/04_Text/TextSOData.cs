@@ -15,6 +15,7 @@ public class TextEntry
 {
     public string key;          // 검색용 고유 키 (예: "ui_start_btn")
     public string speaker;
+    public string mission;
     public string type;
     [TextArea] public string ko; // 한국어 텍스트
     [TextArea] public string en; // 영어 텍스트
