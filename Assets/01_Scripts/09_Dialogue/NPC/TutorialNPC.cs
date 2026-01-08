@@ -72,6 +72,15 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         finishedDialogue = true;
     }
 
+    public void OnAttacked()
+    {
+        if (currentSubStep == TutorialSubStep.BatonEquipped)
+        {
+            EventBus.Publish(new TutorialStepChangedEvent(TutorialSubStep.NPCHit));
+            Debug.Log("이벤트 발행: NPCHit");
+        }
+    }
+
     private void UpdateStep(TutorialSubStep nextStep)
     {
         // 단계가 역행하지 않도록 체크

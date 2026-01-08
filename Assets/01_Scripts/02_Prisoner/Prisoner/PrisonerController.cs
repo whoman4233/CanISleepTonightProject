@@ -80,7 +80,7 @@ public class PrisonerController : MonoBehaviour
     }
 
     // [피격 함수] 외부(플레이어 무기 등)에서 호출
-    public bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
+    public virtual bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
         // 이미 죽었으면 무시
         if (Data.CurrentHealth <= 0) return false;
@@ -157,5 +157,62 @@ public class PrisonerController : MonoBehaviour
                 // 위에서 이미 기본값으로 초기화했으므로 추가 동작 없음
                 break;
         }
+    }
+
+    // PrisonerController.cs 내부에 추가
+
+    // [매핑 테이블] AIType -> Animator BlendTree 번호
+    private int GetActionAnimID(PrisonerAIType type)
+    {
+        return type switch
+        {
+            // 0번: 아무것도 안 함 (기본 Idle)
+            PrisonerAIType.Good => 0,
+            PrisonerAIType.Bad => 0,
+
+            // 1일차 소음/특수 행동
+            PrisonerAIType.Singing => 1,
+            PrisonerAIType.Screaming => 2,
+            PrisonerAIType.Mumbling => 3,
+            PrisonerAIType.HammeringWall => 4,
+            PrisonerAIType.Deadlift => 5,
+            PrisonerAIType.Crying => 6,
+
+            // 3일차/7일차 행동
+            PrisonerAIType.Escaper => 7,   // 땅파기 (Digging)
+            PrisonerAIType.Graffiti => 8,  // 낙서
+            PrisonerAIType.Ambusher => 9,  // 기습 대기 (숨기)
+
+            _ => 0 // 그 외는 기본 대기
+        };
+    }
+
+    public void StartActionBehavior(PrisonerAIType type)
+    {
+        // 1. 애니메이션 전환 (Blend Tree의 ActionType 파라미터 변경)
+        int animID = GetActionAnimID(type);
+        if (animator != null) animator.SetInteger("ActionType", animID);
+
+        // 2. ★ 소리 재생 (Switch문 삭제됨! 훨씬 깔끔)
+        if (sfx != null)
+        {
+            sfx.PlayLoop(type);
+        }
+
+        // 3. 도구(Prop) 들기
+        // 예: 망치질이면 망치 오브젝트 켜기
+        // if (type == PrisonerAIType.HammeringWall && hammerObj != null) hammerObj.SetActive(true);
+    }
+
+    public void StopActionBehavior()
+    {
+        // 1. 애니메이션 복구 (Normal Idle)
+        if (animator != null) animator.SetInteger("ActionType", 0);
+
+        // 2. 소리 끄기
+        if (sfx != null) sfx.StopAllLoops();
+
+        // 3. 도구 숨기기
+        // if (hammerObj != null) hammerObj.SetActive(false);
     }
 }

@@ -73,7 +73,7 @@ public class InspectionStateMachine : MonoBehaviour
         var cellId = CurrentInspectingCellId;
 
         // 죄수 상태 원복 (Idle)
-        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.IdleState));
+        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.ActionState));
 
         // 매니저에게 알림
         cellManager.ForceReleaseInspectingOnly(cellId);

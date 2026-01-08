@@ -6,97 +6,71 @@ public class PrisonerFSM : MonoBehaviour
     [Header("Points")]
     public Transform InspectionPoint;
 
-    // [변경] 외부에서 주입받을 컴포넌트들
+    // 외부에서 주입받을 컴포넌트들
     public PrisonerController Controller { get; private set; }
     public NavMeshAgent Agent { get; private set; }
     public Animator Anim { get; private set; }
 
     private IPrisonerState _currentState;
 
-    // 상태 객체들
-    public IPrisonerState IdleState { get; private set; }
+    // ================================================================
+    // [상태 정의] 
+    // 기존의 잡다한 상태들을 ActionState 하나로 통합했습니다.
+    // ================================================================
+
+    // ★ [통합] 대기, 노래, 비명, 땅파기, 기습대기 등 "제자리 행동"을 모두 담당
+    public PrisonerActionIdleState ActionState { get; private set; }
+
+    // [특수 로직] 전투, 쫄기, 사망, 점호 등은 별도 로직이므로 유지
     public IPrisonerState CombatState { get; private set; }
     public IPrisonerState CowerState { get; private set; }
     public IPrisonerState DeadState { get; private set; }
     public IPrisonerState InspectionState { get; private set; }
 
-    // 🔥 [추가] 특수 행동 상태들
-    public IPrisonerState SingingState { get; private set; }
-    public IPrisonerState ScreamingState { get; private set; }
-    public IPrisonerState MumblingState { get; private set; }
-    public IPrisonerState HammeringState { get; private set; }
-    public IPrisonerState DeadliftingState { get; private set; }
-    public IPrisonerState CryingState { get; private set; }
-
-    public bool IsInvulnerable => _currentState is PrisonerIdleState;
+    // (참고) 무적 상태 판정: 점호(Inspection) 중이거나 죽었을 때만 무적으로 설정하는 것이 일반적입니다.
+    // 기존 코드대로라면 Idle일 때 무적이라 때릴 수가 없으므로 로직을 수정했습니다.
+    public bool IsInvulnerable => _currentState == InspectionState || _currentState == DeadState;
 
     private void Awake()
     {
-        // 상태 객체 생성 (여기서는 this만 넘기고, 실제 컴포넌트 접근은 프로퍼티로)
-        IdleState = new PrisonerIdleState(this);
-        InspectionState = new PrisonerInspectionState(this);
+        // 상태 객체 생성
+        // ★ 통합된 ActionState 하나만 생성하면 됩니다.
+        ActionState = new PrisonerActionIdleState(this);
+
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);
-
-        // 🔥 [추가] 특수 상태 생성
-        SingingState = new PrisonerSingingState(this);
-        ScreamingState = new PrisonerScreamingState(this);
-        MumblingState = new PrisonerMumblingState(this);
-        HammeringState = new PrisonerHammeringState(this);
-        DeadliftingState = new PrisonerDeadliftingState(this);
-        CryingState = new PrisonerCryingState(this);
+        InspectionState = new PrisonerInspectionState(this);
     }
 
-    // [핵심] Controller에서 호출하는 초기화 함수
+    // Controller에서 호출하는 초기화 함수
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
     {
         this.Controller = controller;
         this.Agent = agent;
         this.Anim = anim;
 
-        // 점검 위치도 Controller가 알고 있는 Cell 정보에서 가져옴
         if (controller.AssignedCell != null)
         {
             this.InspectionPoint = controller.AssignedCell.inspectionPoint;
         }
 
-        ChangeState(IdleState);
+        // 초기 상태는 ActionState (Type 0 = Normal Idle)로 시작
+        ActionState.SetActionType(PrisonerAIType.Good);
+        ChangeState(ActionState);
     }
 
     public void InitializeBehavior(PrisonerAIType aiType)
     {
-        // 1. 상태 전환 로직
-        switch (aiType)
-        {
-            // [1일차 소음]
-            case PrisonerAIType.Singing:
-                ChangeState(SingingState);
-                break;
-            case PrisonerAIType.Screaming:
-                ChangeState(ScreamingState);
-                break;
-            case PrisonerAIType.Mumbling:
-                ChangeState(MumblingState);
-                break;
-            case PrisonerAIType.HammeringWall:
-                ChangeState(HammeringState);
-                break;
-            case PrisonerAIType.Deadlift:
-                ChangeState(DeadliftingState);
-                break;
-            case PrisonerAIType.Crying:
-                ChangeState(CryingState);
-                break;
+        // ============================================================
+        // ★ [핵심 수정] 거대한 Switch문을 제거하고 통합 로직 적용
+        // 어떤 타입이든 ActionState에게 "너 이거 해"라고 알려주고 전환합니다.
+        // ============================================================
 
-            // [기본]
-            case PrisonerAIType.Good:
-            case PrisonerAIType.Bad:
-            default:
-                ChangeState(IdleState);
-                break;
-        }
-        Debug.Log($"[FSM Init] {name} initialized with behavior: {aiType}");
+        ActionState.SetActionType(aiType);
+        ChangeState(ActionState);
+
+        Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState");
     }
 
     private void Update() => _currentState?.Update();
