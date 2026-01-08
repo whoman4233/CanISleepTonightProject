@@ -338,7 +338,7 @@ public class InspectionManager : MonoBehaviour
                 inspectLayerMask,
                 QueryTriggerInteraction.Ignore))
         {
-            var nextOutliner = hit.collider.GetComponentInChildren<InteractableOutliner>();
+            var nextOutliner = hit.collider.GetComponent<InteractableOutliner>();
 
             //대상이 바뀌었을 때만 토글
             if (_currentOutlined != nextOutliner)
