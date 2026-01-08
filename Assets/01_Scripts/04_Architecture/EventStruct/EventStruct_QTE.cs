@@ -30,6 +30,12 @@ public struct QTEConfig
 
     // Hold(지속)
     public float HoldPerSecond;
+
+    //입력없을 때 감소량
+    public float DecayPerSecond;
+
+    //입력 멈춘 뒤 감소 시작까지 지연
+    public float DecayDelay;
 }
 
 // ================================
