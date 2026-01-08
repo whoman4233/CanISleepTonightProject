@@ -40,6 +40,9 @@ public class QTEPresenter : MonoBehaviour
 
     private void OnQTEStarted(QTEStartedEvent e)
     {
+        // 상세보기 강제 종료 요청
+        EventBus.Publish(new ForceExitInspectionEvent());
+
         // 이미 진행 중이면 무시
         if (_controller != null)
             return;

@@ -7,7 +7,7 @@ public class PrisonerActionIdleState : BasePrisonerState
 
     public PrisonerActionIdleState(PrisonerFSM fsm) : base(fsm) { }
 
-    // FSM에서 "너 이번엔 노래 불러(Singing)"라고 알려주는 함수
+    // FSM 초기화 시 어떤 행동을 할지 설정
     public void SetActionType(PrisonerAIType aiType)
     {
         _currentType = aiType;
@@ -17,70 +17,72 @@ public class PrisonerActionIdleState : BasePrisonerState
     {
         base.Enter();
 
-        // 1. 이동 완전 정지 (제자리 행동이므로)
+        // 1. 이동 완전 정지 (공통)
         if (Agent != null && Agent.isOnNavMesh)
         {
             Agent.isStopped = true;
             Agent.velocity = Vector3.zero;
         }
 
-        // 2. 컨트롤러에게 행동 개시 명령 (애니메이션 전환, 소리 재생, 프롭 들기)
+        // 2. 컨트롤러에게 행동 개시 명령 (애니메이션, 소리, 프롭)
+        // 일반(Good/Bad)인 경우 _currentType이 0번(Normal)으로 들어가서 기본 Idle이 됨
         Controller.StartActionBehavior(_currentType);
     }
 
     public override void Update()
     {
-        // 3. 주기적 소음 발생 로직 (노래, 비명 등)
-        if (_currentType == PrisonerAIType.Singing || _currentType == PrisonerAIType.Screaming)
+        // 3. 행동별 업데이트 로직
+        switch (_currentType)
         {
-            _noiseTimer += Time.deltaTime;
-            if (_noiseTimer > 3.0f)
-            {
-                // 게임 매니저에 소음 신고 (필요 시 주석 해제)
-                // PrisonManager.Instance.ReportNoise(Controller.transform.position);
-                _noiseTimer = 0f;
-            }
-        }
+            // 소음 유발자들 (주기적 신고)
+            case PrisonerAIType.Singing:
+            case PrisonerAIType.Screaming:
+                _noiseTimer += Time.deltaTime;
+                if (_noiseTimer > 3.0f)
+                {
+                    // 예: PrisonManager.Instance.ReportNoise(Controller.transform.position);
+                    _noiseTimer = 0f;
+                }
+                break;
 
-        // 4. [7일차] 기습(Ambush) 감지 로직
-        if (_currentType == PrisonerAIType.Ambusher)
-        {
-            CheckAmbushTrigger();
+            // 7일차 기습 (거리 감지)
+            case PrisonerAIType.Ambusher:
+                if (player != null && Vector3.Distance(Controller.transform.position, player.position) < 3.5f)
+                {
+                    Debug.Log($"[Ambush] {Controller.Data.ID} 기습 시작!");
+                    PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
+                    fsm.ChangeState(fsm.CombatState);
+                }
+                break;
         }
     }
 
     public override void Exit()
     {
-        // 5. 나갈 때 정리 (애니메이션 복구, 소리 끄기, 도구 넣기)
+        // 4. 정리 (애니메이션 복구, 소리 끄기 등)
         Controller.StopActionBehavior();
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // 행동 중 맞았을 때 반응 분기
-        // 무기를 든 행동(망치)이나 공격적인 성향(기습, 탈옥)은 반격
-        if (_currentType == PrisonerAIType.HammeringWall ||
-            _currentType == PrisonerAIType.Ambusher ||
-            _currentType == PrisonerAIType.Escaper)
+        // 행동 중 맞았을 때 반응
+        if (IsAggressiveType(_currentType))
         {
-            fsm.ChangeState(fsm.CombatState);
+            fsm.ChangeState(fsm.CombatState); // 반격
         }
         else
         {
-            // 나머지는 쫄아서 웅크림
-            fsm.ChangeState(fsm.CowerState);
+            fsm.ChangeState(fsm.CowerState); // 쫄음
         }
     }
 
-    // 7일차 기습 트리거 체크
-    private void CheckAmbushTrigger()
+    // 반격할 성격인지 판별
+    private bool IsAggressiveType(PrisonerAIType type)
     {
-        if (player != null && Vector3.Distance(Controller.transform.position, player.position) < 3.5f)
-        {
-            // 문 열고 뛰쳐나감
-            if (Controller.Data != null) PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
-            fsm.ChangeState(fsm.CombatState);
-        }
+        return type == PrisonerAIType.HammeringWall ||
+               type == PrisonerAIType.Ambusher ||
+               type == PrisonerAIType.Escaper ||
+               type == PrisonerAIType.Bad; // Bad 성향도 포함 가능
     }
 }

@@ -86,7 +86,6 @@ public class InputManager : MonoBehaviour
         EventBus.Unsubscribe(_onQTEStarted);
         EventBus.Unsubscribe(_onQTEEnded);
     }
-
     private void OnDestroy()
     {
         if (!Application.isPlaying)
@@ -162,7 +161,7 @@ public class InputManager : MonoBehaviour
     private void OnQTEStarted(QTEStartedEvent e) // QTE
     {
         _qteActive = true;
-        ApplyState();
+        ApplyState(force: true);
     }
 
     private void OnQTEEnded(QTEEndedEvent e) // QTE
@@ -182,10 +181,14 @@ public class InputManager : MonoBehaviour
 
         _currentState = next;
 
-        // Gameplay / Inspection만 Enable/Disable
+        // Gameplay / Inspection / QTE -> Enable/Disable
         SetMap(Inputs.Player, next == InputState.Gameplay);
         SetMap(Inputs.Inspection, next == InputState.Inspection);
         SetMap(Inputs.QTE, next == InputState.QTE);
+
+        // QTE 중에는 UI 입력 제한
+        SetMap(Inputs.UI, next != InputState.QTE);
+
         ApplyCursor(next);
 
         Debug.Log($"[InputManager] State={_currentState} UIAlwaysOn lock={_uiLockCount}");
@@ -224,9 +227,15 @@ public class InputManager : MonoBehaviour
 
     private static void ApplyCursor(InputState state)
     {
-        bool gameplay = state == InputState.Gameplay;
-        Cursor.lockState = gameplay ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !gameplay;
+        bool hideCursor =
+        state == InputState.Gameplay ||
+        state == InputState.QTE;
+
+        Cursor.lockState = hideCursor
+            ? CursorLockMode.Locked
+            : CursorLockMode.None;
+
+        Cursor.visible = !hideCursor;
     }
 
     public void SetDialogueActive(bool isActive) // 대화 상태를 켜고 끄는 메서드

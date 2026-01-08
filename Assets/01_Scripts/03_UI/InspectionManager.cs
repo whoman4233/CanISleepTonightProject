@@ -23,6 +23,7 @@ public class InspectionManager : MonoBehaviour
     // =========================
     private Action<InspectionViewReadyEvent> _onViewReady;
     private Action<InspectionRequestedEvent> _onInspectionRequested;
+    private Action<ForceExitInspectionEvent> _onForceExit; //QTE 시작시 강제종료
 
     private InteractableOutliner _currentOutlined;
     private RectTransform inspectionViewRect;
@@ -49,12 +50,14 @@ public class InspectionManager : MonoBehaviour
 
         _onViewReady = OnViewReady;
         _onInspectionRequested = OnInspectionRequested;
+        _onForceExit = OnForceExitInspection;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onViewReady);
         EventBus.Subscribe(_onInspectionRequested);
+        EventBus.Subscribe(_onForceExit);
     }
 
     private void OnDisable()
@@ -69,6 +72,7 @@ public class InspectionManager : MonoBehaviour
 
         EventBus.Unsubscribe(_onViewReady);
         EventBus.Unsubscribe(_onInspectionRequested);
+        EventBus.Unsubscribe(_onForceExit);
     }
 
     // =========================
@@ -168,7 +172,6 @@ public class InspectionManager : MonoBehaviour
             return;
 
         _isInspecting = false;
-
         if (inspectInstance != null)
         {
             Destroy(inspectInstance);
@@ -189,7 +192,13 @@ public class InspectionManager : MonoBehaviour
         EventBus.Publish(new InspectionEndedEvent());
         EventBus.Publish(new InspectionViewReleasedEvent());
     }
+    private void OnForceExitInspection(ForceExitInspectionEvent e) // QTE 강제종료
+    {
+        if (!IsInspecting)
+            return;
 
+        ExitInspection();
+    }
     // =========================
     // View Binding
     // =========================

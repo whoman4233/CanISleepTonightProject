@@ -1,4 +1,6 @@
-﻿public class QTEController
+﻿using UnityEngine;
+
+public class QTEController
 {
     private readonly string _qteId;
     private readonly QTEConfig _config;
@@ -6,6 +8,7 @@
     private float _currentTime;
     private float _currentValue;
     private bool _holding;
+    private float _timeSinceLastInput;
     private bool _ended; // 중복 종료 방지
 
     public QTEController(string qteId, QTEConfig config)
@@ -21,10 +24,21 @@
             return;
 
         _currentTime -= delta;
+        _timeSinceLastInput += delta;
 
-        if (_config.Type == QTEType.Hold && _holding)
+        // Mash 감소 로직
+        if (_config.Type == QTEType.Mash &&
+            _timeSinceLastInput >= _config.DecayDelay &&
+            _config.DecayPerSecond > 0f)
         {
-            AddProgress(_config.HoldPerSecond * delta);
+            _currentValue -= _config.DecayPerSecond * delta;
+            _currentValue = Mathf.Max(0f, _currentValue);
+
+            EventBus.Publish(new QTEProgressChangedEvent
+            {
+                Current = _currentValue,
+                Required = _config.RequiredValue
+            });
         }
 
         EventBus.Publish(new QTETimerChangedEvent
@@ -37,16 +51,19 @@
             End(QTEResult.Timeout);
     }
 
+
+
     public void OnPressed()
     {
         if (_ended)
             return;
 
+        _timeSinceLastInput = 0f;
+
         if (_config.Type == QTEType.Mash)
             AddProgress(_config.PerPressValue);
-
-        _holding = true;
     }
+
 
     public void OnReleased()
     {
