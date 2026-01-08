@@ -62,11 +62,12 @@ public class TextDataBakerWindow : EditorWindow
 
                 var entry = new TextEntry
                 {
-                    // CSV 구조: 0:ID, 1:Lang, 2:Type, 3:Speaker, 4:Text
+                    // CSV 구조: 0:ID, 1:Lang, 2:미션, 3:타입 4:Speaker, 5:Text
                     key = cols[0].Trim(),
-                    type = cols[2].Trim(),
-                    speaker = cols[3].Trim().Trim('"'),
-                    ko = cols[4].Trim().Trim('"').Replace("\"\"", "\""), // 따옴표 가공
+                    mission = cols[2].Trim(),
+                    type = cols[3].Trim(),
+                    speaker = cols[4].Trim().Trim('"'),
+                    ko = cols[5].Trim().Trim('"').Replace("\"\"", "\""), // 따옴표 가공
                     en = "" // 필요시 확장
                 };
 
