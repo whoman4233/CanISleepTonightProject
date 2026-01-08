@@ -80,7 +80,7 @@ public class PrisonerController : MonoBehaviour
     }
 
     // [피격 함수] 외부(플레이어 무기 등)에서 호출
-    public bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
+    public virtual bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
         // 이미 죽었으면 무시
         if (Data.CurrentHealth <= 0) return false;
