@@ -52,6 +52,9 @@ public struct QTEEndedEvent
     public string QTEId;
     public QTEResult Result;
 }
+public struct ForceExitInspectionEvent // 상세보기 강제종료
+{
+}
 
 // ================================
 // QTE Progress / Timer
