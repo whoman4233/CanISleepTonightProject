@@ -7,12 +7,12 @@ public class ToiletLidInteractable : MonoBehaviour, IInteractable
 
     [Header("Animator Params")]
     [SerializeField] private string openTriggerName = "Open";
-    [SerializeField] private string closeTriggerName = "Close";
+
+    [Header("Collider Control")]
+    [SerializeField] private Collider outerCollider;
 
     private int _openTriggerHash;
-    private int _closeTriggerHash;
-
-    private bool _isOpen;
+    private bool _used;
 
     private void Awake()
     {
@@ -20,25 +20,20 @@ public class ToiletLidInteractable : MonoBehaviour, IInteractable
             animator = GetComponentInChildren<Animator>();
 
         _openTriggerHash = Animator.StringToHash(openTriggerName);
-        _closeTriggerHash = Animator.StringToHash(closeTriggerName);
     }
 
     public void Interact(Player player)
     {
-        ToggleLid();
-    }
+        if (_used)
+            return;
 
-    private void ToggleLid()
-    {
-        if (_isOpen)
-        {
-            animator.SetTrigger(_closeTriggerHash);
-        }
-        else
-        {
-            animator.SetTrigger(_openTriggerHash);
-        }
+        _used = true;
 
-        _isOpen = !_isOpen;
+        animator.SetTrigger(_openTriggerHash);
+
+        // 변기 재상호작용 차단
+        if (outerCollider != null)
+            outerCollider.enabled = false;
     }
 }
+

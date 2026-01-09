@@ -35,7 +35,6 @@ Transform:
   - {fileID: 4881779853779657134}
   - {fileID: 8776588422044611184}
   - {fileID: 3215329314332124194}
-  - {fileID: 8109503692321587085}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &822510544555213183
@@ -404,7 +403,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8109503692321587085}
   m_Father: {fileID: 2473286508071878153}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &179976749241103956
@@ -613,7 +613,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2473286508071878153}
+    m_TransformParent: {fileID: 5234023275268789021}
     m_Modifications:
     - target: {fileID: 1717258407918848035, guid: 741ea9e376d47b64296a56eeba95db5d,
         type: 3}
@@ -684,6 +684,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PSNW_Dagger01_World
+      objectReference: {fileID: 0}
+    - target: {fileID: 5515767649265998068, guid: 741ea9e376d47b64296a56eeba95db5d,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
