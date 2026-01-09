@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1390255075624424922}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CameraContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -53,7 +53,7 @@ GameObject:
   - component: {fileID: 6200906698159616305}
   - component: {fileID: 2107590832779922666}
   - component: {fileID: 5311546351181491384}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2209131490206928600}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+  m_Avatar: {fileID: 9000000, guid: 1079be6fd047ee443b9e6d33da2f4cd7, type: 3}
   m_Controller: {fileID: 9100000, guid: e8c5672ffd5977c4ebe7adb64ba48908, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
@@ -248,7 +248,7 @@ MonoBehaviour:
   oneShotSource: {fileID: 5311546351181491384}
   jumpClip: {fileID: 8300000, guid: cc186344aa8f09349ba3bac70b816351, type: 3}
   landClip: {fileID: 8300000, guid: 337e87e19d7dec840b79c26b37dc4522, type: 3}
-  jumpLandingClip: {fileID: 0}
+  jumpLandingClip: {fileID: 8300000, guid: 273bf97a8bdc6734e9e6002bfcb96659, type: 3}
   swingClips:
   - {fileID: 8300000, guid: 05782472aaa7bfb449bef70cad2f89d4, type: 3}
   - {fileID: 8300000, guid: d3e884e873896474fbc1a06e7aa9028e, type: 3}
@@ -457,7 +457,7 @@ GameObject:
   m_Component:
   - component: {fileID: 267399362173159643}
   - component: {fileID: 3916126545521969847}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: cm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -535,7 +535,7 @@ GameObject:
   - component: {fileID: 8276877521905377850}
   - component: {fileID: 6912972206494567956}
   - component: {fileID: 9189452086200419332}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MainCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -707,7 +707,7 @@ GameObject:
   - component: {fileID: 807823569588144696}
   - component: {fileID: 122337339761660836}
   - component: {fileID: 3164327338351870269}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Virtual Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -796,7 +796,7 @@ GameObject:
   - component: {fileID: 7982885651594503575}
   - component: {fileID: 6513903479437911439}
   - component: {fileID: 8661335579263179421}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: cm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1008,7 +1008,8 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: c57bf15ee302ff2458f93e37d723b6ec, type: 2}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5866666021909216657, guid: 1079be6fd047ee443b9e6d33da2f4cd7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
