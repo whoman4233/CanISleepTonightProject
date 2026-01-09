@@ -1,29 +1,54 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.AI;
-// using static UnityEngine.ProBuilder.AutoUnwrapSettings; // ProBuilder API를 사용하지 않는다면 필요 없습니다.
 
 public class PrisonerController : MonoBehaviour
 {
-    // 1. 데이터 (외부에서 읽기 전용)
+    // ================================================================
+    // [1] 데이터 정의 (인스펙터 매핑용 구조체)
+    // ================================================================
+
+    [System.Serializable]
+    public struct VisualSkinData
+    {
+        public VisualAnomalyType type; // 예: BikiniModel
+        public GameObject modelObject; // 해당 모델 오브젝트 (Hierarchy에 있는 자식 객체)
+    }
+
+    [System.Serializable]
+    public struct ActionPropData
+    {
+        public PrisonerAIType type;    // 예: HammeringWall
+        public GameObject propObject;  // 예: Hammer (손에 쥐어준 것)
+    }
+
+    // ================================================================
+    // [2] 컴포넌트 및 변수
+    // ================================================================
+
     public PrisonerData Data { get; private set; }
     public CellAnchor AssignedCell { get; private set; }
 
-    // 2. 컴포넌트 참조
+    [Header("Components")]
     [SerializeField] private Animator animator;
     [SerializeField] private RagdollSetting ragdoll;
     [SerializeField] private PrisonerSfxController sfx;
     private PrisonerFSM fsm;
     private NavMeshAgent agent;
 
-    [Header("Visual Models (외형 모델)")]
-    [SerializeField] private GameObject defaultModel;      // 기본 모델
-    [SerializeField] private GameObject bikiniModel;       // 근육 비키니 모델 (3일차)
-    [SerializeField] private GameObject goatHeadModel;     // 염소 머리 모델 (3일차)
-    [SerializeField] private GameObject guardUniformModel; // 간수 복장 모델 (4일차 변장)
+    [Header("Visual Settings (Skins)")]
+    [SerializeField] private GameObject defaultSkin; // 기본 죄수 모델
+    [SerializeField] private List<VisualSkinData> specialSkins; // 특수 외형 매핑 리스트
 
-    // FSM에서 접근하기 쉽도록 프로퍼티 제공
-    public bool IsSuspicious { get; private set; } // 수상한 죄수(범인)인가?
-    public PrisonerAIType AIType => Data.RuntimeAIType; // 현재 AI 행동 타입
+    [Header("Action Props (Tools)")]
+    [SerializeField] private List<ActionPropData> actionProps; // 행동 도구 매핑 리스트
+
+    // 빠른 검색을 위한 딕셔너리 (Start 시점에 리스트 -> 딕셔너리 변환)
+    private Dictionary<VisualAnomalyType, GameObject> _skinMap;
+    private Dictionary<PrisonerAIType, GameObject> _propMap;
+
+    public bool IsSuspicious { get; private set; }
+    public PrisonerAIType AIType => Data != null ? Data.RuntimeAIType : PrisonerAIType.Good;
 
     private void Awake()
     {
@@ -31,67 +56,150 @@ public class PrisonerController : MonoBehaviour
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
+        // FSM 설정
         fsm = GetComponent<PrisonerFSM>();
-        // FSM이 없으면 자동으로 추가
         if (fsm == null) fsm = gameObject.AddComponent<PrisonerFSM>();
+
+        // ★ [핵심] 리스트 데이터를 딕셔너리로 변환 (성능 최적화)
+        InitializeDictionaries();
     }
 
-    // [초기화 함수] 스폰될 때 호출됨
+    private void InitializeDictionaries()
+    {
+        // 1. 스킨 맵핑
+        _skinMap = new Dictionary<VisualAnomalyType, GameObject>();
+        if (specialSkins != null)
+        {
+            foreach (var data in specialSkins)
+            {
+                if (data.modelObject != null && !_skinMap.ContainsKey(data.type))
+                    _skinMap.Add(data.type, data.modelObject);
+            }
+        }
+
+        // 2. 도구 맵핑
+        _propMap = new Dictionary<PrisonerAIType, GameObject>();
+        if (actionProps != null)
+        {
+            foreach (var data in actionProps)
+            {
+                if (data.propObject != null && !_propMap.ContainsKey(data.type))
+                    _propMap.Add(data.type, data.propObject);
+            }
+        }
+    }
+
+    // 스포너에서 호출하는 초기화 함수
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
     {
         this.Data = data;
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
 
-        // [비주얼 적용] 오늘의 역할(Role)에 따라 외형 변경
-        // (PrisonerData 클래스에 dailyRole 필드가 있어야 합니다!)
-        if (data.dailyRole.visualType != VisualAnomalyType.None)
+        // 1. 외형(Visual) 적용 (Switch문 없이 데이터 기반으로 처리!)
+        if (data != null && data.dailyRole.visualType != VisualAnomalyType.None)
         {
             ApplyVisualAnomaly(data.dailyRole.visualType);
         }
         else
         {
-            // 설정이 없으면 기본값(None) 적용
             ApplyVisualAnomaly(VisualAnomalyType.None);
         }
 
-        var fsm = GetComponent<PrisonerFSM>();
+        // 2. FSM 초기화
         if (fsm != null)
         {
-            // 1. 점검 위치(InspectionPoint) 설정
-            if (cell.inspectionPoint != null)
-            {
-                fsm.InspectionPoint = cell.inspectionPoint;
-            }
-            else
-            {
-                Debug.LogError($"[Controller] {cell.name}에 InspectionPoint가 없습니다! (임시로 Anchor 위치 사용)");
-                fsm.InspectionPoint = cell.transform;
-            }
-
-            // 2. FSM 기본 셋업 (Controller, Agent, Animator 연결)
             fsm.Setup(this, agent, animator);
-
-            // 3. 행동 초기화
-            // 스케줄러가 지정해준 '오늘의 역할(AI Type)'로 초기 상태를 결정합니다.
-            // (예: 1일차 소음 유발자면 SingingState 등으로 시작)
             fsm.InitializeBehavior(data.RuntimeAIType);
         }
     }
 
-    // [피격 함수] 외부(플레이어 무기 등)에서 호출
+    // ================================================================
+    // [3] 통합된 기능 함수들 (Visual & Action)
+    // ================================================================
+
+    // 외형 변경 로직
+    private void ApplyVisualAnomaly(VisualAnomalyType visualType)
+    {
+        // 일단 모든 특수 스킨 끄기
+        foreach (var skin in _skinMap.Values)
+        {
+            if (skin != null) skin.SetActive(false);
+        }
+
+        // 딕셔너리에서 해당 타입 스킨 찾아서 켜기
+        if (_skinMap.TryGetValue(visualType, out GameObject targetSkin))
+        {
+            if (defaultSkin != null) defaultSkin.SetActive(false); // 기본 스킨 끄기
+            targetSkin.SetActive(true);
+        }
+        else
+        {
+            // 해당하는 게 없으면(None 포함) 기본 스킨 켜기
+            if (defaultSkin != null) defaultSkin.SetActive(true);
+        }
+    }
+
+    // 행동 시작 (FSM -> ActionState에서 호출)
+    public void StartActionBehavior(PrisonerAIType type)
+    {
+        // 1. 애니메이션 설정
+        if (animator != null) animator.SetInteger("ActionType", GetActionAnimID(type));
+
+        // 2. 소리 재생 (SfxController 위임)
+        if (sfx != null) sfx.PlayLoop(type);
+
+        // 3. 도구(Prop) 들기
+        if (_propMap.TryGetValue(type, out GameObject prop))
+        {
+            if (prop != null) prop.SetActive(true);
+        }
+    }
+
+    // 행동 종료
+    public void StopActionBehavior()
+    {
+        // 1. 애니메이션 복구
+        if (animator != null) animator.SetInteger("ActionType", 0);
+
+        // 2. 소리 끄기
+        if (sfx != null) sfx.StopLoop();
+
+        // 3. 도구 숨기기 (켜져 있는 것만 꺼도 되지만 전체 순회로 확실하게)
+        foreach (var prop in _propMap.Values)
+        {
+            if (prop != null) prop.SetActive(false);
+        }
+    }
+
+    // 애니메이션 ID 매핑 (이건 규칙이므로 유지)
+    private int GetActionAnimID(PrisonerAIType type)
+    {
+        return type switch
+        {
+            PrisonerAIType.Singing => 1,
+            PrisonerAIType.Screaming => 2,
+            PrisonerAIType.Mumbling => 3,
+            PrisonerAIType.HammeringWall => 4,
+            PrisonerAIType.Deadlift => 5,
+            PrisonerAIType.Crying => 6,
+            PrisonerAIType.Escaper => 7,
+            PrisonerAIType.Graffiti => 8,
+            PrisonerAIType.Ambusher => 9,
+            _ => 0
+        };
+    }
+
+    // ================================================================
+    // [4] 피격 및 사망 처리
+    // ================================================================
+
     public virtual bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
-        // 이미 죽었으면 무시
-        if (Data.CurrentHealth <= 0) return false;
+        if (Data.CurrentHealth <= 0 || fsm.IsInvulnerable) return false;
 
-        // 1. 무적 상태 체크 (FSM에게 위임)
-        if (fsm.IsInvulnerable) return false;
-
-        // 2. 체력 감소
         Data.CurrentHealth -= dmg;
 
-        // 3. 사망 판정
         if (Data.CurrentHealth <= 0)
         {
             Data.CurrentHealth = 0;
@@ -99,120 +207,21 @@ public class PrisonerController : MonoBehaviour
         }
         else
         {
-            // 4. 생존 시: FSM에 알림 (반격하거나 웅크리기)
             fsm.OnDamaged(dmg, hitPoint, hitDirection);
-
-            // 피격음 및 신음 소리 재생
             if (sfx != null) sfx.PlayHitAndRandomMoan();
         }
-
         return true;
     }
 
-    // 사망 처리
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
-        fsm.ChangeState(fsm.DeadState); // 상태 전환 (죽음)
+        fsm.ChangeState(fsm.DeadState);
+        if (sfx != null) sfx.PlayRandomDieOnce();
 
-        if (sfx != null) sfx.PlayRandomDieOnce(); // 사망 비명
+        // 사망 시 행동 도구도 놓치게 하거나 숨길 수 있음
+        StopActionBehavior();
 
-        // 래그돌 물리 효과 적용
-        if (ragdoll != null)
-            ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
-
-        // 이벤트 발생 (게임 로직에 알림)
+        if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
-    }
-
-    // [외형 변경 로직]
-    private void ApplyVisualAnomaly(VisualAnomalyType visualType)
-    {
-        // 1. 일단 모든 모델을 끄고 기본 모델만 켬 (초기화)
-        if (defaultModel) defaultModel.SetActive(true);
-        if (bikiniModel) bikiniModel.SetActive(false);
-        if (goatHeadModel) goatHeadModel.SetActive(false);
-        if (guardUniformModel) guardUniformModel.SetActive(false);
-
-        // 2. 타입에 따라 특정 모델 활성화
-        switch (visualType)
-        {
-            case VisualAnomalyType.BikiniModel: // Enum 이름 확인 필요 (BikiniModel인지 MuscleBikini인지)
-                if (defaultModel) defaultModel.SetActive(false);
-                if (bikiniModel) bikiniModel.SetActive(true);
-                break;
-
-            case VisualAnomalyType.GoatHead:
-                // 염소 머리는 기본 몸 위에 머리만 씌우는 방식이라면 defaultModel을 끄지 않을 수도 있음
-                // 여기서는 머리만 교체한다고 가정
-                if (goatHeadModel) goatHeadModel.SetActive(true);
-                break;
-
-            case VisualAnomalyType.Imposter_Guard:
-                if (defaultModel) defaultModel.SetActive(false);
-                if (guardUniformModel) guardUniformModel.SetActive(true);
-                break;
-
-            case VisualAnomalyType.None:
-            default:
-                // 위에서 이미 기본값으로 초기화했으므로 추가 동작 없음
-                break;
-        }
-    }
-
-    // PrisonerController.cs 내부에 추가
-
-    // [매핑 테이블] AIType -> Animator BlendTree 번호
-    private int GetActionAnimID(PrisonerAIType type)
-    {
-        return type switch
-        {
-            // 0번: 아무것도 안 함 (기본 Idle)
-            PrisonerAIType.Good => 0,
-            PrisonerAIType.Bad => 0,
-
-            // 1일차 소음/특수 행동
-            PrisonerAIType.Singing => 1,
-            PrisonerAIType.Screaming => 2,
-            PrisonerAIType.Mumbling => 3,
-            PrisonerAIType.HammeringWall => 4,
-            PrisonerAIType.Deadlift => 5,
-            PrisonerAIType.Crying => 6,
-
-            // 3일차/7일차 행동
-            PrisonerAIType.Escaper => 7,   // 땅파기 (Digging)
-            PrisonerAIType.Graffiti => 8,  // 낙서
-            PrisonerAIType.Ambusher => 9,  // 기습 대기 (숨기)
-
-            _ => 0 // 그 외는 기본 대기
-        };
-    }
-
-    public void StartActionBehavior(PrisonerAIType type)
-    {
-        // 1. 애니메이션 전환 (Blend Tree의 ActionType 파라미터 변경)
-        int animID = GetActionAnimID(type);
-        if (animator != null) animator.SetInteger("ActionType", animID);
-
-        // 2. ★ 소리 재생 (Switch문 삭제됨! 훨씬 깔끔)
-        if (sfx != null)
-        {
-            sfx.PlayLoop(type);
-        }
-
-        // 3. 도구(Prop) 들기
-        // 예: 망치질이면 망치 오브젝트 켜기
-        // if (type == PrisonerAIType.HammeringWall && hammerObj != null) hammerObj.SetActive(true);
-    }
-
-    public void StopActionBehavior()
-    {
-        // 1. 애니메이션 복구 (Normal Idle)
-        if (animator != null) animator.SetInteger("ActionType", 0);
-
-        // 2. 소리 끄기
-        if (sfx != null) sfx.StopAllLoops();
-
-        // 3. 도구 숨기기
-        // if (hammerObj != null) hammerObj.SetActive(false);
     }
 }
