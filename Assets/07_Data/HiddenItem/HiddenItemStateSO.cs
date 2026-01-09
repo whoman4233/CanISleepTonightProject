@@ -8,28 +8,17 @@ public abstract class HiddenItemStateSO : ScriptableObject
 
     public event Action<bool> OnFoundStateChanged;
 
-    // 자식이 읽을 필요가 있으면 이걸 사용
-    protected bool IsFoundInternal => isFound;
-
-    protected void RaiseFoundChanged()
-    {
-        OnFoundStateChanged?.Invoke(isFound);
-    }
-
     public virtual void OnFound()
     {
-        Debug.Log($"[HiddenItemStateSO] OnFound name={name}");
-        if (isFound)
-            return;
-
+        if (isFound) return;
         isFound = true;
-        RaiseFoundChanged();
+        OnFoundStateChanged?.Invoke(isFound);
     }
 
     public virtual void ResetState()
     {
         isFound = false;
-        RaiseFoundChanged();
+        OnFoundStateChanged?.Invoke(isFound);
     }
 }
 

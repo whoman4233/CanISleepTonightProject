@@ -4,12 +4,14 @@
 public class HiddenItemDefinitionSO : HiddenItemStateSO
 {
     [Header("Identity")]
-    [SerializeField] private string itemId;          // 고유 ID (Knife_A, Trash_01)
+    [SerializeField] private string itemId;
     public string ItemId => itemId;
 
     [Header("Mission")]
-    [SerializeField] private string missionTag;      // Weapon, Forbidden, "" (ex:휴지 같은 의미없는 오브젝트는 Tag 비워두기)
+    [SerializeField] private string missionTag;
     public string MissionTag => missionTag;
-
     public bool AffectsMission => !string.IsNullOrEmpty(missionTag);
+
+    [Header("Discovery")]
+    public bool requiresInspection;   // Inspection 전용인가?
 }
