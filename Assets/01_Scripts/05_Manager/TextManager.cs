@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TextManager : MonoBehaviour
@@ -14,6 +15,18 @@ public class TextManager : MonoBehaviour
     // 핵심: 런타임 조회용 딕셔너리 (Key -> 현재 언어 텍스트)
     private Dictionary<string, TextEntry> textDictionary = new Dictionary<string, TextEntry>();
 
+    /// <summary>
+    /// 텍스트 데이터(Dictionary)가 준비되었음을 알리는 이벤트
+    /// - 씬에 UI가 먼저 있어도 정상 동기화되도록
+    /// </summary>
+    public static event Action OnTextDataReady;
+
+    /// <summary>
+    /// 언어 변경 알림 이벤트
+    /// - 이미 화면에 떠 있는 UI 텍스트 갱신 용도
+    /// </summary>
+    public static event Action OnLanguageChanged;
+
     private void Awake()
     {
         // 싱글톤 & DDoL 설정
@@ -22,6 +35,8 @@ public class TextManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             InitializeDictionary(); // 최초 초기화
+
+            OnTextDataReady?.Invoke(); // 텍스트 시스템 준비 완료 알림(UI 먼저 생성되도 이 시점에 갱신)
         }
         else
         {
@@ -32,9 +47,15 @@ public class TextManager : MonoBehaviour
     // 딕셔너리 구축 (언어 바뀔 때마다 호출)
     public void SetLanguage(Language lang)
     {
+        // 같은 언어 재설정 방지
+        if (currentLanguage == lang)
+            return;
+
         currentLanguage = lang;
         InitializeDictionary();
 
+        // 언어 변경 알림
+        OnLanguageChanged?.Invoke();
         // 여기에 언어 변경 이벤트(Event)를 발생시켜 UI들이 갱신되게 하면 더 좋습니다.
         Debug.Log($"Language changed to: {lang}");
     }

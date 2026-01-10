@@ -15,6 +15,12 @@ public class DailyMissionManager : MonoBehaviour
     // 오늘 하루 동안 플레이어가 올린 실적
     private int dailyResolvedCount = 0;
 
+    /// <summary>
+    /// 오늘 미션의 "공용 진행도"
+    /// - UI(HUD), Result 판단에 사용
+    /// - 미션 타입과 무관
+    /// </summary>
+    public int CurrentScore { get; private set; }
     private void Awake()
     {
         Instance = this;
@@ -24,6 +30,7 @@ public class DailyMissionManager : MonoBehaviour
     public void StartDay(int dayIndex)
     {
         dailyResolvedCount = 0;
+        CurrentScore = 0;
 
         // 인덱스 안전 검사
         if (missionScenario == null || missionScenario.Count < dayIndex)
@@ -41,6 +48,18 @@ public class DailyMissionManager : MonoBehaviour
 
         // 3. (필요하다면) 스포너에게 최종 소환 명령
         // PrisonerSpawnController.Instance.SpawnAll(); 
+
+        // HUD 미션 UI 초기화 알림
+        EventBus.Publish(new MissionStartedEvent
+        {
+            mission = CurrentMission
+        });
+
+        EventBus.Publish(new MissionProgressChangedEvent
+        {
+            current = CurrentScore,
+            target = CurrentMission.targetScore
+        });
     }
 
     // ========================================================================
@@ -55,6 +74,16 @@ public class DailyMissionManager : MonoBehaviour
             // 미션에게 "이런 태그 가진 아이템 찾았어" 라고 전달
             CurrentMission.OnEventTriggered(itemTag);
         }
+
+        // 미션 공용 진행도 증가
+        CurrentScore++;
+
+        // HUD/UI에 진행도 변경 알림
+        EventBus.Publish(new MissionProgressChangedEvent
+        {
+            current = CurrentScore,
+            target = CurrentMission.targetScore
+        });
     }
 
     // 2. 죄수 제압/해결 했을 때 (소음, 폭동 등)
@@ -66,6 +95,15 @@ public class DailyMissionManager : MonoBehaviour
         // 혹시 미션 쪽에서 실시간 체크가 필요할 수도 있으니 알림
         if (CurrentMission != null)
             CurrentMission.OnEventTriggered("PrisonerResolved");
+
+        // Suppression 미션도 공용 진행도에 반영
+        CurrentScore++;
+
+        EventBus.Publish(new MissionProgressChangedEvent
+        {
+            current = CurrentScore,
+            target = CurrentMission.targetScore
+        });
     }
 
     // 3. 하루 결산 (SettlementTrigger에서 호출)
@@ -78,7 +116,7 @@ public class DailyMissionManager : MonoBehaviour
         }
 
         // 미션 SO에게 "나 오늘 이만큼(dailyResolvedCount) 했어, 합격이야?" 물어봄
-        return CurrentMission.CheckWinCondition(dailyResolvedCount, out failReason);
+        return CurrentMission.CheckWinCondition(CurrentScore, out failReason);
     }
 
     // [추가] 외부(테스트 콘솔 등)에서 특정 날짜의 미션 데이터를 요청할 때 사용
