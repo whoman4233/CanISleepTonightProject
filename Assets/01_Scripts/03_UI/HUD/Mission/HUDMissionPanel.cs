@@ -1,18 +1,16 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
 using System;
 
 public class HUDMissionPanel : MonoBehaviour
 {
+    [Header("Root")]
+    [SerializeField] private GameObject panelRoot;
+
     [Header("Text")]
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI descriptionText;
-
-    [Header("Goals")]
-    [SerializeField] private Transform goalRoot;
-    [SerializeField] private MissionGoalCheckUI goalPrefab;
-
-    private MissionGoalCheckUI[] goalUIs;
+    [SerializeField] private TextMeshProUGUI progressText;
 
     private Action<MissionStartedEvent> _onStart;
     private Action<MissionProgressChangedEvent> _onProgress;
@@ -20,7 +18,10 @@ public class HUDMissionPanel : MonoBehaviour
     private void Awake()
     {
         _onStart = OnMissionStarted;
-        _onProgress = OnProgressChanged;
+        _onProgress = OnMissionProgressChanged;
+
+        if (panelRoot != null)
+            panelRoot.SetActive(false);
     }
 
     private void OnEnable()
@@ -35,34 +36,56 @@ public class HUDMissionPanel : MonoBehaviour
         EventBus.Unsubscribe(_onProgress);
     }
 
+    // ========================================================================
+    // Event Handlers
+    // ========================================================================
+
     private void OnMissionStarted(MissionStartedEvent e)
     {
+        if (panelRoot != null && !panelRoot.activeSelf)
+            panelRoot.SetActive(true);
+
         titleText.text = e.mission.title;
         descriptionText.text = e.mission.description;
 
-        BuildGoals(e.mission.targetScore);
+        UpdateProgressText(0, e.mission.targetScore, e.mission);
     }
 
-    private void BuildGoals(int target)
+    private void OnMissionProgressChanged(MissionProgressChangedEvent e)
     {
-        foreach (Transform child in goalRoot)
-            Destroy(child.gameObject);
+        if (panelRoot != null && !panelRoot.activeSelf)
+            panelRoot.SetActive(true);
 
-        goalUIs = new MissionGoalCheckUI[target];
+        var mission = DailyMissionManager.Instance.CurrentMission;
+        if (mission == null)
+            return;
 
-        for (int i = 0; i < target; i++)
+        UpdateProgressText(e.current, e.target, mission);
+    }
+
+    // ========================================================================
+    // Progress Text
+    // ========================================================================
+
+    private void UpdateProgressText(int current, int target, DailyMissionStrategy mission)
+    {
+        // Collection 미션
+        if (mission is Mission_CollectionStrategy collection)
         {
-            var ui = Instantiate(goalPrefab, goalRoot);
-            ui.SetChecked(false);
-            goalUIs[i] = ui;
+            // 예: "Weapon 회수 2 / 6"
+            progressText.text = $"{collection.targetItemTag} 회수 {current} / {target}";
         }
-    }
-
-    private void OnProgressChanged(MissionProgressChangedEvent e)
-    {
-        for (int i = 0; i < goalUIs.Length; i++)
+        // Suppression 미션
+        else if (mission is Mission_SuppressionStrategy)
         {
-            goalUIs[i].SetChecked(i < e.current);
+            // 예: "위험 요소 제거 1 / 3"
+            progressText.text = $"위험 요소 제거 {current} / {target}";
+        }
+        // 기본 (확장 대비)
+        else
+        {
+            progressText.text = $"{current} / {target}";
         }
     }
 }
+

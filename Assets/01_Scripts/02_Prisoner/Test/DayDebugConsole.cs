@@ -43,6 +43,7 @@ public class DayDebugConsole : MonoBehaviour
         // ★ 이게 없으면 "No prisoner active" 에러 발생함
         scheduleManager.ForceRebuildDatabase();
 
+        missionManager.StartDay(day); //Mission UI 연결 확인용 임시 추가
         // ====================================================
         // STEP 3. 미션 전략 가져오기
         // ====================================================
