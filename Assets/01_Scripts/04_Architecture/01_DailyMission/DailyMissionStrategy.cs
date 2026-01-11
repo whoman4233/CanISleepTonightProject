@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 public abstract class DailyMissionStrategy : ScriptableObject
@@ -6,23 +6,24 @@ public abstract class DailyMissionStrategy : ScriptableObject
     [Header("Basic Info")]
     public string title;
     [TextArea] public string description;
+    [SerializeField] public string missionId;
 
     [Header("Day Theme")]
-    public MissionDayTheme missionTheme; // ¿À´Ã È°¼ºÈ­ÇÒ Å×¸¶ ºñÆ® (ÀÌ»óÇö»ó ÇÊÅÍ¸µ¿ë)
+    public MissionDayTheme missionTheme; // ì˜¤ëŠ˜ í™œì„±í™”í•  í…Œë§ˆ ë¹„íŠ¸ (ì´ìƒí˜„ìƒ í•„í„°ë§ìš©)
 
     [Header("Goals")]
-    public int targetScore; // ¸ñÇ¥ Á¡¼ö (Ã£¾Æ¾ß ÇÒ °³¼ö µî)
+    public int targetScore; // ëª©í‘œ ì ìˆ˜ (ì°¾ì•„ì•¼ í•  ê°œìˆ˜ ë“±)
 
     [Header("Time Settings")]
-    public float missionTimeLimit = 480f; // ±âº» 480ÃÊ, 1ÀÏÂ÷´Â Âª°Ô 300ÃÊ?
+    public float missionTimeLimit = 480f; // ê¸°ë³¸ 480ì´ˆ, 1ì¼ì°¨ëŠ” ì§§ê²Œ 300ì´ˆ?
 
     public virtual void SetupDay(AnomalyDistributor anomalyDistributor, PrisonerScheduleManager scheduleManager)
     {
-        // A. ÀÌ»óÇö»ó ÇÊÅÍ¸µ Áö½Ã (Distributor ´ã´ç)
+        // A. ì´ìƒí˜„ìƒ í•„í„°ë§ ì§€ì‹œ (Distributor ë‹´ë‹¹)
         anomalyDistributor.FilterAnomalies(missionTheme);
 
-        // B. ÁË¼ö Çàµ¿ Áö½Ã (ScheduleManager ´ã´ç)
-        // ±âº»°ª: ¹üÀÎ 0¸í, ¸ğµÎ Æò¹üÇÑ »óÅÂ(Good/Normal)
+        // B. ì£„ìˆ˜ í–‰ë™ ì§€ì‹œ (ScheduleManager ë‹´ë‹¹)
+        // ê¸°ë³¸ê°’: ë²”ì¸ 0ëª…, ëª¨ë‘ í‰ë²”í•œ ìƒíƒœ(Good/Normal)
         scheduleManager.AssignRolesForNewDay(
             suspiciousCount: 0,
             defaultAI: PrisonerAIType.Good
@@ -34,19 +35,24 @@ public abstract class DailyMissionStrategy : ScriptableObject
         }
     }
 
-    // 2. ÀÌº¥Æ® ¹ß»ı ½Ã Ã³¸® (¿ÜºÎ¿¡¼­ È£Ãâ: ¿¹ - "Èä±â Ã£À½", "¼ÒÀ½ ÇØ°á")
+    // 2. ì´ë²¤íŠ¸ ë°œìƒ ì‹œ ì²˜ë¦¬ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ: ì˜ˆ - "í‰ê¸° ì°¾ìŒ", "ì†ŒìŒ í•´ê²°")
     public virtual void OnEventTriggered(string eventCode) { }
 
-    // 3. °á»ê (¼º°ø ¿©ºÎ ÆÇ´Ü)
+    // 3. ê²°ì‚° (ì„±ê³µ ì—¬ë¶€ íŒë‹¨)
     public virtual bool CheckWinCondition(int currentScore, out string failReason)
     {
         failReason = "";
         return currentScore >= targetScore;
     }
 
-    // ¹Ì¼Ç ½ÃÀÛ ½Ã È£Ãâ (4ÀÏÂ÷ ½ºÆù, Å¸ÀÌ¸Ó ½ÃÀÛ µî)
+    // ë¯¸ì…˜ ì‹œì‘ ì‹œ í˜¸ì¶œ (4ì¼ì°¨ ìŠ¤í°, íƒ€ì´ë¨¸ ì‹œì‘ ë“±)
     public virtual void OnMissionStart() { }
 
-    // ¹Ì¼Ç Á¾·á ½Ã È£Ãâ (Á¤¸®¿ë)
+    // ë¯¸ì…˜ ì¢…ë£Œ ì‹œ í˜¸ì¶œ (ì •ë¦¬ìš©)
     public virtual void OnMissionEnd() { }
+
+    public virtual string GetProcessedText(string rawText) // ì´ë¦„ ì¹˜í™˜ ë¡œì§. overrideí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëŒ€ë¡œ ì¶œë ¥
+    {
+        return rawText;
+    }
 }

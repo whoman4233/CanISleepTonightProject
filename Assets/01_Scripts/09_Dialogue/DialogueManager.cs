@@ -72,13 +72,11 @@ public class DialogueManager : MonoBehaviour
         string speakerName = entry.speaker;
         string dialogueContent = currentLine.TranslatedContent;
 
-        // DailyMissionManager를 통해 현재 미션이 Mission06Strategy인지 확인
-        if (DailyMissionManager.Instance != null &&
-            DailyMissionManager.Instance.CurrentMission is Mission06Strategy m06Strategy)
+        if (DailyMissionManager.Instance != null && DailyMissionManager.Instance.CurrentMission != null)
         {
-            // 미션 06 전략 클래스에 만들어둔 GetProcessedText 함수를 사용하여 이름 치환
-            speakerName = m06Strategy.GetProcessedText(speakerName);
-            dialogueContent = m06Strategy.GetProcessedText(dialogueContent);
+            var strategy = DailyMissionManager.Instance.CurrentMission;
+            speakerName = strategy.GetProcessedText(speakerName);
+            dialogueContent = strategy.GetProcessedText(dialogueContent);
         }
 
         speakerNameText.text = speakerName; // 치환된 이름 적용
@@ -161,5 +159,34 @@ public class DialogueManager : MonoBehaviour
     {
         yield return GetWait(delay);
         canClick = true;
+    }
+    public void StartDialogueByKeys(string speakerKey)
+    {
+        if (DailyMissionManager.Instance.CurrentMission == null) return;
+        if (dialoguePanel.activeSelf) return; // 중복 실행 방지
+
+        string missionId = DailyMissionManager.Instance.CurrentMission.missionId; // 현재 미션 정보 가져오기
+
+        // TextManager에게 해당 조건의 키 리스트 요청
+        List<string> keys = TextManager.Instance.GetKeysByMissionAndSpeaker(missionId, speakerKey);
+
+        if (keys == null || keys.Count == 0) return;
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.SetDialogueActive(true);
+            InputManager.Instance.ResetPlayerInputs();
+        }
+        // 대화 큐 생성 로직
+        dialogueQueue.Clear();
+        foreach (string key in keys)
+        {
+            DialogueLine line = new DialogueLine { textKey = key };
+            dialogueQueue.Enqueue(line);
+        }
+
+        // 4. UI 활성화
+        dialoguePanel.SetActive(true);
+        DisplayNextLine();
+        StartCoroutine(EnableNextDelay(0.2f));
     }
 }
