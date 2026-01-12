@@ -1,8 +1,8 @@
-public enum AnomalyTargetType
+ï»¿public enum AnomalyTargetType
 {
-    Slot,           // ºó °ø°£¿¡ »ı¼º
+    Slot,           // ë¹ˆ ê³µê°„ì— ìƒì„±
 
-    // --- ±¸Á¶¹° ---
+    // --- êµ¬ì¡°ë¬¼ ---
     CellWall_Left,
     CellWall_Right,
     CellWall_Front,
@@ -13,11 +13,15 @@ public enum AnomalyTargetType
 public enum VisualAnomalyType
 {
     None = 0,
-    // [3ÀÏÂ÷]
+    // [3ì¼ì°¨]
     BikiniModel,
     GoatHead,
-    // [4ÀÏÂ÷]
-    Imposter_Guard,     // »ç¼ö º¹Àå
-    Imposter_NoBeard,   // ¼ö¿° ¾øÀ½
-    Imposter_Earring    // ±Í°ÉÀÌ µî
+    // [4ì¼ì°¨]
+    Imposter_Guard,     // ì‚¬ìˆ˜ ë³µì¥
+    Imposter_NoBeard,   // ìˆ˜ì—¼ ì—†ìŒ
+    Imposter_Earring,    // ê·€ê±¸ì´ ë“±
+    // 6ì¼ì°¨
+    Suspect1,
+    Suspect2,
+    Suspect3
 }

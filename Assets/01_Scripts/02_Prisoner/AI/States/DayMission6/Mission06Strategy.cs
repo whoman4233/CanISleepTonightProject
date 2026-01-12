@@ -10,7 +10,19 @@ public class Mission06Strategy : DailyMissionStrategy
     [SerializeField] private Mission06Data missionData; // 랜덤 이름 저장용 SO
     private readonly string[] _originNames = { "Antony", "Richard", "Leo" };
 
+    [Header("Spawn Rules")]
+    public int targetSuspiciousCount;
+    public int missionCountDown;
+    public PrisonerAIType defaultAI = PrisonerAIType.Good;
+    public List<PrisonerAIType> specialAIList;
+    public List<VisualAnomalyType> specialVisualList;
+
     private bool _isCulpritCaught = false;
+
+    private void OnValidate()
+    {
+        missionId = DialogueKeys.Missions.Mission06; // 미션id 고정
+    }
 
     // 하루 시작 시 세팅 (DailyMissionManager가 호출)
     public override void SetupDay(AnomalyDistributor anomalyDistributor, PrisonerScheduleManager scheduleManager)
@@ -19,6 +31,24 @@ public class Mission06Strategy : DailyMissionStrategy
 
         _isCulpritCaught = false;
         AssignRandomNames(); // 이름 섞기
+        specialAIList.Clear();
+        specialVisualList.Clear();
+
+        // 용의자 3명의 비주얼 타입
+        specialVisualList.Add(VisualAnomalyType.Suspect1);
+        specialVisualList.Add(VisualAnomalyType.Suspect2);
+        specialVisualList.Add(VisualAnomalyType.Suspect3);
+
+        // 용의자 3명의 AI 타입 (모두 Good)
+        for (int i = 0; i < 3; i++) specialAIList.Add(PrisonerAIType.Good);
+
+        // 설정된 AI와 Visual 목록을 스케줄 매니저에게 전달
+        scheduleManager.AssignRolesForNewDay(
+            suspiciousCount: targetSuspiciousCount,
+            defaultAI: defaultAI,
+            specialBehaviors: specialAIList,
+            specialVisuals: specialVisualList
+        );
     }
 
     private void AssignRandomNames()
@@ -53,9 +83,9 @@ public class Mission06Strategy : DailyMissionStrategy
     }
 
     // DialogueManager에서 사용할 텍스트 가공 인터페이스
-    public string GetProcessedText(string rawText)
+    public override string GetProcessedText(string rawText)
     {
         if (missionData == null) return rawText;
-        return missionData.ProcessText(rawText);
+        return missionData.ProcessText(rawText); // Suspect1를 랜덤배치된 이름으로 치환
     }
 }

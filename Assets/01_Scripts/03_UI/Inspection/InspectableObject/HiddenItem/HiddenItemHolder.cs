@@ -1,6 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
+public class HiddenItemEntry
+{
+    public HiddenItemDefinitionSO definition;
+    public HiddenItemStateSO state;
+}
 public class HiddenItemHolder : MonoBehaviour, IHiddenItemInteractable
 {
     [SerializeField] private HiddenItemDefinitionSO[] hiddenItems;
