@@ -90,52 +90,70 @@ public class PrisonManager : MonoBehaviour
 
     private void LoadAndApplyTodaySchedule(int day)
     {
-        // 🔥 스케줄 매니저에게 오늘 데이터 요청 (이제 리스트가 아니라 데이터 조회 방식)
-        // (주의: ScheduleManager가 리팩토링되면서 GetAssignmentsForDay 대신 다른 방식을 쓸 수도 있습니다.
-        //  만약 GameFlowController가 직접 StartDay에서 뿌려주는 방식이라면 이 함수는 필요 없을 수도 있습니다.
-        //  하지만 기존 구조 유지를 위해 ScheduleManager에서 데이터를 가져오는 형태로 작성합니다.)
+        Debug.Log($"[PrisonManager] {day}일차 하루 일과 시작 시퀀스 가동");
 
-        var scheduleMgr = PrisonerScheduleManager.Instance;
-        if (scheduleMgr == null) return;
-
-        Debug.Log($"[PrisonManager] {day}일차 감방 상태 초기화 중...");
-
-        // 1. 기존 생성물 초기화
+        // =================================================================
+        // [1] 사전 청소 (Clean Up)
+        // =================================================================
         if (spawnController != null) spawnController.ClearAllForNewDay();
-
-        // 2. 논리적 상태 리셋
         ResetCellsForNewDay();
         ActiveCell1f = 0;
         ActiveCell2f = 0;
 
-        // 3. 모든 셀을 돌며 "오늘 입주자인가?" 확인 후 처리
+        // =================================================================
+        // [2] 미션 및 데이터 준비 (Mission Strategy Execution)
+        // =================================================================
+        // ★ 여기서 PrisonManager가 직접 배정하지 않고, MissionManager에게 위임합니다.
+        
+        var missionMgr = DailyMissionManager.Instance; // 혹은 [SerializeField] 참조
+        
+        if (missionMgr != null)
+        {
+            // 이 함수 내부에서 오늘 날짜의 Strategy를 찾고, 
+            // Strategy.SetupDay()가 호출되면서 --> ScheduleManager.AssignRoles()가 실행됨
+            missionMgr.StartDay(day);
+            
+            if (verboseLog) Debug.Log($"[PrisonManager] 미션 매니저를 통해 {day}일차 전략(Strategy)이 적용되었습니다.");
+        }
+        else
+        {
+            // 미션 매니저가 없을 경우를 대비한 비상용 기본 배정
+            Debug.LogWarning("[PrisonManager] DailyMissionManager가 없습니다. 기본값으로 배정합니다.");
+            PrisonerScheduleManager.Instance?.AssignRolesForNewDay(1, PrisonerAIType.Good);
+        }
+
+        // =================================================================
+        // [3] 소환 및 활성화 (Spawning based on Assigned Roles)
+        // =================================================================
+        // 위 [2]번 단계에서 역할 배정이 DB에 저장되었으므로, 이제 데이터를 읽어서 소환만 하면 됨
+        
+        var scheduleMgr = PrisonerScheduleManager.Instance;
+
         foreach (var cellId in _runtimeCells.Keys)
         {
             var cellRuntime = _runtimeCells[cellId];
             var anchor = GetCellAnchor(cellId);
             if (anchor == null) continue;
 
-            // 스케줄 매니저에게 "이 방에 누구 살고, 오늘 역할이 뭔지" 물어봄
-            var prisonerData = scheduleMgr.GetPrisonerData(cellId);
-            var dailyRole = scheduleMgr.GetDailyRole(cellId);
+            // 스케줄러에서 데이터 조회 (방금 전략에 의해 배정된 데이터)
+            var prisonerData = scheduleMgr?.GetPrisonerData(cellId);
+            var dailyRole = scheduleMgr?.GetDailyRole(cellId);
 
-            // 입주민이 없으면 패스
             if (prisonerData == null) continue;
 
             // A. 논리 상태 업데이트
             cellRuntime.IsActiveToday = true;
-            cellRuntime.IsSuspicious = dailyRole.isSuspicious; // 범인 여부
+            cellRuntime.IsSuspicious = dailyRole.HasValue && dailyRole.Value.isSuspicious;
             cellRuntime.State = CellState.ActiveNoisy;
             SetNoisy(cellRuntime, true);
 
             if (cellRuntime.Floor == 1) ActiveCell1f++;
             else if (cellRuntime.Floor == 2) ActiveCell2f++;
 
-            // B. 🔥 실제 소환 명령 (SpawnController에게 위임)
-            // (SpawnController는 이미 ScheduleManager 데이터를 참조할 수 있으므로 cellId만 줘도 됨)
-            if (spawnController != null)
+            // B. 실제 소환 (SpawnController는 결정된 데이터(스킨 포함)를 보고 프리팹 생성)
+            if (spawnController != null && dailyRole.HasValue)
             {
-                spawnController.SpawnForCell(cellId, dailyRole.isSuspicious);
+                spawnController.SpawnForCell(cellId, dailyRole.Value.isSuspicious);
             }
         }
 

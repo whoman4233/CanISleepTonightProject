@@ -40,7 +40,14 @@ public class DailyMissionManager : MonoBehaviour
         }
 
         // 1. 오늘의 미션 갈아끼우기
-        CurrentMission = missionScenario[dayIndex - 1];
+        if(dayIndex < 7)
+        {
+            CurrentMission = missionScenario[Random.Range(0, missionScenario.Count - 1)];
+        }
+        else
+        {
+            CurrentMission = missionScenario[dayIndex - 1];
+        }
         Debug.Log($"[GameFlow] Day {dayIndex} 미션 시작: {CurrentMission.title}");
 
         // 2. 전략 실행 (매니저 세팅)

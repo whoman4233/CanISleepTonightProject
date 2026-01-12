@@ -94,7 +94,7 @@ public class PrisonerController : MonoBehaviour
     // 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
     {
-        if (animator != null) animator.SetInteger("ActionType", GetActionAnimID(type));
+        if (animator != null) animator.SetInteger("Blend", GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
 
         if (_propMap.TryGetValue(type, out GameObject prop))
