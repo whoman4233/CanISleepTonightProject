@@ -4,6 +4,7 @@ using UnityEngine.AI;
 
 public class PrisonerController : MonoBehaviour
 {
+    private const float RagdollImpactForce = 10f; // 매직넘버 제거
     // ================================================================
     // [1] 데이터 정의 (인스펙터 매핑용 구조체)
     // ================================================================
@@ -196,6 +197,18 @@ public class PrisonerController : MonoBehaviour
 
     public virtual bool ApplyDamage(int dmg, Vector3 hitPoint, Vector3 hitDirection)
     {
+        if (Data == null)
+        {
+            Debug.LogError($"[PrisonerController] Data is NULL. Initialize()가 호출되지 않았습니다. 대상: {name}", this);
+            return false;
+        }
+
+        if (fsm == null)
+        {
+            Debug.LogError($"[PrisonerController] FSM is NULL. 대상: {name}", this);
+            return false;
+        }
+
         if (Data.CurrentHealth <= 0 || fsm.IsInvulnerable) return false;
 
         Data.CurrentHealth -= dmg;
@@ -210,6 +223,7 @@ public class PrisonerController : MonoBehaviour
             fsm.OnDamaged(dmg, hitPoint, hitDirection);
             if (sfx != null) sfx.PlayHitAndRandomMoan();
         }
+
         return true;
     }
 
@@ -218,10 +232,9 @@ public class PrisonerController : MonoBehaviour
         fsm.ChangeState(fsm.DeadState);
         if (sfx != null) sfx.PlayRandomDieOnce();
 
-        // 사망 시 행동 도구도 놓치게 하거나 숨길 수 있음
         StopActionBehavior();
 
-        if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, 10f);
+        if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 }
