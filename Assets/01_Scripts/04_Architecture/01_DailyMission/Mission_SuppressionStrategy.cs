@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 [CreateAssetMenu(menuName = "Missions/Type: Suppression (Day 1, 3, 4, 7)")]
@@ -11,11 +11,12 @@ public class Mission_SuppressionStrategy : DailyMissionStrategy
     public List<PrisonerAIType> specialAIList;
     public List<VisualAnomalyType> specialVisualList;
 
+
     public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
     {
         base.SetupDay(ad, sm);
 
-        // ¼³Á¤µÈ AI¿Í Visual ¸ñ·ÏÀ» ½ºÄÉÁÙ ¸Å´ÏÀú¿¡°Ô Àü´Ş
+        // ì„¤ì •ëœ AIì™€ Visual ëª©ë¡ì„ ìŠ¤ì¼€ì¤„ ë§¤ë‹ˆì €ì—ê²Œ ì „ë‹¬
         sm.AssignRolesForNewDay(
             suspiciousCount: targetSuspiciousCount,
             defaultAI: defaultAI,
@@ -26,13 +27,13 @@ public class Mission_SuppressionStrategy : DailyMissionStrategy
 
     public override bool CheckWinCondition(int currentScore, out string failReason)
     {
-        // ¿©±â¼­ currentScore´Â "¼º°øÀûÀ¸·Î Á¦¾ĞÇÑ ÁË¼ö ¼ö"
+        // ì—¬ê¸°ì„œ currentScoreëŠ” "ì„±ê³µì ìœ¼ë¡œ ì œì••í•œ ì£„ìˆ˜ ìˆ˜"
         if (currentScore >= targetScore)
         {
             failReason = "";
             return true;
         }
-        failReason = $"À§Çè ¿ä¼Ò¸¦ ¸ğµÎ Á¦°ÅÇÏÁö ¸øÇß½À´Ï´Ù. ({currentScore}/{targetScore})";
+        failReason = $"ìœ„í—˜ ìš”ì†Œë¥¼ ëª¨ë‘ ì œê±°í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ({currentScore}/{targetScore})";
         return false;
     }
 }
