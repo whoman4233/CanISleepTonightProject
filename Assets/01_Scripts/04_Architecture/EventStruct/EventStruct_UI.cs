@@ -58,15 +58,6 @@ public struct PopupCloseRequestedEvent
 //==========================================
 //WhiteBoadrd이벤트 목록
 //==========================================
-public struct ShowWhiteBoardPopupEvent
-{
-
-}
-
-public struct HideWhiteBoardPopupEvent
-{
-
-}
 
 //화이트보드 데이터
 public struct SettlementUIDataCreatedEvent
@@ -78,9 +69,6 @@ public struct SettlementUIDataCreatedEvent
         Data = data;
     }
 }
-
-
-// Popup UI ESC로 닫을 때
 
 //==========================================
 //ResultUI 이벤트 목록
