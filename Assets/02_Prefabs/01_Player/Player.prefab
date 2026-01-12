@@ -9,6 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1390255075624424922}
+  - component: {fileID: 8646659414983776047}
+  - component: {fileID: 3266078730474386718}
+  - component: {fileID: 379761202227191077}
   m_Layer: 6
   m_Name: CameraContainer
   m_TagString: Untagged
@@ -33,6 +36,52 @@ Transform:
   - {fileID: 1725841040233083097}
   m_Father: {fileID: 2292001760230312998}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8646659414983776047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478576560861453752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae7e05a4c612fcc478ebf8a9ab9ddc6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerRoot: {fileID: 8095358364415371199}
+  rotateSpeed: 8
+--- !u!114 &3266078730474386718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478576560861453752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 116c22b6aecc37c4ab2844c9996887b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeRoot: {fileID: 1390255075624424922}
+  baseAmplitude: 0.06
+  baseFrequency: 20
+  impulseStrength: 0.1
+  impulseDamping: 10
+--- !u!114 &379761202227191077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478576560861453752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df613bb4c0184c040af0db111ccf1f7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  qteIdFilter: PrisonerAttack
+  cameraDirector: {fileID: 8646659414983776047}
+  shakeController: {fileID: 3266078730474386718}
 --- !u!1 &1225454943606127437
 GameObject:
   m_ObjectHideFlags: 0
