@@ -27,6 +27,34 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.SetActive(false);
     }
 
+    private void Update()
+    {
+        // 대화 중일 때만 Q키 체크
+        if (dialoguePanel.activeSelf && Input.GetKeyDown(KeyCode.Q))
+        {
+            SkipAllDialogue();
+        }
+    }
+
+    public void SkipAllDialogue()
+    {
+        // 현재 타이핑 중인 루틴 중지
+        if (dialogueRoutine != null)
+        {
+            StopCoroutine(dialogueRoutine);
+            dialogueRoutine = null;
+        }
+
+        // 대화 큐 완전 비우기
+        dialogueQueue.Clear();
+
+        // 루틴 및 상태 리셋 후 종료
+        isTyping = false;
+        EndDialogue();
+
+        Debug.Log("전체 대화 스킵");
+    }
+
     public void StartDialogue(DialogueData data) //NPC가 대화를 시작할 때 호출하는 진입점
     {
         if (data == null || data.Lines == null || data.Lines.Length == 0)
