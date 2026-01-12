@@ -21,6 +21,8 @@ public class PrisonerFSM : MonoBehaviour
     // ★ [통합] 대기, 노래, 비명, 땅파기, 기습대기 등 "제자리 행동"을 모두 담당
     public PrisonerActionIdleState ActionState { get; private set; }
 
+
+
     // [특수 로직] 전투, 쫄기, 사망, 점호 등은 별도 로직이므로 유지
     public IPrisonerState CombatState { get; private set; }
     public IPrisonerState CowerState { get; private set; }
@@ -86,5 +88,37 @@ public class PrisonerFSM : MonoBehaviour
     public void OnDamaged(int dmg, Vector3 hitPoint, Vector3 hitDir)
     {
         _currentState?.OnDamaged(dmg, hitPoint, hitDir);
+    }
+
+    public void OnStartInspection()
+    {
+        if (Controller == null) return;
+
+        PrisonerAIType myType = Controller.AIType;
+
+        switch (myType)
+        {
+            // 1. 고정형(Stay), 비키니(Bikini): 
+            // 점호 신호를 무시하고 하던 행동(Idle) 계속 유지
+            case PrisonerAIType.Good:
+            case PrisonerAIType.Bad:
+            case PrisonerAIType.Ambusher:
+                ChangeState(InspectionState);
+                break;
+
+            // 2. 탈주형(Run): 
+            // 문이 열리자마자 탈주 시작
+            case PrisonerAIType.Escaper:
+                Debug.Log($"[FSM] {name} ({myType}) 탈주 시작!");
+                // if (EscapeState != null) ChangeState(EscapeState);
+                // 지금은 EscapeState가 변수로 선언 안 되어 있을 수 있으니 로그만
+                break;
+
+            // 3. 순응형(Good), 반항형(Bad), 기습형(Ambush) 등:
+            // 정상적으로 점호 자세(Inspection)로 전환
+            default:
+                Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시합니다.");
+                break;
+        }
     }
 }

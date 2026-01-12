@@ -35,7 +35,8 @@ public class InspectionStateMachine : MonoBehaviour
         if (cellManager == null) return false;
 
         // 1. 중복 진입 방지
-        if (!string.IsNullOrEmpty(CurrentInspectingCellId))
+        // (다른 방을 점검 중일 때만 진입을 막음)
+        if (!string.IsNullOrEmpty(CurrentInspectingCellId) && CurrentInspectingCellId != cellId)
         {
             Debug.LogWarning($"[ISSM] 진입 거부: 이미 {CurrentInspectingCellId} 점검 중.");
             return false;
@@ -44,9 +45,11 @@ public class InspectionStateMachine : MonoBehaviour
         var cell = cellManager.GetCell(cellId);
         if (cell == null) return false;
 
-        // 2. 상태 체크 (오늘 활성, 잠김 여부)
+        // 2. 상태 체크 (오늘 활성 여부)
         if (!cell.IsActiveToday) return false;
-        if (cell.IsLockedForDay) return false;
+
+        // ★ [수정] 닫은 문(완료된 방)도 다시 들어갈 수 있게 잠김 체크 주석 처리
+        // if (cell.IsLockedForDay) return false;
 
         // 3. 상태 변경 적용
         cell.IsInspectingNow = true;
@@ -54,8 +57,10 @@ public class InspectionStateMachine : MonoBehaviour
         CurrentInspectingCellId = cellId;
         _isSuppressionCleared = false;
 
-        // 4. 죄수 상태 변경 (Inspection 대기 상태)
-        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.InspectionState));
+        // 4. 죄수 상태 변경 명령
+        // ★ [수정] 무조건 InspectionState로 바꾸지 않고, FSM에게 '점검 시작' 신호만 보냄
+        //    (FSM 내부에서 AIType에 따라 순응할지, 무시할지, 도망갈지 결정)
+        SetPrisonerState(cellId, pFsm => pFsm.OnStartInspection());
 
         OnEnteredCell?.Invoke(cellId);
         return true;
@@ -93,7 +98,7 @@ public class InspectionStateMachine : MonoBehaviour
         // 1. 리포트용 이벤트 발생
         OnResolved?.Invoke(cell.CellId, cell.IsSuspicious, didSuppress);
 
-        // 2. 매니저에 잠금 요청
+        // 2. 매니저에 잠금 요청 (완료 처리)
         cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
 
         // 3. 로직 종료
@@ -142,7 +147,7 @@ public class InspectionStateMachine : MonoBehaviour
         // 현재 점검 중이 아니면 패스
         if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
 
-        // 🔥 [수정됨] 문자열 비교 대신, 레지스트리에서 현재 방의 죄수 ID를 직접 확인
+        // 레지스트리에서 현재 방의 죄수 ID를 직접 확인
         if (contentRegistry.TryGet(CurrentInspectingCellId, out var content))
         {
             // 쓰러진 죄수가 지금 내 눈앞에 있는 죄수가 맞는가?
@@ -162,7 +167,7 @@ public class InspectionStateMachine : MonoBehaviour
         cell.SuppressSuccess = true;
         OnSuppressSuccess?.Invoke(cellId);
 
-        // 🔥 [추가] 심판에게 알림: "이 방 죄수 처리했습니다!"
+        // 심판에게 알림: "이 방 죄수 처리했습니다!"
         if (DailyMissionManager.Instance != null)
         {
             DailyMissionManager.Instance.NotifyPrisonerResolved(cellId);
