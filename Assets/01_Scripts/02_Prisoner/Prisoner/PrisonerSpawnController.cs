@@ -48,6 +48,7 @@ public class PrisonerSpawnController : MonoBehaviour
         if (!ValidateRefs() || contentRegistry.TryGet(cellId, out _)) return;
         if (!anchorRegistry.TryGet(cellId, out var anchor)) return;
 
+        // 1. 데이터 가져오기
         PrisonerData existingData = scheduleManager.GetPrisonerData(cellId);
         DailyRoleData dailyRole = scheduleManager.GetDailyRole(cellId);
 
@@ -57,16 +58,27 @@ public class PrisonerSpawnController : MonoBehaviour
         content.prisonerInstanceId = existingData.ID;
 
         // =================================================================
-        // [핵심 로직] 프리팹 결정 (Prefab Selection)
+        // ★ [수정됨] 프리팹 결정 로직 (Data Priority)
         // =================================================================
         Vector3 spawnPos = anchor.prisonerSpawn.position;
         Quaternion spawnRot = anchor.prisonerSpawn.rotation;
 
-        // 1. 기본은 Default 프리팹
-        GameObject prefabToUse = defaultPrisonerPrefab;
+        // A. 일단 '이 죄수의 원래 데이터'에 있는 프리팹을 가져옵니다.
+        GameObject prefabToUse = null;
 
-        // 2. 특수 외형(Enum)이 있다면 DB에서 검색하여 프리팹 교체
-        // ★ 전제조건: PrisonerDatabaseSO에 Enum 이름과 동일한 ID("Imposter_Guard" 등)를 가진 데이터가 있어야 함.
+        if (existingData.definition != null)
+        {
+            prefabToUse = existingData.definition.prisonerPrefab;
+        }
+
+        // B. 만약 데이터에 프리팹이 없다면? -> Inspector의 Default로 땜빵 (안전장치)
+        if (prefabToUse == null)
+        {
+            prefabToUse = defaultPrisonerPrefab;
+            if (verboseLog) Debug.LogWarning($"[Spawn] {cellId} 죄수의 데이터에 프리팹이 없어 Default를 사용합니다.");
+        }
+
+        // C. 오늘 '특수 외형(Imposter 등)'이 배정되었다면? -> 덮어쓰기 (Override)
         if (dailyRole.visualType != VisualAnomalyType.None)
         {
             string targetID = dailyRole.visualType.ToString();
@@ -76,20 +88,16 @@ public class PrisonerSpawnController : MonoBehaviour
                 if (specialDef.prisonerPrefab != null)
                 {
                     prefabToUse = specialDef.prisonerPrefab;
-                    if (verboseLog) Debug.Log($"[Spawn] {cellId} visual changed to {targetID}");
+                    if (verboseLog) Debug.Log($"[Spawn] {cellId} ({existingData.definition?.templateId})가 {targetID}로 변장했습니다.");
                 }
-                else
-                {
-                    Debug.LogWarning($"[Spawn] ID '{targetID}' 데이터는 찾았으나 Prefab이 비어있습니다. Default를 사용합니다.");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[Spawn] VisualType '{targetID}'에 해당하는 데이터를 DB에서 찾지 못했습니다. (ID 불일치?) Default를 사용합니다.");
             }
         }
 
-        // 3. 4일차 중앙 스폰 타겟 확인 (위치 덮어쓰기)
+        // -----------------------------------------------------------------
+        // [이하 동일] 위치 결정 및 소환
+        // -----------------------------------------------------------------
+
+        // 4일차 중앙 스폰 타겟 확인
         if (IsCenterSpawnTarget(dailyRole.visualType))
         {
             if (centerSpawnPoints != null && _currentCenterSpawnIndex < centerSpawnPoints.Length)
@@ -100,19 +108,21 @@ public class PrisonerSpawnController : MonoBehaviour
             }
         }
 
-        // 4. 결정된 프리팹으로 인스턴스화
+        // 실제 생성
         PrisonerController controller = InstantiatePrisoner(prefabToUse, spawnPos, spawnRot, anchor, existingData, isSuspicious);
+
+        if (controller == null) return;
+
         content.prisoner = controller;
 
-        // 5. 방 프롭 생성 (망치, 책상 위 물건 등)
+        // 프롭 생성
         if (cellPropPrefab != null && anchor.propSpawnPoint != null)
         {
             var propGo = Instantiate(cellPropPrefab, anchor.propSpawnPoint.position, anchor.propSpawnPoint.rotation, anchor.transform);
-            propGo.name = $"Prop_{cellId}";
             content.prop = propGo;
         }
 
-        // 6. 이상현상 소환
+        // 이상현상 소환
         SpawnAnomaliesLogic(cellId, anchor, isSuspicious, content);
 
         contentRegistry.Set(cellId, content);
