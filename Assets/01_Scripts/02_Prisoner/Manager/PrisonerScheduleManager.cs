@@ -145,21 +145,35 @@ public class PrisonerScheduleManager : MonoBehaviour
         {
             DailyRoleData role = new DailyRoleData();
 
+            // 기본값 초기화 (중요: 여기서 None으로 해두고 조건에 따라 덮어씀)
+            role.visualType = VisualAnomalyType.None;
+
             // A. 범인(TargetSus) 배정
             if (assignedSuspicious < suspiciousCount)
             {
                 role.isSuspicious = true;
-                role.visualType = VisualAnomalyType.None;
 
-                // 특수 행동 (소리지르기 등) 랜덤 배정
+                // 1. 특수 행동 (소리지르기 등) 랜덤 배정
                 if (specialBehaviors != null && specialBehaviors.Count > 0)
                     role.dailyAIType = specialBehaviors[UnityEngine.Random.Range(0, specialBehaviors.Count)];
                 else
                     role.dailyAIType = PrisonerAIType.Bad; // 없으면 그냥 Bad
 
-                // 특수 외형 랜덤 배정
+                // 2. 특수 외형 (임포스터 등) 랜덤 배정
+                // ★ [수정됨] 만약 specialVisuals 리스트가 들어왔다면 그 중에서 하나를 고릅니다.
                 if (specialVisuals != null && specialVisuals.Count > 0)
+                {
                     role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
+                }
+                // 만약 리스트가 안 들어왔더라도, 기획에 따라 여기서 랜덤으로 임포스터를 만들 수도 있습니다. (예시)
+                /* else if (UnityEngine.Random.value < 0.3f) // 30% 확률로 임포스터
+                {
+                    int rnd = UnityEngine.Random.Range(0, 3);
+                    if (rnd == 0) role.visualType = VisualAnomalyType.Imposter_Guard;
+                    else if (rnd == 1) role.visualType = VisualAnomalyType.Imposter_NoBeard;
+                    else role.visualType = VisualAnomalyType.Imposter_Earring;
+                }
+                */
 
                 assignedSuspicious++;
             }
@@ -167,7 +181,7 @@ public class PrisonerScheduleManager : MonoBehaviour
             else
             {
                 role.isSuspicious = false;
-                role.visualType = VisualAnomalyType.None;
+                role.visualType = VisualAnomalyType.None; // 일반인은 정상 외형
 
                 // "DefaultAI가 Good이면, Good/Bad를 50:50으로 섞어라" 라는 규칙 적용
                 if (defaultAI == PrisonerAIType.Good)
@@ -297,7 +311,7 @@ public struct DailyRoleData
 {
     public bool isSuspicious;           // 범인 여부
     public PrisonerAIType dailyAIType;  // 행동 패턴
-    public VisualAnomalyType visualType; // 외형 (비키니, 염소 등)
+    public VisualAnomalyType visualType; // 외형 (비키니, 염소, 임포스터 등)
 
     //[추가] 생성자: 값을 받아서 초기화
     public DailyRoleData(bool suspicious, PrisonerAIType aiType, VisualAnomalyType visual)

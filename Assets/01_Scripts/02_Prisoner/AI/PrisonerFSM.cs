@@ -72,7 +72,7 @@ public class PrisonerFSM : MonoBehaviour
         ActionState.SetActionType(aiType);
         ChangeState(ActionState);
 
-        Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState");
+        Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState({aiType.ToString()})");
     }
 
     private void Update() => _currentState?.Update();
