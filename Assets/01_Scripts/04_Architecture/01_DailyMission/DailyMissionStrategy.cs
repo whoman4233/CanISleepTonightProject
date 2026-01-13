@@ -63,4 +63,17 @@ public abstract class DailyMissionStrategy : ScriptableObject
     {
         return rawText;
     }
+
+    // [추가] 아이템이 목표에 맞는지 검사
+    public virtual bool IsValidItem(string itemTag)
+    {
+        return false; // 기본값은 false (오버라이드 안 하면 점수 안 오름)
+    }
+
+    // [추가] 죄수가 목표에 맞는지 검사
+    // 죄수의 상태를 확인해야 하므로 PrisonerController 전체를 넘겨받는 게 좋습니다.
+    public virtual bool IsValidPrisoner(PrisonerController prisoner)
+    {
+        return false;
+    }
 }
