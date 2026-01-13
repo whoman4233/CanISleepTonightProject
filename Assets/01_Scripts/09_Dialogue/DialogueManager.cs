@@ -20,7 +20,7 @@ public class DialogueManager : MonoBehaviour
     private DialogueLine currentLine; // 한번에 문장표기 전용
     private readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>(); // WaitForSeconds 캐싱 (GC 최적화)
     private bool canClick = false; // 문장 씹힘 방지
-
+    public bool IsDialogueOpen => dialoguePanel != null && dialoguePanel.activeSelf; //미션 브리핑/결과용 프로퍼티
     private void Awake()
     {
         dialogueQueue = new Queue<DialogueLine>();

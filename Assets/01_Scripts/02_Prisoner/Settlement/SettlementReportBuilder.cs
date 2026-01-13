@@ -150,27 +150,6 @@ public class SettlementReportBuilder : MonoBehaviour
         SettlementUIData uiData = settlement.BuildSettlementData(resolvedList, uninspectedList);
 
         // 4. Result UI Data 생성 및 이벤트 발행
-        SettlementResultUIData resultUIData = BuildResultUIData(uiData);
-        EventBus.Publish(new ResultUIShowRequestedEvent(resultUIData));
         EventBus.Publish(new SettlementCompletedEvent());
-    }
-
-    private SettlementResultUIData BuildResultUIData(SettlementUIData uiData)
-    {
-        if (GameManager.Instance == null) return default;
-
-        int after = GameManager.Instance.RiotGauge; // 프로퍼티명 통일
-        int currentDay = GameManager.Instance.CurrentDay;
-
-        return new SettlementResultUIData
-        {
-            ReportCurrentDay = currentDay,
-            TotalCheckCount = uiData.SuppressedCount + uiData.WarnedCount,
-            SuppressedCount = uiData.SuppressedCount,
-            WarnedCount = uiData.WarnedCount,
-            UncheckedCount = (uiData.Floor1_ActiveCount + uiData.Floor2_ActiveCount) - (uiData.SuppressedCount + uiData.WarnedCount) ,
-            RiotGaugeBefore = _riotGaugeAtStart,
-            RiotGaugeAfter = after
-        };
     }
 }

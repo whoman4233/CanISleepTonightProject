@@ -1,36 +1,21 @@
 ﻿using System;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
-[Serializable]
-public struct SettlementResultUIData
-{
-    public int ReportCurrentDay;
-    public int TotalCheckCount;
-
-    public int SuppressedCount;
-    public int WarnedCount;
-    public int UncheckedCount;
-
-    public int RiotGaugeBefore;   
-    public int RiotGaugeAfter;    
-}
 public class ResultUI : MonoBehaviour
 {
-    [Header("Counts")]
-    [SerializeField] private TextMeshProUGUI dayText;
-    [SerializeField] private TextMeshProUGUI totalCheckText;
-    [SerializeField] private TextMeshProUGUI suppressedText;
-    [SerializeField] private TextMeshProUGUI warnedText;
-    [SerializeField] private TextMeshProUGUI uncheckedText;
+    [Header("Root")]
+    [SerializeField] private GameObject root;
 
-    [Header("Riot Gauge")]
-    [SerializeField] private TextMeshProUGUI riotGaugeDeltaText;
+    [Header("Texts")]
+    [SerializeField] private TextMeshProUGUI resultTitleText;
+    [SerializeField] private TextMeshProUGUI descriptionText;
 
     private Action<ResultUIShowRequestedEvent> _onShow;
 
     private void Awake()
     {
+        root.SetActive(false);
         _onShow = OnShowRequested;
     }
 
@@ -46,21 +31,37 @@ public class ResultUI : MonoBehaviour
 
     private void OnShowRequested(ResultUIShowRequestedEvent e)
     {
-        Bind(e.Data);
+        ShowInternal(e.isSuccess, e.failReason);
     }
 
-    public void Bind(SettlementResultUIData data)
+    private void ShowInternal(bool isSuccess, string failReason)
     {
-        dayText.text = data.ReportCurrentDay.ToString($"{data.ReportCurrentDay}일차 업무 결과");
-        totalCheckText.text = data.TotalCheckCount.ToString();
-        suppressedText.text = data.SuppressedCount.ToString();
-        warnedText.text = data.WarnedCount.ToString();
-        uncheckedText.text = data.UncheckedCount.ToString();
+        root.SetActive(true);
 
-        int delta = data.RiotGaugeAfter - data.RiotGaugeBefore;
+        if (isSuccess)
+        {
+            resultTitleText.text = "업무 보고 완료";
+            descriptionText.text = "오늘의 임무를 성공적으로 마쳤습니다.";
+        }
+        else
+        {
+            resultTitleText.text = "업무 보고 실패";
+            descriptionText.text = string.IsNullOrEmpty(failReason)
+                ? "목표를 달성하지 못했습니다."
+                : failReason;
+        }
 
-        riotGaugeDeltaText.text =
-            $"{data.RiotGaugeBefore} → {data.RiotGaugeAfter} " +
-            $"({(delta >= 0 ? "+" : "")}{delta})";
+        InputManager.Instance?.SetDialogueActive(true);
+    }
+
+    // 버튼에서 호출
+    public void OnNextDayClicked()
+    {
+        root.SetActive(false);
+        InputManager.Instance?.SetDialogueActive(false);
+
+        EventBus.Publish(new ResultUIConfirmedEvent());
     }
 }
+
+

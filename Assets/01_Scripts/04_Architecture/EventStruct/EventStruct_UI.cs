@@ -1,4 +1,36 @@
-﻿
+﻿//==========================================
+//PopupUI 미션브리핑 이벤트 목록
+//==========================================
+public struct MissionPopupShowRequestedEvent
+{
+    public DailyMissionStrategy mission;
+
+    public MissionPopupShowRequestedEvent(DailyMissionStrategy mission)
+    {
+        this.mission = mission;
+    }
+}
+public struct MissionBriefingConfirmedEvent
+{
+
+}
+
+public struct MissionBriefingDialogueEndedEvent
+{
+    public DailyMissionStrategy mission;
+    public MissionBriefingDialogueEndedEvent(DailyMissionStrategy mission) => this.mission = mission;
+}
+
+public struct MissionReportDialogueEndedEvent //미션 완료시 NPC 대화 종료 후 결과보고서 뜨는 이벤트
+{
+    public bool success;
+    public string failReason;
+    public MissionReportDialogueEndedEvent(bool success, string failReason)
+    {
+        this.success = success;
+        this.failReason = failReason;
+    }
+}
 //==========================================
 //PopupUI 이벤트 목록
 //==========================================
@@ -74,16 +106,21 @@ public struct SettlementUIDataCreatedEvent
 //ResultUI 이벤트 목록
 //==========================================
 
-public struct ResultUIShowRequestedEvent // 정산 데이터
+// 결과 보고서 UI 열기 요청
+public struct ResultUIShowRequestedEvent
 {
-    public SettlementResultUIData Data;
+    public bool isSuccess;
+    public string failReason;
 
-    public ResultUIShowRequestedEvent(SettlementResultUIData data)
+    public ResultUIShowRequestedEvent(bool isSuccess, string failReason)
     {
-        Data = data;
+        this.isSuccess = isSuccess;
+        this.failReason = failReason;
     }
 }
 
+// 결과 보고서 확인 버튼 클릭
+public struct ResultUIConfirmedEvent { }
 
 //==========================================
 //InGameMenu 이벤트 목록
