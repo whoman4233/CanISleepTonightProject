@@ -188,7 +188,7 @@ public class DialogueManager : MonoBehaviour
         yield return GetWait(delay);
         canClick = true;
     }
-    public void StartDialogueByKeys(string speakerKey)
+    public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue")
     {
         if (DailyMissionManager.Instance.CurrentMission == null) return;
         if (dialoguePanel.activeSelf) return; // 중복 실행 방지
@@ -196,7 +196,7 @@ public class DialogueManager : MonoBehaviour
         string missionId = DailyMissionManager.Instance.CurrentMission.missionId; // 현재 미션 정보 가져오기
 
         // TextManager에게 해당 조건의 키 리스트 요청
-        List<string> keys = TextManager.Instance.GetKeysByMissionAndSpeaker(missionId, speakerKey);
+        List<string> keys = TextManager.Instance.GetKeysByMissionAndSpeaker(missionId, speakerKey, textType);
 
         if (keys == null || keys.Count == 0) return;
         if (InputManager.Instance != null)
