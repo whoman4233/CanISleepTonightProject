@@ -6,8 +6,12 @@ using static TutorialNPC;
 // 튜토리얼 관련 이벤트
 //==========================================
 
-public struct TutorialStepChangedEvent
+public struct DialogueStepChangedEvent
 {
-    public TutorialSubStep NewStep;
-    public TutorialStepChangedEvent(TutorialSubStep step) => NewStep = step;
+    public DialogueKeys.DialogueType NewStep;
+
+    public DialogueStepChangedEvent(DialogueKeys.DialogueType step)
+    {
+        NewStep = step;
+    }
 }
