@@ -158,6 +158,10 @@ public class PrisonerSpawnController : MonoBehaviour
             case VisualAnomalyType.Imposter_Guard:
             case VisualAnomalyType.Imposter_NoBeard:
             case VisualAnomalyType.Imposter_Earring:
+            case VisualAnomalyType.Suspect1:
+            case VisualAnomalyType.Suspect2:
+            case VisualAnomalyType.Suspect3:
+
                 return true;
             default:
                 return false;
