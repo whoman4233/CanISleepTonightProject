@@ -6,7 +6,7 @@ using static TutorialNPC;
 
 public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
 {
-    public TutorialSubStep stepToPublish; // 인스펙터에서 설정 (예: BoxOpened)
+    public DialogueKeys.DialogueType stepToPublish; // 인스펙터에서 설정 (예: BoxOpened)
     private bool _isTriggered = false; // 실행 여부 체크
 
     private Rigidbody rb;
@@ -38,7 +38,7 @@ public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
         Debug.Log("물체 들기 완료");
         if (!_isTriggered && (int)npc.currentSubStep == (int)stepToPublish - 1)
         {
-            EventBus.Publish(new TutorialStepChangedEvent(stepToPublish));
+            EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
             Debug.Log("튜토리얼 이벤트 발행 완료");
         }
