@@ -1,20 +1,28 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MissionPopup : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField] private GameObject root;
+    [Header("Content Root (BG + Panel)")]
+    [SerializeField] private GameObject contentRoot;
+
+    [Header("Texts")]
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI descriptionText;
+
+    [Header("Buttons")]
+    [SerializeField] private Button confirmButton; 
 
     private Action<MissionPopupShowRequestedEvent> _onShow;
 
     private void Awake()
     {
-        root.SetActive(false);
         _onShow = OnShowRequested;
+
+        if (confirmButton != null)
+            confirmButton.onClick.AddListener(OnConfirmClicked);
     }
 
     private void OnEnable()
@@ -29,31 +37,39 @@ public class MissionPopup : MonoBehaviour
 
     private void OnShowRequested(MissionPopupShowRequestedEvent e)
     {
-        ShowInternal(e.mission);
+        var mission = DailyMissionManager.Instance?.CurrentMission;
+
+        ShowInternal(mission);
     }
 
     private void ShowInternal(DailyMissionStrategy mission)
     {
-        if (mission == null) return;
+        if (mission == null)
+            return;
+
 
         titleText.text = mission.title;
         descriptionText.text = mission.description;
 
-        root.SetActive(true);
+        contentRoot.SetActive(true);
 
-        // 입력 차단
         InputManager.Instance?.SetDialogueActive(true);
     }
 
-    public void OnConfirmClicked()
+    // 버튼 클릭 시 호출됨
+    private void OnConfirmClicked()
     {
-        root.SetActive(false);
+        contentRoot.SetActive(false);
+
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
 
         InputManager.Instance?.SetDialogueActive(false);
 
-        // 브리핑 확인 완료 알림
         EventBus.Publish(new MissionBriefingConfirmedEvent());
     }
 }
+
+
 
 
