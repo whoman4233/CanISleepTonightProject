@@ -37,4 +37,12 @@ public class Mission_CollectionStrategy : DailyMissionStrategy
         failReason = $"목표 물품을 {targetScore}개 찾아야 합니다. (현재: {currentScore})";
         return false;
     }
+
+    // 아이템 검증 오버라이드
+    public override bool IsValidItem(string itemTag)
+    {
+        // 내 목표 태그와 발견한 태그가 일치하는지 (혹은 포함하는지) 확인
+        // 예: "Weapon_Knife"가 들어왔을 때 target이 "Weapon"이면 true
+        return itemTag.Contains(targetItemTag);
+    }
 }
