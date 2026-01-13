@@ -11052,6 +11052,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1542506524}
   - component: {fileID: 1542506525}
+  - component: {fileID: 1542506526}
   m_Layer: 0
   m_Name: UIRoot
   m_TagString: Untagged
@@ -11099,6 +11100,47 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6888be250dec22f4da6a8e3d62b2cc1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvasGroups:
+  - canvas: {fileID: 934682819}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 0
+  - canvas: {fileID: 1250834271}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 0
+  - canvas: {fileID: 510352701}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 0
+  - canvas: {fileID: 15293915}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 0
+  - canvas: {fileID: 423172024}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 0
+  - canvas: {fileID: 942834056}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 1
+  - canvas: {fileID: 856154558}
+    showInGameplay: 1
+    showInTutorial: 1
+    showInMenu: 0
+--- !u!114 &1542506526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542506523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04678d2486c26404db14e57ed9f2b752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1550696411
@@ -13084,7 +13126,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2007078891
 RectTransform:
   m_ObjectHideFlags: 0

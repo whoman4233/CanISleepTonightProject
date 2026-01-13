@@ -138,6 +138,11 @@ public class InputManager : MonoBehaviour
         SetMap(Inputs.Inspection, false);
         SetMap(Inputs.QTE, false);
 
+        // =========================
+        // [중요] Dialogue ActionMap은 InputManager에서 제어하지 않는다
+        // =========================
+        // SetMap(Inputs.Dialogue, false);  // [제거하지 않고 주석만 설명]
+
         // UI는 기본 Enable
         SetMap(Inputs.UI, true);
 
@@ -169,6 +174,12 @@ public class InputManager : MonoBehaviour
         SetMap(Inputs.Inspection, next == InputState.Inspection);
         SetMap(Inputs.QTE, next == InputState.QTE);
 
+        // =========================
+        // [중요] Dialogue ActionMap 제거
+        // - Dialogue 입력은 DialogueManager 전담
+        // =========================
+        // SetMap(Inputs.Dialogue, next == InputState.Dialogue); // [수정]
+
         // QTE 중 UI 제한
         SetMap(Inputs.UI, next != InputState.QTE);
 
@@ -177,14 +188,14 @@ public class InputManager : MonoBehaviour
 
     private InputState ResolveState()
     {
-        if (!_playerPresent)
-            return InputState.UIOnly;
-
         // =========================
-        // [수정] Dialogue를 UI Lock보다 우선
+        // Dialogue는 "플레이어 입력 차단" 용도로만 사용
         // =========================
         if (_dialogueActive)
-            return InputState.Dialogue;
+            return InputState.UIOnly; // [수정]
+
+        if (!_playerPresent)
+            return InputState.UIOnly;
 
         if (_uiLockCount > 0)
             return InputState.UIOnly;
@@ -206,12 +217,17 @@ public class InputManager : MonoBehaviour
 
     private static void ApplyCursor(InputState state)
     {
-        bool hideCursor = state == InputState.Gameplay || state == InputState.QTE;
+        bool hideCursor =
+            state == InputState.Gameplay ||
+            state == InputState.QTE;
 
         Cursor.lockState = hideCursor ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !hideCursor;
     }
 
+    // =========================
+    // [중요] Dialogue 상태는 Player 차단용 플래그로만 사용
+    // =========================
     public void SetDialogueActive(bool isActive)
     {
         _dialogueActive = isActive;
@@ -224,6 +240,8 @@ public class InputManager : MonoBehaviour
         Inputs.Player.Enable();
     }
 }
+
+
 
 
 

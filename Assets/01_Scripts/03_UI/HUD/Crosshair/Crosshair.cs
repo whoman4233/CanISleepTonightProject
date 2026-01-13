@@ -142,6 +142,7 @@ public class Crosshair : MonoBehaviour
         }
 
         bool phaseOk =
+            _currentPhase == GamePhase.Tutorial ||
             _currentPhase == GamePhase.Briefing ||
             _currentPhase == GamePhase.Standby ||
             _currentPhase == GamePhase.Patrol;

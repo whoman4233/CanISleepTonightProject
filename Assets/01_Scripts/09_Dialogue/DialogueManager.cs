@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class DialogueManager : MonoBehaviour
     private bool isTyping = false;
     private DialogueLine currentLine; // 한번에 문장표기 전용
 
+    private PlayerInputs.DialogueActions _dialogueActions; //Dialogue용 액션맵 추가
+    private bool _allowContinueInput; // 입력 허용 여부
+
     // =========================
     // WaitForSecondsRealtime 캐싱
     // - PauseGameRequestedEvent로 Time.timeScale = 0 이 되어도
@@ -31,6 +35,10 @@ public class DialogueManager : MonoBehaviour
     private bool canClick = false; // 문장 씹힘 방지
     public bool IsDialogueOpen => dialoguePanel != null && dialoguePanel.activeSelf; //미션 브리핑/결과용 프로퍼티
 
+    // =========================
+    // [추가] 대화 진입 시 "E 잔여 입력" 제거용 코루틴 핸들
+    // =========================
+    private Coroutine _waitReleaseRoutine; // [추가]
 
     private void Awake()
     {
@@ -47,14 +55,65 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.SetActive(false);
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        // 대화 중일 때만 Q키 체크
-        // Q는 강제 종료(스킵) 용도이므로 InputMap과 무관하게 Raw Input 유지
-        if (dialoguePanel.activeSelf && Input.GetKeyDown(KeyCode.Q))
+        //  Dialogue ActionMap 입력 구독
+        if (InputManager.Instance != null)
         {
-            SkipAllDialogue();
+            _dialogueActions = InputManager.Instance.Inputs.Dialogue;
+
+            _dialogueActions.Continue.started += OnDialogueContinueStarted;
+
+            // =========================
+            // [추가] "키업" 감지를 위해 canceled도 구독
+            // =========================
+            _dialogueActions.Continue.canceled += OnDialogueContinueCanceled; // [추가]
+
+            _dialogueActions.Skip.started += OnDialogueSkip; // Skip은 단발 입력
         }
+    }
+
+    private void OnDisable()
+    {
+        // Dialogue ActionMap 입력 해제
+        if (InputManager.Instance == null)
+            return;
+
+        _dialogueActions.Continue.started -= OnDialogueContinueStarted;
+
+        // =========================
+        // [추가] canceled 해제
+        // =========================
+        _dialogueActions.Continue.canceled -= OnDialogueContinueCanceled; // [추가]
+
+        _dialogueActions.Skip.started -= OnDialogueSkip;
+    }
+
+    // =========================
+    // Dialogue Input Callbacks
+    // =========================
+    private void OnDialogueContinueStarted(InputAction.CallbackContext ctx)
+    {
+        if (!_allowContinueInput)
+            return;
+
+        OnContinueClicked();
+    }
+
+    // =========================
+    // [추가] 키업이 한번이라도 발생하면,
+    // 이제부터는 "새로운 입력"만 들어온다고 볼 수 있음
+    // =========================
+    private void OnDialogueContinueCanceled(InputAction.CallbackContext ctx) // [추가]
+    {
+        // 키업이 확인된 이후부터 입력 허용
+        _allowContinueInput = true;
+    }
+
+    private void OnDialogueSkip(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        //  전체 대화 스킵
+        SkipAllDialogue();
     }
 
     public void SkipAllDialogue()
@@ -76,6 +135,58 @@ public class DialogueManager : MonoBehaviour
         Debug.Log("전체 대화 스킵");
     }
 
+    // =========================
+    // Dialogue 공통 진입 처리
+    // =========================
+    private void EnterDialogueMode()
+    {
+        if (InputManager.Instance == null)
+            return;
+
+        InputManager.Instance.SetDialogueActive(true);
+
+        // Player 입력 차단
+        InputManager.Instance.Inputs.Player.Disable();
+
+        // Dialogue 입력 강제 리셋
+        var dialogueMap = InputManager.Instance.Inputs.Dialogue;
+        dialogueMap.Disable();
+        dialogueMap.Enable();
+
+        // =========================
+        // [핵심 수정] 대화 진입 직후에는 Continue 입력을 무조건 막고,
+        // "E 키업(Release)"가 감지될 때까지 기다린다.
+        // =========================
+        _allowContinueInput = false; // [수정]
+        canClick = false;
+
+        if (_waitReleaseRoutine != null) // [추가]
+        {
+            StopCoroutine(_waitReleaseRoutine);
+            _waitReleaseRoutine = null;
+        }
+
+        _waitReleaseRoutine = StartCoroutine(WaitContinueReleaseThenEnable()); // [추가]
+    }
+
+    // =========================
+    // [추가] Continue가 눌린 상태로 들어오는 경우(상호작용 E 잔여)
+    // 릴리즈 될 때까지 기다렸다가 그 이후부터 입력 허용
+    // =========================
+    private IEnumerator WaitContinueReleaseThenEnable() // [추가]
+    {
+        // 한 프레임은 무조건 넘겨서, EnterDialogueMode 진입 프레임의 입력을 제거
+        yield return null;
+
+        // 눌려있는 동안 대기
+        while (_dialogueActions.Continue.IsPressed())
+            yield return null;
+
+        // 릴리즈 확인 후 허용
+        _allowContinueInput = true;
+        _waitReleaseRoutine = null;
+    }
+
     public void StartDialogue(DialogueData data) //NPC가 대화를 시작할 때 호출하는 진입점
     {
         if (data == null || data.Lines == null || data.Lines.Length == 0)
@@ -85,8 +196,8 @@ public class DialogueManager : MonoBehaviour
         }
         if (dialoguePanel.activeSelf) return; // 이미 대화중이면 무시
 
-        if (InputManager.Instance != null)
-            InputManager.Instance.SetDialogueActive(true);
+        // 공통 진입 처리
+        EnterDialogueMode();
 
         dialogueQueue.Clear();
         foreach (DialogueLine line in data.Lines) // 큐 초기화 및 데이터 로드
@@ -94,21 +205,8 @@ public class DialogueManager : MonoBehaviour
             dialogueQueue.Enqueue(line);
         }
 
-        if (InputManager.Instance != null) // 입력 초기화
-        {
-            InputManager.Instance.ResetPlayerInputs();
-        }
-
         dialoguePanel.SetActive(true);
-        canClick = false;
-
         DisplayNextLine();
-
-        // =========================
-        // TimeScale 영향 없는 딜레이 사용
-        // =========================
-        StartCoroutine(EnableNextDelayRealtime(0.2f));
-
         Debug.Log("StartDialogue");
     }
 
@@ -116,34 +214,20 @@ public class DialogueManager : MonoBehaviour
     public void StartDialogue(DialogueLine[] lines)
     {
         if (lines == null || lines.Length == 0)
-        {
-            Debug.LogWarning("대화 라인이 비어있습니다.");
             return;
-        }
 
-        if (dialoguePanel.activeSelf) return;
+        if (dialoguePanel.activeSelf)
+            return;
 
-        if (InputManager.Instance != null)
-            InputManager.Instance.SetDialogueActive(true);
+        // [수정] 공통 진입 처리
+        EnterDialogueMode();
 
         dialogueQueue.Clear();
         foreach (var line in lines)
-        {
             dialogueQueue.Enqueue(line);
-        }
-
-        if (InputManager.Instance != null)
-            InputManager.Instance.ResetPlayerInputs();
 
         dialoguePanel.SetActive(true);
-        canClick = false;
-
         DisplayNextLine();
-
-        // =========================
-        // TimeScale 영향 없는 딜레이 사용
-        // =========================
-        StartCoroutine(EnableNextDelayRealtime(0.2f));
     }
 
     private void DisplayNextLine()
@@ -178,6 +262,7 @@ public class DialogueManager : MonoBehaviour
         // 타이핑 시작
         ResetRoutine();
         isTyping = true;
+        canClick = false;
 
         // =========================
         // TimeScale=0 상태에서도 타이핑 진행
@@ -205,6 +290,7 @@ public class DialogueManager : MonoBehaviour
         }
 
         isTyping = false;
+        canClick = true;
         dialogueRoutine = null;
         // 처음에 모든 문장을 text에 넣고 maxVisibleCharacters = i인 i값에 따라 문자 랜더링 개수만 바꿔준다. 메모리 최적화
     }
@@ -218,7 +304,6 @@ public class DialogueManager : MonoBehaviour
         {
             InputManager.Instance.SetDialogueActive(false);
         }
-
         speakerNameText.text = string.Empty; // 이름 지워주고
         dialogueContentText.text = string.Empty; // 텍스트 지워주고
         dialogueContentText.maxVisibleCharacters = 0; // 텍스트 숫자 0으로만들어주기
@@ -226,22 +311,25 @@ public class DialogueManager : MonoBehaviour
         Debug.Log("End Dialogue");
     }
 
-    public void OnContinueClicked()  // 플레이어가 클릭하면 다음 대화 호출
+    public void OnContinueClicked()
     {
-        if (!canClick) return;
-
+        // 타이핑 중이면 canClick과 무관하게 처리
         if (isTyping)
         {
             StopCoroutine(dialogueRoutine);
+            dialogueContentText.maxVisibleCharacters =
+                dialogueContentText.text.Length;
 
-            // 현재 문장 즉시 출력
-            dialogueContentText.maxVisibleCharacters = dialogueContentText.text.Length;
             isTyping = false;
+            canClick = true;
+            return;
         }
-        else
-        {
-            DisplayNextLine();
-        }
+
+        // 타이핑이 끝난 뒤에만 다음 대사 허용
+        if (!canClick)
+            return;
+
+        DisplayNextLine();
     }
 
     // =========================
@@ -264,15 +352,6 @@ public class DialogueManager : MonoBehaviour
             StopCoroutine(dialogueRoutine);
             dialogueRoutine = null;
         }
-    }
-
-    // =========================
-    // 클릭 가능 딜레이도 Realtime 기반
-    // =========================
-    private IEnumerator EnableNextDelayRealtime(float delay)
-    {
-        yield return GetWaitRealtime(delay);
-        canClick = true;
     }
 
     public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue")
@@ -313,11 +392,7 @@ public class DialogueManager : MonoBehaviour
         }
 
         // 입력 제어 및 UI 활성화
-        if (InputManager.Instance != null)
-        {
-            InputManager.Instance.SetDialogueActive(true);
-            InputManager.Instance.ResetPlayerInputs();
-        }
+        EnterDialogueMode();
 
         dialogueQueue.Clear();
         foreach (string key in keys)
@@ -328,11 +403,7 @@ public class DialogueManager : MonoBehaviour
 
         dialoguePanel.SetActive(true);
         DisplayNextLine();
-
-        // =========================
-        // Realtime 딜레이
-        // =========================
-        StartCoroutine(EnableNextDelayRealtime(0.2f));
     }
 }
+
 

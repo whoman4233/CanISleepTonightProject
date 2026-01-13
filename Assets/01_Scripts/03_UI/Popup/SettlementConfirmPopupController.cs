@@ -24,9 +24,6 @@ public class SettlementConfirmPopupController : MonoBehaviour
 
         if (cancelButton != null)
             cancelButton.onClick.AddListener(OnCancelClicked);
-
-        if (root != null)
-            root.SetActive(false);
     }
 
     private void OnEnable()
@@ -74,12 +71,6 @@ public class SettlementConfirmPopupController : MonoBehaviour
     {
         // 먼저 닫고(락/정지 해제), 다음 프레임에 보고 확정 이벤트 발행
         Hide();
-        StartCoroutine(Co_PublishConfirmedNextFrame());
-    }
-
-    private IEnumerator Co_PublishConfirmedNextFrame()
-    {
-        yield return null;
         EventBus.Publish(new SettlementReportConfirmedEvent());
     }
 
