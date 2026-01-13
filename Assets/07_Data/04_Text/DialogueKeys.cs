@@ -24,6 +24,13 @@ public static class DialogueKeys
     public static class Types
     {
         public const string Dialogue = "Dialogue";
+        public const string BoxOpened = "BoxOpened";
+        public const string BatonEquipped = "BatonEquipped";
+        public const string NPCHit = "NPCHit";
+        public const string BookRead = "BookRead";
+        public const string Fin = "Fin";
+        public const string Complete = "Complete";
+        public const string Fail = "Fail";
         public const string Choice = "Choice";
     }
     public enum MissionType
@@ -49,6 +56,13 @@ public static class DialogueKeys
     public enum DialogueType
     {
         Dialogue,
+        BoxOpened,
+        BatonEquipped,
+        NPCHit,
+        BookRead,
+        Fin,
+        Complete,
+        Fail,
         Choice,
     }
 }

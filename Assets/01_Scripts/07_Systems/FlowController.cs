@@ -199,6 +199,12 @@ public class FlowController : MonoBehaviour
             yield return SceneManager.UnloadSceneAsync(playScene);
         }
 
+        Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
+        if (tutorialScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(tutorialScene);
+        }
+
         // 2. 'IntroScene'을 Additive로 로드합니다. (Single이 아님!)
         if (!SceneManager.GetSceneByName(introSceneName).isLoaded)
         {

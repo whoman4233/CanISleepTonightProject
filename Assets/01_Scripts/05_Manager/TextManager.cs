@@ -122,7 +122,7 @@ public class TextManager : MonoBehaviour
 
         return currentLanguage == Language.Korean ? entry.ko : entry.en;
     }
-    public List<string> GetKeysByMissionAndSpeaker(string missionId, string speakerName) // 지금 미션의 말하는 사람의 대사만 가져옴
+    public List<string> GetKeysByMissionAndSpeaker(string missionId, string speakerName, string textType) // 지금 미션의 말하는 사람의 대사만 가져옴
     {
         List<string> resultKeys = new List<string>();
 
@@ -130,7 +130,7 @@ public class TextManager : MonoBehaviour
         foreach (var entry in textDictionary.Values)
         {
             // mission과 speaker 컬럼이 일치하는지 확인
-            if (entry.mission == missionId && entry.speaker == speakerName)
+            if (entry.mission == missionId && entry.speaker == speakerName && entry.type == textType)
             {
                 resultKeys.Add(entry.key);
             }
@@ -139,7 +139,7 @@ public class TextManager : MonoBehaviour
         // 결과가 비어있다면 경고 (데이터 누락 확인용)
         if (resultKeys.Count == 0)
         {
-            Debug.LogWarning($"[TextManager] 검색 결과 없음: Mission={missionId}, Speaker={speakerName}");
+            Debug.LogWarning($"[TextManager] 검색 결과 없음: Mission={missionId}, Speaker={speakerName}, TextType={textType}");
         }
 
         return resultKeys;

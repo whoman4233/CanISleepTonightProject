@@ -94,7 +94,7 @@ public class PrisonerController : MonoBehaviour
     // 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
     {
-        if (animator != null) animator.SetInteger("Blend", GetActionAnimID(type));
+        if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
 
         if (_propMap.TryGetValue(type, out GameObject prop))
@@ -106,7 +106,7 @@ public class PrisonerController : MonoBehaviour
     // 행동 종료
     public void StopActionBehavior()
     {
-        if (animator != null) animator.SetInteger("ActionType", 0);
+        if (animator != null) animator.SetFloat("ActionType", 0);
         if (sfx != null) sfx.StopLoop();
 
         foreach (var prop in _propMap.Values)
