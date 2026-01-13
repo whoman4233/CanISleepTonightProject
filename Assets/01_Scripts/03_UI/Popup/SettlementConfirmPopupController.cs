@@ -11,13 +11,13 @@ public class SettlementConfirmPopupController : MonoBehaviour
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
 
-    private Action<ShowSettlementConfirmPopupEvent> _onShow;
+    private Action<ShowSettlementConfirmPopupEvent> _onShowRequested;
     private Action<UIHardResetEvent> _onUIHardReset;
 
     private void Awake()
     {
-        _onShow = _ => Show();
-        _onUIHardReset = _ => ForceHide(); // 씬전환/리셋 시 잔존 방지
+        _onShowRequested = OnShowRequested;
+        _onUIHardReset = OnUIHardReset;   
 
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmClicked);
@@ -31,14 +31,19 @@ public class SettlementConfirmPopupController : MonoBehaviour
 
     private void OnEnable()
     {
-        EventBus.Subscribe(_onShow);
+        EventBus.Subscribe(_onShowRequested); 
         EventBus.Subscribe(_onUIHardReset);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onShow);
+        EventBus.Unsubscribe(_onShowRequested);
         EventBus.Unsubscribe(_onUIHardReset);
+    }
+
+    private void OnShowRequested(ShowSettlementConfirmPopupEvent e)
+    {
+        Show();
     }
 
     public void Show()
@@ -59,8 +64,7 @@ public class SettlementConfirmPopupController : MonoBehaviour
         EventBus.Publish(new ResumeGameRequestedEvent());
     }
 
-    // 리셋 시 카운트/상태 꼬이지 않도록 강제 비표시
-    private void ForceHide()
+    private void OnUIHardReset(UIHardResetEvent e)
     {
         if (root != null)
             root.SetActive(false);
@@ -68,10 +72,7 @@ public class SettlementConfirmPopupController : MonoBehaviour
 
     private void OnConfirmClicked()
     {
-        // =========================
-        // 먼저 Hide로 락/일시정지를 해제하고,
-        // 한 프레임 뒤에 "보고 확정" 이벤트를 발행
-        // =========================
+        // 먼저 닫고(락/정지 해제), 다음 프레임에 보고 확정 이벤트 발행
         Hide();
         StartCoroutine(Co_PublishConfirmedNextFrame());
     }
@@ -87,5 +88,6 @@ public class SettlementConfirmPopupController : MonoBehaviour
         Hide();
     }
 }
+
 
 

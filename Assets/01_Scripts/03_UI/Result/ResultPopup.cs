@@ -21,7 +21,7 @@ public class ResultPopup : MonoBehaviour
     private void Awake()
     {
         _onShow = OnShowRequested;
-        _onUIHardReset = _ => ForceHide();
+        _onUIHardReset = OnUIHardReset;
 
         if (nextDayButton != null)
             nextDayButton.onClick.AddListener(OnNextDayClicked);
@@ -53,12 +53,11 @@ public class ResultPopup : MonoBehaviour
             contentRoot.SetActive(true);
 
         // =========================
-        // ResultPopup은 "정산 UI"이므로 락/일시정지/커서 보장
+        // ResultPopup은 "정산 UI"이므로 입력/시간 정지 + 커서 보장
         // =========================
         EventBus.Publish(new GlobalInputLockRequestedEvent());
         EventBus.Publish(new PauseGameRequestedEvent());
 
-        // 커서 강제 표시 (혹시 Gameplay로 돌아가 잠기는 현상 방지)
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -75,7 +74,7 @@ public class ResultPopup : MonoBehaviour
                 : failReason;
         }
 
-        // DialogueActive는 굳이 true로 만들지 않음(정산 UI이므로)
+        //Dialogue 상태는 끔(정산 UI)
         InputManager.Instance?.SetDialogueActive(false);
     }
 
@@ -84,23 +83,22 @@ public class ResultPopup : MonoBehaviour
         if (contentRoot != null)
             contentRoot.SetActive(false);
 
-        // 오늘 보고 완료 처리
         DailyMissionManager.Instance?.MarkReported();
 
-        // 락/일시정지 해제
         EventBus.Publish(new GlobalInputLockReleasedEvent());
         EventBus.Publish(new ResumeGameRequestedEvent());
 
-        // 다음날 = 씬 리로드
+        //다음날 진입: 씬 재로딩 이벤트
         EventBus.Publish(new RequestSceneReloadEvent());
     }
 
-    private void ForceHide()
+    private void OnUIHardReset(UIHardResetEvent e)
     {
         if (contentRoot != null)
             contentRoot.SetActive(false);
     }
 }
+
 
 
 

@@ -119,18 +119,13 @@ public class InputManager : MonoBehaviour
 
     private void OnGameContextReady(GameContextReadyEvent e)
     {
-        Debug.Log("[InputManager] GameContextReady → Force Input Reset");
-
         _inspectionActive = false;
         _uiLockCount = 0;
-
         ApplyState(force: true);
     }
 
     private void OnInputHardReset(InputHardResetEvent e)
     {
-        Debug.Log("[InputManager] InputHardReset");
-
         _playerPresent = false;
         _inspectionActive = false;
         _uiLockCount = 0;
@@ -143,7 +138,7 @@ public class InputManager : MonoBehaviour
         SetMap(Inputs.Inspection, false);
         SetMap(Inputs.QTE, false);
 
-        // UI는 항상 살아있게 유지
+        // UI는 기본 Enable
         SetMap(Inputs.UI, true);
 
         ApplyCursor(InputState.UIOnly);
@@ -174,12 +169,10 @@ public class InputManager : MonoBehaviour
         SetMap(Inputs.Inspection, next == InputState.Inspection);
         SetMap(Inputs.QTE, next == InputState.QTE);
 
-        // QTE 중에는 UI 입력 제한
+        // QTE 중 UI 제한
         SetMap(Inputs.UI, next != InputState.QTE);
 
         ApplyCursor(next);
-
-        Debug.Log($"[InputManager] State={_currentState} lock={_uiLockCount} dialogue={_dialogueActive}");
     }
 
     private InputState ResolveState()
@@ -188,9 +181,7 @@ public class InputManager : MonoBehaviour
             return InputState.UIOnly;
 
         // =========================
-        // Dialogue를 UIOnly lock보다 우선
-        // - 팝업/락이 걸린 상태에서도 "대화 진행 상태"를 유지
-        // - 실제 입력은 UI맵 기반으로 진행
+        // [수정] Dialogue를 UI Lock보다 우선
         // =========================
         if (_dialogueActive)
             return InputState.Dialogue;
@@ -209,17 +200,13 @@ public class InputManager : MonoBehaviour
 
     private static void SetMap(InputActionMap map, bool enable)
     {
-        if (enable && !map.enabled)
-            map.Enable();
-        else if (!enable && map.enabled)
-            map.Disable();
+        if (enable && !map.enabled) map.Enable();
+        else if (!enable && map.enabled) map.Disable();
     }
 
     private static void ApplyCursor(InputState state)
     {
-        bool hideCursor =
-            state == InputState.Gameplay ||
-            state == InputState.QTE;
+        bool hideCursor = state == InputState.Gameplay || state == InputState.QTE;
 
         Cursor.lockState = hideCursor ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !hideCursor;
@@ -237,6 +224,7 @@ public class InputManager : MonoBehaviour
         Inputs.Player.Enable();
     }
 }
+
 
 
 

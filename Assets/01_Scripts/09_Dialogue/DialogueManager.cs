@@ -5,6 +5,7 @@ using TMPro;
 
 public class DialogueManager : MonoBehaviour
 {
+    public static DialogueManager Instance { get; private set; }
 
     [Header("Dialogue Components")]
     [SerializeField] private GameObject dialoguePanel; // 대화 UI 패널
@@ -18,11 +19,30 @@ public class DialogueManager : MonoBehaviour
     private Coroutine dialogueRoutine;
     private bool isTyping = false;
     private DialogueLine currentLine; // 한번에 문장표기 전용
-    private readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>(); // WaitForSeconds 캐싱 (GC 최적화)
+
+    // =========================
+    // WaitForSecondsRealtime 캐싱
+    // - PauseGameRequestedEvent로 Time.timeScale = 0 이 되어도
+    //   Dialogue 타이핑/딜레이가 멈추지 않도록 하기 위함
+    // =========================
+    private readonly Dictionary<float, WaitForSecondsRealtime> _waitRealtimeCache
+        = new Dictionary<float, WaitForSecondsRealtime>();
+
     private bool canClick = false; // 문장 씹힘 방지
     public bool IsDialogueOpen => dialoguePanel != null && dialoguePanel.activeSelf; //미션 브리핑/결과용 프로퍼티
+
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         dialogueQueue = new Queue<DialogueLine>();
         dialoguePanel.SetActive(false);
     }
@@ -30,6 +50,7 @@ public class DialogueManager : MonoBehaviour
     private void Update()
     {
         // 대화 중일 때만 Q키 체크
+        // Q는 강제 종료(스킵) 용도이므로 InputMap과 무관하게 Raw Input 유지
         if (dialoguePanel.activeSelf && Input.GetKeyDown(KeyCode.Q))
         {
             SkipAllDialogue();
@@ -63,23 +84,34 @@ public class DialogueManager : MonoBehaviour
             return;
         }
         if (dialoguePanel.activeSelf) return; // 이미 대화중이면 무시
+
         if (InputManager.Instance != null)
             InputManager.Instance.SetDialogueActive(true);
+
         dialogueQueue.Clear();
         foreach (DialogueLine line in data.Lines) // 큐 초기화 및 데이터 로드
         {
             dialogueQueue.Enqueue(line);
         }
+
         if (InputManager.Instance != null) // 입력 초기화
         {
             InputManager.Instance.ResetPlayerInputs();
         }
+
         dialoguePanel.SetActive(true);
         canClick = false;
+
         DisplayNextLine();
-        StartCoroutine(EnableNextDelay(0.2f));
+
+        // =========================
+        // TimeScale 영향 없는 딜레이 사용
+        // =========================
+        StartCoroutine(EnableNextDelayRealtime(0.2f));
+
         Debug.Log("StartDialogue");
     }
+
     //미션 대사용
     public void StartDialogue(DialogueLine[] lines)
     {
@@ -107,8 +139,13 @@ public class DialogueManager : MonoBehaviour
         canClick = false;
 
         DisplayNextLine();
-        StartCoroutine(EnableNextDelay(0.2f));
+
+        // =========================
+        // TimeScale 영향 없는 딜레이 사용
+        // =========================
+        StartCoroutine(EnableNextDelayRealtime(0.2f));
     }
+
     private void DisplayNextLine()
     {
         if (dialogueQueue.Count == 0)
@@ -125,6 +162,7 @@ public class DialogueManager : MonoBehaviour
             Debug.LogWarning("대사가 없읍니다.");
             return;
         }
+
         string speakerName = entry.speaker;
         string dialogueContent = currentLine.TranslatedContent;
 
@@ -140,23 +178,32 @@ public class DialogueManager : MonoBehaviour
         // 타이핑 시작
         ResetRoutine();
         isTyping = true;
-        dialogueRoutine = StartCoroutine(TypeSentence(dialogueContent)); // 치환된 내용 적용
 
+        // =========================
+        // TimeScale=0 상태에서도 타이핑 진행
+        // =========================
+        dialogueRoutine = StartCoroutine(TypeSentenceRealtime(dialogueContent));
     }
 
-    private IEnumerator TypeSentence(string sentance)  // 타이핑 루틴
+    // =========================
+    // Realtime 기반 타이핑 루틴
+    // - Pause 상태에서도 Dialogue UX 유지
+    // =========================
+    private IEnumerator TypeSentenceRealtime(string sentance)
     {
-        
         isTyping = true;
         dialogueContentText.text = sentance;
         dialogueContentText.maxVisibleCharacters = 0;
+
         int totalChars = sentance.Length;
-        var wait = GetWait(typingSpeed);
+        var wait = GetWaitRealtime(typingSpeed);
+
         for (int i = 0; i <= totalChars; i++)
         {
             dialogueContentText.maxVisibleCharacters = i;
             yield return wait;
         }
+
         isTyping = false;
         dialogueRoutine = null;
         // 처음에 모든 문장을 text에 넣고 maxVisibleCharacters = i인 i값에 따라 문자 랜더링 개수만 바꿔준다. 메모리 최적화
@@ -171,21 +218,23 @@ public class DialogueManager : MonoBehaviour
         {
             InputManager.Instance.SetDialogueActive(false);
         }
+
         speakerNameText.text = string.Empty; // 이름 지워주고
         dialogueContentText.text = string.Empty; // 텍스트 지워주고
         dialogueContentText.maxVisibleCharacters = 0; // 텍스트 숫자 0으로만들어주기
+
         Debug.Log("End Dialogue");
     }
 
     public void OnContinueClicked()  // 플레이어가 클릭하면 다음 대화 호출
     {
         if (!canClick) return;
+
         if (isTyping)
         {
             StopCoroutine(dialogueRoutine);
-            //DialogueLine currentLine = dialogueQueue.Dequeue();
-            //dialogueContentText.text = dialogueQueue.Peek().Text;
-            //dialogueContentText.text = currentLine.Text;
+
+            // 현재 문장 즉시 출력
             dialogueContentText.maxVisibleCharacters = dialogueContentText.text.Length;
             isTyping = false;
         }
@@ -194,15 +243,20 @@ public class DialogueManager : MonoBehaviour
             DisplayNextLine();
         }
     }
-    private WaitForSeconds GetWait(float time)
+
+    // =========================
+    // Realtime Wait 캐시
+    // =========================
+    private WaitForSecondsRealtime GetWaitRealtime(float time)
     {
-        if (!_waitCache.TryGetValue(time, out var wait))
+        if (!_waitRealtimeCache.TryGetValue(time, out var wait))
         {
-            wait = new WaitForSeconds(time);
-            _waitCache.Add(time, wait);
+            wait = new WaitForSecondsRealtime(time);
+            _waitRealtimeCache.Add(time, wait);
         }
         return wait;
     }
+
     private void ResetRoutine()
     {
         if (dialogueRoutine != null)
@@ -211,11 +265,16 @@ public class DialogueManager : MonoBehaviour
             dialogueRoutine = null;
         }
     }
-    private IEnumerator EnableNextDelay(float delay)
+
+    // =========================
+    // 클릭 가능 딜레이도 Realtime 기반
+    // =========================
+    private IEnumerator EnableNextDelayRealtime(float delay)
     {
-        yield return GetWait(delay);
+        yield return GetWaitRealtime(delay);
         canClick = true;
     }
+
     public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue")
     {
         if (dialoguePanel.activeSelf) return; // 이미 대화 중이면 무시
@@ -243,7 +302,9 @@ public class DialogueManager : MonoBehaviour
         }
 
         // TextManager에게 키 리스트 요청
-        List<string> keys = TextManager.Instance.GetKeysByMissionAndSpeaker(missionId, speakerKey, textType);
+        List<string> keys = TextManager.Instance.GetKeysByMissionAndSpeaker(
+            missionId, speakerKey, textType
+        );
 
         if (keys == null || keys.Count == 0)
         {
@@ -267,6 +328,11 @@ public class DialogueManager : MonoBehaviour
 
         dialoguePanel.SetActive(true);
         DisplayNextLine();
-        StartCoroutine(EnableNextDelay(0.2f));
+
+        // =========================
+        // Realtime 딜레이
+        // =========================
+        StartCoroutine(EnableNextDelayRealtime(0.2f));
     }
 }
+
