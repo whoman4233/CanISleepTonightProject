@@ -12,6 +12,10 @@ public class DailyMissionManager : MonoBehaviour
     // 현재 진행 중인 미션 (Read Only)
     public DailyMissionStrategy CurrentMission { get; private set; }
 
+    // 미션 진행 상태
+    public bool IsBriefingCompleted { get; private set; }
+    public bool IsReported { get; private set; }
+
     // 오늘 하루 동안 플레이어가 올린 실적
     private int dailyResolvedCount = 0;
 
@@ -139,5 +143,22 @@ public class DailyMissionManager : MonoBehaviour
 
         Debug.LogWarning($"[DailyMissionManager] {dayIndex}일차 미션 데이터가 없습니다.");
         return null;
+    }
+
+    // 브리핑/결과 보고 추적용 bool 값 메서드
+    public void MarkBriefingCompleted()
+    {
+        IsBriefingCompleted = true;
+    }
+
+    public void MarkReported()
+    {
+        IsReported = true;
+    }
+
+    public void ResetDailyFlags()
+    {
+        IsBriefingCompleted = false;
+        IsReported = false;
     }
 }

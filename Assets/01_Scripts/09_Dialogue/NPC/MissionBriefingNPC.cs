@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class MissionBriefingNPC : MonoBehaviour, IInteractable
@@ -9,81 +10,102 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
 
     private bool _busy;
 
+    private Action<SettlementReportConfirmedEvent> _onReportConfirmed;
+    private Action<UIHardResetEvent> _onUIHardReset;
+
     private void Awake()
     {
         if (dialogueManager == null)
             dialogueManager = FindAnyObjectByType<DialogueManager>();
+
+        _onReportConfirmed = _ =>
+        {
+            if (_busy) return;
+            StartCoroutine(Co_PlayResultDialogue());
+        };
+
+        _onUIHardReset = _ => { _busy = false; }; // 씬전환 시 안전
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onReportConfirmed);
+        EventBus.Subscribe(_onUIHardReset);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onReportConfirmed);
+        EventBus.Unsubscribe(_onUIHardReset);
     }
 
     public void Interact(Player player)
     {
         if (_busy) return;
-        if (dialogueManager == null || dialogueDatabase == null) return;
 
         var missionManager = DailyMissionManager.Instance;
         if (missionManager == null || missionManager.CurrentMission == null) return;
 
         var mission = missionManager.CurrentMission;
-        DialogueData dialogueData =
-            dialogueDatabase.GetDialogueData(mission.missionId);
+        var dialogueData = dialogueDatabase.GetDialogueData(mission.missionId);
+        if (dialogueData == null) return;
 
-        if (dialogueData == null)
+        // =========================
+        // 1) 최초 브리핑
+        // =========================
+        if (!missionManager.IsBriefingCompleted)
         {
-            Debug.LogWarning($"[MissionBriefingNPC] No DialogueData for {mission.missionId}");
+            _busy = true;
+            dialogueManager.StartDialogue(dialogueData.briefing);
+            StartCoroutine(Co_WaitBriefingEnd());
             return;
         }
 
-        bool isSettlement =
-            GameManager.Instance != null &&
-            GameManager.Instance.CurrentPhase == GamePhase.Settlement;
-
-        if (!isSettlement)
+        // =========================
+        // 2) 보고 시도 
+        // =========================
+        if (!missionManager.IsReported)
         {
-            // =========================
-            // 브리핑
-            // =========================
-            if (dialogueData.briefing == null || dialogueData.briefing.Length == 0)
+            // Patrol이 아닐 때 보고 불가
+            if (GameManager.Instance != null && GameManager.Instance.CurrentPhase != GamePhase.Patrol)
+            {
+                EventBus.Publish(new ShowTimedTextPopupEvent("순찰하지 않으면 보고 할 수 없어", 1f));
                 return;
+            }
 
-            _busy = true;
-            dialogueManager.StartDialogue(dialogueData.briefing);
-            StartCoroutine(Co_WaitBriefingEnd(mission));
-        }
-        else
-        {
-            // =========================
-            // 결과
-            // =========================
-            bool success = missionManager.EvaluateDayResult(out string failReason);
-
-            _busy = true;
-            StartCoroutine(Co_PlayResultDialogue(
-                dialogueData,
-                success,
-                failReason
-            ));
+            EventBus.Publish(new ShowSettlementConfirmPopupEvent());
+            return;
         }
     }
 
-    // ------------------------------------------------------
-
-    private IEnumerator Co_WaitBriefingEnd(DailyMissionStrategy mission)
+    private IEnumerator Co_WaitBriefingEnd()
     {
         yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
 
-        // 브리핑 종료 → 팝업 요청
-        EventBus.Publish(new MissionBriefingDialogueEndedEvent(mission));
+        DailyMissionManager.Instance.MarkBriefingCompleted();
+        EventBus.Publish(new MissionBriefingDialogueEndedEvent(DailyMissionManager.Instance.CurrentMission));
+
         _busy = false;
     }
 
-    // ------------------------------------------------------
-
-    private IEnumerator Co_PlayResultDialogue(
-        DialogueData data,
-        bool success,
-        string failReason
-    )
+    // =========================
+    // Confirm 이후: 결과 다이얼로그 → 종료 후 ResultUI
+    // =========================
+    private IEnumerator Co_PlayResultDialogue()
     {
+        var missionManager = DailyMissionManager.Instance;
+        if (missionManager == null || missionManager.CurrentMission == null)
+            yield break;
+
+        var mission = missionManager.CurrentMission;
+        var data = dialogueDatabase.GetDialogueData(mission.missionId);
+        if (data == null)
+            yield break;
+
+        bool success = missionManager.EvaluateDayResult(out string failReason);
+
+        _busy = true;
+
         // 결과 공통 대사
         if (data.fin != null && data.fin.Length > 0)
         {
@@ -91,17 +113,23 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
             yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
         }
 
-        // 성공 / 실패 대사
-        DialogueLine[] resultLines = success ? data.success : data.fail;
-
+        // 성공/실패 대사
+        var resultLines = success ? data.success : data.fail;
         if (resultLines != null && resultLines.Length > 0)
         {
             dialogueManager.StartDialogue(resultLines);
             yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
         }
 
-        // 결과 종료 이벤트
-        EventBus.Publish(new MissionReportDialogueEndedEvent(success, failReason));
+        // =========================
+        // 다이얼로그가 완전히 끝난 다음에만 ResultUI를 띄움
+        // =========================
+        EventBus.Publish(new ResultUIShowRequestedEvent(success, failReason));
+
         _busy = false;
     }
 }
+
+
+
+
