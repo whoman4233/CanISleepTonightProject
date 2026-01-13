@@ -67,6 +67,12 @@ public struct ShowTimedTextPopupEvent
 //==========================================
 //보고서 팝업
 //==========================================
+
+public struct SettlementReportConfirmedEvent // 결과 대사 진행 트리거 이벤트
+{
+
+}
+
 public struct ShowSettlementConfirmPopupEvent // 보고서 제출 확인용 이벤트
 {
 

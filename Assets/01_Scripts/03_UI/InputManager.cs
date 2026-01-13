@@ -7,17 +7,15 @@ public class InputManager : MonoBehaviour
     public static InputManager Instance { get; private set; }
     public PlayerInputs Inputs { get; private set; }
 
-    private bool _playerPresent; // 플레이어 입력
-    private bool _inspectionActive; // 상세보기 활성
-    private int _uiLockCount; // Pause / Popup / Result 등
-    private bool _dialogueActive; // 대화상태 변수
-    private bool _qteActive; // QTE 활성 
+    private bool _playerPresent;
+    private bool _inspectionActive;
+    private int _uiLockCount;
+    private bool _dialogueActive;
+    private bool _qteActive;
+
     private InputState _currentState;
     public InputState CurrentState => _currentState;
 
-    // =============================
-    // EventBus handlers (캐시)
-    // =============================
     private Action<PlayerPresenceChangedEvent> _onPlayerPresence;
     private Action<InspectionStartedEvent> _onInspectionStarted;
     private Action<InspectionEndedEvent> _onInspectionEnded;
@@ -25,11 +23,9 @@ public class InputManager : MonoBehaviour
     private Action<GlobalInputLockReleasedEvent> _onGlobalLockReleased;
     private Action<InputHardResetEvent> _onInputHardReset;
     private Action<GameContextReadyEvent> _onGameContextReady;
-    private Action<QTEStartedEvent> _onQTEStarted; 
-    private Action<QTEEndedEvent> _onQTEEnded;     
-    // =============================
-    // Unity Lifecycle
-    // =============================
+    private Action<QTEStartedEvent> _onQTEStarted;
+    private Action<QTEEndedEvent> _onQTEEnded;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -46,9 +42,6 @@ public class InputManager : MonoBehaviour
         // UI 입력은 항상 Enable
         Inputs.UI.Enable();
 
-        // =============================
-        // Event handler 캐싱
-        // =============================
         _onPlayerPresence = OnPlayerPresence;
         _onInspectionStarted = OnInspectionStarted;
         _onInspectionEnded = OnInspectionEnded;
@@ -56,8 +49,9 @@ public class InputManager : MonoBehaviour
         _onGlobalLockReleased = OnGlobalLockReleased;
         _onInputHardReset = OnInputHardReset;
         _onGameContextReady = OnGameContextReady;
-        _onQTEStarted = OnQTEStarted; 
-        _onQTEEnded = OnQTEEnded;     
+        _onQTEStarted = OnQTEStarted;
+        _onQTEEnded = OnQTEEnded;
+
         ApplyState(force: true);
     }
 
@@ -86,15 +80,12 @@ public class InputManager : MonoBehaviour
         EventBus.Unsubscribe(_onQTEStarted);
         EventBus.Unsubscribe(_onQTEEnded);
     }
+
     private void OnDestroy()
     {
         if (!Application.isPlaying)
             Inputs?.Dispose();
     }
-
-    // =============================
-    // Event handlers
-    // =============================
 
     private void OnPlayerPresence(PlayerPresenceChangedEvent e)
     {
@@ -126,9 +117,6 @@ public class InputManager : MonoBehaviour
         ApplyState();
     }
 
-    /// <summary>
-    /// 강제 입력 초기화
-    /// </summary>
     private void OnGameContextReady(GameContextReadyEvent e)
     {
         Debug.Log("[InputManager] GameContextReady → Force Input Reset");
@@ -138,9 +126,7 @@ public class InputManager : MonoBehaviour
 
         ApplyState(force: true);
     }
-    /// <summary>
-    /// 세션 종료 / 타이틀 복귀 / 강제 리셋용
-    /// </summary>
+
     private void OnInputHardReset(InputHardResetEvent e)
     {
         Debug.Log("[InputManager] InputHardReset");
@@ -149,29 +135,32 @@ public class InputManager : MonoBehaviour
         _inspectionActive = false;
         _uiLockCount = 0;
         _dialogueActive = false;
+        _qteActive = false;
 
         _currentState = InputState.UIOnly;
 
-        // 모든 Gameplay / Inspection 입력 강제 종료
         SetMap(Inputs.Player, false);
         SetMap(Inputs.Inspection, false);
+        SetMap(Inputs.QTE, false);
+
+        // UI는 항상 살아있게 유지
+        SetMap(Inputs.UI, true);
 
         ApplyCursor(InputState.UIOnly);
     }
-    private void OnQTEStarted(QTEStartedEvent e) // QTE
+
+    private void OnQTEStarted(QTEStartedEvent e)
     {
         _qteActive = true;
         ApplyState(force: true);
     }
 
-    private void OnQTEEnded(QTEEndedEvent e) // QTE
+    private void OnQTEEnded(QTEEndedEvent e)
     {
         _qteActive = false;
         ApplyState();
     }
-    // =============================
-    // Core: 상태 계산
-    // =============================
+
     private void ApplyState(bool force = false)
     {
         InputState next = ResolveState();
@@ -181,7 +170,6 @@ public class InputManager : MonoBehaviour
 
         _currentState = next;
 
-        // Gameplay / Inspection / QTE -> Enable/Disable
         SetMap(Inputs.Player, next == InputState.Gameplay);
         SetMap(Inputs.Inspection, next == InputState.Inspection);
         SetMap(Inputs.QTE, next == InputState.QTE);
@@ -191,7 +179,7 @@ public class InputManager : MonoBehaviour
 
         ApplyCursor(next);
 
-        Debug.Log($"[InputManager] State={_currentState} UIAlwaysOn lock={_uiLockCount}");
+        Debug.Log($"[InputManager] State={_currentState} lock={_uiLockCount} dialogue={_dialogueActive}");
     }
 
     private InputState ResolveState()
@@ -199,11 +187,16 @@ public class InputManager : MonoBehaviour
         if (!_playerPresent)
             return InputState.UIOnly;
 
-        if (_uiLockCount > 0)
-            return InputState.UIOnly;
-
+        // =========================
+        // Dialogue를 UIOnly lock보다 우선
+        // - 팝업/락이 걸린 상태에서도 "대화 진행 상태"를 유지
+        // - 실제 입력은 UI맵 기반으로 진행
+        // =========================
         if (_dialogueActive)
             return InputState.Dialogue;
+
+        if (_uiLockCount > 0)
+            return InputState.UIOnly;
 
         if (_inspectionActive)
             return InputState.Inspection;
@@ -214,9 +207,6 @@ public class InputManager : MonoBehaviour
         return InputState.Gameplay;
     }
 
-    // =============================
-    // Utilities
-    // =============================
     private static void SetMap(InputActionMap map, bool enable)
     {
         if (enable && !map.enabled)
@@ -228,27 +218,26 @@ public class InputManager : MonoBehaviour
     private static void ApplyCursor(InputState state)
     {
         bool hideCursor =
-        state == InputState.Gameplay ||
-        state == InputState.QTE;
+            state == InputState.Gameplay ||
+            state == InputState.QTE;
 
-        Cursor.lockState = hideCursor
-            ? CursorLockMode.Locked
-            : CursorLockMode.None;
-
+        Cursor.lockState = hideCursor ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !hideCursor;
     }
 
-    public void SetDialogueActive(bool isActive) // 대화 상태를 켜고 끄는 메서드
+    public void SetDialogueActive(bool isActive)
     {
         _dialogueActive = isActive;
         ApplyState();
     }
-    public void ResetPlayerInputs() // 입력 강제 초기화
+
+    public void ResetPlayerInputs()
     {
         Inputs.Player.Disable();
         Inputs.Player.Enable();
     }
 }
+
 
 
 
