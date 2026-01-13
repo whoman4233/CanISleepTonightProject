@@ -49,10 +49,31 @@ public abstract class DailyMissionStrategy : ScriptableObject
     public virtual void OnMissionStart() { }
 
     // 미션 종료 시 호출 (정리용)
-    public virtual void OnMissionEnd() { }
+    public virtual void OnMissionEnd() // true면 미션 성공 대화 이벤트 발행
+    {
+        DialogueKeys.DialogueType resultType = CheckWinCondition(DailyMissionManager.Instance.CurrentScore, out _)
+                ? DialogueKeys.DialogueType.Complete
+                : DialogueKeys.DialogueType.Fail;
+
+        // 미션성공여부에 따른 대화이벤트 발행
+        EventBus.Publish(new DialogueStepChangedEvent(resultType));
+    }
 
     public virtual string GetProcessedText(string rawText) // 이름 치환 로직. override하지 않으면 그대로 출력
     {
         return rawText;
+    }
+
+    // [추가] 아이템이 목표에 맞는지 검사
+    public virtual bool IsValidItem(string itemTag)
+    {
+        return false; // 기본값은 false (오버라이드 안 하면 점수 안 오름)
+    }
+
+    // [추가] 죄수가 목표에 맞는지 검사
+    // 죄수의 상태를 확인해야 하므로 PrisonerController 전체를 넘겨받는 게 좋습니다.
+    public virtual bool IsValidPrisoner(PrisonerController prisoner)
+    {
+        return false;
     }
 }

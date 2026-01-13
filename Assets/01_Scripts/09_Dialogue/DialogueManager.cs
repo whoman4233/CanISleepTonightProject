@@ -80,7 +80,35 @@ public class DialogueManager : MonoBehaviour
         StartCoroutine(EnableNextDelay(0.2f));
         Debug.Log("StartDialogue");
     }
+    //미션 대사용
+    public void StartDialogue(DialogueLine[] lines)
+    {
+        if (lines == null || lines.Length == 0)
+        {
+            Debug.LogWarning("대화 라인이 비어있습니다.");
+            return;
+        }
 
+        if (dialoguePanel.activeSelf) return;
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.SetDialogueActive(true);
+
+        dialogueQueue.Clear();
+        foreach (var line in lines)
+        {
+            dialogueQueue.Enqueue(line);
+        }
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.ResetPlayerInputs();
+
+        dialoguePanel.SetActive(true);
+        canClick = false;
+
+        DisplayNextLine();
+        StartCoroutine(EnableNextDelay(0.2f));
+    }
     private void DisplayNextLine()
     {
         if (dialogueQueue.Count == 0)
@@ -190,21 +218,46 @@ public class DialogueManager : MonoBehaviour
     }
     public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue")
     {
-        if (DailyMissionManager.Instance.CurrentMission == null) return;
-        if (dialoguePanel.activeSelf) return; // 중복 실행 방지
+        if (dialoguePanel.activeSelf) return; // 이미 대화 중이면 무시
 
-        string missionId = DailyMissionManager.Instance.CurrentMission.missionId; // 현재 미션 정보 가져오기
+        string missionId = "";
 
-        // TextManager에게 해당 조건의 키 리스트 요청
+        // 미션 ID 판정 로직
+        if (GameManager.Instance.CurrentPhase == GamePhase.Tutorial)
+        {
+            missionId = DialogueKeys.Missions.Tutorial;
+        }
+        else
+        {
+            // 튜토리얼이 아닐 때는 미션 정보가 필수
+            if (DailyMissionManager.Instance.CurrentMission != null)
+            {
+                missionId = DailyMissionManager.Instance.CurrentMission.missionId;
+            }
+            else
+            {
+                // 미션 정보도 없고 튜토리얼도 아니면 대화를 할 수 없음
+                Debug.LogWarning("[Dialogue] 현재 활성화된 미션이 없습니다.");
+                return;
+            }
+        }
+
+        // TextManager에게 키 리스트 요청
         List<string> keys = TextManager.Instance.GetKeysByMissionAndSpeaker(missionId, speakerKey, textType);
 
-        if (keys == null || keys.Count == 0) return;
+        if (keys == null || keys.Count == 0)
+        {
+            Debug.LogWarning($"[Dialogue] 대사를 찾을 수 없음: Mission={missionId}, Speaker={speakerKey}, Type={textType}");
+            return;
+        }
+
+        // 입력 제어 및 UI 활성화
         if (InputManager.Instance != null)
         {
             InputManager.Instance.SetDialogueActive(true);
             InputManager.Instance.ResetPlayerInputs();
         }
-        // 대화 큐 생성 로직
+
         dialogueQueue.Clear();
         foreach (string key in keys)
         {
@@ -212,7 +265,6 @@ public class DialogueManager : MonoBehaviour
             dialogueQueue.Enqueue(line);
         }
 
-        // 4. UI 활성화
         dialoguePanel.SetActive(true);
         DisplayNextLine();
         StartCoroutine(EnableNextDelay(0.2f));

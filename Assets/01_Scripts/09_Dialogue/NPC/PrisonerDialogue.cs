@@ -5,7 +5,7 @@ using UnityEngine;
 public class PrisonerDialogue : MonoBehaviour, IInteractable
 {
     public VisualAnomalyType myVisualType;
-    private string _mySpeakerKey = null; // 기본값은 null
+    //private string _mySpeakerKey = null; // 기본값은 null
     private DialogueManager dialogueManager;
 
     private void Start()
