@@ -1,22 +1,28 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class ResultUI : MonoBehaviour
+public class ResultPopup : MonoBehaviour
 {
-    [Header("Root")]
-    [SerializeField] private GameObject root;
+    [Header("Content Root (BG + Panel)")]
+    [SerializeField] private GameObject contentRoot;
 
     [Header("Texts")]
     [SerializeField] private TextMeshProUGUI resultTitleText;
     [SerializeField] private TextMeshProUGUI descriptionText;
 
+    [Header("Buttons")]
+    [SerializeField] private Button nextDayButton;
+
     private Action<ResultUIShowRequestedEvent> _onShow;
 
     private void Awake()
     {
-        root.SetActive(false);
         _onShow = OnShowRequested;
+
+        if (nextDayButton != null)
+            nextDayButton.onClick.AddListener(OnNextDayClicked);
     }
 
     private void OnEnable()
@@ -36,7 +42,7 @@ public class ResultUI : MonoBehaviour
 
     private void ShowInternal(bool isSuccess, string failReason)
     {
-        root.SetActive(true);
+        contentRoot.SetActive(true);
 
         if (isSuccess)
         {
@@ -54,14 +60,20 @@ public class ResultUI : MonoBehaviour
         InputManager.Instance?.SetDialogueActive(true);
     }
 
-    // 버튼에서 호출
-    public void OnNextDayClicked()
+    // 버튼 클릭 시 호출됨
+    private void OnNextDayClicked()
     {
-        root.SetActive(false);
+        contentRoot.SetActive(false);
+
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
+
         InputManager.Instance?.SetDialogueActive(false);
 
         EventBus.Publish(new ResultUIConfirmedEvent());
     }
 }
+
+
 
 
