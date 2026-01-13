@@ -1,13 +1,10 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MissionBriefingNPC : MonoBehaviour, IInteractable
 {
-    [Header("Dialogue Sets (Theme-based SO)")]
-    [SerializeField] private List<MissionDialogueSet> dialogueSets = new();
-
     [Header("Refs")]
+    [SerializeField] private MissionDialogueDatabase dialogueDatabase;
     [SerializeField] private DialogueManager dialogueManager;
 
     private bool _busy;
@@ -21,80 +18,90 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
     public void Interact(Player player)
     {
         if (_busy) return;
-        if (dialogueManager == null) return;
+        if (dialogueManager == null || dialogueDatabase == null) return;
 
         var missionManager = DailyMissionManager.Instance;
         if (missionManager == null || missionManager.CurrentMission == null) return;
 
-        // 1) 오늘 미션의 테마
-        MissionDayTheme todayTheme = missionManager.CurrentMission.missionTheme;
+        var mission = missionManager.CurrentMission;
+        DialogueData dialogueData =
+            dialogueDatabase.GetDialogueData(mission.missionId);
 
-        // 2) 테마에 맞는 DialogueSet 찾기
-        MissionDialogueSet set = FindSet(todayTheme);
-        if (set == null)
+        if (dialogueData == null)
         {
-            Debug.LogWarning(
-                $"[MissionBriefingNPC] No MissionDialogueSet for theme: {todayTheme}",
-                this
-            );
+            Debug.LogWarning($"[MissionBriefingNPC] No DialogueData for {mission.missionId}");
             return;
         }
 
-        // 3) 브리핑 / 결과 분기 (GamePhase 기준)
-        bool isSettlementPhase =
+        bool isSettlement =
             GameManager.Instance != null &&
             GameManager.Instance.CurrentPhase == GamePhase.Settlement;
 
-        if (!isSettlementPhase)
+        if (!isSettlement)
         {
+            // =========================
             // 브리핑
-            if (set.briefing == null) return;
+            // =========================
+            if (dialogueData.briefing == null || dialogueData.briefing.Length == 0)
+                return;
 
             _busy = true;
-            dialogueManager.StartDialogue(set.briefing);
-            StartCoroutine(Co_WaitDialogueEnd_Briefing(missionManager.CurrentMission));
+            dialogueManager.StartDialogue(dialogueData.briefing);
+            StartCoroutine(Co_WaitBriefingEnd(mission));
         }
         else
         {
-            // 결과 (성공 / 실패)
+            // =========================
+            // 결과
+            // =========================
             bool success = missionManager.EvaluateDayResult(out string failReason);
 
-            DialogueData reportData = success ? set.reportSuccess : set.reportFail;
-            if (reportData == null) return;
-
             _busy = true;
-            dialogueManager.StartDialogue(reportData);
-            StartCoroutine(Co_WaitDialogueEnd_Report(success, failReason));
+            StartCoroutine(Co_PlayResultDialogue(
+                dialogueData,
+                success,
+                failReason
+            ));
         }
     }
 
-    private MissionDialogueSet FindSet(MissionDayTheme todayTheme)
-    {
-        foreach (var set in dialogueSets)
-        {
-            if (set == null) continue;
+    // ------------------------------------------------------
 
-            // Flags 포함 관계 매칭
-            if ((todayTheme & set.theme) != 0)
-                return set;
-        }
-        return null;
-    }
-
-    private IEnumerator Co_WaitDialogueEnd_Briefing(DailyMissionStrategy mission)
+    private IEnumerator Co_WaitBriefingEnd(DailyMissionStrategy mission)
     {
         yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
 
+        // 브리핑 종료 → 팝업 요청
         EventBus.Publish(new MissionBriefingDialogueEndedEvent(mission));
         _busy = false;
     }
 
-    private IEnumerator Co_WaitDialogueEnd_Report(bool success, string failReason)
-    {
-        yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
+    // ------------------------------------------------------
 
+    private IEnumerator Co_PlayResultDialogue(
+        DialogueData data,
+        bool success,
+        string failReason
+    )
+    {
+        // 결과 공통 대사
+        if (data.fin != null && data.fin.Length > 0)
+        {
+            dialogueManager.StartDialogue(data.fin);
+            yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
+        }
+
+        // 성공 / 실패 대사
+        DialogueLine[] resultLines = success ? data.success : data.fail;
+
+        if (resultLines != null && resultLines.Length > 0)
+        {
+            dialogueManager.StartDialogue(resultLines);
+            yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
+        }
+
+        // 결과 종료 이벤트
         EventBus.Publish(new MissionReportDialogueEndedEvent(success, failReason));
         _busy = false;
     }
 }
-

@@ -80,7 +80,35 @@ public class DialogueManager : MonoBehaviour
         StartCoroutine(EnableNextDelay(0.2f));
         Debug.Log("StartDialogue");
     }
+    //미션 대사용
+    public void StartDialogue(DialogueLine[] lines)
+    {
+        if (lines == null || lines.Length == 0)
+        {
+            Debug.LogWarning("대화 라인이 비어있습니다.");
+            return;
+        }
 
+        if (dialoguePanel.activeSelf) return;
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.SetDialogueActive(true);
+
+        dialogueQueue.Clear();
+        foreach (var line in lines)
+        {
+            dialogueQueue.Enqueue(line);
+        }
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.ResetPlayerInputs();
+
+        dialoguePanel.SetActive(true);
+        canClick = false;
+
+        DisplayNextLine();
+        StartCoroutine(EnableNextDelay(0.2f));
+    }
     private void DisplayNextLine()
     {
         if (dialogueQueue.Count == 0)

@@ -10,8 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62eb5703309f30d459373accf3fab00b, type: 3}
-  m_Name: MissionReportSuccess_01
+  m_Name: Mission_05Dialogue
   m_EditorClassIdentifier: 
-  lines:
-  - textKey: DTxt_KR_M01_05
-  - textKey: DTxt_KR_M01_06
+  lines: []
+  briefing:
+  - textKey: DTxt_KR_M05_01
+  - textKey: DTxt_KR_M05_02
+  - textKey: DTxt_KR_M05_03
+  - textKey: DTxt_KR_M05_04
+  fin:
+  - textKey: DTxt_KR_M05_05
+  success:
+  - textKey: DTxt_KR_M05_06
+  fail:
+  - textKey: DTxt_KR_M05_07
+  missionKey: Mission05
+  speakerFilter: Victor

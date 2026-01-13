@@ -144,4 +144,10 @@ public class TextManager : MonoBehaviour
 
         return resultKeys;
     }
+
+    public IEnumerable<TextEntry> GetAllEntries()
+    {
+        return textDictionary.Values;
+    }
+
 }

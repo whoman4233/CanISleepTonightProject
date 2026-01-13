@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Dialogue", menuName = "Dialogue/Dialogue Data")]
@@ -7,7 +8,25 @@ public class DialogueData : ScriptableObject
 {
     [SerializeField] private DialogueLine[] lines;
 
+    [Header("미션브리핑대사")]
+    public DialogueLine[] briefing;
+
+    [Header("결과 - 공통 대사")]
+    public DialogueLine[] fin;
+
+    [Header("결과 - 성공 대사")]
+    public DialogueLine[] success;
+
+    [Header("결과 - 실패 대사")]
+    public DialogueLine[] fail;
+
     public DialogueLine[] Lines => lines;
+
+#if UNITY_EDITOR
+    [Header("Editor Only")]
+    [SerializeField] private string missionKey;
+    [SerializeField] private string speakerFilter;
+#endif
 
     public void GenerateRange(int start, int end)
     {
@@ -30,27 +49,69 @@ public class DialogueData : ScriptableObject
 #endif
         Debug.Log($"{name}: {start} ~ {end} 범위 생성 완료.");
     }
-    public void GenerateMissionRange(int missionIndex, int startLine, int endLine)
+#if UNITY_EDITOR
+    private void GenerateFromCSV()
     {
-        int count = endLine - startLine + 1;
-        if (count <= 0) return;
+        var entries = DialogueCsvEditorLoader.LoadAll();
 
-        lines = new DialogueLine[count];
-        for (int i = 0; i < count; i++)
+        var briefingList = new List<DialogueLine>();
+        var finList = new List<DialogueLine>();
+        var successList = new List<DialogueLine>();
+        var failList = new List<DialogueLine>();
+
+        foreach (var entry in entries)
         {
-            int lineNum = startLine + i;
-            string key = $"DTxt_KR_M{missionIndex:D2}_{lineNum:D2}";
+            if (entry.mission != missionKey)
+                continue;
 
-            lines[i] = new DialogueLine { textKey = key };
+            if (!string.IsNullOrEmpty(speakerFilter) &&
+           entry.speaker != speakerFilter)
+                continue;
+
+            DialogueLine line = new DialogueLine { textKey = entry.key };
+
+            switch (entry.type)
+            {
+                case DialogueKeys.Types.Dialogue:
+                    briefingList.Add(line);
+                    break;
+
+                case DialogueKeys.Types.Fin:
+                    finList.Add(line);
+                    break;
+
+                case DialogueKeys.Types.Complete:
+                    successList.Add(line);
+                    break;
+
+                case DialogueKeys.Types.Fail:
+                    failList.Add(line);
+                    break;
+            }
         }
 
-#if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-        UnityEditor.AssetDatabase.SaveAssets();
+        briefing = briefingList.ToArray();
+        fin = finList.ToArray();
+        success = successList.ToArray();
+        fail = failList.ToArray();
+
+        EditorUtility.SetDirty(this);
+        AssetDatabase.SaveAssets();
+
+        Debug.Log(
+            $"[DialogueData] Generated for {missionKey} " +
+            $"(Briefing:{briefing.Length}, Fin:{fin.Length}, " +
+            $"Success:{success.Length}, Fail:{fail.Length})"
+        );
+    }
+
+    [ContextMenu("Generate From CSV")]
+    private void Context_GenerateFromCSV()
+    {
+        GenerateFromCSV();
+    }
 #endif
 
-        Debug.Log($"{name}: Mission {missionIndex}, Line {startLine}~{endLine} 생성 완료");
-    }
 
     // 인스펙터 우클릭 메뉴 (사용 편의성)
     [ContextMenu("Generate 01-16 (Basic)")]
@@ -68,32 +129,6 @@ public class DialogueData : ScriptableObject
     [ContextMenu("Generate 27-37 (Book)")]
     private void Gen5() => GenerateRange(27, 37);
 
-    [ContextMenu("Generate Mission01 Briefing (01~04)")]
-    private void GenMission01Briefing()
-    {
-        GenerateMissionRange(1, 1, 4);
-    }
-
-    [ContextMenu("Generate Mission01 Result Success (05~06)")]
-    private void GenMission01ResultSuccess()
-    {
-        GenerateMissionRange(1, 5, 6);
-    }
-
-    [ContextMenu("Generate Mission01 Result Fail (05,07)")]
-    private void GenMission01ResultFail()
-    {
-        lines = new DialogueLine[]
-        {
-        new DialogueLine { textKey = "DTxt_KR_M01_05" },
-        new DialogueLine { textKey = "DTxt_KR_M01_07" }
-        };
-
-#if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-        UnityEditor.AssetDatabase.SaveAssets();
-#endif
-    }
 }
 
 
