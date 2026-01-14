@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7554804620552489619}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: IntProp_Dumbbell01_NV
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,7 +42,10 @@ GameObject:
   m_Component:
   - component: {fileID: 3624599312788817481}
   - component: {fileID: 905981792478779778}
-  m_Layer: 0
+  - component: {fileID: 8995028180104446347}
+  - component: {fileID: 7443121290241826773}
+  - component: {fileID: 572054720882061572}
+  m_Layer: 12
   m_Name: VisualRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,7 +62,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7677800453377877365}
@@ -86,6 +89,56 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!65 &8995028180104446347
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7288017796627670023}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.8390486, y: 0.38191986, z: 0.36416817}
+  m_Center: {x: 0.01140058, y: 0.0077142715, z: 0.0028896332}
+--- !u!114 &7443121290241826773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7288017796627670023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actionBehaviour: {fileID: 572054720882061572}
+--- !u!114 &572054720882061572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7288017796627670023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 905981792478779778}
+  triggerName: Inspect
+  outerCollider: {fileID: 0}
+  innerColliders: []
 --- !u!1001 &7856458803671630494
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149,6 +202,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -6480275208950148370, guid: e4b11ffb0d68bd64a84563fb766eb708,
+        type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: -4978022036218641078, guid: e4b11ffb0d68bd64a84563fb766eb708,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -164,10 +222,25 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: df8e2d003c9d8474eb0fde10223707e9, type: 2}
+    - target: {fileID: -2172365422387101809, guid: e4b11ffb0d68bd64a84563fb766eb708,
+        type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: -1406158728046450105, guid: e4b11ffb0d68bd64a84563fb766eb708,
+        type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e4b11ffb0d68bd64a84563fb766eb708,
         type: 3}
       propertyPath: m_Name
       value: IntProp_Dumbbell01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e4b11ffb0d68bd64a84563fb766eb708,
+        type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 1625668569778470700, guid: e4b11ffb0d68bd64a84563fb766eb708,
         type: 3}
@@ -179,6 +252,16 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: df8e2d003c9d8474eb0fde10223707e9, type: 2}
+    - target: {fileID: 3034155509123990588, guid: e4b11ffb0d68bd64a84563fb766eb708,
+        type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5036262381695514169, guid: e4b11ffb0d68bd64a84563fb766eb708,
+        type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 3567251248168412979, guid: e4b11ffb0d68bd64a84563fb766eb708, type: 3}
