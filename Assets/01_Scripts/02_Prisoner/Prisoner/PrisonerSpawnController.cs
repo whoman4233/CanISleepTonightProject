@@ -172,6 +172,15 @@ public class PrisonerSpawnController : MonoBehaviour
         var controller = pGo.GetComponent<PrisonerController>();
         if (controller == null) Debug.LogError($"[Spawn] Prefab '{prefab.name}' has no PrisonerController!");
         else controller.Initialize(data, anchor, isSuspicious);
+
+        var dialogue = pGo.GetComponent<PrisonerDialogue>();
+        if (dialogue != null)
+        {
+            // Manager에서 현재 방에 할당된 DailyRole을 가져와서 직접 넣어줌
+            var dailyRole = scheduleManager.GetDailyRole(anchor.cellId);
+            dialogue.myVisualType = dailyRole.visualType;
+        }
+
         return controller;
     }
 
