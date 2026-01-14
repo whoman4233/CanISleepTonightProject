@@ -190,7 +190,6 @@ public class GameManager : MonoBehaviour
     private void OnEnterNotStarted()
     {
         currentDay = 0;
-        riotGauge = 20;
         playerHP = 70;
         PrisonerScheduleManager.ResetStaticData(); // 정적 데이터 초기화
     }
@@ -206,8 +205,8 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
         EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin)); // 순찰페이즈 들어가는 순간 대사내용 바꿔주는 이벤트 발행
 
-        var builder = FindObjectOfType<SettlementReportBuilder>();
-        if (builder != null) builder.CacheRiotGaugeAtStart();
+        //var builder = FindObjectOfType<SettlementReportBuilder>();
+        //if (builder != null) builder.CacheRiotGaugeAtStart();
 
         patrolTimerCoroutine = StartCoroutine(UpdateTimer());
     }
@@ -268,7 +267,6 @@ public class GameManager : MonoBehaviour
         var data = new GameSaveData
         {
             currentDay = this.currentDay,
-            riotGauge = this.riotGauge,
             currentPhase = this.currentPhase,
             currentHp = this.playerHP
         };
@@ -288,7 +286,6 @@ public class GameManager : MonoBehaviour
         if (data != null)
         {
             this.currentDay = data.currentDay;
-            this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
 
