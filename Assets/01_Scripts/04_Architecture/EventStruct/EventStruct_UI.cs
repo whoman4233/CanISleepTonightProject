@@ -132,21 +132,6 @@ public struct PopupCloseRequestedEvent
 }
 
 //==========================================
-//WhiteBoadrd이벤트 목록
-//==========================================
-
-//화이트보드 데이터
-public struct SettlementUIDataCreatedEvent
-{
-    public SettlementUIData Data;
-
-    public SettlementUIDataCreatedEvent(SettlementUIData data)
-    {
-        Data = data;
-    }
-}
-
-//==========================================
 //ResultUI 이벤트 목록
 //==========================================
 

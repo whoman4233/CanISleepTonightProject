@@ -73,6 +73,45 @@ public class DailyMissionManager : MonoBehaviour
         });
     }
 
+    public void StartFixDay(int dayIndex)
+    {
+        dailyResolvedCount = 0;
+        CurrentScore = 0;
+
+        // 인덱스 변환 (Day 1 -> List Index 0)
+        int targetIndex = dayIndex - 1;
+
+        // 인덱스 안전 검사 (리스트 범위 체크)
+        if (missionScenario == null || targetIndex < 0 || targetIndex >= missionScenario.Count)
+        {
+            Debug.LogError($"[GameFlow] {dayIndex}일차에 해당하는 미션 데이터가 없습니다! (Scenario Count: {missionScenario?.Count})");
+            return;
+        }
+
+        // ★ [수정] 랜덤 로직 삭제 -> 해당 날짜(인덱스)의 미션을 그대로 가져옴
+        CurrentMission = missionScenario[targetIndex];
+
+        Debug.Log($"[GameFlow] Day {dayIndex} 미션 시작: {CurrentMission.title}");
+
+        // 2. 전략 실행 (매니저 세팅)
+        CurrentMission.SetupDay(AnomalyDistributor.Instance, PrisonerScheduleManager.Instance);
+
+        // 3. (필요하다면) 스포너에게 최종 소환 명령
+        // PrisonerSpawnController.Instance.SpawnAll(); 
+
+        // HUD 미션 UI 초기화 알림
+        EventBus.Publish(new MissionStartedEvent
+        {
+            mission = CurrentMission
+        });
+
+        EventBus.Publish(new MissionProgressChangedEvent
+        {
+            current = CurrentScore,
+            target = CurrentMission.targetScore
+        });
+    }
+
     // ========================================================================
     // 🔥 [이벤트 훅] 외부에서 호출하는 점수 신고 전화번호
     // ========================================================================

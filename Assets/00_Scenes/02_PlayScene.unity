@@ -5809,7 +5809,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c3970bcac75c68347aca4612703974b7, type: 2}
   - {fileID: 11400000, guid: 2ccf7d73616d7ea409ba39fbaedd6984, type: 2}
   - {fileID: 11400000, guid: 7228e174c122d1e408810ec456175b47, type: 2}
-  - {fileID: 11400000, guid: 52a097bab7d9d2349a30382307719d75, type: 2}
+  - {fileID: 11400000, guid: 225aaec965e9f9147b3331f20bdbfa75, type: 2}
   - {fileID: 11400000, guid: 0020feb15d527c946ad0773f2ae3ce1b, type: 2}
   - {fileID: 11400000, guid: 7da5c47dcbdc0ad4cadda1cb8129e222, type: 2}
   - {fileID: 11400000, guid: f47fe429015625d4ba1c60862c2fa061, type: 2}
@@ -10210,6 +10210,11 @@ MonoBehaviour:
   suspiciousIgnoreDelta: 7
   normalIgnoreDelta: 1
   dailyBaseIncrease: 10
+  standbyDelta: 0
+  settlementDelta: 0
+  riotGauge: 0
+  maxRiotGauge: 0
+  _prisonManager: {fileID: 0}
 --- !u!114 &2100287916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10283,6 +10288,7 @@ MonoBehaviour:
   prisonManager: {fileID: 65292951}
   inspection: {fileID: 1358555039}
   settlement: {fileID: 2099698613}
+  _riotGaugeAtStart: 0
 --- !u!1 &2105265943
 GameObject:
   m_ObjectHideFlags: 0
