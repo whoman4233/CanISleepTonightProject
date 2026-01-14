@@ -2,6 +2,7 @@
 using TMPro;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 public class WarningPopupController : MonoBehaviour
 {
@@ -11,9 +12,15 @@ public class WarningPopupController : MonoBehaviour
     private Coroutine _routine;
     private Action<ShowTimedTextPopupEvent> _onShow;
 
+    //Realtime 캐시
+    private readonly Dictionary<float, WaitForSecondsRealtime> _waitRealtimeCache =
+        new Dictionary<float, WaitForSecondsRealtime>();
+
     private void Awake()
     {
-        root.SetActive(false);
+        if (root != null)
+            root.SetActive(false);
+
         _onShow = OnShow;
     }
 
@@ -32,16 +39,34 @@ public class WarningPopupController : MonoBehaviour
         if (_routine != null)
             StopCoroutine(_routine);
 
-        text.text = e.Message;
-        _routine = StartCoroutine(ShowRoutine(e.Duration));
+        if (text != null)
+            text.text = e.Message;
+
+        _routine = StartCoroutine(ShowRoutineRealtime(e.Duration));
     }
 
-    private IEnumerator ShowRoutine(float duration)
+    private IEnumerator ShowRoutineRealtime(float duration)
     {
-        root.SetActive(true);
-        yield return new WaitForSeconds(duration);
-        root.SetActive(false);
+        if (root != null)
+            root.SetActive(true);
+
+        yield return GetWaitRealtime(duration); 
+
+        if (root != null)
+            root.SetActive(false);
+
         _routine = null;
     }
+
+    private WaitForSecondsRealtime GetWaitRealtime(float time)
+    {
+        if (!_waitRealtimeCache.TryGetValue(time, out var wait))
+        {
+            wait = new WaitForSecondsRealtime(time);
+            _waitRealtimeCache.Add(time, wait);
+        }
+        return wait;
+    }
 }
+
 

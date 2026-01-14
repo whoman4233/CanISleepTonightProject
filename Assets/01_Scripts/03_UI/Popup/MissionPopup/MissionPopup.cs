@@ -61,12 +61,18 @@ public class MissionPopup : MonoBehaviour
     {
         contentRoot.SetActive(false);
 
-        EventBus.Publish(new GlobalInputLockReleasedEvent());
-        EventBus.Publish(new ResumeGameRequestedEvent());
-
         InputManager.Instance?.SetDialogueActive(false);
 
+        var mission = DailyMissionManager.Instance?.CurrentMission;
+        if (mission != null)
+        {
+            // HUD / WhiteBoard용
+            EventBus.Publish(new MissionRevealedEvent(mission));
+        }
+
         EventBus.Publish(new MissionBriefingConfirmedEvent());
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
     }
 }
 

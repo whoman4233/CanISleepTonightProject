@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class SettlementConfirmPopupController : MonoBehaviour
@@ -9,8 +11,14 @@ public class SettlementConfirmPopupController : MonoBehaviour
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
 
+    private Action<ShowSettlementConfirmPopupEvent> _onShowRequested;
+    private Action<UIHardResetEvent> _onUIHardReset;
+
     private void Awake()
     {
+        _onShowRequested = OnShowRequested;
+        _onUIHardReset = OnUIHardReset;   
+
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmClicked);
 
@@ -18,38 +26,52 @@ public class SettlementConfirmPopupController : MonoBehaviour
             cancelButton.onClick.AddListener(OnCancelClicked);
     }
 
-    public void Show()
-    {
-        root.SetActive(true);
-    }
-
-    public void Hide()
-    {
-        root.SetActive(false);
-    }
-
     private void OnEnable()
     {
-        // 입력 잠금
-        EventBus.Publish(new GlobalInputLockRequestedEvent());
-
-        // 시간 정지
-        EventBus.Publish(new PauseGameRequestedEvent());
+        EventBus.Subscribe(_onShowRequested); 
+        EventBus.Subscribe(_onUIHardReset);
     }
 
     private void OnDisable()
     {
-        // 입력 잠금 해제
-        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Unsubscribe(_onShowRequested);
+        EventBus.Unsubscribe(_onUIHardReset);
+    }
 
-        // 시간 재개
+    private void OnShowRequested(ShowSettlementConfirmPopupEvent e)
+    {
+        Show();
+    }
+
+    public void Show()
+    {
+        if (root != null)
+            root.SetActive(true);
+
+        EventBus.Publish(new GlobalInputLockRequestedEvent());
+        EventBus.Publish(new PauseGameRequestedEvent());
+    }
+
+    public void Hide()
+    {
+        if (root != null)
+            root.SetActive(false);
+
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
         EventBus.Publish(new ResumeGameRequestedEvent());
+    }
+
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        if (root != null)
+            root.SetActive(false);
     }
 
     private void OnConfirmClicked()
     {
-        EventBus.Publish(new RequestPhaseChangeEvent(GamePhase.Settlement));
+        // 먼저 닫고(락/정지 해제), 다음 프레임에 보고 확정 이벤트 발행
         Hide();
+        EventBus.Publish(new SettlementReportConfirmedEvent());
     }
 
     private void OnCancelClicked()
@@ -57,4 +79,6 @@ public class SettlementConfirmPopupController : MonoBehaviour
         Hide();
     }
 }
+
+
 

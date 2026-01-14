@@ -1,7 +1,7 @@
 ﻿//==========================================
 //PopupUI 미션브리핑 이벤트 목록
 //==========================================
-public struct MissionPopupShowRequestedEvent
+public struct MissionPopupShowRequestedEvent // 미션팝업용 이벤트
 {
     public DailyMissionStrategy mission;
 
@@ -10,6 +10,16 @@ public struct MissionPopupShowRequestedEvent
         this.mission = mission;
     }
 }
+public struct MissionRevealedEvent //미션팝업 노출 후 미션 HUD/화이트보드 UI 출력용 이벤트
+{
+    public DailyMissionStrategy mission;
+
+    public MissionRevealedEvent(DailyMissionStrategy mission)
+    {
+        this.mission = mission;
+    }
+}
+
 public struct MissionBriefingConfirmedEvent
 {
 
@@ -67,6 +77,12 @@ public struct ShowTimedTextPopupEvent
 //==========================================
 //보고서 팝업
 //==========================================
+
+public struct SettlementReportConfirmedEvent // 결과 대사 진행 트리거 이벤트
+{
+
+}
+
 public struct ShowSettlementConfirmPopupEvent // 보고서 제출 확인용 이벤트
 {
 

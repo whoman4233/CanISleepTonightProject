@@ -16,8 +16,8 @@ public class TutorialNPC : MonoBehaviour , IInteractable
 
     private Action<DialogueStepChangedEvent> _onStepChanged;
 
-    [Header("대화 데이터")]
-    [SerializeField] private DialogueManager dialogueManager;
+    //[Header("대화 데이터")]
+    //[SerializeField] private DialogueManager dialogueManager;
 
     private bool finishedDialogue = false; // 대사 다 봄?
 
@@ -41,6 +41,10 @@ public class TutorialNPC : MonoBehaviour , IInteractable
     {
         if (GameManager.Instance.CurrentPhase != GamePhase.Tutorial) return; // 튜토리얼 페이즈에서만 실행
         if (finishedDialogue) return;
+
+        var dialogueManager = DialogueManager.Instance; //DialogueManager 전역접근
+        if (dialogueManager == null) 
+            return;
 
         string speakerKey = speakerRole.ToString();
         string textType = currentSubStep.ToString();

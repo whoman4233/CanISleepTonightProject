@@ -105,6 +105,13 @@ public class FlowController : MonoBehaviour
     private IEnumerator ReloadPlaySceneRoutine() // 씬 재로딩 코루틴
     {
         isBusy = true;
+
+        // =========================
+        // [추가] 씬 리로드 전에 UI/Input 강제 리셋
+        // =========================
+        EventBus.Publish(new UIHardResetEvent());
+        EventBus.Publish(new InputHardResetEvent());
+
         Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
         Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.isLoaded)
@@ -191,6 +198,12 @@ public class FlowController : MonoBehaviour
     {
         isBusy = true;
         Time.timeScale = 1f;
+
+        // =========================
+        // 타이틀 복귀 전에 UI/Input 강제 리셋
+        // =========================
+        EventBus.Publish(new UIHardResetEvent());
+        EventBus.Publish(new InputHardResetEvent());
 
         // 1. 현재 로드된 'PlayScene'만 비동기로 언로드합니다.
         Scene playScene = SceneManager.GetSceneByName(playSceneName);

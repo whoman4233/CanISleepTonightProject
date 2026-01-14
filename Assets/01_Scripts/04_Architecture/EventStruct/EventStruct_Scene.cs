@@ -1,4 +1,5 @@
-﻿
+﻿using UnityEngine.SceneManagement;
+
 //==========================================
 //게임 루프관련 이벤트 목록
 //==========================================
@@ -75,4 +76,18 @@ public struct RequestStartNewGameEvent
 public struct LoadGameEvent // IntroScene MainMenu : 이어하기
 {
 
+}
+//==========================================
+// UI 신 관련 통합관리용 이벤트
+//==========================================
+public readonly struct SceneChangedEvent
+{
+    public readonly string SceneName;
+    public readonly LoadSceneMode Mode;
+
+    public SceneChangedEvent(string sceneName, LoadSceneMode mode)
+    {
+        SceneName = sceneName;
+        Mode = mode;
+    }
 }

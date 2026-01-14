@@ -12,13 +12,15 @@ public class HUDMissionPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private TextMeshProUGUI progressText;
 
-    private Action<MissionStartedEvent> _onStart;
+    private Action<MissionRevealedEvent> _onMissionRevealed;
     private Action<MissionProgressChangedEvent> _onProgress;
+    private Action<UIHardResetEvent> _onUIHardReset;
 
     private void Awake()
     {
-        _onStart = OnMissionStarted;
+        _onMissionRevealed = OnMissionRevealed;
         _onProgress = OnMissionProgressChanged;
+        _onUIHardReset = OnUIHardReset;
 
         if (panelRoot != null)
             panelRoot.SetActive(false);
@@ -26,24 +28,24 @@ public class HUDMissionPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        EventBus.Subscribe(_onStart);
+        EventBus.Subscribe(_onMissionRevealed);
         EventBus.Subscribe(_onProgress);
+        EventBus.Subscribe(_onUIHardReset);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onStart);
+        EventBus.Unsubscribe(_onMissionRevealed);
         EventBus.Unsubscribe(_onProgress);
+        EventBus.Unsubscribe(_onUIHardReset);
     }
 
-    // ========================================================================
-    // Event Handlers
-    // ========================================================================
-
-    private void OnMissionStarted(MissionStartedEvent e)
+    private void OnMissionRevealed(MissionRevealedEvent e)
     {
-        if (panelRoot != null && !panelRoot.activeSelf)
-            panelRoot.SetActive(true);
+        if (e.mission == null || panelRoot == null)
+            return;
+
+        panelRoot.SetActive(true);
 
         titleText.text = e.mission.title;
         descriptionText.text = e.mission.description;
@@ -53,39 +55,33 @@ public class HUDMissionPanel : MonoBehaviour
 
     private void OnMissionProgressChanged(MissionProgressChangedEvent e)
     {
-        if (panelRoot != null && !panelRoot.activeSelf)
-            panelRoot.SetActive(true);
-
-        var mission = DailyMissionManager.Instance.CurrentMission;
+        var mission = DailyMissionManager.Instance?.CurrentMission;
         if (mission == null)
             return;
 
         UpdateProgressText(e.current, e.target, mission);
     }
 
-    // ========================================================================
-    // Progress Text
-    // ========================================================================
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        if (panelRoot != null)
+            panelRoot.SetActive(false);
+    }
 
     private void UpdateProgressText(int current, int target, DailyMissionStrategy mission)
     {
-        // Collection 미션
+        if (progressText == null)
+            return;
+
         if (mission is Mission_CollectionStrategy collection)
-        {
-            // 예: "Weapon 회수 2 / 6"
             progressText.text = $"{collection.targetItemTag} 회수 {current} / {target}";
-        }
-        // Suppression 미션
         else if (mission is Mission_SuppressionStrategy)
-        {
-            // 예: "위험 요소 제거 1 / 3"
             progressText.text = $"위험 요소 제거 {current} / {target}";
-        }
-        // 기본 (확장 대비)
         else
-        {
             progressText.text = $"{current} / {target}";
-        }
     }
 }
+
+
+
 

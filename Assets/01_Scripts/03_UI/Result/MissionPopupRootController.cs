@@ -7,26 +7,15 @@ public class MissionPopupRootController : MonoBehaviour
     private Action<SettlementStartedEvent> _onSettlementStarted;
     private Action<UIHardResetEvent> _onUIHardReset;
 
+    private bool _popupShown;
+
     private void Awake()
     {
-        _onBriefingEnded = e =>
-        {
-            EventBus.Publish(new MissionPopupShowRequestedEvent());
-            LockInput();
-        };
+        _popupShown = false;
 
-        _onSettlementStarted = e =>
-        {
-            EventBus.Publish(new ResultUIShowRequestedEvent(
-                false, string.Empty
-            ));
-            LockInput();
-        };
-
-        _onUIHardReset = e =>
-        {
-            UnlockInput();
-        };
+        _onBriefingEnded = OnMissionBriefingDialogueEnded;
+        _onSettlementStarted = OnSettlementStarted;
+        _onUIHardReset = OnUIHardReset;
     }
 
     private void OnEnable()
@@ -43,6 +32,52 @@ public class MissionPopupRootController : MonoBehaviour
         EventBus.Unsubscribe(_onUIHardReset);
     }
 
+    // =========================
+    // 브리핑 대화 종료 → MissionPopup 표시
+    // =========================
+    private void OnMissionBriefingDialogueEnded(MissionBriefingDialogueEndedEvent e)
+    {
+        if (_popupShown)
+            return;
+
+        _popupShown = true;
+
+        EventBus.Publish(
+            new MissionPopupShowRequestedEvent(
+                DailyMissionManager.Instance.CurrentMission
+            )
+        );
+
+        LockInput();
+    }
+
+    // =========================
+    // 정산 시작 시 Result UI 진입
+    // =========================
+    private void OnSettlementStarted(SettlementStartedEvent e)
+    {
+        EventBus.Publish(
+            new ResultUIShowRequestedEvent(false, string.Empty)
+        );
+
+        LockInput();
+    }
+
+    // =========================
+    // UIHardReset 시 MissionPopup 상태 복구
+    // =========================
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        // 씬 리로딩 / 타이틀 복귀 시
+        // MissionPopup은 다시 표시 가능해야 함
+        _popupShown = false;
+
+        UnlockInput();
+    }
+
+    // =========================
+    // Input Lock Helpers
+    // =========================
     private void LockInput()
     {
         EventBus.Publish(new GlobalInputLockRequestedEvent());
@@ -55,6 +90,7 @@ public class MissionPopupRootController : MonoBehaviour
         EventBus.Publish(new ResumeGameRequestedEvent());
     }
 }
+
 
 
 

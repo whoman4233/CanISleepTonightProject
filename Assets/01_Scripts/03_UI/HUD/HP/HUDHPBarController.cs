@@ -50,6 +50,7 @@ public class UIHPBarController : MonoBehaviour
     private void RefreshVisibility()
     {
         bool show =
+            _currentPhase == GamePhase.Tutorial ||
             _currentPhase == GamePhase.Standby ||
             _currentPhase == GamePhase.Briefing ||
             _currentPhase == GamePhase.Patrol;

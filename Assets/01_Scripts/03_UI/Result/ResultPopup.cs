@@ -16,23 +16,30 @@ public class ResultPopup : MonoBehaviour
     [SerializeField] private Button nextDayButton;
 
     private Action<ResultUIShowRequestedEvent> _onShow;
+    private Action<UIHardResetEvent> _onUIHardReset;
 
     private void Awake()
     {
         _onShow = OnShowRequested;
+        _onUIHardReset = OnUIHardReset;
 
         if (nextDayButton != null)
             nextDayButton.onClick.AddListener(OnNextDayClicked);
+
+        if (contentRoot != null)
+            contentRoot.SetActive(false);
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onShow);
+        EventBus.Subscribe(_onUIHardReset);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onShow);
+        EventBus.Unsubscribe(_onUIHardReset);
     }
 
     private void OnShowRequested(ResultUIShowRequestedEvent e)
@@ -42,7 +49,17 @@ public class ResultPopup : MonoBehaviour
 
     private void ShowInternal(bool isSuccess, string failReason)
     {
-        contentRoot.SetActive(true);
+        if (contentRoot != null)
+            contentRoot.SetActive(true);
+
+        // =========================
+        // ResultPopup은 "정산 UI"이므로 입력/시간 정지 + 커서 보장
+        // =========================
+        EventBus.Publish(new GlobalInputLockRequestedEvent());
+        EventBus.Publish(new PauseGameRequestedEvent());
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         if (isSuccess)
         {
@@ -57,22 +74,33 @@ public class ResultPopup : MonoBehaviour
                 : failReason;
         }
 
-        InputManager.Instance?.SetDialogueActive(true);
+        //Dialogue 상태는 끔(정산 UI)
+        InputManager.Instance?.SetDialogueActive(false);
     }
 
-    // 버튼 클릭 시 호출됨
     private void OnNextDayClicked()
     {
-        contentRoot.SetActive(false);
+        if (contentRoot != null)
+            contentRoot.SetActive(false);
+
+        DailyMissionManager.Instance?.MarkReported();
 
         EventBus.Publish(new GlobalInputLockReleasedEvent());
         EventBus.Publish(new ResumeGameRequestedEvent());
 
-        InputManager.Instance?.SetDialogueActive(false);
+        //다음날 진입: 씬 재로딩 이벤트
+        EventBus.Publish(new RequestSceneReloadEvent());
+    }
 
-        EventBus.Publish(new ResultUIConfirmedEvent());
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        if (contentRoot != null)
+            contentRoot.SetActive(false);
     }
 }
+
+
+
 
 
 
