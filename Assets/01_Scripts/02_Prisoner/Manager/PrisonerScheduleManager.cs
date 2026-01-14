@@ -163,7 +163,9 @@ public class PrisonerScheduleManager : MonoBehaviour
                 // ★ [수정됨] 만약 specialVisuals 리스트가 들어왔다면 그 중에서 하나를 고릅니다.
                 if (specialVisuals != null && specialVisuals.Count > 0)
                 {
-                    role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
+                    //role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
+                    // assignedSuspicious가 0이면 S1, 1이면 S2, 2이면 S3가 배정됨
+                    role.visualType = specialVisuals[assignedSuspicious]; // 임포스터 랜덤이 아닌 들어온 리스트를 하나씩 배치(용의자N이 복수 배치되는것을 방지)
                 }
                 // 만약 리스트가 안 들어왔더라도, 기획에 따라 여기서 랜덤으로 임포스터를 만들 수도 있습니다. (예시)
                 /* else if (UnityEngine.Random.value < 0.3f) // 30% 확률로 임포스터
