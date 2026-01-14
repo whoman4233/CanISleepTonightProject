@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections; // Coroutine 사용을 위해 추가
 
 public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 {
@@ -27,6 +28,9 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     // [상태]
     [SerializeField] private bool _isPlayerInside;
     private bool _isSimpleDoorOpen = false;
+
+    // ★ [추가] 자동 닫힘 코루틴 저장용 변수
+    private Coroutine _autoCloseCoroutine;
 
     private static readonly int OpenHash = Animator.StringToHash("Open");
     private static readonly int CloseHash = Animator.StringToHash("Close");
@@ -105,8 +109,38 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void HandleSimpleDoor()
     {
-        if (!_isSimpleDoorOpen) { PlayOpen(); _isSimpleDoorOpen = true; }
-        else { PlayClose(); _isSimpleDoorOpen = false; }
+        if (!_isSimpleDoorOpen)
+        {
+            // [열기]
+            PlayOpen();
+            _isSimpleDoorOpen = true;
+
+            // ★ [추가] 열릴 때 자동 닫힘 코루틴 시작
+            if (_autoCloseCoroutine != null) StopCoroutine(_autoCloseCoroutine);
+            _autoCloseCoroutine = StartCoroutine(CoAutoCloseSimpleDoor());
+        }
+        else
+        {
+            // [닫기]
+            PlayClose();
+            _isSimpleDoorOpen = false;
+
+            // ★ [추가] 수동으로 닫으면 자동 닫힘 취소
+            if (_autoCloseCoroutine != null) StopCoroutine(_autoCloseCoroutine);
+        }
+    }
+
+    // ★ [추가] 5초 후 자동으로 닫는 코루틴
+    private IEnumerator CoAutoCloseSimpleDoor()
+    {
+        yield return new WaitForSeconds(5.0f);
+
+        // 5초 뒤에도 여전히 열려있다면 닫는다
+        if (_isSimpleDoorOpen)
+        {
+            if (verboseLog) Debug.Log($"[Door] 일반 문 5초 경과하여 자동 닫힘");
+            HandleSimpleDoor(); // 닫기 로직 재호출
+        }
     }
 
     private void HandlePrisonDoor()
@@ -195,13 +229,16 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             return false;
         }
 
+        // [수정] 재진입을 허용하기 위해 잠금 체크 주석 처리
+        /*
         if (cell.IsLockedForDay)
         {
             Debug.Log($"[Door] {cellId}는 금일 폐쇄(IsLockedForDay) 상태입니다.");
             return false;
         }
+        */
 
-        // InspectionStateMachine에서 거부하는 경우
+        // InspectionStateMachine에서 거부하는 경우 (이미 다른 방 점검 중 등)
         bool canEnter = inspection.TryEnterCell(cellId);
         if (!canEnter) Debug.Log($"[Door] InspectionStateMachine.TryEnterCell('{cellId}')가 false를 반환했습니다.");
 
