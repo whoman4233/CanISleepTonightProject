@@ -24,9 +24,16 @@ public class UIRoot : MonoBehaviour
     private const string LoadingSceneName = "07_LoadingScene_LSG";
     private const string IntroSceneName = "01_IntroScene";
 
+    // =========================
+    // [추가] Editor / Test 설정
+    // =========================
+    [Header("Test / Editor Settings")]
+    [SerializeField] private bool allowTestPhaseInEditor = true;
+
     private GamePhase currentPhase = GamePhase.NotStarted;
     private string currentScene = string.Empty;
     private bool isLoading;
+
     private void Awake()
     {
         if (instance != null)
@@ -43,6 +50,16 @@ public class UIRoot : MonoBehaviour
     {
         EventBus.Subscribe<GamePhaseChangedEvent>(OnPhaseChanged);
         EventBus.Subscribe<SceneChangedEvent>(OnSceneChanged);
+
+        if (GameManager.Instance != null)
+        {
+            currentPhase = GameManager.Instance.CurrentPhase;
+            RefreshUI();
+        }
+        currentScene = UnityEngine.SceneManagement.SceneManager
+        .GetActiveScene().name;
+
+        RefreshUI();
     }
 
     private void OnDisable()
@@ -59,6 +76,12 @@ public class UIRoot : MonoBehaviour
 
     private void OnSceneChanged(SceneChangedEvent e)
     {
+        // =========================
+        // Test Phase에서는 Scene 변화 무시
+        // =========================
+        if (currentPhase == GamePhase.Test)
+            return;
+
         // UI 씬은 무시
         if (e.SceneName == UISceneName)
             return;
@@ -78,11 +101,28 @@ public class UIRoot : MonoBehaviour
         RefreshUI();
     }
 
-
     private void RefreshUI()
     {
+        // =========================
+        // [추가] Test Phase 처리
+        // =========================
+        if (currentPhase == GamePhase.Test)
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying && !allowTestPhaseInEditor)
+                return;
+#endif
+            foreach (var group in canvasGroups)
+            {
+                if (group.canvas != null)
+                    group.canvas.SetActive(true);
+            }
+            return;
+        }
 
-        bool isMenu = currentScene == IntroSceneName || currentPhase == GamePhase.NotStarted;
+        bool isMenu = currentScene == IntroSceneName
+                      || currentPhase == GamePhase.NotStarted;
+
         bool isTutorial = currentPhase == GamePhase.Tutorial;
 
         foreach (var group in canvasGroups)
@@ -115,4 +155,5 @@ public class UIRoot : MonoBehaviour
         }
     }
 }
+
 

@@ -17,6 +17,9 @@ public abstract class DailyMissionStrategy : ScriptableObject
     [Header("Time Settings")]
     public float missionTimeLimit = 480f; // 기본 480초, 1일차는 짧게 300초?
 
+    [Header("Goals")]
+    public string GoalName;
+
     public virtual void SetupDay(AnomalyDistributor anomalyDistributor, PrisonerScheduleManager scheduleManager)
     {
         // A. 이상현상 필터링 지시 (Distributor 담당)

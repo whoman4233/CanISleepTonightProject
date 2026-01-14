@@ -336,7 +336,6 @@ public class InspectionManager : MonoBehaviour
 
         Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
 
-        // SphereCast
         if (Physics.SphereCast(
                 ray,
                 inspectHoverRadius,
@@ -345,9 +344,25 @@ public class InspectionManager : MonoBehaviour
                 inspectLayerMask,
                 QueryTriggerInteraction.Ignore))
         {
+            // =========================
+            //   InspectTarget 기반 Reveal 상태 필터
+            // - 애니메이션으로 아직 공개되지 않은 대상은
+            //   Raycast에 걸려도 Outline을 절대 켜지 않음
+            // =========================
+            if (hit.collider.TryGetComponent<InspectTarget>(out var inspectTarget))
+            {
+                if (!inspectTarget.CanShowOutline)
+                {
+                    // 아직 Reveal 안 된 대상 → 무조건 Outline 차단
+                    ClearOutline();
+                    return;
+                }
+            }
+            // InspectTarget이 없는 경우는 기존 상호작용 대상이므로 통과
+
             var nextOutliner = hit.collider.GetComponent<InteractableOutliner>();
 
-            //대상이 바뀌었을 때만 토글
+            // 대상이 바뀌었을 때만 토글
             if (_currentOutlined != nextOutliner)
             {
                 if (_currentOutlined != null)
@@ -359,7 +374,6 @@ public class InspectionManager : MonoBehaviour
                     _currentOutlined.SetHighlight(true);
             }
 
-            // 히트 유지 중이면 Clear하지 않음
             return;
         }
 

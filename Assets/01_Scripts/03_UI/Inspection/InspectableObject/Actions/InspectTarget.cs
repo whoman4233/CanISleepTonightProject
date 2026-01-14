@@ -3,8 +3,16 @@
 public class InspectTarget : MonoBehaviour, IInspectTarget
 {
     [SerializeField] private MonoBehaviour actionBehaviour;
+    [SerializeField] private bool revealOnInspect; // 컨테이너는 true, 무기/금지물품은 false
     private IInspectAction _action;
+    private bool _isRevealed;
 
+    public bool CanShowOutline => _isRevealed;
+
+    public void MarkRevealed()
+    {
+        _isRevealed = true;
+    }
     private void Awake()
     {
         if (actionBehaviour == null)

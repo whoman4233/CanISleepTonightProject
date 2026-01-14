@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2481284151023837106}
+  - component: {fileID: 4545051545899314982}
+  - component: {fileID: 7187528985958922897}
   m_Layer: 0
   m_Name: SwitProp_Poster01
   m_TagString: Untagged
@@ -32,6 +34,39 @@ Transform:
   - {fileID: 7285018251735101902}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4545051545899314982
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3395027025039238225}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.82634234, y: 1.2014041, z: 0.088699214}
+  m_Center: {x: 0.0021470785, y: 0.57763004, z: -0.012252178}
+--- !u!114 &7187528985958922897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3395027025039238225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4fde256dd86a794f8a6effa60669737, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &7103070506363196965
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -9,6 +9,8 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
     [Header("Collider Control")]
     [SerializeField] private Collider outerCollider;
     [SerializeField] private Collider[] innerColliders;
+    [Header("아웃라이너 보여줄 대상(숨긴물건)")]
+    [SerializeField] private InspectTarget[] revealedTargets;
 
     private bool _used;
     public void InspectAction(IInspectable owner)
@@ -29,6 +31,12 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
     // Animation Event에서 호출
     public void AE_OnRevealCompleted()
     {
+        foreach (var target in revealedTargets)
+        {
+            if (target != null)
+                target.MarkRevealed();
+        }
+
         foreach (var col in innerColliders)
         {
             if (col != null)
