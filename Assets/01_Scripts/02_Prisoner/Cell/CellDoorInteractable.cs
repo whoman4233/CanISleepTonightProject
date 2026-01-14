@@ -85,25 +85,31 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     {
         if (!Validate()) return;
 
-        // [수정] 애니메이션 상태 확인 대신 쿨타임 체크로 변경
-        // 이렇게 하면 애니메이션이 조금 꼬여도 일정 시간 지나면 무조건 다시 상호작용 가능
-        if (Time.time < _lastInteractTime + interactCooldown)
-        {
-            if (verboseLog) Debug.Log($"[Door] 쿨타임 중... ({_lastInteractTime + interactCooldown - Time.time:F1}초 남음)");
-            return;
-        }
-
-        // 쿨타임 갱신
+        // 쿨타임 체크 (기존 코드 유지)
+        if (Time.time < _lastInteractTime + interactCooldown) return;
         _lastInteractTime = Time.time;
 
-        // 1. 일반 문 로직
+        // 1. 일반 문(계단 문) 로직
         if (string.IsNullOrWhiteSpace(cellId))
         {
+            // ★ [추가] 감방 문이 하나라도 열려있는지(점검 중인지) 확인
+            if (inspection != null && !string.IsNullOrEmpty(inspection.CurrentInspectingCellId))
+            {
+                Debug.LogWarning("[Door] 감방 문이 열려있어 계단 문을 열 수 없습니다.");
+
+                // (선택사항) "감방 문을 먼저 닫으세요" 같은 팝업 띄우기
+                EventBus.Publish(new ShowTimedTextPopupEvent("감방 문이 열려있습니다! 문을 닫고 이동하세요.", 2.0f));
+
+                // 잠김 애니메이션/소리 재생
+                PlayLocked();
+                return;
+            }
+
             HandleSimpleDoor();
             return;
         }
 
-        // 2. 감방 전용 로직
+        // 2. 감방 전용 로직 (기존 코드 유지)
         HandlePrisonDoor();
     }
 
