@@ -93,6 +93,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 3009342024674442203}
+  revealOnInspect: 0
 --- !u!114 &3009342024674442203
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,7 +110,9 @@ MonoBehaviour:
   triggerName: Inspect
   outerCollider: {fileID: 2777249255319757990}
   innerColliders:
-  - {fileID: 0}
+  - {fileID: 7253430161414399093}
+  revealedTargets:
+  - {fileID: 3753340559476194094}
 --- !u!1 &3334974114447511775
 GameObject:
   m_ObjectHideFlags: 0
@@ -409,6 +412,24 @@ PrefabInstance:
 --- !u!4 &88947072207050565 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1851616915550112634, guid: b27e232d325bec24699bf03dd0895372,
+    type: 3}
+  m_PrefabInstance: {fileID: 1769425517679631423}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3753340559476194094 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3213538753954621201, guid: b27e232d325bec24699bf03dd0895372,
+    type: 3}
+  m_PrefabInstance: {fileID: 1769425517679631423}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!65 &7253430161414399093 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 8946153746463455306, guid: b27e232d325bec24699bf03dd0895372,
     type: 3}
   m_PrefabInstance: {fileID: 1769425517679631423}
   m_PrefabAsset: {fileID: 0}

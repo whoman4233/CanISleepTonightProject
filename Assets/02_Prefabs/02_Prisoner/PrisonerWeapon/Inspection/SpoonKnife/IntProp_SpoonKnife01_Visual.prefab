@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1002908430808671767}
   - component: {fileID: 6958830810944695817}
   - component: {fileID: 2271908305717958056}
-  m_Layer: 10
+  m_Layer: 12
   m_Name: IntProp_SpoonKnife01_Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31,13 +31,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4471693113076271696}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.58619386, y: -0.40862727, z: -0.4200837, w: 0.55940187}
+  m_LocalRotation: {x: -0.586193, y: -0.40862724, z: -0.4200824, w: 0.5594036}
   m_LocalPosition: {x: 0.87978864, y: 9.680614, z: -9.011877}
-  m_LocalScale: {x: 0.79999995, y: 0.79999995, z: 0.79999995}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -92.361, y: -59.03299, z: -12.72998}
 --- !u!33 &6143104798122171382
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -137,6 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 6958830810944695817}
+  revealOnInspect: 0
 --- !u!114 &6958830810944695817
 MonoBehaviour:
   m_ObjectHideFlags: 0
