@@ -72,7 +72,7 @@ public abstract class DailyMissionStrategy : ScriptableObject
 
     // [추가] 죄수가 목표에 맞는지 검사
     // 죄수의 상태를 확인해야 하므로 PrisonerController 전체를 넘겨받는 게 좋습니다.
-    public virtual bool IsValidPrisoner(PrisonerController prisoner)
+    public virtual bool IsValidPrisoner(string cellID)
     {
         return false;
     }
