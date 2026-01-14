@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 664745198987251847}
-  m_Layer: 0
+  - component: {fileID: 6372233669124782133}
+  - component: {fileID: 2931455350116192882}
+  - component: {fileID: 3394889808062050637}
+  m_Layer: 10
   m_Name: PSNA_SmutRag01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,6 +35,54 @@ Transform:
   - {fileID: 3422780660493540251}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6372233669124782133
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9021483721195144104}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.32131195, y: 0.036859512, z: 0.24883223}
+  m_Center: {x: 0.0012893677, y: 0.019184113, z: -0.0056545734}
+--- !u!114 &2931455350116192882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9021483721195144104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966b72ef3c8b85242ac5286a11a5f89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineEnabled: 0
+  defaultOutlineColor: {r: 255, g: 255, b: 255, a: 255}
+--- !u!114 &3394889808062050637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9021483721195144104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 00388c5b56f1532418fc039911915e1a, type: 2}
 --- !u!1001 &2885278615760944240
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -95,10 +146,20 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: fff88fa8fca1c0b4a83b3a7d6b1126ab, type: 2}
+    - target: {fileID: 287712921749967772, guid: a92461935c8da9642b25f21c3388e465,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a92461935c8da9642b25f21c3388e465,
         type: 3}
       propertyPath: m_Name
       value: PSNA_SmutRag01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a92461935c8da9642b25f21c3388e465,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

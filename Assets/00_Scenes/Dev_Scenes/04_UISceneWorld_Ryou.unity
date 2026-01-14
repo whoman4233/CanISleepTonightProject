@@ -1739,11 +1739,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2912395152323544845, guid: c5e1d2a3ac0e334438a79ff3218de556,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 4831797158641972450, guid: c5e1d2a3ac0e334438a79ff3218de556,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1798,16 +1793,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PSNA_Awl01
-      objectReference: {fileID: 0}
-    - target: {fileID: 5628282857889779001, guid: c5e1d2a3ac0e334438a79ff3218de556,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 7893589403931635441, guid: c5e1d2a3ac0e334438a79ff3218de556,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4862,21 +4847,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: PSNA_Pocker01
       objectReference: {fileID: 0}
-    - target: {fileID: 2019402527748091922, guid: 2a0a91ebd381c5f40bac9e1e0e62e432,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 2643767081302711571, guid: 2a0a91ebd381c5f40bac9e1e0e62e432,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8362796087207919566, guid: 2a0a91ebd381c5f40bac9e1e0e62e432,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 8783791917728836815, guid: 2a0a91ebd381c5f40bac9e1e0e62e432,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -7574,35 +7544,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 683314635994435168, guid: 5463a911408680f4fbf0d76708c297b6,
+    - target: {fileID: 2950472025848801742, guid: 5463a911408680f4fbf0d76708c297b6,
         type: 3}
-      propertyPath: m_Layer
-      value: 10
+      propertyPath: m_Materials.Array.size
+      value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 6753340466642890219, guid: 5463a911408680f4fbf0d76708c297b6,
+    - target: {fileID: 2950472025848801742, guid: 5463a911408680f4fbf0d76708c297b6,
         type: 3}
-      propertyPath: m_Layer
-      value: 10
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
+    - target: {fileID: 6503110820151563666, guid: 5463a911408680f4fbf0d76708c297b6,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7058051734919849592, guid: 5463a911408680f4fbf0d76708c297b6,
         type: 3}
       propertyPath: m_Name
       value: PSNA_LiquorBottle01
       objectReference: {fileID: 0}
-    - target: {fileID: 7058051734919849592, guid: 5463a911408680f4fbf0d76708c297b6,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 7183400851765193522, guid: 5463a911408680f4fbf0d76708c297b6,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 8025366443287515725, guid: 5463a911408680f4fbf0d76708c297b6,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.86
+      value: 2.047
       objectReference: {fileID: 0}
     - target: {fileID: 8025366443287515725, guid: 5463a911408680f4fbf0d76708c297b6,
         type: 3}
@@ -7648,11 +7613,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8157453212953711761, guid: 5463a911408680f4fbf0d76708c297b6,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11263,25 +11223,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2651485814671474977, guid: bfe7666ba0e694640958045a261db515,
+    - target: {fileID: 3867467675370019874, guid: bfe7666ba0e694640958045a261db515,
         type: 3}
-      propertyPath: m_Layer
-      value: 10
+      propertyPath: m_Materials.Array.size
+      value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 3167359838879772652, guid: bfe7666ba0e694640958045a261db515,
+    - target: {fileID: 3867467675370019874, guid: bfe7666ba0e694640958045a261db515,
         type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
     - target: {fileID: 9021483721195144104, guid: bfe7666ba0e694640958045a261db515,
         type: 3}
       propertyPath: m_Name
       value: PSNA_SmutRag01
-      objectReference: {fileID: 0}
-    - target: {fileID: 9021483721195144104, guid: bfe7666ba0e694640958045a261db515,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12649,30 +12604,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3062913545350914224, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 4759980538287928928, guid: 01d7e11f1accf1c489efa0326f5f5098,
         type: 3}
       propertyPath: m_Name
       value: PSNA_Cigarette01
-      objectReference: {fileID: 0}
-    - target: {fileID: 4759980538287928928, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5237093172326241335, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866173074964973718, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
