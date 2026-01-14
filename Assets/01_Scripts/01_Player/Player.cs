@@ -53,6 +53,8 @@ public class Player : MonoBehaviour
     private Action<InspectionEndedEvent> _onInspectionEnded;
     private Action<QTEStartedEvent> _onQTEStarted;
     private Action<QTEEndedEvent> _onQTEEnded;
+    private Action<DialogueStartedEvent> _onDialogueStarted;
+    private Action<DialogueEndedEvent> _onDialogueEnded;
     private void Awake()
     {
         Interactor = GetComponent<PlayerInteractor>(); // 캐싱용
@@ -89,6 +91,8 @@ public class Player : MonoBehaviour
         _onInspectionEnded = OnInspectionEnded;
         _onQTEStarted = OnQTEStarted;
         _onQTEEnded = OnQTEEnded;
+        _onDialogueStarted = OnDialogueStarted;
+        _onDialogueEnded = OnDialogueEnded;
         Sfx = GetComponent<PlayerSfxController>();
     }
 
@@ -102,6 +106,8 @@ public class Player : MonoBehaviour
         EventBus.Subscribe(_onInspectionEnded);
         EventBus.Subscribe(_onQTEStarted);
         EventBus.Subscribe(_onQTEEnded);
+        EventBus.Subscribe(_onDialogueStarted);
+        EventBus.Subscribe(_onDialogueEnded);
     }
 
     private void OnDisable()
@@ -114,6 +120,8 @@ public class Player : MonoBehaviour
         EventBus.Unsubscribe(_onInspectionEnded);
         EventBus.Unsubscribe(_onQTEStarted);
         EventBus.Unsubscribe(_onQTEEnded);
+        EventBus.Unsubscribe(_onDialogueStarted);
+        EventBus.Unsubscribe(_onDialogueEnded);
     }
 
     // Player는 Input을 소유하지 않음
@@ -322,6 +330,16 @@ public class Player : MonoBehaviour
     }
 
     private void OnQTEEnded(QTEEndedEvent e)
+    {
+        StateMachine.SetPaused(false);
+    }
+    private void OnDialogueStarted(DialogueStartedEvent e)
+    {
+        OnEnterPause();
+        StateMachine.SetPaused(true);
+    }
+
+    private void OnDialogueEnded(DialogueEndedEvent e)
     {
         StateMachine.SetPaused(false);
     }

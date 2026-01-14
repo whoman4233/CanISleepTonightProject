@@ -42,6 +42,19 @@ public struct MissionReportDialogueEndedEvent //미션 완료시 NPC 대화 종�
     }
 }
 //==========================================
+//Dialogue UI 이벤트 목록
+//==========================================
+
+public struct DialogueStartedEvent
+{
+
+}
+public struct DialogueEndedEvent
+{
+
+}
+
+//==========================================
 //PopupUI 이벤트 목록
 //==========================================
 

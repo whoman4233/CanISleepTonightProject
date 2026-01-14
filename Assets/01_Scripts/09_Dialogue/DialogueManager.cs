@@ -140,6 +140,8 @@ public class DialogueManager : MonoBehaviour
     // =========================
     private void EnterDialogueMode()
     {
+        EventBus.Publish(new DialogueStartedEvent());
+
         if (InputManager.Instance == null)
             return;
 
@@ -297,6 +299,7 @@ public class DialogueManager : MonoBehaviour
 
     private void EndDialogue()
     {
+        EventBus.Publish(new DialogueEndedEvent());
         dialoguePanel.SetActive(false);
         ResetRoutine();
 
