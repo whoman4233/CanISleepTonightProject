@@ -37,33 +37,21 @@ public class Mission_SuppressionStrategy : DailyMissionStrategy
         return false;
     }
 
-    // 매개변수로 PrisonerController를 받지만, 내부에서는 CellId를 통해 매니저를 조회합니다.
-    public override bool IsValidPrisoner(PrisonerController prisoner)
+    public override bool IsValidPrisoner(string cellId)
     {
-        // 1. 죄수의 방 ID(CellId) 가져오기
-        // (PrisonerController에 AssignedCell이 있고, 그 안에 CellId가 있다고 가정)
-        if (prisoner == null || prisoner.AssignedCell == null) return false;
-
-        string cellId = prisoner.AssignedCell.cellId;
-
-        // 2. 스케줄 매니저에게 "오늘 이 방 죄수의 역할 정보" 요청
+        // 1. 스케줄 매니저 확인
         if (PrisonerScheduleManager.Instance == null) return false;
 
-        // ★ 여기서 핵심: DailyRoleData 구조체를 가져옵니다.
-        DailyRoleData roleData = PrisonerScheduleManager.Instance.GetDailyRole(cellId);
+        // 2. ★ 핵심: 올려주신 코드에 있는 이 함수를 호출합니다.
+        DailyRoleData role = PrisonerScheduleManager.Instance.GetDailyRole(cellId);
 
-        // 3. AI 타입 조건 확인 (리스트에 포함되어 있는지)
-        if (specialAIList.Contains(roleData.dailyAIType))
-        {
+        // 3. AI 조건 확인 (구조체 안의 변수 사용)
+        if (specialAIList.Contains(role.dailyAIType))
             return true;
-        }
 
-        // 4. Visual 타입 조건 확인 (리스트에 포함되어 있는지)
-        // DailyRoleData에 visualType이 있으므로 아주 깔끔하게 비교 가능합니다.
-        if (specialVisualList.Contains(roleData.visualType))
-        {
+        // 4. Visual 조건 확인 (구조체 안의 변수 사용)
+        if (specialVisualList.Contains(role.visualType))
             return true;
-        }
 
         return false;
     }
