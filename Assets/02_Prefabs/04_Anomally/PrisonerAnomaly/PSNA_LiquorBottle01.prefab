@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8025366443287515725}
-  m_Layer: 0
+  - component: {fileID: 3190791310160435983}
+  - component: {fileID: 1891647347060870306}
+  - component: {fileID: 8229729037145862110}
+  m_Layer: 10
   m_Name: PSNA_LiquorBottle01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,6 +35,54 @@ Transform:
   - {fileID: 157713561860592858}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3190791310160435983
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7058051734919849592}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.28017902, y: 0.6975546, z: 0.27984238}
+  m_Center: {x: 0.0018815994, y: 0.32987165, z: -0.007643223}
+--- !u!114 &1891647347060870306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7058051734919849592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966b72ef3c8b85242ac5286a11a5f89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineEnabled: 0
+  defaultOutlineColor: {r: 255, g: 255, b: 255, a: 255}
+--- !u!114 &8229729037145862110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7058051734919849592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 1922d0c0e77b1684a914a877d01d5984, type: 2}
 --- !u!1001 &412913737931633457
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -92,19 +143,54 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6474428717566942616, guid: bb7432c46864196488e940318abd391b,
         type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -6474428717566942616, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: b1ddc450456dcc44eb31ad2b97df0c95, type: 2}
+    - target: {fileID: -6474428717566942616, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
+    - target: {fileID: -5960276098054169857, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -5960276098054169857, guid: bb7432c46864196488e940318abd391b,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 730a1e0980d75ee4e8a335448847fb18, type: 2}
+    - target: {fileID: -5960276098054169857, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
+    - target: {fileID: -2340387408049527133, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -2340387408049527133, guid: bb7432c46864196488e940318abd391b,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 7593bc44e76b68846a15bfb814971d93, type: 2}
+    - target: {fileID: -2340387408049527133, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
+    - target: {fileID: -824177830359029856, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: -824177830359029856, guid: bb7432c46864196488e940318abd391b,
         type: 3}
       propertyPath: m_IsActive
@@ -129,6 +215,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PSNA_LiquorBottle01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6341729652147363546, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7352803521478580227, guid: bb7432c46864196488e940318abd391b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7352803521478580227, guid: bb7432c46864196488e940318abd391b,
         type: 3}
