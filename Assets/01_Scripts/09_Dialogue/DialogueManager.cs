@@ -141,6 +141,11 @@ public class DialogueManager : MonoBehaviour
     private void EnterDialogueMode()
     {
         EventBus.Publish(new DialogueStartedEvent());
+        EventBus.Publish(new CursorOverrideRequestedEvent
+        {
+            HideCursor = true,
+            LockMode = CursorLockMode.Locked
+        });
 
         if (InputManager.Instance == null)
             return;
@@ -300,6 +305,7 @@ public class DialogueManager : MonoBehaviour
     private void EndDialogue()
     {
         EventBus.Publish(new DialogueEndedEvent());
+        EventBus.Publish(new CursorOverrideReleasedEvent());
         dialoguePanel.SetActive(false);
         ResetRoutine();
 

@@ -13,6 +13,9 @@ public class InputManager : MonoBehaviour
     private bool _dialogueActive;
     private bool _qteActive;
 
+    private bool _cursorOverridden;
+    private bool _overrideHideCursor;
+    private CursorLockMode _overrideLockMode;
     private InputState _currentState;
     public InputState CurrentState => _currentState;
 
@@ -25,7 +28,8 @@ public class InputManager : MonoBehaviour
     private Action<GameContextReadyEvent> _onGameContextReady;
     private Action<QTEStartedEvent> _onQTEStarted;
     private Action<QTEEndedEvent> _onQTEEnded;
-
+    private Action<CursorOverrideRequestedEvent> _onCursorOverride;
+    private Action<CursorOverrideReleasedEvent> _onCursorOverrideReleased;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -51,7 +55,8 @@ public class InputManager : MonoBehaviour
         _onGameContextReady = OnGameContextReady;
         _onQTEStarted = OnQTEStarted;
         _onQTEEnded = OnQTEEnded;
-
+        _onCursorOverride = OnCursorOverrideRequested;
+        _onCursorOverrideReleased = OnCursorOverrideReleased;
         ApplyState(force: true);
     }
 
@@ -66,6 +71,8 @@ public class InputManager : MonoBehaviour
         EventBus.Subscribe(_onGameContextReady);
         EventBus.Subscribe(_onQTEStarted);
         EventBus.Subscribe(_onQTEEnded);
+        EventBus.Subscribe(_onCursorOverride);
+        EventBus.Subscribe(_onCursorOverrideReleased);
     }
 
     private void OnDisable()
@@ -79,12 +86,28 @@ public class InputManager : MonoBehaviour
         EventBus.Unsubscribe(_onGameContextReady);
         EventBus.Unsubscribe(_onQTEStarted);
         EventBus.Unsubscribe(_onQTEEnded);
+        EventBus.Unsubscribe(_onCursorOverride);
+        EventBus.Unsubscribe(_onCursorOverrideReleased);
     }
 
     private void OnDestroy()
     {
         if (!Application.isPlaying)
             Inputs?.Dispose();
+    }
+    private void OnCursorOverrideRequested(CursorOverrideRequestedEvent e)
+    {
+        _cursorOverridden = true;
+        _overrideHideCursor = e.HideCursor;
+        _overrideLockMode = e.LockMode;
+
+        ApplyCursor(_currentState);
+    }
+
+    private void OnCursorOverrideReleased(CursorOverrideReleasedEvent e)
+    {
+        _cursorOverridden = false;
+        ApplyCursor(_currentState);
     }
 
     private void OnPlayerPresence(PlayerPresenceChangedEvent e)
@@ -215,8 +238,15 @@ public class InputManager : MonoBehaviour
         else if (!enable && map.enabled) map.Disable();
     }
 
-    private static void ApplyCursor(InputState state)
+    private void ApplyCursor(InputState state)
     {
+        if (_cursorOverridden)
+        {
+            Cursor.lockState = _overrideLockMode;
+            Cursor.visible = !_overrideHideCursor;
+            return;
+        }
+
         bool hideCursor =
             state == InputState.Gameplay ||
             state == InputState.QTE;
@@ -224,6 +254,7 @@ public class InputManager : MonoBehaviour
         Cursor.lockState = hideCursor ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !hideCursor;
     }
+
 
     // =========================
     // [중요] Dialogue 상태는 Player 차단용 플래그로만 사용
