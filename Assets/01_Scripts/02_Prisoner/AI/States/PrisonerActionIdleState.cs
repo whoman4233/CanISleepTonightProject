@@ -4,6 +4,7 @@ public class PrisonerActionIdleState : BasePrisonerState
 {
     private PrisonerAIType _currentType;
     private float _noiseTimer = 0f;
+    private bool _isReturningToCell = false; // 복귀 중인지 체크
 
     public PrisonerActionIdleState(PrisonerFSM fsm) : base(fsm) { }
 
@@ -17,21 +18,53 @@ public class PrisonerActionIdleState : BasePrisonerState
     {
         base.Enter();
 
-        // 1. 이동 완전 정지 (공통)
-        if (Agent != null && Agent.isOnNavMesh)
+        // ★ [복귀 로직 수정] 
+        // 감방의 중앙(CellAnchor.transform)이 아니라, 죄수 스폰 위치(prisonerSpawn)를 기준점으로 잡습니다.
+        Transform origin = null;
+        if (Controller.AssignedCell != null)
         {
-            Agent.isStopped = true;
-            Agent.velocity = Vector3.zero;
+            origin = Controller.AssignedCell.prisonerSpawn;
         }
 
-        // 2. 컨트롤러에게 행동 개시 명령 (애니메이션, 소리, 프롭)
-        // 일반(Good/Bad)인 경우 _currentType이 0번(Normal)으로 들어가서 기본 Idle이 됨
-        Controller.StartActionBehavior(_currentType);
+        // 기준점이 있고, 현재 위치가 그곳에서 멀리 떨어져 있다면(0.5m 이상) -> 복귀 모드 진입
+        if (origin != null && Vector3.Distance(fsm.transform.position, origin.position) > 0.5f)
+        {
+            _isReturningToCell = true;
+            agent.isStopped = false;
+            agent.SetDestination(origin.position);
+            anim.SetBool("Walk", true);
+        }
+        else
+        {
+            // 이미 제자리(또는 기준점 없음)라면 바로 행동 시작
+            StartActionBehavior();
+        }
     }
 
     public override void Update()
     {
-        // 3. 행동별 업데이트 로직
+        // 1. 복귀 중일 때의 로직
+        if (_isReturningToCell)
+        {
+            // 도착 체크
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            {
+                // 도착 완료
+                _isReturningToCell = false;
+                anim.SetBool("Walk", false);
+                agent.isStopped = true;
+
+                // 위치와 회전을 정확하게 맞추고 싶다면 여기서 강제 조정 가능
+                // fsm.transform.position = Controller.AssignedCell.prisonerSpawn.position;
+                // fsm.transform.rotation = Controller.AssignedCell.prisonerSpawn.rotation;
+
+                // 제자리 행동 시작
+                StartActionBehavior();
+            }
+            return; // 복귀 중에는 아래의 행동 로직(소음, 기습 등)을 실행하지 않음
+        }
+
+        // 2. 기존 행동 로직 (소음, 기습 감지 등)
         switch (_currentType)
         {
             // 소음 유발자들 (주기적 신고)
@@ -57,16 +90,30 @@ public class PrisonerActionIdleState : BasePrisonerState
         }
     }
 
+    private void StartActionBehavior()
+    {
+        if (Agent != null && Agent.isOnNavMesh)
+        {
+            Agent.isStopped = true;
+            Agent.velocity = Vector3.zero;
+        }
+
+        // 컨트롤러에게 행동 개시 명령 (애니메이션, 소리, 프롭)
+        Controller.StartActionBehavior(_currentType);
+    }
+
     public override void Exit()
     {
-        // 4. 정리 (애니메이션 복구, 소리 끄기 등)
+        // 행동 정리
         Controller.StopActionBehavior();
+        anim.SetBool("Walk", false);
+        _isReturningToCell = false;
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // 행동 중 맞았을 때 반응
+        // 행동 중 맞았을 때 반응 (복귀 중이든 아니든 맞으면 전투/쫄기)
         if (IsAggressiveType(_currentType))
         {
             fsm.ChangeState(fsm.CombatState); // 반격
@@ -83,6 +130,6 @@ public class PrisonerActionIdleState : BasePrisonerState
         return type == PrisonerAIType.HammeringWall ||
                type == PrisonerAIType.Ambusher ||
                type == PrisonerAIType.Escaper ||
-               type == PrisonerAIType.Bad; // Bad 성향도 포함 가능
+               type == PrisonerAIType.Bad;
     }
 }
