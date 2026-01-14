@@ -2,14 +2,17 @@
 
 public class MissionItemInteractable : MonoBehaviour, IInteractable
 {
-    [SerializeField] private HiddenItemDefinitionSO definition;
+    [SerializeField] private HiddenItemDefinitionSO itemDefinition;
 
     public void Interact(Player player)
     {
-        if (definition.AffectsMission)
+        if (itemDefinition.AffectsMission)
         {
             DailyMissionManager.Instance
-                ?.NotifyItemFound(definition.MissionTag);
+                ?.NotifyItemFound(itemDefinition.MissionTag);
+            Debug.Log(
+                  $"[Action] 아이템 발견 신고함: {itemDefinition.MissionTag}"
+              );
         }
 
         gameObject.SetActive(false);

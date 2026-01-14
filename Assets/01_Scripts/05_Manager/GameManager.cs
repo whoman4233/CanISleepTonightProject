@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     private SaveManager _saveManager;
 
     [Header("페이즈 상태")]
+    [SerializeField] private GamePhase initialPhase = GamePhase.NotStarted; // [TEST ONLY] 테스트 시작 페이즈
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
@@ -94,8 +95,37 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
+#if UNITY_EDITOR
+        // ============================================================
+        // [TEST ONLY]
+        // 테스트 환경에서는 다른 매니저들의 초기화가 끝난 뒤
+        // initialPhase로 "정식 페이즈 진입"을 보장하기 위해
+        // 1프레임 지연 부트스트랩을 사용한다.
+        // ============================================================
+        StartCoroutine(CoBootstrapInitialPhase());
+#else
+        // ============================================================
+        // [BUILD]
+        // 빌드 환경에서는 기존과 동일하게 항상 NotStarted로 시작
+        // ============================================================
+        ChangePhase(GamePhase.NotStarted);
+#endif
     }
+
+#if UNITY_EDITOR
+    private IEnumerator CoBootstrapInitialPhase()
+    {
+        // 다른 매니저 Awake / OnEnable / SceneLoaded 이후
+        yield return null;
+
+        // ============================================================
+        // [TEST ONLY]
+        // 반드시 ChangePhase를 통해 진입해야
+        // GameManager 내부 상태 + 모든 시스템이 일관됨
+        // ============================================================
+        ChangePhase(initialPhase);
+    }
+#endif
 
     private void OnEnable()
     {
@@ -150,6 +180,7 @@ public class GameManager : MonoBehaviour
             case GamePhase.Settlement: OnEnterSettlement(); break;
             case GamePhase.Ending: OnEnterEnding(); break;
             case GamePhase.Tutorial: OnEnterTutorial(); break;
+            case GamePhase.Test: break; // [TEST ONLY] 별도 처리 없음
         }
 
         if (currentPhase == GamePhase.Ending) return;

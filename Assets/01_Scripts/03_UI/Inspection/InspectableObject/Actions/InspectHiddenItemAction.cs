@@ -39,10 +39,14 @@ public class InspectHiddenItemAction : MonoBehaviour, IInspectAction
         if (DailyMissionManager.Instance != null)
         {
             // 미션에 의미 있는 경우만 신고(ex:칼/망치/담배 등 미션용 아이템)
-            if (itemDefinition.AffectsMission && DailyMissionManager.Instance != null)
+            if (itemDefinition.AffectsMission)
             {
-                DailyMissionManager.Instance.NotifyItemFound(itemTag);
-                Debug.Log($"[Action] 아이템 발견 신고함: {itemTag}");
+                DailyMissionManager.Instance
+                    ?.NotifyItemFound(itemDefinition.MissionTag);
+
+                Debug.Log(
+                    $"[Action] 아이템 발견 신고함: {itemDefinition.MissionTag}"
+                );
             }
         }
         else
