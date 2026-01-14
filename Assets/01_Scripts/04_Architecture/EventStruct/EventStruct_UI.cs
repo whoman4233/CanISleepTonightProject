@@ -1,6 +1,8 @@
 ﻿//==========================================
 //PopupUI 미션브리핑 이벤트 목록
 //==========================================
+using UnityEngine;
+
 public struct MissionPopupShowRequestedEvent // 미션팝업용 이벤트
 {
     public DailyMissionStrategy mission;
@@ -41,6 +43,32 @@ public struct MissionReportDialogueEndedEvent //미션 완료시 NPC 대화 종�
         this.failReason = failReason;
     }
 }
+//==========================================
+//Dialogue UI 이벤트 목록
+//==========================================
+
+public struct DialogueStartedEvent
+{
+
+}
+public struct DialogueEndedEvent
+{
+
+}
+//==========================================
+// 커서 관련 이벤트
+//==========================================
+public struct CursorOverrideRequestedEvent
+{
+    public bool HideCursor;
+    public CursorLockMode LockMode;
+}
+
+public struct CursorOverrideReleasedEvent
+{
+
+}
+
 //==========================================
 //PopupUI 이벤트 목록
 //==========================================
