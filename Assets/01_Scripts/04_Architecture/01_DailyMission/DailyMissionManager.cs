@@ -77,44 +77,71 @@ public class DailyMissionManager : MonoBehaviour
     // 🔥 [이벤트 훅] 외부에서 호출하는 점수 신고 전화번호
     // ========================================================================
 
-    // 1. 아이템 찾았을 때 (흉기, 금지물품 등)
+    // 1. 아이템 찾았을 때
     public void NotifyItemFound(string itemTag)
     {
         if (CurrentMission != null)
         {
-            // 미션에게 "이런 태그 가진 아이템 찾았어" 라고 전달
-            CurrentMission.OnEventTriggered(itemTag);
+            // [수정 포인트] 미션에게 이 아이템이 목표에 맞는지 물어봅니다.
+            if (CurrentMission.IsValidItem(itemTag))
+            {
+                // 조건에 맞을 때만 점수 증가
+                CurrentScore++;
+
+                // 미션 객체 내부 로직 실행 (필요 시)
+                CurrentMission.OnEventTriggered(itemTag);
+
+                // UI 갱신 (점수가 올랐을 때만 갱신하는 것이 효율적)
+                EventBus.Publish(new MissionProgressChangedEvent
+                {
+                    current = CurrentScore,
+                    target = CurrentMission.targetScore
+                });
+
+                Debug.Log($"[Mission] 목표 아이템 발견! 점수 증가: {CurrentScore}/{CurrentMission.targetScore}");
+            }
+            else
+            {
+                Debug.Log($"[Mission] 아이템 발견({itemTag})했으나 현재 미션 목표({CurrentMission})의 목표아이템과 다름.");
+            }
         }
-
-        // 미션 공용 진행도 증가
-        CurrentScore++;
-
-        // HUD/UI에 진행도 변경 알림
-        EventBus.Publish(new MissionProgressChangedEvent
-        {
-            current = CurrentScore,
-            target = CurrentMission.targetScore
-        });
     }
 
-    // 2. 죄수 제압/해결 했을 때 (소음, 폭동 등)
+    // 2. 죄수 제압/해결 했을 때
     public void NotifyPrisonerResolved(string cellId)
     {
         dailyResolvedCount++;
         Debug.Log($"[GameFlow] 죄수 해결 확인! (금일 누적: {dailyResolvedCount})");
 
-        // 혹시 미션 쪽에서 실시간 체크가 필요할 수도 있으니 알림
         if (CurrentMission != null)
-            CurrentMission.OnEventTriggered("PrisonerResolved");
-
-        // Suppression 미션도 공용 진행도에 반영
-        CurrentScore++;
-
-        EventBus.Publish(new MissionProgressChangedEvent
         {
-            current = CurrentScore,
-            target = CurrentMission.targetScore
-        });
+            // [수정] 미션에게 "이 방(cellId) 죄수, 목표 대상 맞아?" 라고 바로 물어봅니다.
+            // (미션 내부에서 ScheduleManager.Instance.GetDailyRole(cellId)를 호출하여 검사함)
+            if (CurrentMission.IsValidPrisoner(cellId))
+            {
+                // --- 정답일 때 처리 ---
+
+                // 1. 미션 내부 이벤트 트리거 (필요 시)
+                CurrentMission.OnEventTriggered("PrisonerResolved");
+
+                // 2. 점수 증가
+                CurrentScore++;
+
+                // 3. UI 갱신 알림
+                EventBus.Publish(new MissionProgressChangedEvent
+                {
+                    current = CurrentScore,
+                    target = CurrentMission.targetScore
+                });
+
+                Debug.Log($"[Mission] 타겟 죄수 제압 성공! 점수 증가.");
+            }
+            else
+            {
+                // --- 오답(일반 죄수)일 때 처리 ---
+                Debug.Log($"[Mission] 죄수 제압({cellId})했으나 타겟 조건에 부합하지 않음.");
+            }
+        }
     }
 
     // 3. 하루 결산 (SettlementTrigger에서 호출)
