@@ -21,8 +21,6 @@ public class PrisonManager : MonoBehaviour
     private readonly Dictionary<string, CellRuntime> _runtimeCells = new();
     private Dictionary<string, CellAnchor> _anchorMap = new();
 
-    // [삭제됨] _activePrisoners 리스트는 이제 사용하지 않음 (SpawnController가 관리)
-
     // 이벤트
     public event Action<string, bool> OnNoiseChanged;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
@@ -65,8 +63,48 @@ public class PrisonManager : MonoBehaviour
         _onPhaseChanged = HandleGamePhaseChanged;
     }
 
-    private void OnEnable() => EventBus.Subscribe(_onPhaseChanged);
-    private void OnDisable() => EventBus.Unsubscribe(_onPhaseChanged);
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onPhaseChanged);
+
+        // ★ [추가] 죄수 제압(Down) 이벤트 구독
+        PrisonerEventBus.OnPrisonerDown += HandlePrisonerDown;
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onPhaseChanged);
+
+        // ★ [추가] 구독 해제
+        PrisonerEventBus.OnPrisonerDown -= HandlePrisonerDown;
+    }
+
+    // ★ [핵심 로직] 죄수가 쓰러졌을 때 호출됨 (중계 역할)
+    private void HandlePrisonerDown(string prisonerId)
+    {
+        // 1. 누가 죽었는지 식별 (ID -> CellID 변환)
+        // (PrisonerScheduleManager에 추가한 GetCellIdByPrisonerId 함수 사용)
+        string cellId = PrisonerScheduleManager.Instance.GetCellIdByPrisonerId(prisonerId);
+
+        if (string.IsNullOrEmpty(cellId))
+        {
+            if (verboseLog) Debug.LogWarning($"[PrisonManager] 쓰러진 죄수({prisonerId})의 소속 방을 찾을 수 없습니다.");
+            return;
+        }
+
+        if (verboseLog) Debug.Log($"[PrisonManager] 죄수 제압 확인: {prisonerId} (소속: {cellId})");
+
+        // 2. 미션 매니저에게 신고 (점수 획득 or 진짜 프랭크 잡았으면 실패 처리)
+        if (DailyMissionManager.Instance != null)
+        {
+            // 이 함수가 호출되어야 Mission Strategy의 IsValidPrisoner()가 실행됨
+            DailyMissionManager.Instance.NotifyPrisonerResolved(cellId);
+        }
+
+        // 3. 해당 방 해결 처리 (잠금)
+        // - 미션 성공/실패 여부와 상관없이, 제압된 방은 '완료' 상태로 변경
+        MarkResolvedAndLockForDay(cellId, true);
+    }
 
     // =======================================================================
     // [1] 게임 페이즈 관리 (하루 시작 감지)
@@ -103,21 +141,16 @@ public class PrisonManager : MonoBehaviour
         // =================================================================
         // [2] 미션 및 데이터 준비 (Mission Strategy Execution)
         // =================================================================
-        // ★ 여기서 PrisonManager가 직접 배정하지 않고, MissionManager에게 위임합니다.
-        
-        var missionMgr = DailyMissionManager.Instance; // 혹은 [SerializeField] 참조
-        
+
+        var missionMgr = DailyMissionManager.Instance;
+
         if (missionMgr != null)
         {
-            // 이 함수 내부에서 오늘 날짜의 Strategy를 찾고, 
-            // Strategy.SetupDay()가 호출되면서 --> ScheduleManager.AssignRoles()가 실행됨
             missionMgr.StartDay(day);
-            
             if (verboseLog) Debug.Log($"[PrisonManager] 미션 매니저를 통해 {day}일차 전략(Strategy)이 적용되었습니다.");
         }
         else
         {
-            // 미션 매니저가 없을 경우를 대비한 비상용 기본 배정
             Debug.LogWarning("[PrisonManager] DailyMissionManager가 없습니다. 기본값으로 배정합니다.");
             PrisonerScheduleManager.Instance?.AssignRolesForNewDay(1, PrisonerAIType.Good);
         }
@@ -125,8 +158,7 @@ public class PrisonManager : MonoBehaviour
         // =================================================================
         // [3] 소환 및 활성화 (Spawning based on Assigned Roles)
         // =================================================================
-        // 위 [2]번 단계에서 역할 배정이 DB에 저장되었으므로, 이제 데이터를 읽어서 소환만 하면 됨
-        
+
         var scheduleMgr = PrisonerScheduleManager.Instance;
 
         foreach (var cellId in _runtimeCells.Keys)
@@ -135,7 +167,6 @@ public class PrisonManager : MonoBehaviour
             var anchor = GetCellAnchor(cellId);
             if (anchor == null) continue;
 
-            // 스케줄러에서 데이터 조회 (방금 전략에 의해 배정된 데이터)
             var prisonerData = scheduleMgr?.GetPrisonerData(cellId);
             var dailyRole = scheduleMgr?.GetDailyRole(cellId);
 
@@ -150,7 +181,7 @@ public class PrisonManager : MonoBehaviour
             if (cellRuntime.Floor == 1) ActiveCell1f++;
             else if (cellRuntime.Floor == 2) ActiveCell2f++;
 
-            // B. 실제 소환 (SpawnController는 결정된 데이터(스킨 포함)를 보고 프리팹 생성)
+            // B. 실제 소환
             if (spawnController != null && dailyRole.HasValue)
             {
                 spawnController.SpawnForCell(cellId, dailyRole.Value.isSuspicious);
@@ -191,7 +222,6 @@ public class PrisonManager : MonoBehaviour
             c.ResetForNewDay();
     }
 
-    // 감방 문제가 해결되었을 때 (비활성화)
     public void ResolveAndDeactivateCell(string cellId)
     {
         var cell = GetCellRuntime(cellId);
@@ -202,7 +232,6 @@ public class PrisonManager : MonoBehaviour
         cell.State = CellState.Inactive;
     }
 
-    // 하루 동안 잠금 처리 (제압/완료 등)
     public void MarkResolvedAndLockForDay(string cellId, bool didSuppress)
     {
         var cell = GetCellRuntime(cellId);
@@ -247,7 +276,6 @@ public class PrisonManager : MonoBehaviour
 
     public CellAnchor GetCellAnchor(string cellId) => _anchorMap.TryGetValue(cellId, out var anchor) ? anchor : null;
 
-    // 활성화된 방 ID 목록 반환 (순찰이나 랜덤 이벤트용)
     public List<string> GetActiveCellIds()
     {
         return _runtimeCells.Values
@@ -256,6 +284,5 @@ public class PrisonManager : MonoBehaviour
             .ToList();
     }
 
-    // 외부 호환성 (GetCellRuntime alias)
     public CellRuntime GetCell(string cellId) => GetCellRuntime(cellId);
 }

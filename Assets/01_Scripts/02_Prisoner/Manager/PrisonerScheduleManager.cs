@@ -325,6 +325,22 @@ public class PrisonerScheduleManager : MonoBehaviour
     {
         return _residents.Keys.ToList();
     }
+
+    /// <summary>
+    /// 죄수 고유 ID(prisonerId)로 해당 죄수가 살고 있는 방 번호(CellID)를 찾습니다.
+    /// </summary>
+    public string GetCellIdByPrisonerId(string prisonerId)
+    {
+        // _residents 딕셔너리를 순회하며 ID가 일치하는 방을 찾습니다.
+        foreach (var kvp in _residents)
+        {
+            if (kvp.Value.ID == prisonerId)
+            {
+                return kvp.Key; // CellID 반환 (예: "C_1F_01")
+            }
+        }
+        return null; // 못 찾음
+    }
 }
 
 // =======================================================================
