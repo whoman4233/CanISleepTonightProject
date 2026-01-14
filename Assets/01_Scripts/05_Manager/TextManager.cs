@@ -7,12 +7,19 @@ public class TextManager : MonoBehaviour
     public static TextManager Instance;
 
     [Header("데이터 참조")]
-    [SerializeField] private TextSOData textData; // SO 연결
+
+    // 여러 TextSOData를 동시에 받을 수 있도록 확장
+    // - Dialogue용 TextSOData
+    // - UI용 TextSOData
+    // Inspector에서 여러 개 등록 가능
+    [SerializeField] private List<TextSOData> textDataList = new List<TextSOData>();
 
     [Header("설정")]
     [SerializeField] private Language currentLanguage = Language.Korean;
 
-    // 핵심: 런타임 조회용 딕셔너리 (Key -> 현재 언어 텍스트)
+    // 핵심: 런타임 조회용 딕셔너리
+    // Key -> TextEntry 전체
+    // (언어별 텍스트 선택은 GetText 시점에 처리)
     private Dictionary<string, TextEntry> textDictionary = new Dictionary<string, TextEntry>();
 
     /// <summary>
@@ -34,9 +41,12 @@ public class TextManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            InitializeDictionary(); // 최초 초기화
 
-            OnTextDataReady?.Invoke(); // 텍스트 시스템 준비 완료 알림(UI 먼저 생성되도 이 시점에 갱신)
+            InitializeDictionary(); // 최초 초기화 (모든 TextSOData 병합)
+
+            // 텍스트 시스템 준비 완료 알림
+            // UI가 먼저 생성되어도 이 이벤트를 통해 정상 갱신 가능
+            OnTextDataReady?.Invoke();
         }
         else
         {
@@ -44,7 +54,11 @@ public class TextManager : MonoBehaviour
         }
     }
 
-    // 딕셔너리 구축 (언어 바뀔 때마다 호출)
+    /// <summary>
+    /// 언어 변경 처리
+    /// - Dictionary는 그대로 두고
+    /// - GetText 시점에서 언어 분기
+    /// </summary>
     public void SetLanguage(Language lang)
     {
         // 같은 언어 재설정 방지
@@ -52,59 +66,57 @@ public class TextManager : MonoBehaviour
             return;
 
         currentLanguage = lang;
-        InitializeDictionary();
 
-        // 언어 변경 알림
+        // Dictionary 재구성은 불필요
+        // (TextEntry 자체를 들고 있으므로)
         OnLanguageChanged?.Invoke();
-        // 여기에 언어 변경 이벤트(Event)를 발생시켜 UI들이 갱신되게 하면 더 좋습니다.
-        Debug.Log($"Language changed to: {lang}");
+
+        Debug.Log($"[TextManager] Language changed to: {lang}");
     }
 
+    /// <summary>
+    /// 모든 TextSOData를 순회하며 Dictionary를 구성
+    /// - Dialogue용 / UI용 TextSOData를 구분하지 않음
+    /// - Key 기준으로 단일 조회 테이블 생성
+    /// </summary>
     private void InitializeDictionary()
     {
-        if (textData == null)
+        textDictionary.Clear();
+
+        if (textDataList == null || textDataList.Count == 0)
         {
-            Debug.LogError("TextSOData가 연결되지 않았습니다!");
+            Debug.LogError("[TextManager] TextSOData가 하나도 연결되지 않았습니다!");
             return;
         }
 
-        textDictionary.Clear();
-
-        //foreach (var entry in textData.textList)
-        //{
-        //    // 중복 키 방지 체크
-        //    if (textDictionary.ContainsKey(entry.key))
-        //    {
-        //        Debug.LogWarning($"중복된 키가 있습니다: {entry.key}");
-        //        continue;
-        //    }
-
-        //    // 현재 언어 설정에 따라 밸류 결정
-        //    string value = (currentLanguage == Language.Korean) ? entry.ko : entry.en;
-        //    textDictionary.Add(entry.key, value);
-        //}
-        foreach (var entry in textData.textList)
+        foreach (var textData in textDataList)
         {
-            if (!textDictionary.ContainsKey(entry.key))
+            if (textData == null)
+                continue;
+
+            foreach (var entry in textData.textList)
             {
-                // value에 entry(객체 전체)를 넣음
+                if (entry == null || string.IsNullOrWhiteSpace(entry.key))
+                    continue;
+
+                // 중복 키 방지
+                if (textDictionary.ContainsKey(entry.key))
+                {
+                    Debug.LogError($"[TextManager] 중복된 텍스트 키 감지: {entry.key}");
+                    continue;
+                }
+
+                // TextEntry 전체를 저장
                 textDictionary.Add(entry.key, entry);
             }
         }
+
+        Debug.Log($"[TextManager] 텍스트 캐시 완료: {textDictionary.Count}개");
     }
 
-    // 외부에서 텍스트 가져오는 함수
-    //public string GetText(string key)
-    //{
-    //    //if (textDictionary.TryGetValue(key, out string value))
-    //    //{
-    //    //    return value;
-    //    //}
-
-    //    //Debug.LogError($"텍스트 키를 찾을 수 없음: {key}");
-    //    //return key; // 에러 시 키값이라도 반환해서 UI가 비지 않게 함
-    //}
-
+    /// <summary>
+    /// Key 기반 TextEntry 조회 (Dialogue / UI 공용)
+    /// </summary>
     public TextEntry GetEntry(string key)
     {
         if (textDictionary.TryGetValue(key, out var entry))
@@ -115,39 +127,102 @@ public class TextManager : MonoBehaviour
         Debug.LogError($"[TextManager] 키를 찾을 수 없음: {key}");
         return null;
     }
+
+    /// <summary>
+    /// Key 기반 텍스트 반환 (현재 언어 기준)
+    /// </summary>
     public string GetText(string key)
     {
         var entry = GetEntry(key);
-        if (entry == null) return key;
+        if (entry == null)
+            return key;
 
-        return currentLanguage == Language.Korean ? entry.ko : entry.en;
+        return currentLanguage == Language.Korean
+            ? entry.ko
+            : entry.en;
     }
-    public List<string> GetKeysByMissionAndSpeaker(string missionId, string speakerName, string textType) // 지금 미션의 말하는 사람의 대사만 가져옴
+
+    /// <summary>
+    /// Dialogue 전용 API
+    /// - 특정 미션 + 화자 + 타입에 해당하는 모든 대사 Key 반환
+    /// </summary>
+    public List<string> GetKeysByMissionAndSpeaker(
+        string missionId,
+        string speakerName,
+        string textType
+    )
     {
         List<string> resultKeys = new List<string>();
 
-        // Dictionary의 Value인 TextEntry들을 전수 조사
         foreach (var entry in textDictionary.Values)
         {
-            // mission과 speaker 컬럼이 일치하는지 확인
-            if (entry.mission == missionId && entry.speaker == speakerName && entry.type == textType)
+            if (entry.mission == missionId &&
+                entry.speaker == speakerName &&
+                entry.type == textType)
             {
                 resultKeys.Add(entry.key);
             }
         }
 
-        // 결과가 비어있다면 경고 (데이터 누락 확인용)
         if (resultKeys.Count == 0)
         {
-            Debug.LogWarning($"[TextManager] 검색 결과 없음: Mission={missionId}, Speaker={speakerName}, TextType={textType}");
+            Debug.LogWarning(
+                $"[TextManager] 검색 결과 없음: Mission={missionId}, Speaker={speakerName}, TextType={textType}"
+            );
         }
 
         return resultKeys;
     }
 
+    /// <summary>
+    /// UI 전용 API
+    /// - Mission / UI Type / Element(Speaker) 기준 단일 텍스트 조회
+    /// - Mission 우선 → MissionCommon fallback
+    /// </summary>
+    public string GetUIText(
+     string missionId,
+     string screen,   // Canvas 기준 (HUD / Popup / InGameMenu)
+     string section,  // Panel / Group (MissionPopup, ResultPopup 등)
+     string role      // Title / Desc / Button / Tooltip
+ )
+    {
+        // 1. Mission 우선
+        foreach (var e in textDictionary.Values)
+        {
+            if (e.mission == missionId &&
+                e.type == screen &&
+                e.key == section &&
+                e.speaker == role)
+            {
+                return currentLanguage == Language.Korean ? e.ko : e.en;
+            }
+        }
+
+        // 2. MissionCommon fallback
+        foreach (var e in textDictionary.Values)
+        {
+            if (e.mission == "MissionCommon" &&
+                e.type == screen &&
+                e.key == section &&
+                e.speaker == role)
+            {
+                return currentLanguage == Language.Korean ? e.ko : e.en;
+            }
+        }
+
+        Debug.LogWarning(
+            $"[UIText] Not Found: Mission={missionId}, Screen={screen}, Section={section}, Role={role}"
+        );
+
+        return $"{section}/{role}";
+    }
+
+
+    /// <summary>
+    /// 전체 TextEntry 열거 (디버그 / 툴용)
+    /// </summary>
     public IEnumerable<TextEntry> GetAllEntries()
     {
         return textDictionary.Values;
     }
-
 }

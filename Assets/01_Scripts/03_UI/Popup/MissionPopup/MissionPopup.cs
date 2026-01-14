@@ -1,5 +1,4 @@
 ﻿using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,12 +7,8 @@ public class MissionPopup : MonoBehaviour
     [Header("Content Root (BG + Panel)")]
     [SerializeField] private GameObject contentRoot;
 
-    [Header("Texts")]
-    [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private TextMeshProUGUI descriptionText;
-
     [Header("Buttons")]
-    [SerializeField] private Button confirmButton; 
+    [SerializeField] private Button confirmButton;
 
     private Action<MissionPopupShowRequestedEvent> _onShow;
 
@@ -37,26 +32,15 @@ public class MissionPopup : MonoBehaviour
 
     private void OnShowRequested(MissionPopupShowRequestedEvent e)
     {
-        var mission = DailyMissionManager.Instance?.CurrentMission;
-
-        ShowInternal(mission);
+        Show();
     }
 
-    private void ShowInternal(DailyMissionStrategy mission)
+    private void Show()
     {
-        if (mission == null)
-            return;
-
-
-        titleText.text = mission.title;
-        descriptionText.text = mission.description;
-
         contentRoot.SetActive(true);
-
         InputManager.Instance?.SetDialogueActive(true);
     }
 
-    // 버튼 클릭 시 호출됨
     private void OnConfirmClicked()
     {
         contentRoot.SetActive(false);
@@ -66,7 +50,6 @@ public class MissionPopup : MonoBehaviour
         var mission = DailyMissionManager.Instance?.CurrentMission;
         if (mission != null)
         {
-            // HUD / WhiteBoard용
             EventBus.Publish(new MissionRevealedEvent(mission));
         }
 
@@ -75,6 +58,7 @@ public class MissionPopup : MonoBehaviour
         EventBus.Publish(new ResumeGameRequestedEvent());
     }
 }
+
 
 
 
