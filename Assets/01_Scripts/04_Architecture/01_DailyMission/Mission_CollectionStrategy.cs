@@ -8,11 +8,11 @@ public class Mission_CollectionStrategy : DailyMissionStrategy
 
     public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
     {
-        // 1. 이상현상 배포 (이날 테마에 맞는 아이템들이 깔림)
         base.SetupDay(ad, sm);
 
-        // 2. 죄수들은 얌전하게 설정
-        sm.AssignRolesForNewDay(suspiciousCount: 0, defaultAI: PrisonerAIType.Good);
+        // [수정] 무기를 소지할 '용의자' 숫자를 목표 점수(targetScore)만큼 배정합니다.
+        // 죄수들의 행동(AI)은 'Good'(순응형)으로 유지하더라도, 방 상태는 'Suspicious'로 만들어야 아이템이 나옵니다.
+        sm.AssignRolesForNewDay(suspiciousCount: targetScore, defaultAI: PrisonerAIType.Good);
     }
 
     // 아이템을 찾았을 때(클릭했을 때) 호출됨

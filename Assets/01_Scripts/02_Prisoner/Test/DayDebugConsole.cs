@@ -20,6 +20,8 @@ public class DayDebugConsole : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha5)) StartTestMission(5);
         if (Input.GetKeyDown(KeyCode.Alpha6)) StartTestMission(6);
         if (Input.GetKeyDown(KeyCode.Alpha7)) StartTestMission(7); // 탈옥 저지
+        if (Input.GetKeyDown(KeyCode.Alpha7)) StartTestMission(8); //랜덤미션
+
     }
 
     public void StartTestMission(int day)
@@ -43,7 +45,14 @@ public class DayDebugConsole : MonoBehaviour
         // ★ 이게 없으면 "No prisoner active" 에러 발생함
         scheduleManager.ForceRebuildDatabase();
 
-        missionManager.StartDay(day); //Mission UI 연결 확인용 임시 추가
+        if(day > 7)
+        {
+            missionManager.StartDay(day); //랜덤
+        }
+        else
+        {
+            missionManager.StartFixDay(day); //고정
+        }
         // ====================================================
         // STEP 3. 미션 전략 가져오기
         // ====================================================

@@ -58,17 +58,24 @@ public sealed class WeaponHitbox : MonoBehaviour
 
         _hitTargets.Add(id);
 
-        if (!other.TryGetComponent<PrisonerController>(out var prisoner))
-            return;
+        // [수정] 자식 콜라이더(머리, 팔 등)를 때렸을 경우를 대비해 부모에서도 찾음
+        var prisoner = other.GetComponent<PrisonerController>();
+        if (prisoner == null)
+        {
+            prisoner = other.GetComponentInParent<PrisonerController>();
+        }
 
+        // 여전히 없으면 리턴
+        if (prisoner == null) return;
+
+        // ... 데미지 적용 로직 ...
         int damage = GetPlayerDamage();
-
         Vector3 hitPoint = other.ClosestPoint(transform.position);
         Vector3 hitDir = (other.transform.position - transform.position).normalized;
 
         prisoner.ApplyDamage(damage, hitPoint, hitDir);
 
-        Debug.Log($"[WeaponHitbox] Hit Prisoner: {other.name}, dmg={damage}");
+        Debug.Log($"[WeaponHitbox] Hit Prisoner: {prisoner.name} (Collider: {other.name}), dmg={damage}");
     }
 
     private int GetPlayerDamage()

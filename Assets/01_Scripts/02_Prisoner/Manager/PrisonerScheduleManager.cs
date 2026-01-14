@@ -302,6 +302,45 @@ public class PrisonerScheduleManager : MonoBehaviour
             list[rnd] = temp;
         }
     }
+
+    // ★ [추가] 외부(미션 전략)에서 특정 방의 역할을 직접 지정할 때 사용
+    public void SetDailyRole(string cellId, PrisonerAIType aiType, VisualAnomalyType visualType, bool isSuspicious)
+    {
+        // 딕셔너리가 없으면 생성 (안전장치)
+        if (!_todayRoles.ContainsKey(cellId))
+        {
+            _todayRoles[cellId] = new DailyRoleData();
+        }
+
+        DailyRoleData role = _todayRoles[cellId];
+        role.isSuspicious = isSuspicious;
+        role.dailyAIType = aiType;
+        role.visualType = visualType;
+
+        _todayRoles[cellId] = role;
+    }
+
+    // ★ [추가] 현재 입주민이 있는 방 목록 반환 (미션에서 섞어 쓸 때 필요)
+    public List<string> GetActiveCellIds()
+    {
+        return _residents.Keys.ToList();
+    }
+
+    /// <summary>
+    /// 죄수 고유 ID(prisonerId)로 해당 죄수가 살고 있는 방 번호(CellID)를 찾습니다.
+    /// </summary>
+    public string GetCellIdByPrisonerId(string prisonerId)
+    {
+        // _residents 딕셔너리를 순회하며 ID가 일치하는 방을 찾습니다.
+        foreach (var kvp in _residents)
+        {
+            if (kvp.Value.ID == prisonerId)
+            {
+                return kvp.Key; // CellID 반환 (예: "C_1F_01")
+            }
+        }
+        return null; // 못 찾음
+    }
 }
 
 // =======================================================================

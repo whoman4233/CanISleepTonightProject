@@ -206,9 +206,6 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
         EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin)); // 순찰페이즈 들어가는 순간 대사내용 바꿔주는 이벤트 발행
 
-        var builder = FindObjectOfType<SettlementReportBuilder>();
-        if (builder != null) builder.CacheRiotGaugeAtStart();
-
         patrolTimerCoroutine = StartCoroutine(UpdateTimer());
     }
 

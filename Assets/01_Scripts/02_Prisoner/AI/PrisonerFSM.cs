@@ -28,6 +28,8 @@ public class PrisonerFSM : MonoBehaviour
     public IPrisonerState CowerState { get; private set; }
     public IPrisonerState DeadState { get; private set; }
     public IPrisonerState InspectionState { get; private set; }
+    public IPrisonerState ReturnState { get; private set; }    
+    public IPrisonerState CenterIdleState { get; private set; } 
 
     // (참고) 무적 상태 판정: 점호(Inspection) 중이거나 죽었을 때만 무적으로 설정하는 것이 일반적입니다.
     // 기존 코드대로라면 Idle일 때 무적이라 때릴 수가 없으므로 로직을 수정했습니다.
@@ -42,8 +44,11 @@ public class PrisonerFSM : MonoBehaviour
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);
-        InspectionState = new PrisonerInspectionState(this);
+        InspectionState = new PrisonerInspectionState(this); 
+        ReturnState = new PrisonerReturnState(this);         
+        CenterIdleState = new PrisonerCenterIdleState(this);
     }
+
 
     // Controller에서 호출하는 초기화 함수
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
@@ -120,5 +125,34 @@ public class PrisonerFSM : MonoBehaviour
                 Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시합니다.");
                 break;
         }
+    }
+
+    public void BackToRoutine()
+    {
+        if (IsCenterSpawnType())
+        {
+            ChangeState(CenterIdleState);
+        }
+        else
+        {
+            ChangeState(ReturnState);
+        }
+    }
+
+    // 중앙 스폰 타입인지 확인하는 헬퍼
+    private bool IsCenterSpawnType()
+    {
+        if (PrisonerScheduleManager.Instance == null) return false;
+        if (Controller == null || Controller.Data == null) return false;
+
+        var role = PrisonerScheduleManager.Instance.GetDailyRole(Controller.Data.CellID);
+        var type = role.visualType;
+
+        return type == VisualAnomalyType.Imposter_Guard ||
+               type == VisualAnomalyType.Imposter_NoBeard ||
+               type == VisualAnomalyType.Imposter_Earring ||
+               type == VisualAnomalyType.Suspect1 ||
+               type == VisualAnomalyType.Suspect2 ||
+               type == VisualAnomalyType.Suspect3;
     }
 }

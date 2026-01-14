@@ -70,38 +70,32 @@ public class InspectionStateMachine : MonoBehaviour
     // [2] 점검 종료 및 이탈 (Exit / Complete)
     // =======================================================================
 
-    // 시간 초과 등으로 강제 퇴장
     public void ForceReleaseOnTimeExpired()
     {
         if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
-
         var cellId = CurrentInspectingCellId;
 
-        // 죄수 상태 원복 (Idle)
-        SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.ActionState));
+        SetPrisonerState(cellId, pFsm => pFsm.BackToRoutine());
 
-        // 매니저에게 알림
         cellManager.ForceReleaseInspectingOnly(cellId);
-
-        // 로직 종료
         EndInspection();
-
-        Debug.Log($"[ISSM] Time Expired. Cell {cellId} released.");
     }
 
-    // 플레이어가 결정을 내림 (처벌 or 무시)
     public void CompleteInspection(string cellId, bool didSuppress)
     {
         var cell = cellManager.GetCell(cellId);
         if (cell == null) return;
 
-        // 1. 리포트용 이벤트 발생
         OnResolved?.Invoke(cell.CellId, cell.IsSuspicious, didSuppress);
-
-        // 2. 매니저에 잠금 요청 (완료 처리)
         cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
 
-        // 3. 로직 종료
+        //FSM의 분기 함수 호출 (일반인은 Return, 특수인은 CenterIdle로 자동 분기)
+        SetPrisonerState(cellId, pFsm =>
+        {
+            Debug.Log($"[ISSM] {cellId} 점검 종료 -> 복귀 루틴 실행(BackToRoutine)");
+            pFsm.BackToRoutine();
+        });
+
         EndInspection();
     }
 

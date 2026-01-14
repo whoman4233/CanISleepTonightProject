@@ -41,7 +41,7 @@ public class SaveManager
             string json = File.ReadAllText(path); // json에 텍스트 내용을 담음
             return JsonUtility.FromJson<GameSaveData>(json); // 역직렬화
         }
-        catch(System.Exception e)
+        catch (System.Exception)
         {
             return null;
         }
