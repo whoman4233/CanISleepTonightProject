@@ -1,45 +1,46 @@
 ﻿using TMPro;
 using UnityEngine;
 
-[RequireComponent(typeof(TMP_Text))]
 public class UITextBinder : MonoBehaviour
 {
-    [Header("UI Text Binding")]
-    [SerializeField] private string role; // Title / Desc / Button / Tooltip
+    [SerializeField] private string uiTextId;
+    [SerializeField] private TMP_Text target;
 
-    private TMP_Text _text;
+    private bool _initialized;
 
     private void Awake()
     {
-        _text = GetComponent<TMP_Text>();
-
-        // role을 비워두면 GameObject 이름을 자동 사용
-        if (string.IsNullOrEmpty(role))
-            role = gameObject.name;
+        if (target == null)
+            target = GetComponent<TMP_Text>();
     }
 
     private void OnEnable()
     {
-        Refresh();
+        _initialized = false;
     }
 
-    public void Refresh()
+    private void Update()
     {
+        // TextManager가 나중에 생성되는 구조 대응
+        if (_initialized)
+            return;
+
         if (TextManager.Instance == null)
             return;
 
-        var screen = GetComponentInParent<UIScreenContext>()?.screen;
-        var section = GetComponentInParent<UIGroupContext>()?.section;
+        Refresh();
+        _initialized = true;
+    }
 
-        string missionId = DailyMissionManager.Instance?.CurrentMission?.missionId
-            ?? "MissionCommon";
+    private void Refresh()
+    {
+        if (target == null)
+        {
+            Debug.LogError($"[UITextBinder] Target missing on {name}");
+            return;
+        }
 
-        _text.text = TextManager.Instance.GetUIText(
-            missionId,
-            screen,
-            section,
-            role
-        );
+        string text = TextManager.Instance.GetUIText(uiTextId);
+        target.text = text;
     }
 }
-

@@ -20,6 +20,9 @@ public abstract class DailyMissionStrategy : ScriptableObject
     [Header("Goals")]
     public string GoalName;
 
+    [Header("Text")]
+    [SerializeField] private int missionTextNo;
+    public int MissionTextNo => missionTextNo;
     public virtual void SetupDay(AnomalyDistributor anomalyDistributor, PrisonerScheduleManager scheduleManager)
     {
         // A. 이상현상 필터링 지시 (Distributor 담당)

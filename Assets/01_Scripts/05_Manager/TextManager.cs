@@ -22,6 +22,11 @@ public class TextManager : MonoBehaviour
     // (언어별 텍스트 선택은 GetText 시점에 처리)
     private Dictionary<string, TextEntry> textDictionary = new Dictionary<string, TextEntry>();
 
+    [Header("UI / Mission Text Tables")]
+    [SerializeField] private UITextTableSO uiTextTable;
+    [SerializeField] private MissionTextTableSO missionTextTable;
+
+    private Dictionary<string, string> _uiTextLookup;
     /// <summary>
     /// 텍스트 데이터(Dictionary)가 준비되었음을 알리는 이벤트
     /// - 씬에 UI가 먼저 있어도 정상 동기화되도록
@@ -52,6 +57,7 @@ public class TextManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        BuildUITextCache();
     }
 
     /// <summary>
@@ -173,50 +179,42 @@ public class TextManager : MonoBehaviour
 
         return resultKeys;
     }
-
-    /// <summary>
-    /// UI 전용 API
-    /// - Mission / UI Type / Element(Speaker) 기준 단일 텍스트 조회
-    /// - Mission 우선 → MissionCommon fallback
-    /// </summary>
-    public string GetUIText(
-     string missionId,
-     string screen,   // Canvas 기준 (HUD / Popup / InGameMenu)
-     string section,  // Panel / Group (MissionPopup, ResultPopup 등)
-     string role      // Title / Desc / Button / Tooltip
- )
+    private void BuildUITextCache() // UI 캐시 빌드
     {
-        // 1. Mission 우선
-        foreach (var e in textDictionary.Values)
+        _uiTextLookup = new Dictionary<string, string>();
+
+        if (uiTextTable == null)
+            return;
+
+        foreach (var e in uiTextTable.entries)
         {
-            if (e.mission == missionId &&
-                e.type == screen &&
-                e.key == section &&
-                e.speaker == role)
-            {
-                return currentLanguage == Language.Korean ? e.ko : e.en;
-            }
+            if (string.IsNullOrEmpty(e.id)) continue;
+            _uiTextLookup[e.id] = e.text;
         }
-
-        // 2. MissionCommon fallback
-        foreach (var e in textDictionary.Values)
-        {
-            if (e.mission == "MissionCommon" &&
-                e.type == screen &&
-                e.key == section &&
-                e.speaker == role)
-            {
-                return currentLanguage == Language.Korean ? e.ko : e.en;
-            }
-        }
-
-        Debug.LogWarning(
-            $"[UIText] Not Found: Mission={missionId}, Screen={screen}, Section={section}, Role={role}"
-        );
-
-        return $"{section}/{role}";
     }
+    public string GetUIText(string id) // UI전용 API
+    {
+        if (_uiTextLookup != null &&
+            _uiTextLookup.TryGetValue(id, out var text))
+            return text;
 
+        Debug.LogWarning($"[UIText] Not Found: {id}");
+        return id;
+    }
+    public string GetMissionText(int missionNo, string textId) // MissionText API
+    {
+        if (missionTextTable == null)
+            return textId;
+
+        var set = missionTextTable.missionTextSets
+            .Find(s => s.missionIndex == missionNo);
+
+        if (set == null)
+            return textId;
+
+        var entry = set.texts.Find(t => t.id == textId);
+        return entry != null ? entry.text : textId;
+    }
 
     /// <summary>
     /// 전체 TextEntry 열거 (디버그 / 툴용)
