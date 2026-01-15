@@ -56,12 +56,10 @@ public class MissionPopupRootController : MonoBehaviour
     // =========================
     private void OnSettlementStarted(SettlementStartedEvent e)
     {
-        EventBus.Publish(
-            new ResultUIShowRequestedEvent(false, string.Empty)
-        );
-
         LockInput();
+        EventBus.Publish(new ResultUIShowRequestedEvent());
     }
+
 
     // =========================
     // UIHardReset 시 MissionPopup 상태 복구

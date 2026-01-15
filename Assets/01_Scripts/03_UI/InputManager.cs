@@ -73,6 +73,7 @@ public class InputManager : MonoBehaviour
         EventBus.Subscribe(_onQTEEnded);
         EventBus.Subscribe(_onCursorOverride);
         EventBus.Subscribe(_onCursorOverrideReleased);
+        Inputs.UI.Click.performed += OnUIClick;
     }
 
     private void OnDisable()
@@ -88,6 +89,7 @@ public class InputManager : MonoBehaviour
         EventBus.Unsubscribe(_onQTEEnded);
         EventBus.Unsubscribe(_onCursorOverride);
         EventBus.Unsubscribe(_onCursorOverrideReleased);
+        Inputs.UI.Click.performed -= OnUIClick;
     }
 
     private void OnDestroy()
@@ -269,6 +271,21 @@ public class InputManager : MonoBehaviour
     {
         Inputs.Player.Disable();
         Inputs.Player.Enable();
+    }
+
+    // =========================
+    // UI용 클릭 이벤트
+    // =========================
+    private void OnUIClick(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed)
+            return;
+
+        // UIOnly 상태에서만 의미 있는 이벤트
+        if (_currentState != InputState.UIOnly)
+            return;
+
+        EventBus.Publish(new UIProceedRequestedEvent());
     }
 }
 
