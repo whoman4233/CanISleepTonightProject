@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 6007444127599511837}
   - component: {fileID: 6948067153894314097}
   - component: {fileID: 2672436844793215148}
+  - component: {fileID: 2131553880889348011}
   m_Layer: 8
   m_Name: PSN_Gang_01
   m_TagString: Untagged
@@ -210,9 +211,20 @@ MonoBehaviour:
   animator: {fileID: 3475742819566657788}
   ragdoll: {fileID: 4730829418296426203}
   sfx: {fileID: 6948067153894314097}
-  defaultSkin: {fileID: 0}
-  specialSkins: []
   actionProps: []
+--- !u!114 &2131553880889348011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed3e1c463fb3a5b449f90712eb8f4232, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myVisualType: 0
 --- !u!1001 &1473564100627325204
 PrefabInstance:
   m_ObjectHideFlags: 0
