@@ -4,7 +4,7 @@ using UnityEngine;
 public class MissionTextBinder : MonoBehaviour
 {
     [Header("Mission Text Key")]
-    [SerializeField] private string textId;
+    [SerializeField] private MissionTextRole role;
 
     [Header("Target")]
     [SerializeField] private TMP_Text target;
@@ -16,19 +16,15 @@ public class MissionTextBinder : MonoBehaviour
 
         Refresh();
     }
-
-    public void Refresh()
+    private void Refresh()
     {
         var mission = DailyMissionManager.Instance?.CurrentMission;
         if (mission == null)
             return;
 
-        int missionNo = mission.MissionTextNo;
-
         target.text = TextManager.Instance.GetMissionText(
-            missionNo,
-            textId
+            mission.MissionTextNo,
+            role
         );
     }
-
 }

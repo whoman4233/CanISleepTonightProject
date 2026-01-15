@@ -161,8 +161,9 @@ GameObject:
   - component: {fileID: 6630253249884671856}
   - component: {fileID: 5332999918049464613}
   - component: {fileID: 4711714340180435625}
+  - component: {fileID: 6523991429409012807}
   m_Layer: 0
-  m_Name: DayDescription
+  m_Name: DayDescription_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -289,6 +290,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6523991429409012807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500687206903203585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7841980d2f1546943bc1e82e6c24e26c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiTextId: Utxt_KR_20
+  target: {fileID: 4711714340180435625}
 --- !u!1 &1545174959504141226
 GameObject:
   m_ObjectHideFlags: 0
@@ -301,7 +316,7 @@ GameObject:
   - component: {fileID: 3549537392517566218}
   - component: {fileID: 4590973477894958807}
   m_Layer: 0
-  m_Name: Day
+  m_Name: Day_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -570,6 +585,7 @@ GameObject:
   - component: {fileID: 705165096786625484}
   - component: {fileID: 3603965001139221637}
   - component: {fileID: 3107968024915654712}
+  - component: {fileID: 9068134783080008094}
   m_Layer: 0
   m_Name: Mission_Text
   m_TagString: Untagged
@@ -694,6 +710,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &9068134783080008094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2317655777959656691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7841980d2f1546943bc1e82e6c24e26c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiTextId: Utxt_KR_21
+  target: {fileID: 3107968024915654712}
 --- !u!1 &4089015587259656603
 GameObject:
   m_ObjectHideFlags: 0

@@ -201,20 +201,23 @@ public class TextManager : MonoBehaviour
         Debug.LogWarning($"[UIText] Not Found: {id}");
         return id;
     }
-    public string GetMissionText(int missionNo, string textId) // MissionText API
+    public string GetMissionText(int missionNo, MissionTextRole role)
     {
         if (missionTextTable == null)
-            return textId;
+            return role.ToString();
 
         var set = missionTextTable.missionTextSets
             .Find(s => s.missionIndex == missionNo);
 
         if (set == null)
-            return textId;
+            return role.ToString();
 
-        var entry = set.texts.Find(t => t.id == textId);
-        return entry != null ? entry.text : textId;
+        var entry = set.texts
+            .Find(t => t.role == role);
+
+        return entry != null ? entry.text : role.ToString();
     }
+
 
     /// <summary>
     /// 전체 TextEntry 열거 (디버그 / 툴용)

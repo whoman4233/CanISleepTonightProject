@@ -2,15 +2,21 @@
 using TMPro;
 using System;
 
+/// <summary>
+/// HUD 미션 진행도 패널
+/// - 텍스트 라벨은 MissionTextBinder가 담당
+/// - HUDMissionPanel은 숫자(current / target)만 덧붙인다
+/// </summary>
 public class HUDMissionPanel : MonoBehaviour
 {
     [Header("Root")]
     [SerializeField] private GameObject panelRoot;
 
-    [Header("Text")]
-    [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private TextMeshProUGUI descriptionText;
+    [Header("Progress Text")]
     [SerializeField] private TextMeshProUGUI progressText;
+
+    // MissionTextBinder가 세팅한 라벨 캐시
+    private string _progressLabel;
 
     private Action<MissionRevealedEvent> _onMissionRevealed;
     private Action<MissionProgressChangedEvent> _onProgress;
@@ -40,26 +46,31 @@ public class HUDMissionPanel : MonoBehaviour
         EventBus.Unsubscribe(_onUIHardReset);
     }
 
+    /// <summary>
+    /// 미션 공개 시
+    /// - 패널 활성화
+    /// - MissionTextBinder가 세팅한 라벨을 캐싱
+    /// </summary>
     private void OnMissionRevealed(MissionRevealedEvent e)
     {
-        if (e.mission == null || panelRoot == null)
+        if (panelRoot == null || progressText == null)
             return;
 
         panelRoot.SetActive(true);
 
-        titleText.text = e.mission.title;
-        descriptionText.text = e.mission.description;
+        // MissionTextBinder가 이미 세팅한 텍스트를 라벨로 저장
+        _progressLabel = progressText.text.Trim();
 
-        UpdateProgressText(0, e.mission.targetScore, e.mission);
+        // 초기 진행도 표시
+        UpdateProgressText(0, e.mission.targetScore);
     }
 
+    /// <summary>
+    /// 진행도 변경 이벤트
+    /// </summary>
     private void OnMissionProgressChanged(MissionProgressChangedEvent e)
     {
-        var mission = DailyMissionManager.Instance?.CurrentMission;
-        if (mission == null)
-            return;
-
-        UpdateProgressText(e.current, e.target, mission);
+        UpdateProgressText(e.current, e.target);
     }
 
     private void OnUIHardReset(UIHardResetEvent e)
@@ -68,19 +79,25 @@ public class HUDMissionPanel : MonoBehaviour
             panelRoot.SetActive(false);
     }
 
-    private void UpdateProgressText(int current, int target, DailyMissionStrategy mission)
+    /// <summary>
+    /// 숫자만 갱신
+    /// </summary>
+    private void UpdateProgressText(int current, int target)
     {
         if (progressText == null)
             return;
 
-        if (mission is Mission_CollectionStrategy collection)
-            progressText.text = $"{collection.targetItemTag} 회수 {current} / {target}";
-        else if (mission is Mission_SuppressionStrategy)
-            progressText.text = $"위험 요소 제거 {current} / {target}";
-        else
-            progressText.text = $"{current} / {target}";
+        if (string.IsNullOrEmpty(_progressLabel))
+        {
+            // 예외 방어: 라벨이 아직 없을 경우 현재 텍스트를 기준으로 삼음
+            _progressLabel = progressText.text.Trim();
+        }
+
+        progressText.text = $"{_progressLabel} {current} / {target}";
     }
 }
+
+
 
 
 
