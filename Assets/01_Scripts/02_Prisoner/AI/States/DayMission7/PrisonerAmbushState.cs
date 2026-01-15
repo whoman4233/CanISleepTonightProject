@@ -2,64 +2,50 @@ using UnityEngine;
 
 public class PrisonerAmbushState : BasePrisonerState
 {
-    private float triggerDistance = 3.5f; // 감지 거리
-    private bool hasTriggered = false;
+    // 기습 감지 거리 (문 뒤에서 플레이어 감지)
+    private const float AmbushDistance = 3.5f;
 
-    public PrisonerAmbushState(PrisonerFSM fsm) : base(fsm)
-    {
-    }
+    public PrisonerAmbushState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
     {
-        base.Enter();
-        hasTriggered = false;
+        // 1. 이동 멈춤 (문 뒤에 숨기)
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
 
-        // 1. 이동 정지 & 대기 (숨어있는 연출)
-        if (Agent != null) Agent.isStopped = true;
-
-        // 애니메이션: 문 뒤에 서 있거나 숨어있는 모션
-        if (Anim != null) Anim.CrossFade("Idle", 0.1f);
+        // 2. 숨어있는 애니메이션 (없으면 Idle)
+        anim.SetBool("Walk", false);
+        anim.SetBool("Run", false);
+        // anim.SetTrigger("Hide"); // 숨는 모션이 있다면 사용
     }
 
     public override void Update()
     {
-        if (hasTriggered || player == null) return;
+        // 플레이어가 없는 경우 리턴
+        if (player == null) return;
 
-        // 2. 플레이어 거리 체크
-        float dist = Vector3.Distance(Controller.transform.position, player.position);
+        // 1. 거리 계산
+        float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        if (dist <= triggerDistance)
+        // 2. 사거리 안에 들어오면 기습 시작
+        if (dist <= AmbushDistance)
         {
-            TriggerAmbush();
-        }
-    }
+            Debug.Log($"[Ambush] {Controller.Data.ID} : 놈이 왔다! 기습 개시!");
 
-    private void TriggerAmbush()
-    {
-        hasTriggered = true;
-        Debug.Log($"[Ambush] {Controller.Data.ID}번 죄수 급습 시작!");
-
-        // ★ [핵심 수정] 문 강제 개방 요청 (EventBus 사용)
-        // 직접 참조(AssignedCell.cellDoor)가 없어도 ID만으로 문을 열 수 있음
-        if (Controller.Data != null)
-        {
+            // 문을 강제로 엶 (이펙트/소리 추가 가능)
             PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
-        }
 
-        // 3. 전투 상태로 전환 (소리 지르며 뛰쳐나감)
-        fsm.ChangeState(fsm.CombatState);
+            // 전투 상태로 전환 -> 추격 및 공격 시작
+            fsm.ChangeState(fsm.CombatState);
+        }
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // 숨어있다가 맞으면 즉시 기습 발동
-        if (!hasTriggered)
-        {
-            TriggerAmbush();
-        }
-        else
-        {
-            fsm.ChangeState(fsm.CombatState);
-        }
+        // 숨어있는데 맞았다? 바로 전투 돌입
+        fsm.ChangeState(fsm.CombatState);
     }
 }
