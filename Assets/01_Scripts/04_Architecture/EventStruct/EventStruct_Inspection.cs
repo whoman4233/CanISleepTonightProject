@@ -33,3 +33,7 @@ public struct InspectionViewReleasedEvent
 {
 
 }
+
+// 회전을 위해 클릭 시 나오는 툴팁 변경용 이벤트
+public struct InspectionRotateStartedEvent { }
+public struct InspectionRotateEndedEvent { }
