@@ -31,6 +31,10 @@ public class Mission06Strategy : DailyMissionStrategy
     private Action<Mission06SuspectSelectedEvent> _onSuspectSelected;
     private void OnEnable()
     {
+        _hasReported = false;
+        _current = 0;
+        _isCulpritCaught = false;
+
         _onSuspectSelected = OnSuspectSelected;
         EventBus.Subscribe(_onSuspectSelected);
     }
@@ -55,6 +59,11 @@ public class Mission06Strategy : DailyMissionStrategy
         base.SetupDay(anomalyDistributor, scheduleManager);
         Debug.Log("<color=red>★★★ SetupDay 시작됨! ★★★</color>");
 
+        // =========================
+        // Mission06 Runtime Reset
+        // =========================
+        _hasReported = false;
+        _current = 0;
         _isCulpritCaught = false;
         AssignRandomNames(); // 이름 섞기
         List<string> allCellIds = scheduleManager.GetActiveCellIds();
