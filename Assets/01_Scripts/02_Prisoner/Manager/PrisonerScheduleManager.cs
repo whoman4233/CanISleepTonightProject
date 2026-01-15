@@ -341,6 +341,20 @@ public class PrisonerScheduleManager : MonoBehaviour
         }
         return null; // 못 찾음
     }
+    public void ForceTransformPrisoner(string cellId, string targetTemplateId) // 미션6 갱단원만 소환하기 전용 매서드
+    {
+        if (_residents.ContainsKey(cellId))
+        {
+            // DB에서 해당 ID("PSN_Gang_01")를 가진 정의를 찾아
+            var newDef = prisonerDatabase.prisoners.Find(p => p.templateId == targetTemplateId);
+
+            if (newDef != null)
+            {
+                // 기존 데이터를 새 정의(갱단원)로 교체함.
+                _residents[cellId] = new PrisonerData(newDef, PrisonerAIType.Bad, cellId);
+            }
+        }
+    }
 }
 
 // =======================================================================
