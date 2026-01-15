@@ -78,6 +78,13 @@ public class InputManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (Instance != this)
+            return;
+
+        if (Inputs != null)
+        {
+            Inputs.UI.Click.performed -= OnUIClick;
+        }
         EventBus.Unsubscribe(_onPlayerPresence);
         EventBus.Unsubscribe(_onInspectionStarted);
         EventBus.Unsubscribe(_onInspectionEnded);
