@@ -134,73 +134,84 @@ public class PrisonerScheduleManager : MonoBehaviour
         List<PrisonerAIType> specialBehaviors = null,
         List<VisualAnomalyType> specialVisuals = null)
     {
-        _todayRoles.Clear();
-        var cellIds = _residents.Keys.ToList();
-
-        Shuffle(cellIds);
-
-        int assignedSuspicious = 0;
-
-        foreach (var cellId in cellIds)
+        // ★ [안전장치] 만약 Start()보다 미션 설정이 먼저 실행되어 입주민이 없다면 강제 생성
+        if (_residents == null || _residents.Count == 0)
         {
-            DailyRoleData role = new DailyRoleData();
-
-            // 기본값 초기화 (중요: 여기서 None으로 해두고 조건에 따라 덮어씀)
-            role.visualType = VisualAnomalyType.None;
-
-            // A. 범인(TargetSus) 배정
-            if (assignedSuspicious < suspiciousCount)
-            {
-                role.isSuspicious = true;
-
-                // 1. 특수 행동 (소리지르기 등) 랜덤 배정
-                if (specialBehaviors != null && specialBehaviors.Count > 0)
-                    role.dailyAIType = specialBehaviors[UnityEngine.Random.Range(0, specialBehaviors.Count)];
-                else
-                    role.dailyAIType = PrisonerAIType.Bad; // 없으면 그냥 Bad
-
-                // 2. 특수 외형 (임포스터 등) 랜덤 배정
-                // ★ [수정됨] 만약 specialVisuals 리스트가 들어왔다면 그 중에서 하나를 고릅니다.
-                if (specialVisuals != null && specialVisuals.Count > 0)
-                {
-                    //role.visualType = specialVisuals[UnityEngine.Random.Range(0, specialVisuals.Count)];
-                    // assignedSuspicious가 0이면 S1, 1이면 S2, 2이면 S3가 배정됨
-                    role.visualType = specialVisuals[assignedSuspicious]; // 임포스터 랜덤이 아닌 들어온 리스트를 하나씩 배치(용의자N이 복수 배치되는것을 방지)
-                }
-                // 만약 리스트가 안 들어왔더라도, 기획에 따라 여기서 랜덤으로 임포스터를 만들 수도 있습니다. (예시)
-                /* else if (UnityEngine.Random.value < 0.3f) // 30% 확률로 임포스터
-                {
-                    int rnd = UnityEngine.Random.Range(0, 3);
-                    if (rnd == 0) role.visualType = VisualAnomalyType.Imposter_Guard;
-                    else if (rnd == 1) role.visualType = VisualAnomalyType.Imposter_NoBeard;
-                    else role.visualType = VisualAnomalyType.Imposter_Earring;
-                }
-                */
-
-                assignedSuspicious++;
-            }
-            // B. 일반인(Default) 배정 -> 🔥 여기서 50:50 믹스!
-            else
-            {
-                role.isSuspicious = false;
-                role.visualType = VisualAnomalyType.None; // 일반인은 정상 외형
-
-                // "DefaultAI가 Good이면, Good/Bad를 50:50으로 섞어라" 라는 규칙 적용
-                if (defaultAI == PrisonerAIType.Good)
-                {
-                    // 50% 확률로 Good 또는 Bad
-                    role.dailyAIType = (UnityEngine.Random.value > 0.5f) ? PrisonerAIType.Good : PrisonerAIType.Bad;
-                }
-                else
-                {
-                    role.dailyAIType = defaultAI; // Good이 아니면 입력받은 값으로 통일
-                }
-            }
-
-            _todayRoles[cellId] = role;
+            Debug.LogWarning("[Schedule] 역할 배정 시도 중 거주민 명부가 비어있어 재생성합니다.");
+            GenerateNewResidents();
         }
 
-        Debug.Log($"[Schedule] 역할 배정 완료. (범인: {assignedSuspicious}명, 일반인은 50:50 믹스)");
+        _todayRoles.Clear();
+
+        // 활성 방 목록 가져오기
+        var cellIds = GetActiveCellIds();
+
+        // ---------------------------------------------------------------------
+        // 1단계: 모든 방에 '기본(Default)' 역할 먼저 배정 (빈 방 방지)
+        // ---------------------------------------------------------------------
+        foreach (var cellId in cellIds)
+        {
+            DailyRoleData defaultRole = new DailyRoleData();
+            defaultRole.isSuspicious = false;
+            defaultRole.visualType = VisualAnomalyType.None;
+
+            // "DefaultAI가 Good이면, Good/Bad를 50:50으로 섞어라" 규칙 적용
+            if (defaultAI == PrisonerAIType.Good)
+            {
+                defaultRole.dailyAIType = (UnityEngine.Random.value > 0.5f) ? PrisonerAIType.Good : PrisonerAIType.Bad;
+            }
+            else
+            {
+                defaultRole.dailyAIType = defaultAI; // Good이 아니면 입력받은 값으로 통일
+            }
+
+            _todayRoles[cellId] = defaultRole;
+        }
+
+        // ---------------------------------------------------------------------
+        // 2단계: 목표 개수만큼 '용의자(Suspicious)' 선정 및 덮어쓰기
+        // ---------------------------------------------------------------------
+        int assignedCount = 0;
+        if (suspiciousCount > 0)
+        {
+            Shuffle(cellIds); // 방 섞기
+
+            for (int i = 0; i < cellIds.Count; i++)
+            {
+                if (assignedCount >= suspiciousCount) break;
+
+                string targetId = cellIds[i];
+
+                // 기존 값 가져와서 수정 (struct이므로 값 복사됨)
+                var role = _todayRoles[targetId];
+
+                role.isSuspicious = true;
+
+                // 2-1. 특수 행동 배정
+                if (specialBehaviors != null && specialBehaviors.Count > 0)
+                {
+                    role.dailyAIType = specialBehaviors[UnityEngine.Random.Range(0, specialBehaviors.Count)];
+                }
+                else
+                {
+                    // 특별히 지정된 게 없으면 Bad로 설정 (기본적으로 반항적)
+                    role.dailyAIType = PrisonerAIType.Bad;
+                }
+
+                // 2-2. 특수 외형 배정 (리스트 순서대로 하나씩)
+                if (specialVisuals != null && specialVisuals.Count > 0)
+                {
+                    // 인덱스 안전 처리 (용의자가 외형 리스트보다 많을 경우 순환)
+                    int visualIndex = assignedCount % specialVisuals.Count;
+                    role.visualType = specialVisuals[visualIndex];
+                }
+
+                _todayRoles[targetId] = role; // 덮어쓰기
+                assignedCount++;
+            }
+        }
+
+        Debug.Log($"[Schedule] 역할 배정 완료. (총 {cellIds.Count}명 중 용의자 {assignedCount}명, 나머지는 기본값)");
     }
 
     // =======================================================================
@@ -350,7 +361,7 @@ public class PrisonerScheduleManager : MonoBehaviour
 [System.Serializable]
 public struct DailyRoleData
 {
-    public bool isSuspicious;           // 범인 여부
+    public bool isSuspicious;            // 범인 여부
     public PrisonerAIType dailyAIType;  // 행동 패턴
     public VisualAnomalyType visualType; // 외형 (비키니, 염소, 임포스터 등)
 
