@@ -24,6 +24,8 @@ public class DialogueManager : MonoBehaviour
     private PlayerInputs.DialogueActions _dialogueActions; //Dialogue용 액션맵 추가
     private bool _allowContinueInput; // 입력 허용 여부
 
+    private System.Action _onDialogueComplete;
+
     // =========================
     // WaitForSecondsRealtime 캐싱
     // - PauseGameRequestedEvent로 Time.timeScale = 0 이 되어도
@@ -318,6 +320,13 @@ public class DialogueManager : MonoBehaviour
         dialogueContentText.maxVisibleCharacters = 0; // 텍스트 숫자 0으로만들어주기
 
         Debug.Log("End Dialogue");
+
+        if (_onDialogueComplete != null)
+        {
+            var callback = _onDialogueComplete;
+            _onDialogueComplete = null; // 중복 실행 방지
+            callback.Invoke();
+        }
     }
 
     public void OnContinueClicked()
@@ -363,9 +372,10 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue")
+    public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue", System.Action onComplete = null)
     {
         if (dialoguePanel.activeSelf) return; // 이미 대화 중이면 무시
+        _onDialogueComplete = onComplete;
 
         string missionId = "";
 
@@ -383,6 +393,8 @@ public class DialogueManager : MonoBehaviour
             }
             else
             {
+                _onDialogueComplete?.Invoke();
+                _onDialogueComplete = null;
                 // 미션 정보도 없고 튜토리얼도 아니면 대화를 할 수 없음
                 Debug.LogWarning("[Dialogue] 현재 활성화된 미션이 없습니다.");
                 return;

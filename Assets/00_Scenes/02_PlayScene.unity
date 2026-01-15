@@ -166,8 +166,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 785cee52a03029544b84106060743b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textData: {fileID: 11400000, guid: cf9c04a53a708f24591c32b73e188f5c, type: 2}
+  textDataList: []
   currentLanguage: 0
+  uiTextTable: {fileID: 0}
+  missionTextTable: {fileID: 0}
 --- !u!1001 &21454928
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4399,6 +4401,128 @@ MonoBehaviour:
   floor: {fileID: 239504638}
   steelBarred: {fileID: 455934828}
   vent: {fileID: 0}
+--- !u!1 &776078957
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 776078961}
+  - component: {fileID: 776078960}
+  - component: {fileID: 776078959}
+  - component: {fileID: 776078958}
+  - component: {fileID: 776078962}
+  m_Layer: 10
+  m_Name: SeniorGuard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!136 &776078958
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776078957}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &776078959
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776078957}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &776078960
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776078957}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &776078961
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776078957}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.94, y: 10.54, z: 4.76}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &776078962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776078957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d98e2c4584387b40aaeb84065089b4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speakerKey: Frank
+  missionKey: Mission06
 --- !u!1001 &790401120
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5161,6 +5285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47405ed9fed01c34c9b1ad61ccb0aa09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialPhase: 0
   currentPhase: 0
   currentDay: 0
   riotGauge: 10
@@ -10203,18 +10328,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d8d99086e17bad4cbe93261b5ffe534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  suspiciousSuppressSuccessDelta: -3
-  normalIgnoreSuccessDelta: -1
-  suspiciousFailDelta: 10
-  normalSuppressFailDelta: 5
-  suspiciousIgnoreDelta: 7
-  normalIgnoreDelta: 1
-  dailyBaseIncrease: 10
-  standbyDelta: 0
-  settlementDelta: 0
-  riotGauge: 0
-  maxRiotGauge: 0
-  _prisonManager: {fileID: 0}
 --- !u!114 &2100287916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10285,10 +10398,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d1cf2c45af6ee4586d30d3feb26ad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prisonManager: {fileID: 65292951}
-  inspection: {fileID: 1358555039}
-  settlement: {fileID: 2099698613}
-  _riotGaugeAtStart: 0
 --- !u!1 &2105265943
 GameObject:
   m_ObjectHideFlags: 0
@@ -11354,3 +11463,4 @@ SceneRoots:
   - {fileID: 553718073}
   - {fileID: 1158661300}
   - {fileID: 873644080}
+  - {fileID: 776078961}
