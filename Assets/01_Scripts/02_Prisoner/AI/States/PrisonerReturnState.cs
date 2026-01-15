@@ -13,12 +13,6 @@ public class PrisonerReturnState : BasePrisonerState
             target = Controller.AssignedCell.prisonerSpawn;
         }
 
-        Transform target = null;
-        if (Controller.AssignedCell != null)
-        {
-            target = Controller.AssignedCell.prisonerSpawn;
-        }
-
         if (target == null)
         {
             fsm.ChangeState(fsm.ActionState);
