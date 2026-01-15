@@ -6,6 +6,11 @@ public class PrisonerController : MonoBehaviour
 {
     private const float RagdollImpactForce = 10f;
 
+    [Header("Combat Settings")]
+    [SerializeField] private float attackRange = 1.5f;
+    [SerializeField] private float attackAngle = 45f; // 전방 부채꼴 범위
+    [SerializeField] private LayerMask targetLayer;   // Player 레이어 설정
+
     // ================================================================
     // [1] 데이터 정의
     // ================================================================
@@ -168,5 +173,35 @@ public class PrisonerController : MonoBehaviour
 
         if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
+    }
+
+
+    // 애니메이션 이벤트에서 호출할 함수
+    public void OnAttackHitCheck()
+    {
+        // 1. 내 위치에서 공격 사거리만큼 구(Sphere)를 그려서 충돌체 검사
+        // (Alloc을 막기 위해 NonAlloc 버전 사용 추천)
+        Collider[] hits = new Collider[5];
+        int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
+
+        for (int i = 0; i < count; i++)
+        {
+            var target = hits[i];
+
+            // 2. 부채꼴 각도 계산 (내 앞 45도 안에 있는가?)
+            Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
+            if (Vector3.Angle(transform.forward, dirToTarget) < attackAngle)
+            {
+                // 3. 데미지 주기
+                // Player 스크립트나 IDamageable 인터페이스를 찾아 호출
+                var playerHealth = target.GetComponent<Health>(); // 혹은 Player.cs
+                if (playerHealth != null)
+                {
+                    // 데미지 수치는 기획 데이터에서 가져옴 (여기선 10 예시)
+                    playerHealth.TakeDamage(10);
+                    Debug.Log($"[Prisoner] {Data.ID}가 플레이어를 때림!");
+                }
+            }
+        }
     }
 }
