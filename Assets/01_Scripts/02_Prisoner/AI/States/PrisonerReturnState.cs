@@ -13,31 +13,43 @@ public class PrisonerReturnState : BasePrisonerState
             target = Controller.AssignedCell.prisonerSpawn;
         }
 
-        // 갈 곳이 없으면 바로 행동 상태로 토스
         if (target == null)
         {
             fsm.ChangeState(fsm.ActionState);
             return;
         }
 
-        // 거리 확인 후 이동 시작
         float dist = Vector3.Distance(fsm.transform.position, target.position);
         if (dist > 0.5f)
         {
-            agent.isStopped = false;
-            agent.SetDestination(target.position);
-            anim.SetBool("Walk", true);
-            // Debug.Log($"[Return] {Controller.Data.ID} 복귀 시작. 거리: {dist:F1}");
+            //NavMesh 위에 있을 때만 이동 명령
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(target.position);
+                anim.SetBool("Walk", true);
+            }
+            else
+            {
+                // NavMesh 위가 아니면 강제로 위치 이동시키거나 바로 상태 전환
+                Debug.LogWarning($"[ReturnState] {Controller.name} is not on NavMesh. Force transition.");
+                fsm.ChangeState(fsm.ActionState);
+            }
         }
         else
         {
-            // 이미 근처면 바로 전환
             fsm.ChangeState(fsm.ActionState);
         }
     }
 
     public override void Update()
     {
+        // 에이전트가 NavMesh 위에 없으면 거리 계산 시도 금지 (에러 원인)
+        if (!agent.isOnNavMesh || !agent.isActiveAndEnabled)
+        {
+            return;
+        }
+
         // 이동 완료 체크
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
@@ -48,7 +60,11 @@ public class PrisonerReturnState : BasePrisonerState
     public override void Exit()
     {
         anim.SetBool("Walk", false);
-        if (agent.isOnNavMesh) agent.isStopped = true;
+        // 나갈 때도 안전하게 체크
+        if (agent.isOnNavMesh && agent.isActiveAndEnabled)
+        {
+            agent.isStopped = true;
+        }
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
