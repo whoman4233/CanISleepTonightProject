@@ -161,12 +161,6 @@ public class InspectionStateMachine : MonoBehaviour
         cell.SuppressSuccess = true;
         OnSuppressSuccess?.Invoke(cellId);
 
-        // 심판에게 알림: "이 방 죄수 처리했습니다!"
-        if (DailyMissionManager.Instance != null)
-        {
-            DailyMissionManager.Instance.NotifyPrisonerResolved(cellId);
-        }
-
         return true;
     }
 
