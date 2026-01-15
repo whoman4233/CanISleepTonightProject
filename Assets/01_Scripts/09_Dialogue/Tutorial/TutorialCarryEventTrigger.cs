@@ -6,6 +6,9 @@ using static TutorialNPC;
 
 public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
 {
+    [Header("Prompt")]
+    [SerializeField] private string carryPromptObjectType = "Pillow";
+
     public DialogueKeys.DialogueType stepToPublish; // 인스펙터에서 설정 (예: BoxOpened)
     private bool _isTriggered = false; // 실행 여부 체크
 
@@ -61,5 +64,10 @@ public class TutorialCarryEventTrigger : MonoBehaviour , ICarryable
         // 던지기
         rb.AddForce(player.transform.forward * 2f, ForceMode.Impulse); // 추후 수치조정
         Debug.Log("물체 놓기 완료");
+    }
+
+    public string GetCarryPromptObjectType()
+    {
+        return carryPromptObjectType;
     }
 }

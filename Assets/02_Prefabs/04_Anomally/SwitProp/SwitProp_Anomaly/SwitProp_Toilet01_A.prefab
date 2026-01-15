@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5139323218422148511}
   - component: {fileID: 800337721266232137}
   - component: {fileID: 1995976525811638319}
+  - component: {fileID: -1249964381602079840}
   m_Layer: 10
   m_Name: SwitProp_Toilet01_A
   m_TagString: Untagged
@@ -108,6 +109,21 @@ MonoBehaviour:
   animator: {fileID: 7982543992930304547}
   openTriggerName: Open
   outerCollider: {fileID: 5139323218422148511}
+--- !u!114 &-1249964381602079840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3481670227398699871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_10
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1 &5845623069164340763
 GameObject:
   m_ObjectHideFlags: 0

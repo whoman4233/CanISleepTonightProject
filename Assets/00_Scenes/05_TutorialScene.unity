@@ -5939,6 +5939,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c188fbfbc3f42a44ea1244adcaeb5ad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Pillow
   stepToPublish: 1
 --- !u!1 &1067112392
 GameObject:
@@ -5988,6 +5989,7 @@ MonoBehaviour:
   currentLanguage: 0
   uiTextTable: {fileID: 0}
   missionTextTable: {fileID: 0}
+  promptTextTable: {fileID: 0}
 --- !u!114 &1072279927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6347,6 +6349,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22e7c792cec1a8f4ebe8a7784dc825f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackRange: 1.5
+  attackAngle: 45
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 0
   animator: {fileID: 0}
   ragdoll: {fileID: 0}
   sfx: {fileID: 0}

@@ -48,6 +48,11 @@ public class InspectionManager : MonoBehaviour
 
     private Transform visualRoot; // 회전/스케일 조작 대상
 
+    // =========================
+    // Prompt Text 출력 용
+    // =========================
+    private string _lastInspectionPromptId;
+
     private void Awake()
     {
         inspectionCamera.gameObject.SetActive(false);
@@ -198,6 +203,11 @@ public class InspectionManager : MonoBehaviour
 
         EventBus.Publish(new InspectionEndedEvent());
         EventBus.Publish(new InspectionViewReleasedEvent());
+        EventBus.Publish(new PromptChangedEvent
+        {
+            context = PromptContext.Inspection,
+            promptId = null
+        });
     }
     private void OnForceExitInspection(ForceExitInspectionEvent e) // QTE 강제종료
     {
@@ -327,6 +337,7 @@ public class InspectionManager : MonoBehaviour
                 null))
         {
             ClearOutline();
+            PublishInspectionPrompt(null);
             return;
         }
 
@@ -350,13 +361,7 @@ public class InspectionManager : MonoBehaviour
 
         Ray ray = inspectionCamera.ViewportPointToRay(new Vector3(u, v, 0f));
 
-        if (Physics.SphereCast(
-                ray,
-                inspectHoverRadius,
-                out RaycastHit hit,
-                inspectRayDistance,
-                inspectLayerMask,
-                QueryTriggerInteraction.Ignore))
+        if (Physics.SphereCast(ray, inspectHoverRadius, out RaycastHit hit, inspectRayDistance, inspectLayerMask, QueryTriggerInteraction.Ignore))
         {
             // =========================
             //   InspectTarget 기반 Reveal 상태 필터
@@ -369,6 +374,7 @@ public class InspectionManager : MonoBehaviour
                 {
                     // 아직 Reveal 안 된 대상 → 무조건 Outline 차단
                     ClearOutline();
+                    PublishInspectionPrompt(null);
                     return;
                 }
             }
@@ -387,12 +393,41 @@ public class InspectionManager : MonoBehaviour
                 if (_currentOutlined != null)
                     _currentOutlined.SetHighlight(true);
             }
-
+            PublishInspectionPrompt(hit.collider);
             return;
         }
-
         // SphereCast 실패했을 때만 해제
         ClearOutline();
+        PublishInspectionPrompt(null);
+    }
+    private void PublishInspectionPrompt(Collider hit)
+    {
+        string nextPromptId = null;
+
+        if (hit != null)
+        {
+            var provider =
+                hit.GetComponentInParent<IPromptProvider>();
+
+            if (provider != null &&
+                provider.TryGetPromptId(
+                    PromptContext.Inspection,
+                    out var id))
+            {
+                nextPromptId = id;
+            }
+        }
+
+        if (_lastInspectionPromptId == nextPromptId)
+            return;
+
+        _lastInspectionPromptId = nextPromptId;
+
+        EventBus.Publish(new PromptChangedEvent
+        {
+            context = PromptContext.Inspection,
+            promptId = nextPromptId
+        });
     }
 
 

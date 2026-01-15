@@ -61,6 +61,7 @@ GameObject:
   - component: {fileID: 7253897471675008433}
   - component: {fileID: 7980566749522893237}
   - component: {fileID: 8755342488321049516}
+  - component: {fileID: 6911412757450312988}
   m_Layer: 10
   m_Name: LiftProp_Pillow01
   m_TagString: Untagged
@@ -146,6 +147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Pillow
 --- !u!64 &7980566749522893237
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -195,3 +197,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &6911412757450312988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6692875368445934670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Pillow

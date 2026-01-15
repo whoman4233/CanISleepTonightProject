@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Data/UI Text Table")]
 public class UITextTableSO : ScriptableObject
 {
-    public List<UITextEntry> entries;
+    public List<UITextEntry> entries = new List<UITextEntry>();
 }
 
 [Serializable]

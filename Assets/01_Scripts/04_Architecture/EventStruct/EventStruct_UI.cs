@@ -230,3 +230,11 @@ public struct UIProceedRequestedEvent
 {
 }
 
+//==========================================
+//Prompt Text 출력용 이벤트
+//==========================================
+public struct PromptChangedEvent
+{
+    public PromptContext context;
+    public string promptId; // null or empty → 숨김
+}

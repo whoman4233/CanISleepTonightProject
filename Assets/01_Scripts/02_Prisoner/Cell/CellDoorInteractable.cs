@@ -307,4 +307,48 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             _isPlayerInside = false;
         }
     }
+    /// <summary>
+    /// 프롬프트 시스템을 위한 문 상태 요약
+    /// - 내부 bool / 외부 상태들을 하나의 enum으로 변환
+    /// </summary>
+    public OpenClosePromptState GetPromptStateEnum()
+    {
+        // =========================
+        // 1. 일반 문 (cellId 없음)
+        // =========================
+        if (string.IsNullOrWhiteSpace(cellId))
+        {
+            return _isSimpleDoorOpen
+                ? OpenClosePromptState.Open
+                : OpenClosePromptState.Close;
+        }
+
+        // =========================
+        // 2. 감방 문
+        // =========================
+        if (inspection == null)
+        {
+            // 안전장치: inspection이 없으면 닫힌 상태로 취급
+            return OpenClosePromptState.Close;
+        }
+
+        bool isInspectingThisCell =
+            inspection.CurrentInspectingCellId == cellId;
+
+        // 점검 시작 전 → 닫혀 있음 (열기 프롬프트)
+        if (!isInspectingThisCell)
+        {
+            return OpenClosePromptState.Close;
+        }
+
+        // 점검 중인데 플레이어가 안에 있으면 닫기 불가
+        if (_isPlayerInside)
+        {
+            return OpenClosePromptState.CannotClose;
+        }
+
+        // 그 외는 열려 있음 (닫기 가능)
+        return OpenClosePromptState.Open;
+    }
+
 }

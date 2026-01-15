@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 5548671908761670047}
   - component: {fileID: 518342742422200623}
   - component: {fileID: 1300652902925324891}
+  - component: {fileID: 1364460127740266444}
+  - component: {fileID: 1320554701735482770}
   m_Layer: 10
   m_Name: JailSlidingDoor_13
   m_TagString: Untagged
@@ -128,6 +130,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1364460127740266444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 378312946613419187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &1320554701735482770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 378312946613419187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 2672250622301065297}
+  methodName: GetPromptStateEnum
 --- !u!1 &452108643320326258
 GameObject:
   m_ObjectHideFlags: 0
@@ -141,6 +172,8 @@ GameObject:
   - component: {fileID: 8217252809534755764}
   - component: {fileID: 5902876121793996159}
   - component: {fileID: 7368525770311780266}
+  - component: {fileID: 5460515513422211556}
+  - component: {fileID: 6388123640019179311}
   m_Layer: 10
   m_Name: JailSlidingDoor_07
   m_TagString: Untagged
@@ -256,6 +289,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5460515513422211556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452108643320326258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &6388123640019179311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452108643320326258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 8568683927510254661}
+  methodName: GetPromptStateEnum
 --- !u!1 &1721732714822067902
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,6 +331,8 @@ GameObject:
   - component: {fileID: 9141323097724302211}
   - component: {fileID: 5810210341144841929}
   - component: {fileID: 7240796450547777317}
+  - component: {fileID: 3902051695220526194}
+  - component: {fileID: 3839121736533963282}
   m_Layer: 10
   m_Name: JailSlidingDoor_02
   m_TagString: Untagged
@@ -384,6 +448,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3902051695220526194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1721732714822067902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &3839121736533963282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1721732714822067902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 7204167925381621470}
+  methodName: GetPromptStateEnum
 --- !u!1 &2257678187721664210
 GameObject:
   m_ObjectHideFlags: 0
@@ -534,6 +627,8 @@ GameObject:
   - component: {fileID: 3442622534817311563}
   - component: {fileID: 2060973045026761590}
   - component: {fileID: 4220515563890457761}
+  - component: {fileID: 8771052138026774179}
+  - component: {fileID: 5085087048011202901}
   m_Layer: 10
   m_Name: JailSlidingDoor_05
   m_TagString: Untagged
@@ -649,6 +744,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8771052138026774179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2899753660276415402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &5085087048011202901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2899753660276415402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 1324627747843703018}
+  methodName: GetPromptStateEnum
 --- !u!1 &3819960937943587194
 GameObject:
   m_ObjectHideFlags: 0
@@ -660,6 +784,7 @@ GameObject:
   - component: {fileID: 2894477945653013295}
   - component: {fileID: 875844493122576922}
   - component: {fileID: 7049841748880350846}
+  - component: {fileID: 5802588197562692922}
   m_Layer: 10
   m_Name: JailHingedDoor_03
   m_TagString: Untagged
@@ -720,6 +845,21 @@ MonoBehaviour:
   useRedOutlineOnCloseOnlySlidingDoor: 0
   outliner: {fileID: 0}
   _isPlayerInside: 0
+--- !u!114 &5802588197562692922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3819960937943587194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_07
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1 &4180547934876458290
 GameObject:
   m_ObjectHideFlags: 0
@@ -919,6 +1059,8 @@ GameObject:
   - component: {fileID: 7039012016131980783}
   - component: {fileID: 273362716906018882}
   - component: {fileID: 5329786308170237820}
+  - component: {fileID: 1922108741939597421}
+  - component: {fileID: 6753224198723158279}
   m_Layer: 10
   m_Name: JailSlidingDoor_06
   m_TagString: Untagged
@@ -1034,6 +1176,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1922108741939597421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4342754683079791856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &6753224198723158279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4342754683079791856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 6616628203562011280}
+  methodName: GetPromptStateEnum
 --- !u!1 &4346942255432472593
 GameObject:
   m_ObjectHideFlags: 0
@@ -1454,6 +1625,8 @@ GameObject:
   - component: {fileID: 5489939407385553024}
   - component: {fileID: 5282602701762196145}
   - component: {fileID: 8468725783901529443}
+  - component: {fileID: 1991576253001773844}
+  - component: {fileID: 3247676809112630390}
   m_Layer: 10
   m_Name: JailSlidingDoor_15
   m_TagString: Untagged
@@ -1569,6 +1742,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1991576253001773844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5166774388268820111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &3247676809112630390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5166774388268820111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 8499940112918027336}
+  methodName: GetPromptStateEnum
 --- !u!1 &5390489032790661899
 GameObject:
   m_ObjectHideFlags: 0
@@ -1582,6 +1784,8 @@ GameObject:
   - component: {fileID: 4618384457666444563}
   - component: {fileID: 2762599418617735245}
   - component: {fileID: 3846359222424157391}
+  - component: {fileID: 6104590424912229142}
+  - component: {fileID: 2048968713772519339}
   m_Layer: 10
   m_Name: JailSlidingDoor_16
   m_TagString: Untagged
@@ -1697,6 +1901,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6104590424912229142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5390489032790661899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &2048968713772519339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5390489032790661899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 6643555149428041562}
+  methodName: GetPromptStateEnum
 --- !u!1 &5439114908471324436
 GameObject:
   m_ObjectHideFlags: 0
@@ -1710,6 +1943,8 @@ GameObject:
   - component: {fileID: 6891200230686338014}
   - component: {fileID: 2596857707043443401}
   - component: {fileID: 2653169383758255328}
+  - component: {fileID: 7472930123042330008}
+  - component: {fileID: 3002785588173796080}
   m_Layer: 10
   m_Name: JailSlidingDoor_08
   m_TagString: Untagged
@@ -1825,6 +2060,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7472930123042330008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5439114908471324436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &3002785588173796080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5439114908471324436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 6315616578507924031}
+  methodName: GetPromptStateEnum
 --- !u!1 &5822649462490868589
 GameObject:
   m_ObjectHideFlags: 0
@@ -1931,6 +2195,8 @@ GameObject:
   - component: {fileID: 3054479995580915388}
   - component: {fileID: 6502465420996029040}
   - component: {fileID: 8747120435135259871}
+  - component: {fileID: 8629968835298710983}
+  - component: {fileID: 6145312850492120230}
   m_Layer: 10
   m_Name: JailSlidingDoor_14
   m_TagString: Untagged
@@ -2046,6 +2312,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8629968835298710983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6158021122489372812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &6145312850492120230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6158021122489372812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 3611196940383339514}
+  methodName: GetPromptStateEnum
 --- !u!1 &6166021237862400487
 GameObject:
   m_ObjectHideFlags: 0
@@ -2059,6 +2354,8 @@ GameObject:
   - component: {fileID: 7282773985857837095}
   - component: {fileID: 8345455900765554151}
   - component: {fileID: 2038763161706255813}
+  - component: {fileID: 8502013726750340547}
+  - component: {fileID: 8517956918025904997}
   m_Layer: 10
   m_Name: JailSlidingDoor_10
   m_TagString: Untagged
@@ -2174,6 +2471,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8502013726750340547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6166021237862400487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &8517956918025904997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6166021237862400487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 363038047645255210}
+  methodName: GetPromptStateEnum
 --- !u!1 &6318063423139739594
 GameObject:
   m_ObjectHideFlags: 0
@@ -2187,6 +2513,8 @@ GameObject:
   - component: {fileID: 2832283162860834470}
   - component: {fileID: 1257326694486884814}
   - component: {fileID: 6543370491000228810}
+  - component: {fileID: 6375612127583742990}
+  - component: {fileID: 3009686840910697070}
   m_Layer: 10
   m_Name: JailSlidingDoor_09
   m_TagString: Untagged
@@ -2302,6 +2630,35 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6375612127583742990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6318063423139739594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &3009686840910697070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6318063423139739594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 3269939783463987757}
+  methodName: GetPromptStateEnum
 --- !u!1 &6361146079965836658
 GameObject:
   m_ObjectHideFlags: 0
@@ -2593,6 +2950,7 @@ GameObject:
   - component: {fileID: 6715779003756297547}
   - component: {fileID: 871870442574031990}
   - component: {fileID: 8159437238063779836}
+  - component: {fileID: 8843347168882473307}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_05
   m_TagString: Untagged
@@ -2674,6 +3032,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!114 &8843347168882473307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7815171693100585173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1 &7833741365265252363
 GameObject:
   m_ObjectHideFlags: 0
@@ -2780,6 +3153,8 @@ GameObject:
   - component: {fileID: 4645560350969677435}
   - component: {fileID: 4501662717209370619}
   - component: {fileID: 8600913942251342119}
+  - component: {fileID: 5236072690829144285}
+  - component: {fileID: 5441555845313552839}
   m_Layer: 10
   m_Name: JailSlidingDoor_01
   m_TagString: Untagged
@@ -2895,3 +3270,32 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5236072690829144285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9221063299149574444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: CellDoor
+--- !u!114 &5441555845313552839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9221063299149574444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 6715779003756297547}
+  methodName: GetPromptStateEnum

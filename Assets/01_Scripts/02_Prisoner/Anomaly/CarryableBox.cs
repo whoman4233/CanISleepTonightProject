@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CarryableBox : MonoBehaviour, ICarryable
 {
+    [Header("Prompt")]
+    [SerializeField] private string carryPromptObjectType; //드는 오브젝트에 인스펙터 상으로 이름을 입력해야 프롬프트 출력으로 돌려줌.
 
     private Rigidbody rb;
     private Collider col;
@@ -13,7 +15,10 @@ public class CarryableBox : MonoBehaviour, ICarryable
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
     }
-
+    public string GetCarryPromptObjectType() //프롬프트 출력용 메서드
+    {
+        return carryPromptObjectType;
+    }
     public void Interact(Player player) // 들기
     {
         var interactor = player.Interactor;

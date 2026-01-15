@@ -26,7 +26,11 @@ public class TextManager : MonoBehaviour
     [SerializeField] private UITextTableSO uiTextTable;
     [SerializeField] private MissionTextTableSO missionTextTable;
 
+    [Header("Prompt Text Table")]
+    [SerializeField] private UITextTableSO promptTextTable;
+
     private Dictionary<string, string> _uiTextLookup;
+    private Dictionary<string, string> _promptTextLookup;
     /// <summary>
     /// 텍스트 데이터(Dictionary)가 준비되었음을 알리는 이벤트
     /// - 씬에 UI가 먼저 있어도 정상 동기화되도록
@@ -48,7 +52,8 @@ public class TextManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
 
             InitializeDictionary(); // 최초 초기화 (모든 TextSOData 병합)
-
+            BuildUITextCache();       // UI 텍스트
+            BuildPromptTextCache(); // Prompt 텍스트
             // 텍스트 시스템 준비 완료 알림
             // UI가 먼저 생성되어도 이 이벤트를 통해 정상 갱신 가능
             OnTextDataReady?.Invoke();
@@ -57,7 +62,6 @@ public class TextManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        BuildUITextCache();
     }
 
     /// <summary>
@@ -192,6 +196,24 @@ public class TextManager : MonoBehaviour
             _uiTextLookup[e.id] = e.text;
         }
     }
+    private void BuildPromptTextCache() // Prompt 캐시 빌드
+    {
+        _promptTextLookup = new Dictionary<string, string>();
+
+        if (promptTextTable == null)
+        {
+            Debug.LogWarning("[TextManager] PromptTextTableSO 없음");
+            return;
+        }
+
+        foreach (var e in promptTextTable.entries)
+        {
+            if (string.IsNullOrEmpty(e.id))
+                continue;
+
+            _promptTextLookup[e.id] = e.text;
+        }
+    }
     public string GetUIText(string id) // UI전용 API
     {
         if (_uiTextLookup != null &&
@@ -201,7 +223,7 @@ public class TextManager : MonoBehaviour
         Debug.LogWarning($"[UIText] Not Found: {id}");
         return id;
     }
-    public string GetMissionText(int missionNo, MissionTextRole role)
+    public string GetMissionText(int missionNo, MissionTextRole role) // Mission전용 API
     {
         if (missionTextTable == null)
             return role.ToString();
@@ -217,7 +239,18 @@ public class TextManager : MonoBehaviour
 
         return entry != null ? entry.text : role.ToString();
     }
+    public string GetPromptText(string id) // Prompt전용 API
+    {
+        if (string.IsNullOrEmpty(id))
+            return string.Empty;
 
+        if (_promptTextLookup != null &&
+            _promptTextLookup.TryGetValue(id, out var text))
+            return text;
+
+        Debug.LogWarning($"[PromptText] Not Found: {id}");
+        return string.Empty;
+    }
 
     /// <summary>
     /// 전체 TextEntry 열거 (디버그 / 툴용)

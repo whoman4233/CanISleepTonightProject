@@ -37,6 +37,17 @@ public class UITextCsvBakerWindow : EditorWindow
 
     private void Bake()
     {
+        if (table == null)
+        {
+            Debug.LogError("[UITextCsvBaker] Target SO is null");
+            return;
+        }
+
+        if (table.entries == null)
+        {
+            table.entries = new List<UITextEntry>();
+        }
+
         var lines = csvAsset.text.Split(
             new[] { "\r\n", "\n" },
             StringSplitOptions.RemoveEmptyEntries

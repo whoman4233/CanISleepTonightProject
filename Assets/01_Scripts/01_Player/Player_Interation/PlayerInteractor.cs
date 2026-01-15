@@ -7,14 +7,9 @@ public sealed class PlayerInteractor : MonoBehaviour
     [Header("Carry Position")]
     [SerializeField] private Transform carryParent; // 물체가 붙을 위치
     private ICarryable _heldItem; // 들고 있는 물체
-
+    public ICarryable CurrentHeldItem => _heldItem;
     public bool IsCarrying => _heldItem != null; // helditem != null 이면 true
     public Transform CarryParent => carryParent; // 읽기전용
-
-    public void SetHeldItem(ICarryable item) => _heldItem = item; // 물체를 손에 드는 함수, 물체 들고있음을 인지시켜줌, helditem에 item 넣어준다.
-    public void ClearHeldItem() => _heldItem = null; // 물체 비우는 함수, 물체 drop시 호출
-
-    // 호출순서 TryInteract - IsCarrying = false && ICarryable이면 들기, IsCarrying = true면 내려놓기 그 외는 기존과 동일
 
     private const float ViewportCenterX = 0.5f;
     private const float ViewportCenterY = 0.5f;
@@ -53,6 +48,11 @@ public sealed class PlayerInteractor : MonoBehaviour
 
     private Action<InspectionStartedEvent> _onInspectionStarted;
     private Action<InspectionEndedEvent> _onInspectionEnded;
+
+    // =========================
+    // Prompt 텍스트 출력 용
+    // =========================
+    private string _lastPromptId;
 
     private void Awake()
     {
@@ -142,6 +142,13 @@ public sealed class PlayerInteractor : MonoBehaviour
     /// </summary>
     private void Scan()
     {
+        // 들고 있는 동안에는 Ray 기반 Prompt/Scan 무시
+        if (IsCarrying)
+        {
+            PublishHoverIfChanged(false);
+            PublishPromptIfChanged();
+            return;
+        }
         _currentInteractable = null;
         _currentHitCollider = null;
         _currentHitDistance = 0f;
@@ -159,7 +166,15 @@ public sealed class PlayerInteractor : MonoBehaviour
                 _currentOutliner.SetHighlight(false);
                 _currentOutliner = null;
             }
-            PublishHoverIfChanged(false); // 타겟없을 때(맞추지 않았을 때 이벤트 발행해야 크로스헤어에 이상없음)
+            // Ray 타겟 캐시 비우기
+            _currentInteractable = null;
+            _currentHitCollider = null;
+            _currentHitDistance = 0f;
+
+            PublishHoverIfChanged(false);
+
+            //Ray가 없어도 Carry 프롬프트는 계속 떠야 함
+            PublishPromptIfChanged();
             return;
         }
 
@@ -188,7 +203,55 @@ public sealed class PlayerInteractor : MonoBehaviour
         // =========================
 
         PublishHoverIfChanged(_currentInteractable != null);
+        PublishPromptIfChanged();
     }
+    private void PublishPromptIfChanged()
+    {
+        string nextPromptId = null;
+
+        // =========================
+        // 1. Carry 프롬프트 (우선)
+        // =========================
+        var carryProvider = GetComponent<CarryPromptProvider>();
+        if (carryProvider != null &&
+            carryProvider.TryGetPromptId(
+                PromptContext.Interact,
+                out var carryPromptId))
+        {
+            nextPromptId = carryPromptId;
+        }
+        else
+        {
+            // =========================
+            // 2. Ray 기반 프롬프트
+            // =========================
+            if (_currentHitCollider != null)
+            {
+                var provider =
+                    _currentHitCollider.GetComponentInParent<IPromptProvider>();
+
+                if (provider != null &&
+                    provider.TryGetPromptId(
+                        PromptContext.Interact,
+                        out var id))
+                {
+                    nextPromptId = id;
+                }
+            }
+        }
+
+        if (_lastPromptId == nextPromptId)
+            return;
+
+        _lastPromptId = nextPromptId;
+
+        EventBus.Publish(new PromptChangedEvent
+        {
+            context = PromptContext.Interact,
+            promptId = nextPromptId
+        });
+    }
+
 
     /// <summary>
     /// E키 눌렀을 때만 호출: 현재 캐싱된 대상이 있으면 상호작용 실행
@@ -224,6 +287,18 @@ public sealed class PlayerInteractor : MonoBehaviour
         _currentInteractable.Interact(_player);
         return true;
     }
+    public void SetHeldItem(ICarryable item)// 물체를 손에 드는 함수, 물체 들고있음을 인지시켜줌, helditem에 item 넣어준다.
+    {
+        _heldItem = item;
+        RefreshPrompt();
+    }
+    public void ClearHeldItem() // 물체 비우는 함수, 물체 drop시 호출
+    {
+        _heldItem = null;
+        RefreshPrompt();
+    }
+
+    // 호출순서 TryInteract - IsCarrying = false && ICarryable이면 들기, IsCarrying = true면 내려놓기 그 외는 기존과 동일
     public void DropHeldItem()
     {
         if (_heldItem != null)
@@ -264,5 +339,19 @@ public sealed class PlayerInteractor : MonoBehaviour
             _lastHoverState = false;
             EventBus.Publish(new InteractableHoverChangedEvent(false));
         }
+        //  프롬프트 제거
+        if (!string.IsNullOrEmpty(_lastPromptId))
+        {
+            _lastPromptId = null;
+            EventBus.Publish(new PromptChangedEvent
+            {
+                context = PromptContext.Interact,
+                promptId = null
+            });
+        }
+    }
+    public void RefreshPrompt()
+    {
+        PublishPromptIfChanged();
     }
 }
