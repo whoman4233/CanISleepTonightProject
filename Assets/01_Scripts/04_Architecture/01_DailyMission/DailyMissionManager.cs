@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class DailyMissionManager : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class DailyMissionManager : MonoBehaviour
 
     [Header("Mission Settings")]
     [SerializeField] private List<DailyMissionStrategy> missionScenario; // 1~7일차 SO 리스트
+
+    private Action<ForceMissionFailRequestedEvent> _onForceMissionFailRequested; //강제종료 이벤트 
 
     // 현재 진행 중인 미션 (Read Only)
     public DailyMissionStrategy CurrentMission { get; private set; }
@@ -28,8 +31,17 @@ public class DailyMissionManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        _onForceMissionFailRequested = OnForceMissionFailRequested;
+    }
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onForceMissionFailRequested);
     }
 
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onForceMissionFailRequested);
+    }
     // 하루 시작 시 호출 (GameManager 등에서 호출)
     public void StartDay(int dayIndex)
     {
@@ -46,7 +58,7 @@ public class DailyMissionManager : MonoBehaviour
         // 1. 오늘의 미션 갈아끼우기
         if(dayIndex < 7)
         {
-            CurrentMission = missionScenario[Random.Range(0, missionScenario.Count - 1)];
+            CurrentMission = missionScenario[UnityEngine.Random.Range(0, missionScenario.Count - 1)];
         }
         else
         {
@@ -226,5 +238,16 @@ public class DailyMissionManager : MonoBehaviour
     {
         IsBriefingCompleted = false;
         IsReported = false;
+    }
+    private void OnForceMissionFailRequested(ForceMissionFailRequestedEvent e) //미션 강제 실패 
+    {
+        bool success = false;
+        string failReason;
+
+        EvaluateDayResult(out failReason);
+
+        EventBus.Publish(
+            new ResultUIShowRequestedEvent(success, failReason)
+        );
     }
 }

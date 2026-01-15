@@ -15,6 +15,12 @@ public struct MissionProgressChangedEvent
 public struct MissionCompletedEvent
 {
 }
+
+public struct ForceMissionFailRequestedEvent // 강제 미션 종료(ex:진짜 프랭크 찾기 미션)
+{
+
+}
+
 //==========================================
 //Mission06 관련 이벤트 목록
 //==========================================

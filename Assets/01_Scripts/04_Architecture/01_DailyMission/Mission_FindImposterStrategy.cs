@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,66 +6,66 @@ using System.Linq;
 public class Mission_FindImposterStrategy : DailyMissionStrategy
 {
     [Header("Imposter Settings")]
-    [Tooltip("ÁøÂ¥ ÇÁ·©Å©ÀÇ ¿ÜÇü Å¸ÀÔ (ÀâÀ¸¸é ½ÇÆĞ)")]
+    [Tooltip("ì§„ì§œ í”„ë­í¬ì˜ ì™¸í˜• íƒ€ì… (ì¡ìœ¼ë©´ ì‹¤íŒ¨)")]
     public VisualAnomalyType realFrankType;
 
-    [Tooltip("°¡Â¥ ÇÁ·©Å©µéÀÇ ¿ÜÇü Å¸ÀÔ (Àâ¾Æ¾ß ¼º°ø)")]
+    [Tooltip("ê°€ì§œ í”„ë­í¬ë“¤ì˜ ì™¸í˜• íƒ€ì… (ì¡ì•„ì•¼ ì„±ê³µ)")]
     public List<VisualAnomalyType> fakeFrankTypes;
 
-    [Tooltip("ÁøÂ¥¸¦ Àâ¾ÒÀ» ¶§ ½ÇÆĞ »çÀ¯ ÅØ½ºÆ®")]
-    public string failReasonText = "ÁøÂ¥ ÇÁ·©Å©¸¦ °ø°İÇÏ¿© Á¦¾Ğ ½ÇÆĞ";
+    [Tooltip("ì§„ì§œë¥¼ ì¡ì•˜ì„ ë•Œ ì‹¤íŒ¨ ì‚¬ìœ  í…ìŠ¤íŠ¸")]
+    public string failReasonText = "ì§„ì§œ í”„ë­í¬ë¥¼ ê³µê²©í•˜ì—¬ ì œì•• ì‹¤íŒ¨";
 
-    // ·±Å¸ÀÓ »óÅÂ º¯¼ö
+    // ëŸ°íƒ€ì„ ìƒíƒœ ë³€ìˆ˜
     private bool _killedRealFrank = false;
 
     public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
     {
         base.SetupDay(ad, sm);
-        _killedRealFrank = false; // »óÅÂ ÃÊ±âÈ­
+        _killedRealFrank = false; // ìƒíƒœ ì´ˆê¸°í™”
 
-        // 1. ¸ğµç ¹æ ÃÊ±âÈ­ (¹üÀÎ 0¸í)
+        // 1. ëª¨ë“  ë°© ì´ˆê¸°í™” (ë²”ì¸ 0ëª…)
         sm.AssignRolesForNewDay(suspiciousCount: 0, defaultAI: PrisonerAIType.Good);
 
-        // 2. ¹æ ¸®½ºÆ® ¼¯±â
+        // 2. ë°© ë¦¬ìŠ¤íŠ¸ ì„ê¸°
         var shuffledCells = sm.GetActiveCellIds().OrderBy(x => Random.value).ToList();
         int cellIndex = 0;
 
-        // 3. ÁøÂ¥ ÇÁ·©Å© ¹èÁ¤ (1¸í)
-        // Suspicious = false (Á¡È£ ´ë»ó ¾Æ´Ô, ÇÏÁö¸¸ ÀâÀ¸¸é ¾ÈµÊ)
+        // 3. ì§„ì§œ í”„ë­í¬ ë°°ì • (1ëª…)
+        // Suspicious = false (ì í˜¸ ëŒ€ìƒ ì•„ë‹˜, í•˜ì§€ë§Œ ì¡ìœ¼ë©´ ì•ˆë¨)
         if (cellIndex < shuffledCells.Count)
         {
             sm.SetDailyRole(shuffledCells[cellIndex], PrisonerAIType.Good, realFrankType, false);
             cellIndex++;
         }
 
-        // 4. °¡Â¥ ÇÁ·©Å© ¹èÁ¤ (¸®½ºÆ® °³¼ö¸¸Å­)
-        // Suspicious = true (¹üÀÎ ÆÇÁ¤)
+        // 4. ê°€ì§œ í”„ë­í¬ ë°°ì • (ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ë§Œí¼)
+        // Suspicious = true (ë²”ì¸ íŒì •)
         foreach (var fakeType in fakeFrankTypes)
         {
             if (cellIndex >= shuffledCells.Count) break;
 
-            // °¡Â¥´Â ³ª»Û AI? È¤Àº Èä³»³»´Â AI? ±âÈ¹¿¡ ¸Â°Ô ¼³Á¤ (¿©±â¼± Bad·Î ¼³Á¤)
+            // ê°€ì§œëŠ” ë‚˜ìœ AI? í˜¹ì€ í‰ë‚´ë‚´ëŠ” AI? ê¸°íšì— ë§ê²Œ ì„¤ì • (ì—¬ê¸°ì„  Badë¡œ ì„¤ì •)
             sm.SetDailyRole(shuffledCells[cellIndex], PrisonerAIType.Bad, fakeType, true);
             cellIndex++;
         }
 
-        Debug.Log($"[ImposterMission] ¹èÁ¤ ¿Ï·á. Real: {realFrankType}, Fakes: {fakeFrankTypes.Count}");
+        Debug.Log($"[ImposterMission] ë°°ì • ì™„ë£Œ. Real: {realFrankType}, Fakes: {fakeFrankTypes.Count}");
     }
 
-    // ÇÃ·¹ÀÌ¾î°¡ ÁË¼ö¸¦ Á¦¾ĞÇßÀ» ¶§ DailyMissionManager°¡ È£ÃâÇÏ´Â ÇÔ¼ö
+    // í”Œë ˆì´ì–´ê°€ ì£„ìˆ˜ë¥¼ ì œì••í–ˆì„ ë•Œ DailyMissionManagerê°€ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
     public override bool IsValidPrisoner(string cellId)
     {
         var role = PrisonerScheduleManager.Instance.GetDailyRole(cellId);
 
-        // 1. ÁøÂ¥ ÇÁ·©Å©¸¦ Àâ¾ÒÀ» °æ¿ì -> Áï½Ã ½ÇÆĞ Ã³¸®
+        // 1. ì§„ì§œ í”„ë­í¬ë¥¼ ì¡ì•˜ì„ ê²½ìš° -> ì¦‰ì‹œ ì‹¤íŒ¨ ì²˜ë¦¬
         if (role.visualType == realFrankType)
         {
-            Debug.Log("<color=red>[Mission Failed] ÁøÂ¥ ÇÁ·©Å©¸¦ Á¦¾ĞÇß½À´Ï´Ù!</color>");
+            Debug.Log("<color=red>[Mission Failed] ì§„ì§œ í”„ë­í¬ë¥¼ ì œì••í–ˆìŠµë‹ˆë‹¤!</color>");
             HandleRealFrankSuppressed();
-            return false; // Á¡¼ö ¾È ¿À¸§
+            return false; // ì ìˆ˜ ì•ˆ ì˜¤ë¦„
         }
 
-        // 2. °¡Â¥ ÇÁ·©Å©¸¦ Àâ¾ÒÀ» °æ¿ì -> Á¡¼ö ÀÎÁ¤
+        // 2. ê°€ì§œ í”„ë­í¬ë¥¼ ì¡ì•˜ì„ ê²½ìš° -> ì ìˆ˜ ì¸ì •
         if (fakeFrankTypes.Contains(role.visualType))
         {
             return true;
@@ -78,35 +78,41 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     {
         _killedRealFrank = true;
 
-        // 1. ´ë»ç Ãâ·Â (ÃßÈÄ ±¸Çö ¿¹Á¤ÀÌ¶ó ÇÏ¼ÌÁö¸¸, ÀÏ´Ü ·Î±×³ª ÆË¾÷ ÀÌº¥Æ® ¹ß»ı)
-        // "³Ê Áö±İ ´©±¼ ¶§¸®´Â °Å¾ß ¸ÛÃ»¾Æ!"
-        Debug.Log("[Dialogue] Frank: '³Ê Áö±İ ´©±¼ ¶§¸®´Â °Å¾ß ¸ÛÃ»¾Æ!'");
-        EventBus.Publish(new ShowTimedTextPopupEvent("ÁøÂ¥ ÇÁ·©Å©¸¦ °ø°İÇß½À´Ï´Ù!", 2.0f));
+        // 1. ëŒ€ì‚¬ ì¶œë ¥ (ì¶”í›„ êµ¬í˜„ ì˜ˆì •ì´ë¼ í•˜ì…¨ì§€ë§Œ, ì¼ë‹¨ ë¡œê·¸ë‚˜ íŒì—… ì´ë²¤íŠ¸ ë°œìƒ)
+        // "ë„ˆ ì§€ê¸ˆ ëˆ„êµ´ ë•Œë¦¬ëŠ” ê±°ì•¼ ë©ì²­ì•„!"
+        Debug.Log("[Dialogue] Frank: 'ë„ˆ ì§€ê¸ˆ ëˆ„êµ´ ë•Œë¦¬ëŠ” ê±°ì•¼ ë©ì²­ì•„!'");
+        EventBus.Publish(new ShowTimedTextPopupEvent("ì§„ì§œ í”„ë­í¬ë¥¼ ê³µê²©í–ˆìŠµë‹ˆë‹¤!", 2.0f));
 
-        // 2. °­Á¦ Á¤»ê ÆäÀÌÁî ÁøÀÔ (½ÇÆĞ)
-        // ¾à°£ÀÇ µô·¹ÀÌ¸¦ µÎ°í ³Ñ±â´Â °Ô ÀÚ¿¬½º·¯¿ì¹Ç·Î ÄÚ·çÆ¾ µîÀ» ¾²¸é ÁÁ°ÚÁö¸¸,
-        // ¿©±â¼± Áï½Ã ¿äÃ»ÇÏ°Å³ª GameManager¸¦ ÅëÇØ Ã³¸®
-        if (GameManager.Instance != null)
-        {
-            // ´ë»ç ÀĞÀ» ½Ã°£ 2ÃÊ Á¤µµ µÚ¿¡ ³Ñ¾î°¡µµ·Ï ÄÚ·çÆ¾ È£Ãâ ±ÇÀå (GameManager À§ÀÓ)
-            // ¿©±â¼­´Â Áï½Ã ÀüÈ¯ ¿¹½Ã:
-            GameManager.Instance.ChangePhase(GamePhase.Settlement);
-        }
+        // 2. ê°•ì œ ì •ì‚° í˜ì´ì¦ˆ ì§„ì… (ì‹¤íŒ¨)
+        // ì•½ê°„ì˜ ë”œë ˆì´ë¥¼ ë‘ê³  ë„˜ê¸°ëŠ” ê²Œ ìì—°ìŠ¤ëŸ¬ìš°ë¯€ë¡œ ì½”ë£¨í‹´ ë“±ì„ ì“°ë©´ ì¢‹ê² ì§€ë§Œ,
+        // ì—¬ê¸°ì„  ì¦‰ì‹œ ìš”ì²­í•˜ê±°ë‚˜ GameManagerë¥¼ í†µí•´ ì²˜ë¦¬
+        EventBus.Publish(new ForceMissionFailRequestedEvent());
+
+        //=======================================
+        //ë¯¸ì…˜ ê°•ì œ ì‹¤íŒ¨ ì‹œ ì•„ì˜ˆ ê²Œì„ì´ ë©ˆì¶”ëŠ” í˜„ìƒì´ ìˆì–´ì„œ í•˜ë‹¨ì˜ ê²Œì„ë§¤ë‹ˆì € í˜ì´ì¦ˆ ë³€ê²½ ì£¼ì„ì²˜ë¦¬í–ˆìŠµë‹ˆë‹¤.
+        //=======================================
+
+        //if (GameManager.Instance != null)
+        //{
+        //    // ëŒ€ì‚¬ ì½ì„ ì‹œê°„ 2ì´ˆ ì •ë„ ë’¤ì— ë„˜ì–´ê°€ë„ë¡ ì½”ë£¨í‹´ í˜¸ì¶œ ê¶Œì¥ (GameManager ìœ„ì„)
+        //    // ì—¬ê¸°ì„œëŠ” ì¦‰ì‹œ ì „í™˜ ì˜ˆì‹œ:
+        //    GameManager.Instance.ChangePhase(GamePhase.Settlement);
+        //}
     }
 
     public override bool CheckWinCondition(int currentScore, out string failReason)
     {
-        // 1. ÁøÂ¥¸¦ Àâ¾Æ¼­ °­Á¦ Á¾·áµÈ °æ¿ì
+        // 1. ì§„ì§œë¥¼ ì¡ì•„ì„œ ê°•ì œ ì¢…ë£Œëœ ê²½ìš°
         if (_killedRealFrank)
         {
             failReason = failReasonText;
             return false;
         }
 
-        // 2. °¡Â¥¸¦ ¸ñÇ¥Ä¡¸¸Å­ ¸ø ÀâÀº °æ¿ì
+        // 2. ê°€ì§œë¥¼ ëª©í‘œì¹˜ë§Œí¼ ëª» ì¡ì€ ê²½ìš°
         if (currentScore < targetScore)
         {
-            failReason = $"°¡Â¥¸¦ ¸ğµÎ Ã£Áö ¸øÇß½À´Ï´Ù. ({currentScore}/{targetScore})";
+            failReason = $"ê°€ì§œë¥¼ ëª¨ë‘ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ({currentScore}/{targetScore})";
             return false;
         }
 
