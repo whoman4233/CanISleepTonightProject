@@ -142,7 +142,7 @@ public class FlowController : MonoBehaviour
     private IEnumerator LoadPlaySceneSequence()
     {
         isBusy = true;
-
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
         // 튜토리얼 씬 로드
         yield return SceneManager.LoadSceneAsync(tutorialSceneName, LoadSceneMode.Additive);
         Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
@@ -152,6 +152,11 @@ public class FlowController : MonoBehaviour
         if (introScene.isLoaded) yield return SceneManager.UnloadSceneAsync(introScene); // 인트로씬 언로드
 
         GameManager.Instance.ChangePhase(GamePhase.Tutorial);
+        Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
+        if (loadingScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
+        }
 
         isBusy = false;
     }

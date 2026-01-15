@@ -32,28 +32,42 @@ public class Mission06Strategy : DailyMissionStrategy
 
         _isCulpritCaught = false;
         AssignRandomNames(); // 이름 섞기
-        specialAIList.Clear();
-        specialVisualList.Clear();
+        List<string> allCellIds = scheduleManager.GetActiveCellIds();
 
-        // 용의자 3명의 비주얼 타입
-        specialVisualList.Add(VisualAnomalyType.Suspect1);
-        specialVisualList.Add(VisualAnomalyType.Suspect2);
-        specialVisualList.Add(VisualAnomalyType.Suspect3);
+        // 무작위로 3개의 방을 선정 (용의자가 될 방)
+        // 리스트를 복사해서 셔플한 뒤 3개를 뽑음
+        List<string> targetCells = allCellIds.OrderBy(x => Random.value).Take(3).ToList();
 
-        // 용의자 3명의 AI 타입 (모두 Good)
-        for (int i = 0; i < 3; i++) specialAIList.Add(PrisonerAIType.Good);
+        // 선정된 3명의 데이터를 "갱단원"으로 강제 치환
+        // targetTemplateId는 SO에 등록된 갱단원의 templateId와 일치시켜야함
+        foreach (var cellId in targetCells)
+        {
+            scheduleManager.ForceTransformPrisoner(cellId, "PSN_Gang_01");
+        }
 
-        // 설정된 AI와 Visual 목록을 스케줄 매니저에게 전달
-        scheduleManager.AssignRolesForNewDay(
-            suspiciousCount: targetSuspiciousCount,
-            defaultAI: defaultAI,
-            specialBehaviors: specialAIList,
-            specialVisuals: specialVisualList
-        );
+        // 역할 부여 (중앙 소환을 위한 비주얼 타입 지정)
+        // 첫 번째 방(targetCells[0])을 진범(isSuspicious = true)으로 설정
+        scheduleManager.SetDailyRole(targetCells[0], PrisonerAIType.Good, VisualAnomalyType.Suspect1, true);
+        scheduleManager.SetDailyRole(targetCells[1], PrisonerAIType.Good, VisualAnomalyType.Suspect2, false);
+        scheduleManager.SetDailyRole(targetCells[2], PrisonerAIType.Good, VisualAnomalyType.Suspect3, false);
+
+        // 나머지 방들은 평범한 죄수들로 채우기 (이미 정해진 3명 제외)
+        foreach (var cellId in allCellIds)
+        {
+            if (!targetCells.Contains(cellId))
+            {
+                scheduleManager.SetDailyRole(cellId, defaultAI, VisualAnomalyType.None, false);
+            }
+        }
+
+        // 스폰 실행
         var spawnController = GameObject.FindObjectOfType<PrisonerSpawnController>();
-        spawnController.ClearAllForNewDay(); // 이전 생성물 제거
-        spawnController.SpawnAllPrisoners(); // 3명이 포함된 최신 데이터로 재생성
-        Debug.Log("오늘의찐막테스트");
+        if (spawnController != null)
+        {
+            spawnController.ClearAllForNewDay();
+            spawnController.SpawnAllPrisoners();
+        }
+        Debug.Log("갱단원3명 소환");
     }
 
     private void AssignRandomNames()
@@ -110,5 +124,22 @@ public class Mission06Strategy : DailyMissionStrategy
             return true;
 
         return false;
+    }
+
+    // 선임 교도관 NPC가 선택지를 클릭했을 때 호출할 함수
+    public void SubmitReport(int choiceIndex)
+    {
+        // choiceIndex: 0(용의자1), 1(용의자2), 2(용의자3)
+        // 용의자 1이 진범이므로 choiceIndex가 0일 때 성공
+        if (choiceIndex == 0)
+        {
+            OnEventTriggered("M06_Success");
+            Debug.Log("진범(용의자 1)을 지목했습니다.");
+        }
+        else
+        {
+            _isCulpritCaught = false;
+            Debug.Log($"{choiceIndex + 1}번 용의자를 지목하여 실패했습니다.");
+        }
     }
 }
