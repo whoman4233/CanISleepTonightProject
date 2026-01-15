@@ -39,7 +39,7 @@ public class InspectionManager : MonoBehaviour
     private bool _initialized; // 초기화 완료 여부
     public bool IsInspecting => _isInspecting;
     private bool _isInspecting;
-
+    private bool _isRotating;
     private float yaw;
     private float pitch;
 
@@ -229,11 +229,24 @@ public class InspectionManager : MonoBehaviour
     private void HandleRotation()
     {
         if (!_inputs.Inspection.RotateHold.IsPressed())
+        {
+            if (_isRotating)
+            {
+                _isRotating = false;
+                EventBus.Publish(new InspectionRotateEndedEvent());
+            }
             return;
+        }
 
         Vector2 delta = _inputs.Inspection.Rotate.ReadValue<Vector2>();
         if (delta.sqrMagnitude < 0.001f)
             return;
+
+        if (!_isRotating)
+        {
+            _isRotating = true;
+            EventBus.Publish(new InspectionRotateStartedEvent());
+        }
 
         yaw -= delta.x * rotateSpeed;
         pitch += delta.y * rotateSpeed;
@@ -241,6 +254,7 @@ public class InspectionManager : MonoBehaviour
 
         inspectPivot.localRotation = Quaternion.Euler(pitch, yaw, 0f);
     }
+
 
     private void ResetRotation()
     {
