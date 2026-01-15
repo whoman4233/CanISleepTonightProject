@@ -26,11 +26,11 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _MK_ALBEDO_MAP
-  - _MK_ALPHA_CLIPPING
-  - _MK_BLEND_MULTIPLY
+  - _MK_BLEND_PREMULTIPLY
   - _MK_DETAIL_NORMAL_MAP
   - _MK_ENVIRONMENT_REFLECTIONS_ADVANCED
-  - _MK_LIGHT_BANDED
+  - _MK_IRIDESCENCE_DEFAULT
+  - _MK_LIGHT_CEL
   - _MK_NORMAL_MAP
   - _MK_PBS_MAP_0
   - _MK_PBS_MAP_1
@@ -39,9 +39,8 @@ Material:
   - _MK_SPECULAR_ISOTROPIC
   - _MK_SURFACE_TYPE_TRANSPARENT
   - _MK_THRESHOLD_MAP
-  - _MK_WORKFLOW_SPECULAR
+  - _MK_WORKFLOW_ROUGHNESS
   m_InvalidKeywords:
-  - _ALPHACLIPPING_ON
   - _FRESNELHIGHLIGHTS_ON
   - _MK_ARTISTIC_ANIMATION_STUTTER
   - _MK_DETAIL_BLEND_MIX
@@ -308,12 +307,12 @@ Material:
     - Normal_Blend: 0.5
     - _AddPrecomputedVelocity: 0
     - _AdditionalLightsFalloff: 0
-    - _AdditionalLightsThreshold: 0.18
+    - _AdditionalLightsThreshold: 0.54
     - _AdvancedTab: 1
     - _AlbedoMapIntensity: 1
     - _AlembicMotionVectors: 0
     - _AlphaClip: 0
-    - _AlphaClipping: 1
+    - _AlphaClipping: 0
     - _AlphaCutoff: 0
     - _AlphaToMask: 0
     - _Anisotropy: 0
@@ -325,12 +324,12 @@ Material:
     - _BUMP_MAP_STRENGTH: 0
     - _BackSmoothness: 0
     - _BackSpecularWeight: 0
-    - _Blend: 3
-    - _BlendDst: 0
-    - _BlendDstAlpha: 1
+    - _Blend: 1
+    - _BlendDst: 10
+    - _BlendDstAlpha: 10
     - _BlendModePreserveSpecular: 1
-    - _BlendSrc: 2
-    - _BlendSrcAlpha: 0
+    - _BlendSrc: 1
+    - _BlendSrcAlpha: 1
     - _Brightness: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
@@ -349,8 +348,8 @@ Material:
     - _DetailNormalMapScale: 1
     - _DetailUVSet: 0
     - _Diffuse: 0
-    - _DiffuseSmoothness: 0
-    - _DiffuseThresholdOffset: 1
+    - _DiffuseSmoothness: 1
+    - _DiffuseThresholdOffset: 0
     - _Dissolve: 0
     - _DissolveAmount: 0.5
     - _DissolveBorderSize: 0.25
@@ -379,14 +378,14 @@ Material:
     - _IndirectFade: 1
     - _Initialized: 0
     - _InputTab: 1
-    - _Iridescence: 0
-    - _IridescenceSize: 1
-    - _IridescenceSmoothness: 0.5
+    - _Iridescence: 1
+    - _IridescenceSize: 0.72
+    - _IridescenceSmoothness: 0.16
     - _IridescenceThresholdOffset: 0
-    - _Light: 2
-    - _LightBands: 12
-    - _LightBandsScale: 1
-    - _LightThreshold: 0.76
+    - _Light: 1
+    - _LightBands: 2
+    - _LightBandsScale: 0.29
+    - _LightThreshold: 0.29
     - _LightTransmission: 0
     - _LightTransmissionDistortion: 0.25
     - _LightTransmissionIntensity: 1
@@ -423,21 +422,21 @@ Material:
     - _RenderFace: 2
     - _RenderPriority: 0
     - _Rim: 2
-    - _RimSize: 5
-    - _RimSmoothness: 0
-    - _RimThresholdOffset: 1
+    - _RimSize: 1.89
+    - _RimSmoothness: 1
+    - _RimThresholdOffset: 0
     - _Roughness: 0.5
     - _SPECULAR_IOR: 4.51
     - _SPECULAR_ROUGHNESS: 14.53
     - _Saturation: 1
     - _SketchMapScale: 1
-    - _Smoothness: 0.48
+    - _Smoothness: 0.39
     - _SmoothnessTextureChannel: 0
     - _Specular: 1
     - _SpecularHighlights: 1
     - _SpecularIntensity: 2
     - _SpecularSmoothness: 1
-    - _SpecularThresholdOffset: 1
+    - _SpecularThresholdOffset: 0
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Stencil: 1
@@ -462,7 +461,7 @@ Material:
     - _VertexAnimation: 0
     - _VertexAnimationIntensity: 0.05
     - _VertexAnimationStutter: 0
-    - _Workflow: 1
+    - _Workflow: 2
     - _WorkflowMode: 1
     - _WrappedLighting: 1
     - _ZTest: 4
@@ -478,15 +477,15 @@ Material:
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FrontSpecularColor: {r: 0, g: 0, b: 0, a: 0}
-    - _GoochBrightColor: {r: 1, g: 0.495283, b: 0.495283, a: 1}
-    - _GoochDarkColor: {r: 0, g: 0, b: 0, a: 1}
-    - _IridescenceColor: {r: 1, g: 1, b: 1, a: 0.5}
+    - _GoochBrightColor: {r: 0.6698113, g: 0.43323106, b: 0.3507031, a: 1}
+    - _GoochDarkColor: {r: 0.6320754, g: 0.35479707, b: 0.35479707, a: 1}
+    - _IridescenceColor: {r: 1, g: 0.8052756, b: 0.61960787, a: 0.5}
     - _LightTransmissionColor: {r: 1, g: 0.65, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _REFLECTIONS_COLOR: {r: 1, g: 1, b: 1, a: 1}
-    - _RimBrightColor: {r: 1, g: 1, b: 1, a: 1}
-    - _RimColor: {r: 0.48300108, g: 0.49664387, b: 0.509434, a: 0.07058824}
-    - _RimDarkColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RimBrightColor: {r: 1, g: 0.6038528, b: 0.1372549, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 0.07058824}
+    - _RimDarkColor: {r: 0.5754717, g: 0.13644405, b: 0, a: 1}
     - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 0.19999993, g: 0.19999993, b: 0.19999993, a: 1}
