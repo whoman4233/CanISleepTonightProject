@@ -1,13 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "Mission06_Strategy", menuName = "Mission/Strategy/M06_Interrogation")]
 public class Mission06Strategy : DailyMissionStrategy
 {
     [Header("M06: Suspect Data")]
     [SerializeField] private Mission06Data missionData; // 랜덤 이름 저장용 SO
+    public Mission06Data MissionData => missionData;
     private readonly string[] _originNames = { "Antony", "Richard", "Leo" };
 
     [Header("Spawn Rules")]
@@ -18,7 +20,30 @@ public class Mission06Strategy : DailyMissionStrategy
     public List<VisualAnomalyType> specialVisualList;
 
     private bool _isCulpritCaught = false;
+    [Header("Choices")]
+    private int _current = 0;
+    private int _target = 1; // 범인 지목 1회가 목표
+    private bool _hasReported = false;
+    public int CurrentCount => _current;
+    public int TargetCount => _target;
+    public bool HasReported => _hasReported;
 
+    private Action<Mission06SuspectSelectedEvent> _onSuspectSelected;
+    private void OnEnable()
+    {
+        _onSuspectSelected = OnSuspectSelected;
+        EventBus.Subscribe(_onSuspectSelected);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onSuspectSelected);
+    }
+
+    private void OnSuspectSelected(Mission06SuspectSelectedEvent e)
+    {
+        SubmitReport(e.selectedIndex);
+    }
     private void OnValidate()
     {
         missionId = DialogueKeys.Missions.Mission06; // 미션id 고정
@@ -36,7 +61,7 @@ public class Mission06Strategy : DailyMissionStrategy
 
         // 무작위로 3개의 방을 선정 (용의자가 될 방)
         // 리스트를 복사해서 셔플한 뒤 3개를 뽑음
-        List<string> targetCells = allCellIds.OrderBy(x => Random.value).Take(3).ToList();
+        List<string> targetCells = allCellIds.OrderBy(x => UnityEngine.Random.value).Take(3).ToList();
 
         // 선정된 3명의 데이터를 "갱단원"으로 강제 치환
         // targetTemplateId는 SO에 등록된 갱단원의 templateId와 일치시켜야함
@@ -129,11 +154,22 @@ public class Mission06Strategy : DailyMissionStrategy
     // 선임 교도관 NPC가 선택지를 클릭했을 때 호출할 함수
     public void SubmitReport(int choiceIndex)
     {
-        // choiceIndex: 0(용의자1), 1(용의자2), 2(용의자3)
-        // 용의자 1이 진범이므로 choiceIndex가 0일 때 성공
+        // 이미 보고했다면 무시
+        if (_hasReported)
+        {
+            Debug.LogWarning("[Mission06] 이미 보고가 완료되었습니다.");
+            return;
+        }
+
+        _hasReported = true;
+
+        // 지목 시점에 무조건 1회 카운트
+        _current = 1;
+
+        // 정답 여부 판정
         if (choiceIndex == 0)
         {
-            OnEventTriggered("M06_Success");
+            _isCulpritCaught = true;
             Debug.Log("진범(용의자 1)을 지목했습니다.");
         }
         else
@@ -141,5 +177,13 @@ public class Mission06Strategy : DailyMissionStrategy
             _isCulpritCaught = false;
             Debug.Log($"{choiceIndex + 1}번 용의자를 지목하여 실패했습니다.");
         }
+
+        // HUD 갱신 알림 (프로젝트에 맞는 이벤트 사용)
+        EventBus.Publish(new MissionProgressChangedEvent
+        {
+            current = _current,
+            target = _target
+        });
     }
+
 }

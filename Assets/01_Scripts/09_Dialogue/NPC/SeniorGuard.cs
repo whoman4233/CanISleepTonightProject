@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-public class SeniorGuard : MonoBehaviour , IInteractable
+public class SeniorGuard : MonoBehaviour, IInteractable
 {
     [Header("Dialogue Settings")]
     [SerializeField] private string speakerKey = DialogueKeys.Speakers.Frank;
@@ -10,24 +11,27 @@ public class SeniorGuard : MonoBehaviour , IInteractable
 
     public void Interact(Player player)
     {
+        if (DailyMissionManager.Instance.CurrentMission is Mission06Strategy m06)
+        {
+            if (m06.HasReported)
+            {
+                // 선택지 1: 완전 무반응
+                return;
+
+                // 선택지 2: 경고 텍스트 (원하면)
+                // EventBus.Publish(new ShowTimedTextPopupEvent("이미 보고를 마쳤다.", 1.5f));
+            }
+        }
+
         System.Action onDialogueEnd = () =>
         {
-            string[] names = { "{Suspect1}", "{Suspect2}", "{Suspect3}" };
-
-            ChoiceButton.Instance.Open(names, (index) =>
-            {
-                if (DailyMissionManager.Instance.CurrentMission is Mission06Strategy m06)
-                {
-                    m06.SubmitReport(index);
-                    Debug.Log($"[Mission06] 플레이어가 {index + 1}번 용의자를 지목함.");
-                }
-            });
+            EventBus.Publish(new Mission06PuzzleShowRequestedEvent());
         };
-        // 대화만 먼저 실행 (선임교도관대화)
-        DialogueManager.Instance.StartDialogueByKeys(speakerKey, DialogueKeys.Types.Fin, onDialogueEnd);
 
-        // 선택지 창 열기
-        string[] names = { "{Suspect1}", "{Suspect2}", "{Suspect3}" };
+        DialogueManager.Instance.StartDialogueByKeys(
+            speakerKey,
+            DialogueKeys.Types.Fin,
+            onDialogueEnd
+        );
     }
-
 }
