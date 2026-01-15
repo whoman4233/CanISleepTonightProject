@@ -61,15 +61,19 @@ public class PrisonerInspectionState : BasePrisonerState
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
     }
 
-    // ★ [핵심] 피격 시 이동을 즉시 멈추고 상태 전환
+    // 피격 시 이동을 즉시 멈추고 상태 전환
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         if (fsm == null || Controller == null) return;
 
         anim.SetTrigger("Hit");
 
-        // 이동 중 맞았을 수도 있으니 즉시 정지 (Exit에서 처리하지만 이중 안전장치)
-        if (agent != null) agent.isStopped = true;
+        // 이동 중 맞았을 수도 있으니 즉시 정지
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero; // ★ [추가] 관성 제거 (미끄러짐 방지)
+        }
 
         // 반항형(Bad, Ambusher 등)은 전투, 순응형(Good)은 쫄기
         if (IsAggressiveType(Controller.AIType))
