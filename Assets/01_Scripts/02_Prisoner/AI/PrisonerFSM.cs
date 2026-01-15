@@ -15,40 +15,40 @@ public class PrisonerFSM : MonoBehaviour
 
     // ================================================================
     // [상태 정의] 
-    // 기존의 잡다한 상태들을 ActionState 하나로 통합했습니다.
     // ================================================================
 
-    // ★ [통합] 대기, 노래, 비명, 땅파기, 기습대기 등 "제자리 행동"을 모두 담당
+    // 통합된 일반 행동 상태
     public PrisonerActionIdleState ActionState { get; private set; }
 
+    // ★ [추가] 기습(매복) 상태
+    public IPrisonerState AmbushState { get; private set; }
 
-
-    // [특수 로직] 전투, 쫄기, 사망, 점호 등은 별도 로직이므로 유지
+    // [특수 로직]
     public IPrisonerState CombatState { get; private set; }
     public IPrisonerState CowerState { get; private set; }
     public IPrisonerState DeadState { get; private set; }
     public IPrisonerState InspectionState { get; private set; }
-    public IPrisonerState ReturnState { get; private set; }    
-    public IPrisonerState CenterIdleState { get; private set; } 
+    public IPrisonerState ReturnState { get; private set; }
+    public IPrisonerState CenterIdleState { get; private set; }
 
-    // (참고) 무적 상태 판정: 점호(Inspection) 중이거나 죽었을 때만 무적으로 설정하는 것이 일반적입니다.
-    // 기존 코드대로라면 Idle일 때 무적이라 때릴 수가 없으므로 로직을 수정했습니다.
+    // (참고) 무적 상태 판정
     public bool IsInvulnerable => _currentState == InspectionState || _currentState == DeadState;
 
     private void Awake()
     {
         // 상태 객체 생성
-        // ★ 통합된 ActionState 하나만 생성하면 됩니다.
         ActionState = new PrisonerActionIdleState(this);
+
+        // ★ [추가] AmbushState 생성
+        AmbushState = new PrisonerAmbushState(this);
 
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);
-        InspectionState = new PrisonerInspectionState(this); 
-        ReturnState = new PrisonerReturnState(this);         
+        InspectionState = new PrisonerInspectionState(this);
+        ReturnState = new PrisonerReturnState(this);
         CenterIdleState = new PrisonerCenterIdleState(this);
     }
-
 
     // Controller에서 호출하는 초기화 함수
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
@@ -62,7 +62,7 @@ public class PrisonerFSM : MonoBehaviour
             this.InspectionPoint = controller.AssignedCell.inspectionPoint;
         }
 
-        // 초기 상태는 ActionState (Type 0 = Normal Idle)로 시작
+        // 초기 상태는 ActionState (Good)로 시작 (이후 InitializeBehavior에서 덮어씌워짐)
         ActionState.SetActionType(PrisonerAIType.Good);
         ChangeState(ActionState);
     }
@@ -70,14 +70,21 @@ public class PrisonerFSM : MonoBehaviour
     public void InitializeBehavior(PrisonerAIType aiType)
     {
         // ============================================================
-        // ★ [핵심 수정] 거대한 Switch문을 제거하고 통합 로직 적용
-        // 어떤 타입이든 ActionState에게 "너 이거 해"라고 알려주고 전환합니다.
+        // ★ [핵심 수정] Ambusher 타입이면 즉시 기습(매복) 상태로 진입
         // ============================================================
 
-        ActionState.SetActionType(aiType);
-        ChangeState(ActionState);
-
-        Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState({aiType.ToString()})");
+        if (aiType == PrisonerAIType.Ambusher)
+        {
+            Debug.Log($"[FSM Init] {name} is Ambusher -> Enter AmbushState");
+            ChangeState(AmbushState);
+        }
+        else
+        {
+            // 그 외 일반 타입들은 ActionState로 통합 관리
+            ActionState.SetActionType(aiType);
+            ChangeState(ActionState);
+            Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState");
+        }
     }
 
     private void Update() => _currentState?.Update();
@@ -101,26 +108,29 @@ public class PrisonerFSM : MonoBehaviour
 
         PrisonerAIType myType = Controller.AIType;
 
+        // ★ [추가] 기습형(Ambusher)은 점호 신호를 무시하고 계속 숨어있어야 함
+        // (문이 열리는 순간이 기습 타이밍이므로 InspectionState로 가면 안 됨)
+        if (myType == PrisonerAIType.Ambusher)
+        {
+            Debug.Log($"[FSM] {name} (Ambusher)는 점호 요청을 무시하고 기습 대기합니다.");
+            return;
+        }
+
         switch (myType)
         {
-            // 1. 고정형(Stay), 비키니(Bikini): 
-            // 점호 신호를 무시하고 하던 행동(Idle) 계속 유지
+            // 1. 일반 죄수들: 점호 받으러 나감
             case PrisonerAIType.Good:
             case PrisonerAIType.Bad:
-            case PrisonerAIType.Ambusher:
                 ChangeState(InspectionState);
                 break;
 
-            // 2. 탈주형(Run): 
-            // 문이 열리자마자 탈주 시작
+            // 2. 탈주형(Run): 문 열리면 탈주
             case PrisonerAIType.Escaper:
                 Debug.Log($"[FSM] {name} ({myType}) 탈주 시작!");
                 // if (EscapeState != null) ChangeState(EscapeState);
-                // 지금은 EscapeState가 변수로 선언 안 되어 있을 수 있으니 로그만
                 break;
 
-            // 3. 순응형(Good), 반항형(Bad), 기습형(Ambush) 등:
-            // 정상적으로 점호 자세(Inspection)로 전환
+            // 3. 그 외 특이 케이스
             default:
                 Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시합니다.");
                 break;
