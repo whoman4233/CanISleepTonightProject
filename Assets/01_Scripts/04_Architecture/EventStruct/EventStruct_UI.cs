@@ -223,4 +223,10 @@ public struct CellInspectionCompletedEvent
 {
     public string CellId;
 }
+//==========================================
+// UI 상태에서 연출용 클릭 이벤트 ex: 결과창 클릭 -> 도장애니메이션 연출
+//==========================================
+public struct UIProceedRequestedEvent
+{
+}
 

@@ -37,8 +37,6 @@ public class FrankSpawnManager : MonoBehaviour
         {
             _currentGuard = Instantiate(seniorGuardPrefab, spawnPoint.position, spawnPoint.rotation);
             _currentGuard.name = DialogueKeys.Speakers.Frank;
-
-            // 만약 선임 교도관 전용 스크립트가 있다면 여기서 추가 설정 가능
         }
     }
 
