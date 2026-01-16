@@ -10,9 +10,9 @@ public enum AnomalyCategory
 // (기존 AnomalyKind는 슬롯 매칭용으로 유지)
 public enum AnomalyKind
 {
-    Floor, FrontWall, LeftWall, RightWall, SteelBarred, Poster, Tile, Vent,
+    Floor, FrontWall, LeftWall, RightWall, Poster, Tile, Vent,
     Toilet, Sink, Bed, Book, Trash,
-    pot, weightDisc, dumbel,
+    pot, weightDisc, dumbel, Drink, Lighter, SmutRag, Trump, Shoes, Planter, SmartPhone, Bread,
     ItemInspect, GeneralProp, // ... 기타 등등
                               
 }

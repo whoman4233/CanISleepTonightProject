@@ -166,12 +166,18 @@ public class PrisonerController : MonoBehaviour
 
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
-        fsm.ChangeState(fsm.DeadState);
-        if (sfx != null) sfx.PlayRandomDieOnce();
-
+        // 1. ★ [중요] 죽기 전에 하던 행동(소리, 애니메이션, 도구)을 즉시 중단
         StopActionBehavior();
 
+        // 2. 상태 전환 (DeadState)
+        fsm.ChangeState(fsm.DeadState);
+
+        // 3. 사망 사운드 재생
+        if (sfx != null) sfx.PlayRandomDieOnce();
+
+        // 4. 랙돌 처리
         if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
+
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 
