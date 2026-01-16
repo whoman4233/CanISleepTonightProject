@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3213538753954621201}
   - component: {fileID: 7324505887439337582}
   - component: {fileID: 5955425689332063094}
+  - component: {fileID: 6512793914091710759}
   m_Layer: 12
   m_Name: PSNA_Awl01_Visual
   m_TagString: Untagged
@@ -85,6 +86,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 7324505887439337582}
+  revealOnInspect: 0
 --- !u!114 &7324505887439337582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,6 +115,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDefinition: {fileID: 11400000, guid: 7b8767f37b6886149a01a14b351a6b18, type: 2}
   inspectVisual: {fileID: 2649420936827649985}
+--- !u!114 &6512793914091710759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2649420936827649985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_34
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1001 &7736024216617281217
 PrefabInstance:
   m_ObjectHideFlags: 0

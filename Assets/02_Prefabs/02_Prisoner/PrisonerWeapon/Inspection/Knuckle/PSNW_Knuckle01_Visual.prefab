@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 803744428513231941}
   - component: {fileID: 3408418757003302669}
   - component: {fileID: 4046521951382310954}
+  - component: {fileID: 5210576260998458964}
   m_Layer: 12
   m_Name: PSNW_Knuckle01_Visual
   m_TagString: Untagged
@@ -108,8 +109,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.036785167, y: 0.358585, z: 0.22676036}
-  m_Center: {x: 0.0000000018626451, y: 0, z: 0}
+  m_Size: {x: 0.036785167, y: 0.20797734, z: 0.22676036}
+  m_Center: {x: 0.0000000015522043, y: -0.0012514616, z: -1.7884323e-18}
 --- !u!114 &4674194405742436166
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,6 +138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 3408418757003302669}
+  revealOnInspect: 0
 --- !u!114 &3408418757003302669
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,3 +167,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDefinition: {fileID: 11400000, guid: 4496253c6ef84bf41a9b4adf3abc5e3f, type: 2}
   inspectVisual: {fileID: 1825677322948452290}
+--- !u!114 &5210576260998458964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1825677322948452290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_36
+  ruleTable: {fileID: 0}
+  objectType: 

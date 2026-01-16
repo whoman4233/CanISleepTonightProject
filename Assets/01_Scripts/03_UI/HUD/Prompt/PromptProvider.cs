@@ -2,12 +2,9 @@
 
 public class PromptProvider : MonoBehaviour, IPromptProvider
 {
-    [Header("기본 프롬프트")]
     [SerializeField] private string defaultPromptId;
-
-    [Header("상태 기반 프롬프트")]
     [SerializeField] private PromptRuleTableSO ruleTable;
-    [SerializeField] private string objectType; // 문,캐비닛
+    [SerializeField] private string objectType;
 
     private IPromptStateProvider stateProvider;
 
@@ -18,34 +15,37 @@ public class PromptProvider : MonoBehaviour, IPromptProvider
 
     public bool TryGetPromptId(PromptContext context, out string promptId)
     {
+        Debug.Log(
+    $"[PromptProvider] {name} context={context}, default={defaultPromptId}"
+);
+
         promptId = null;
 
-        //  상태 Provider가 있는 경우
+        // =========================
+        // Inspection 전용
+        // =========================
+        if (context == PromptContext.Inspection)
+        {
+            if (!string.IsNullOrEmpty(defaultPromptId))
+            {
+                promptId = defaultPromptId;
+                return true;
+            }
+            return false;
+        }
+
+        // =========================
+        // Interact 전용
+        // =========================
+        if (context != PromptContext.Interact)
+            return false;
+
         if (stateProvider != null && ruleTable != null)
         {
             string state = stateProvider.GetPromptState();
             if (!string.IsNullOrEmpty(state) &&
-                ruleTable.TryGetPromptId(objectType, state, context, out var statePrompt))
-            {
-                promptId = statePrompt;
+                ruleTable.TryGetPromptId(objectType, state, context, out promptId))
                 return true;
-            }
-        }
-
-        //  상태 Provider가 없는 경우 → 기본 상태 (CanPickUp)
-        if (stateProvider == null && ruleTable != null)
-        {
-            string defaultState = CarryPromptState.CanPickUp.ToString();
-
-            if (ruleTable.TryGetPromptId(
-                    objectType,
-                    defaultState,
-                    context,
-                    out var defaultPrompt))
-            {
-                promptId = defaultPrompt;
-                return true;
-            }
         }
 
         if (!string.IsNullOrEmpty(defaultPromptId))
@@ -53,7 +53,7 @@ public class PromptProvider : MonoBehaviour, IPromptProvider
             promptId = defaultPromptId;
             return true;
         }
+
         return false;
     }
-
 }

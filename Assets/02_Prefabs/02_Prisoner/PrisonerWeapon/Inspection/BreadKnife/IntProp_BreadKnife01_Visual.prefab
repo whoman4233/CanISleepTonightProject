@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7101130286726487248}
   - component: {fileID: 3424926125682069794}
   - component: {fileID: 5724750408377015304}
+  - component: {fileID: 6405405545958864556}
   m_Layer: 12
   m_Name: IntProp_BreadKnife01_Visual
   m_TagString: Untagged
@@ -137,6 +138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 3424926125682069794}
+  revealOnInspect: 0
 --- !u!114 &3424926125682069794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,3 +167,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDefinition: {fileID: 11400000, guid: da2c335de1fabcc48a049632a857b2b1, type: 2}
   inspectVisual: {fileID: 6508168514700058663}
+--- !u!114 &6405405545958864556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508168514700058663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_39
+  ruleTable: {fileID: 0}
+  objectType: 

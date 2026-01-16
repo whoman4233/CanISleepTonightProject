@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3190791310160435983}
   - component: {fileID: 1891647347060870306}
   - component: {fileID: 8229729037145862110}
+  - component: {fileID: 3404531756825283723}
   m_Layer: 10
   m_Name: PSNA_LiquorBottle01
   m_TagString: Untagged
@@ -82,7 +83,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemDefinition: {fileID: 0}
+  itemDefinition: {fileID: 11400000, guid: 1922d0c0e77b1684a914a877d01d5984, type: 2}
+--- !u!114 &3404531756825283723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7058051734919849592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_33
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1001 &412913737931633457
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -159,7 +175,7 @@ PrefabInstance:
     - target: {fileID: -5960276098054169857, guid: bb7432c46864196488e940318abd391b,
         type: 3}
       propertyPath: m_Materials.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -5960276098054169857, guid: bb7432c46864196488e940318abd391b,
         type: 3}

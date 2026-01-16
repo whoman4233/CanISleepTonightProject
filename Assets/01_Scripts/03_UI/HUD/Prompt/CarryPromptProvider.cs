@@ -18,7 +18,7 @@ public class CarryPromptProvider : MonoBehaviour, IPromptProvider
         if (context != PromptContext.Interact)
             return false;
 
-        if (interactor == null || !interactor.IsCarrying)
+        if (!interactor.IsCarrying)
             return false;
 
         var carried = interactor.CurrentHeldItem as ICarryable;
@@ -28,11 +28,10 @@ public class CarryPromptProvider : MonoBehaviour, IPromptProvider
         string objectType = carried.GetCarryPromptObjectType();
         string state = CarryPromptState.CanDrop.ToString();
 
-        return ruleTable != null &&
-               ruleTable.TryGetPromptId(
-                   objectType,
-                   state,
-                   context,
-                   out promptId);
+        return ruleTable.TryGetPromptId(
+            objectType,
+            state,
+            context,
+            out promptId);
     }
 }
