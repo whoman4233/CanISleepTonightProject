@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using System;
 
-public class UIHPBarController : MonoBehaviour
+public class HUDHPBarController : MonoBehaviour
 {
     [Header("Root")]
     [SerializeField] private GameObject root;
@@ -46,7 +46,10 @@ public class UIHPBarController : MonoBehaviour
         EventBus.Subscribe(_onContextReady);
 
         if (GameManager.Instance != null)
+        {
             _currentPhase = GameManager.Instance.CurrentPhase;
+            ApplyHp(GameManager.Instance.PlayerHP); // 초기 강제 반영
+        }
 
         ForceRefreshVisibility();
     }
@@ -66,13 +69,16 @@ public class UIHPBarController : MonoBehaviour
     private void RefreshVisibility()
     {
         bool show =
-            _currentPhase == GamePhase.Tutorial ||
-            _currentPhase == GamePhase.Standby ||
-            _currentPhase == GamePhase.Briefing ||
-            _currentPhase == GamePhase.Patrol;
+         _currentPhase == GamePhase.Tutorial ||
+         _currentPhase == GamePhase.Standby ||
+         _currentPhase == GamePhase.Briefing ||
+         _currentPhase == GamePhase.Patrol;
 
         if (root != null)
             root.SetActive(show);
+
+        if (!show && heartAnimator != null)
+            heartAnimator.StopBeat();
     }
 
     private void OnHpChanged(PlayerHpChangedEvent e)

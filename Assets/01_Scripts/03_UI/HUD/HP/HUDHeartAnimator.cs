@@ -26,15 +26,63 @@ public class HUDHeartAnimator : MonoBehaviour
             heartIcon = GetComponent<RectTransform>();
 
         _originScale = heartIcon.localScale;
+
+        if (_originScale.x <= 0.01f)
+        {
+            _originScale = Vector3.one;
+            heartIcon.localScale = _originScale;
+        }
     }
 
     private void OnEnable()
     {
         // HP 이벤트가 안 오더라도 "기본 박동"은 시작하도록
-        StartBeat(1f);
+        StartBeatSafe(1f);
     }
 
     private void OnDisable()
+    {
+        StopBeat();
+    }
+
+    // =========================
+    // 외부에서 호출되는 진입점
+    // =========================
+    public void UpdateByHp(float normalizedHp)
+    {
+        if (!gameObject.activeInHierarchy)
+            return;
+
+        if (normalizedHp <= 0f)
+        {
+            StopBeat();
+            return;
+        }
+
+        StartBeatSafe(normalizedHp);
+    }
+
+    // =========================
+    // 내부 제어 메서드
+    // =========================
+    private void StartBeatSafe(float normalizedHp)
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return;
+
+        float interval = Mathf.Lerp(
+            minInterval,
+            maxInterval,
+            Mathf.Clamp01(normalizedHp)
+        );
+
+        if (_beatRoutine != null)
+            StopCoroutine(_beatRoutine);
+
+        _beatRoutine = StartCoroutine(BeatRoutine(interval));
+    }
+
+    public void StopBeat()
     {
         if (_beatRoutine != null)
         {
@@ -42,24 +90,8 @@ public class HUDHeartAnimator : MonoBehaviour
             _beatRoutine = null;
         }
 
-        // 비활성화 시 원상복구
         if (heartIcon != null)
             heartIcon.localScale = _originScale;
-    }
-
-    public void UpdateByHp(float normalizedHp)
-    {
-        StartBeat(normalizedHp);
-    }
-
-    private void StartBeat(float normalizedHp)
-    {
-        float interval = Mathf.Lerp(minInterval, maxInterval, Mathf.Clamp01(normalizedHp));
-
-        if (_beatRoutine != null)
-            StopCoroutine(_beatRoutine);
-
-        _beatRoutine = StartCoroutine(BeatRoutine(interval));
     }
 
     private IEnumerator BeatRoutine(float interval)

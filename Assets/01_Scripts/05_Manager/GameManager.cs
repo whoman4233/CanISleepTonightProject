@@ -60,10 +60,20 @@ public class GameManager : MonoBehaviour
             // HP 변경 이벤트 발행
             EventBus.Publish(new PlayerHpChangedEvent(playerHP));
 
+            // =========================
+            // GameOver 처리
+            // - Ending과 분리
+            // - Phase는 유지 (Patrol)
+            // =========================
             if (playerHP <= 0 && currentPhase == GamePhase.Patrol)
             {
-                EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding2));
+                EventBus.Publish(new GameOverEvent());
+                EventBus.Publish(new ForceExitInspectionEvent());
+                // 기존 Ending 로직은 GameOver 이후
+                // UI 버튼을 통해서만 진입하도록 함
+                return;
             }
+
         }
     }
 
@@ -157,8 +167,12 @@ public class GameManager : MonoBehaviour
     private void PublishGameContextReady()
     {
         Debug.Log($"[GameManager] GameContextReady | Day {currentDay}/{maxDay}, Phase={currentPhase}");
+
         EventBus.Publish(new GameContextReadyEvent(currentDay, maxDay, currentPhase));
         EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
+
+        // 현재 HP 상태 동기화
+        EventBus.Publish(new PlayerHpChangedEvent(playerHP));
     }
 
     public void ChangePhase(GamePhase newPhase)

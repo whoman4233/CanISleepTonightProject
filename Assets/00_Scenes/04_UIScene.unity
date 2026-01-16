@@ -3190,6 +3190,7 @@ MonoBehaviour:
   exitConfirmPopup: {fileID: 619939544}
   settingsPopup: {fileID: 1399343450}
   settlementConfirmPopup: {fileID: 2119569063}
+  gameOverPopup: {fileID: 549743894}
 --- !u!1 &280125336
 GameObject:
   m_ObjectHideFlags: 0
@@ -5950,6 +5951,7 @@ GameObject:
   - component: {fileID: 549743891}
   - component: {fileID: 549743893}
   - component: {fileID: 549743892}
+  - component: {fileID: 549743894}
   m_Layer: 5
   m_Name: GameOverPopup
   m_TagString: Untagged
@@ -5992,7 +5994,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.8113208, g: 0.52429694, b: 0.52429694, a: 0.19607843}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6017,6 +6019,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 549743890}
   m_CullTransparentMesh: 1
+--- !u!114 &549743894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549743890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 054c074ef12e1df4ea9c6a9c57dba555, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  root: {fileID: 549743890}
+  restartButton: {fileID: 1055373320}
+  titleButton: {fileID: 717213561}
 --- !u!1 &551571818
 GameObject:
   m_ObjectHideFlags: 0
@@ -8409,9 +8426,9 @@ MonoBehaviour:
   root: {fileID: 501711386}
   timerText: {fileID: 401214575}
   timerFillImage: {fileID: 630417596}
+  timerIcon: {fileID: 1476032823}
   startColor: {r: 0, g: 1, b: 0, a: 1}
   endColor: {r: 1, g: 0, b: 0, a: 1}
-  timerIcon: {fileID: 1476032823}
 --- !u!1 &770715151
 GameObject:
   m_ObjectHideFlags: 0
@@ -9999,7 +10016,6 @@ MonoBehaviour:
   root: {fileID: 1824164803}
   fillImage: {fileID: 358083}
   heartAnimator: {fileID: 1382657265}
-  canvasGroup: {fileID: 950082405}
   fillMin: 0.09
   fillMax: 0.9
 --- !u!225 &950082405
@@ -12050,7 +12066,7 @@ GameObject:
   - component: {fileID: 1055373321}
   - component: {fileID: 1055373320}
   m_Layer: 5
-  m_Name: Resume_Button
+  m_Name: Restart_Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19793,7 +19809,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2092353867
 RectTransform:
   m_ObjectHideFlags: 0

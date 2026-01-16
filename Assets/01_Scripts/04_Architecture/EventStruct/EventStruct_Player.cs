@@ -20,3 +20,10 @@ public struct PlayerHpChangedEvent
         CurrentHp = currentHp;
     }
 }
+//==========================================
+// 게임 오버 이벤트
+//==========================================
+public struct GameOverEvent
+{
+
+}

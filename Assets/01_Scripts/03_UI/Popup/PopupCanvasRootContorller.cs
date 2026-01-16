@@ -9,16 +9,18 @@ public class PopupCanvasRootController : MonoBehaviour
     [SerializeField] private ExitConfirmPopupController exitConfirmPopup;
     [SerializeField] private SettingsPopupController settingsPopup;
     [SerializeField] private SettlementConfirmPopupController settlementConfirmPopup;
+    [SerializeField] private GameOverPopupController gameOverPopup;
 
     private Action<ShowExitConfirmPopupEvent> _onShowExit;
     private Action<ShowSettingsPopupEvent> _onShowSettings;
     private Action<HideSettingsPopupEvent> _onHideSettings;
     private Action<PopupCloseRequestedEvent> _onPopupCloseRequested;
     private Action<ShowSettlementConfirmPopupEvent> _onShowSettlementConfirm;
-
+    private Action<GameOverEvent> _onGameOver;
     public bool HasAnyPopupOpen =>
      (exitConfirmPopup != null && exitConfirmPopup.gameObject.activeInHierarchy) ||
-     (settingsPopup != null && settingsPopup.gameObject.activeInHierarchy);
+     (settingsPopup != null && settingsPopup.gameObject.activeInHierarchy) ||
+     (gameOverPopup != null && gameOverPopup.gameObject.activeInHierarchy);
 
     private void Awake()
     {
@@ -27,6 +29,7 @@ public class PopupCanvasRootController : MonoBehaviour
         _onHideSettings = OnHideSettings;
         _onPopupCloseRequested = OnPopupCloseRequested;
         _onShowSettlementConfirm = OnShowSettlementConfirm;
+        _onGameOver = OnGameOver;
     }
 
     private void OnEnable()
@@ -36,6 +39,7 @@ public class PopupCanvasRootController : MonoBehaviour
         EventBus.Subscribe(_onHideSettings);
         EventBus.Subscribe(_onPopupCloseRequested);
         EventBus.Subscribe(_onShowSettlementConfirm);
+        EventBus.Subscribe(_onGameOver);
     }
 
     private void OnDisable()
@@ -45,6 +49,7 @@ public class PopupCanvasRootController : MonoBehaviour
         EventBus.Unsubscribe(_onHideSettings);
         EventBus.Unsubscribe(_onPopupCloseRequested);
         EventBus.Unsubscribe(_onShowSettlementConfirm);
+        EventBus.Unsubscribe(_onGameOver);
     }
 
     private void OnShowExitConfirm(ShowExitConfirmPopupEvent e)
@@ -100,7 +105,15 @@ public class PopupCanvasRootController : MonoBehaviour
             return;
         }
     }
+    private void OnGameOver(GameOverEvent e)
+    {
+        // 다른 팝업 전부 닫기
+        CloseAllPopups();
 
+        // 게임오버 팝업 표시
+        if (gameOverPopup != null)
+            gameOverPopup.Show();
+    }
     public void CloseAllPopups()
     {
         if (exitConfirmPopup != null) exitConfirmPopup.Hide();
