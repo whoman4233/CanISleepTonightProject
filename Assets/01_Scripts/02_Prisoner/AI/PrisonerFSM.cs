@@ -120,11 +120,18 @@ public class PrisonerFSM : MonoBehaviour
     {
         if (Controller == null) return;
 
+        // [수정] 데이터(Controller.AIType)만 믿지 말고, 현재 행동 상태(ActionState)가 시끄러운 타입인지도 확인
         PrisonerAIType myType = Controller.AIType;
+        bool isNoisyAction = false;
 
-        // ================================================================
-        // ★ [수정] 점호를 무시해야 하는 타입들 (기습형 + 시끄러운 죄수들)
-        // ================================================================
+        // ActionState에 접근하여 현재 설정된 타입 확인 (형변환 필요 없이 ActionState가 public이므로 접근 가능)
+        if (ActionState != null)
+        {
+            // ActionState 내부에 현재 타입을 반환하는 Getter가 없으므로
+            // myType을 우선 신뢰하되, 아래 리스트에 포함되어 있다면 확실히 리턴시킴
+        }
+
+        // ★ 점호 무시 리스트 (확인 사살용 로그 추가)
         if (myType == PrisonerAIType.Ambusher ||
             myType == PrisonerAIType.Singing ||
             myType == PrisonerAIType.Screaming ||
@@ -133,32 +140,38 @@ public class PrisonerFSM : MonoBehaviour
             myType == PrisonerAIType.HammeringWall ||
             myType == PrisonerAIType.Deadlift)
         {
-            // 이들은 점호(InspectionState)로 넘어가지 않고 하던 짓을 계속함
-            Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시하고 행동을 계속합니다.");
+            Debug.Log($"[FSM] {name} ({myType}) : 점호 무시! 행동 계속함.");
             return;
         }
 
         switch (myType)
         {
-            // 1. 일반 죄수들: 점호 받으러 나감
             case PrisonerAIType.Good:
             case PrisonerAIType.Bad:
                 ChangeState(InspectionState);
                 break;
 
-            // 2. 탈주형(Run)
             case PrisonerAIType.Escaper:
-                Debug.Log($"[FSM] {name} ({myType}) 탈주 시작!");
+                Debug.Log($"[FSM] {name} 탈주 시작!");
+                // if (EscapeState != null) ChangeState(EscapeState);
                 break;
 
             default:
-                Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시합니다.");
+                Debug.Log($"[FSM] {name} ({myType}) 점호 반응 없음 (Default)");
                 break;
         }
     }
 
     public void BackToRoutine()
     {
+        // ★ [핵심 수정] 사망 상태(DeadState)라면 복귀 루틴을 실행하지 않음
+        if (_currentState == DeadState)
+        {
+            Debug.Log($"[FSM] {name}는 사망 상태이므로 BackToRoutine을 무시합니다.");
+            return;
+        }
+
+        // 기존 로직 수행
         if (IsCenterSpawnType())
         {
             ChangeState(CenterIdleState);

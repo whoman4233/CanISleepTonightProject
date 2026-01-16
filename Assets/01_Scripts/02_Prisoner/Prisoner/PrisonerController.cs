@@ -166,16 +166,20 @@ public class PrisonerController : MonoBehaviour
 
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
-        // 1. ★ [중요] 죽기 전에 하던 행동(소리, 애니메이션, 도구)을 즉시 중단
+        // 1. 행동 중단 (애니메이션, 도구 등)
         StopActionBehavior();
 
-        // 2. 상태 전환 (DeadState)
+        // 2.모든 사운드 강제 종료 (비명 지르다 죽는 건 괜찮지만 루프는 끊어야 함)
+        if (sfx != null)
+        {
+            sfx.StopAllSounds(); // 위에서 만든 함수 호출
+            sfx.PlayRandomDieOnce(); // 그 후 단말마 1회 재생
+        }
+
+        // 3. 상태 전환
         fsm.ChangeState(fsm.DeadState);
 
-        // 3. 사망 사운드 재생
-        if (sfx != null) sfx.PlayRandomDieOnce();
-
-        // 4. 랙돌 처리
+        // 4. 랙돌 적용
         if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
 
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
