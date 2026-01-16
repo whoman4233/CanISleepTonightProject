@@ -221,9 +221,15 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
                 var fsm = content.prisoner.GetComponent<PrisonerFSM>();
                 if (fsm != null)
                 {
-                    // FSM 상태 변경! (이때 죄수가 일어서서 걸어 나옴)
-                    fsm.ChangeState(fsm.InspectionState);
-                    if (verboseLog) Debug.Log($"[Door] {cellId} 죄수에게 점검 상태 명령 전달.");
+                    // [수정 전] 강제로 상태를 꽂아버림 (문제 원인)
+                    // fsm.ChangeState(fsm.InspectionState);
+
+                    // [수정 후] FSM에게 "점호 시작됐다"고 정중하게 알림
+                    // -> FSM 내부의 OnStartInspection()이 실행되면서
+                    // -> "나 노래하는 중인데?" 하고 무시(return)하거나, "네 나갑니다" 하고 상태 변경
+                    fsm.OnStartInspection();
+
+                    if (verboseLog) Debug.Log($"[Door] {cellId} 죄수에게 점검 신호(OnStartInspection) 전달.");
                 }
             }
         }

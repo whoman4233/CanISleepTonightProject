@@ -29,6 +29,10 @@ public sealed class WeaponHitbox : MonoBehaviour
 
         _prisonerLayer = LayerMask.NameToLayer(LayerNames.Prisoner);
 
+        // [안전장치] 레이어 설정이 잘못되었을 경우 경고
+        if (_prisonerLayer == -1)
+            Debug.LogError("[WeaponHitbox] 프로젝트 세팅에 'Prisoner' 레이어가 없습니다! Add Layer를 해주세요.");
+
         var col = GetComponent<Collider>();
         if (col != null) col.isTrigger = true;
     }
@@ -37,6 +41,8 @@ public sealed class WeaponHitbox : MonoBehaviour
     {
         _swingActive = true;
         _hitTargets.Clear();
+        // [디버그] 공격 시작 신호 확인 (이 로그가 안 뜨면 애니메이션 이벤트 연결 끊김)
+        Debug.Log("[WeaponHitbox] BeginSwing - Hitbox ON");
     }
 
     public void EndSwing()
@@ -49,8 +55,16 @@ public sealed class WeaponHitbox : MonoBehaviour
         if (!_swingActive) return;
         if (other == null) return;
 
+        // [디버그] 무엇에 닿았는지 확인 (2일차에 이 로그조차 안 뜨면 Time.timeScale 문제)
+        // Debug.Log($"[WeaponHitbox] Touch: {other.name} (Layer: {LayerMask.LayerToName(other.gameObject.layer)})");
+
+        // 1. 레이어 체크
         if (other.gameObject.layer != _prisonerLayer)
+        {
+            // 죄수 레이어가 아니면 무시 (필요시 주석 해제하여 확인)
+            // Debug.LogWarning($"[WeaponHitbox] Ignore: {other.name} is not Prisoner Layer.");
             return;
+        }
 
         int id = other.GetInstanceID();
         if (_hitTargets.Contains(id))
@@ -58,7 +72,7 @@ public sealed class WeaponHitbox : MonoBehaviour
 
         _hitTargets.Add(id);
 
-        // [수정] 자식 콜라이더(머리, 팔 등)를 때렸을 경우를 대비해 부모에서도 찾음
+        // 2. 죄수 컴포넌트 찾기 (자식 -> 부모 순)
         var prisoner = other.GetComponent<PrisonerController>();
         if (prisoner == null)
         {
@@ -66,21 +80,24 @@ public sealed class WeaponHitbox : MonoBehaviour
         }
 
         // 여전히 없으면 리턴
-        if (prisoner == null) return;
+        if (prisoner == null)
+        {
+            Debug.LogError($"[WeaponHitbox] 오류! '{other.name}'은 Prisoner 레이어지만 Controller가 없습니다.");
+            return;
+        }
 
-        // ... 데미지 적용 로직 ...
+        // 3. 데미지 적용
         int damage = GetPlayerDamage();
         Vector3 hitPoint = other.ClosestPoint(transform.position);
         Vector3 hitDir = (other.transform.position - transform.position).normalized;
 
         prisoner.ApplyDamage(damage, hitPoint, hitDir);
 
-        Debug.Log($"[WeaponHitbox] Hit Prisoner: {prisoner.name} (Collider: {other.name}), dmg={damage}");
+        Debug.Log($"[WeaponHitbox] Hit Prisoner Success: {prisoner.name} (Dmg: {damage})");
     }
 
     private int GetPlayerDamage()
     {
-        // ✅ PlayerSO(=player.Data)에서 AttackInfoData.Damage를 읽음
         var player = ownerRoot != null ? ownerRoot.GetComponent<Player>() : null;
         if (player == null || player.Data == null)
             return Defaults.FallbackDamage;

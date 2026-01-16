@@ -210,18 +210,29 @@ public sealed class PrisonerSfxController : MonoBehaviour
         }
     }
 
-    // 소리 끄기
+    // 기존 StopLoop 수정 및 보강
     public void StopLoop()
     {
-        if (_loopSource.isPlaying)
+        // 1. 루프 소스 정지
+        if (_loopSource != null && _loopSource.isPlaying)
         {
             _loopSource.Stop();
             _loopSource.clip = null;
         }
+
+        // 2. [추가] 혹시 모를 코루틴이나 예약된 소리 재생 취소
+        CancelInvoke();
+        StopAllCoroutines();
     }
 
-    // (기존 StopAllLoops가 있었다면 이걸로 대체하거나 내부에서 호출)
-    public void StopAllLoops() => StopLoop();
+    // ★ [추가] 사망 시 확실하게 모든 소리 끄기
+    public void StopAllSounds()
+    {
+        StopLoop();
+
+        if (_hitSource != null) _hitSource.Stop();
+        if (_voiceSource != null) _voiceSource.Stop();
+    }
 }
 
 // Inspector에서 보기 위한 데이터 구조체
