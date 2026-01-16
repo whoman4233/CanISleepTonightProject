@@ -48,7 +48,15 @@ public class TutorialNPC : MonoBehaviour , IInteractable
 
         string speakerKey = speakerRole.ToString();
         string textType = currentSubStep.ToString();
-        dialogueManager.StartDialogueByKeys(speakerKey, textType);
+        System.Action onComplete = null;
+        if (currentSubStep == DialogueKeys.DialogueType.BookRead)
+        {
+            onComplete = () => {
+                Debug.Log("최종 튜토리얼 대화 종료. 플레이 씬으로 이동합니다.");
+                EventBus.Publish(new IntoPlaySceneEvent());
+            };
+        }
+        dialogueManager.StartDialogueByKeys(speakerKey, textType, onComplete);
         finishedDialogue = true;
     }
 
