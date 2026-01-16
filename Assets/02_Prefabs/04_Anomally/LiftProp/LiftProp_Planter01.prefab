@@ -153,6 +153,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1301856416587548221}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8540634638947989227}
   m_SourcePrefab: {fileID: 100100000, guid: 6dc9b21cfc5d94843b763d3f40342940, type: 3}
 --- !u!4 &2634961347614825182 stripped
 Transform:
@@ -226,3 +230,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Planter
+--- !u!114 &8540634638947989227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3448230977875673188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_26
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Planter

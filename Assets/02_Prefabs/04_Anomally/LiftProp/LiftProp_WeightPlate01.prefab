@@ -126,6 +126,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 7631315651988027285}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 333bd9ae139ad414e9bae64c39f2e604,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8618572341117790664}
   m_SourcePrefab: {fileID: 100100000, guid: 333bd9ae139ad414e9bae64c39f2e604, type: 3}
 --- !u!1 &5854732260564673292 stripped
 GameObject:
@@ -194,6 +198,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: WeightPlate
+--- !u!114 &8618572341117790664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5854732260564673292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_24
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: WeightPlate
 --- !u!4 &6488560425461512630 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 333bd9ae139ad414e9bae64c39f2e604,

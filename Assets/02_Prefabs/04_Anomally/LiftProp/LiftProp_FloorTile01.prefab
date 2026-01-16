@@ -391,6 +391,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 7444491421312537974}
+    - targetCorrespondingSourceObject: {fileID: -5424049359836140205, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 70635973429498163}
     - targetCorrespondingSourceObject: {fileID: -3437120275217104542, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -403,6 +407,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 4525602153047214121}
+    - targetCorrespondingSourceObject: {fileID: -3437120275217104542, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2274841004505846968}
     - targetCorrespondingSourceObject: {fileID: -4946205854817816339, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -415,6 +423,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5874135814800280901}
+    - targetCorrespondingSourceObject: {fileID: -4946205854817816339, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3516396332505057384}
     - targetCorrespondingSourceObject: {fileID: 2902356034621048562, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -427,6 +439,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 7226821932704437986}
+    - targetCorrespondingSourceObject: {fileID: 2902356034621048562, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1393660540853089473}
     - targetCorrespondingSourceObject: {fileID: 6070811533305288693, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -439,6 +455,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5791280098529052155}
+    - targetCorrespondingSourceObject: {fileID: 6070811533305288693, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8065445221486726939}
     - targetCorrespondingSourceObject: {fileID: 3891572944812132797, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -451,6 +471,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6469196627634345810}
+    - targetCorrespondingSourceObject: {fileID: 3891572944812132797, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3397655345516099176}
     - targetCorrespondingSourceObject: {fileID: -647345430242724655, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -463,6 +487,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1882724587797591147}
+    - targetCorrespondingSourceObject: {fileID: -647345430242724655, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5531966820732897049}
     - targetCorrespondingSourceObject: {fileID: 4343253620696353566, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -475,6 +503,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8761335342834526772}
+    - targetCorrespondingSourceObject: {fileID: 4343253620696353566, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5080545256707438297}
     - targetCorrespondingSourceObject: {fileID: 4835526675459912079, guid: 3b9866b5ab20e9942942412d085588f4,
         type: 3}
       insertIndex: -1
@@ -487,6 +519,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 4559559042613118885}
+    - targetCorrespondingSourceObject: {fileID: 4835526675459912079, guid: 3b9866b5ab20e9942942412d085588f4,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8363435841563179695}
   m_SourcePrefab: {fileID: 100100000, guid: 3b9866b5ab20e9942942412d085588f4, type: 3}
 --- !u!1 &19311510956749884 stripped
 GameObject:
@@ -506,6 +542,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &2666449052348243073
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -554,6 +591,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &5531966820732897049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 19311510956749884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &2557881420472014616 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6070811533305288693, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -572,6 +624,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &2430137223756087777
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -620,6 +673,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &8065445221486726939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2557881420472014616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &2813716394899374479 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3437120275217104542, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -638,6 +706,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &6065092147761262600
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -686,6 +755,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &2274841004505846968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2813716394899374479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &3772763667410022754 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4835526675459912079, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -704,6 +788,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &3448345542338031022
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -752,6 +837,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &8363435841563179695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3772763667410022754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &4702063180627806544 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3891572944812132797, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -770,6 +870,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &9056744705906362950
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -818,6 +919,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &3397655345516099176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4702063180627806544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &4898041371292069310 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5424049359836140205, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -836,6 +952,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &2699540375726757318
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -884,6 +1001,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &70635973429498163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4898041371292069310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &5406262790510267379 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4343253620696353566, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -902,6 +1034,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &6702446220238753359
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -950,6 +1083,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &5080545256707438297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5406262790510267379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &5484041354498519040 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4946205854817816339, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -968,6 +1116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &376385784136548132
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1016,6 +1165,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &3516396332505057384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5484041354498519040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!1 &6847595805738747423 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2902356034621048562, guid: 3b9866b5ab20e9942942412d085588f4,
@@ -1034,6 +1198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: Tile
 --- !u!54 &7574413420213766020
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1082,6 +1247,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4389, y: 0.05, z: 0.4259}
   m_Center: {x: -0.19915, y: -0.015, z: 0.19265}
+--- !u!114 &1393660540853089473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6847595805738747423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_22
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Tile
 --- !u!4 &8127317308926502662 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3b9866b5ab20e9942942412d085588f4,
