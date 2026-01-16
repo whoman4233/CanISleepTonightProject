@@ -41,7 +41,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2748111448301766891}
-  m_Layer: 0
+  - component: {fileID: 8806905699172130648}
+  - component: {fileID: 6887731737424473863}
+  - component: {fileID: 1698846502399628041}
+  - component: {fileID: 8838422313811159153}
+  - component: {fileID: 4888705388409805548}
+  m_Layer: 10
   m_Name: LiftProp_Planter01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,13 +62,103 @@ Transform:
   m_GameObject: {fileID: 8010568277223071873}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.8334484, y: 2.327711, z: -0.86262625}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2634961347614825182}
   m_Father: {fileID: 7232866610217952680}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8806905699172130648
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010568277223071873}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.52061546, y: 0.44891858, z: 0.61085397}
+  m_Center: {x: -0.0057312846, y: 0.2755407, z: -0.0021257102}
+--- !u!54 &6887731737424473863
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010568277223071873}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &1698846502399628041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010568277223071873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  carryPromptObjectType: Planter
+--- !u!114 &8838422313811159153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010568277223071873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_26
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Planter
+--- !u!114 &4888705388409805548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010568277223071873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966b72ef3c8b85242ac5286a11a5f89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineEnabled: 0
+  defaultOutlineColor: {r: 255, g: 255, b: 255, a: 255}
 --- !u!1001 &2529890630772604213
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -75,17 +170,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 6dc9b21cfc5d94843b763d3f40342940,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.8334484
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6dc9b21cfc5d94843b763d3f40342940,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.327711
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6dc9b21cfc5d94843b763d3f40342940,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.1766262
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6dc9b21cfc5d94843b763d3f40342940,
         type: 3}
@@ -124,9 +219,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6679238624837276991, guid: 6dc9b21cfc5d94843b763d3f40342940,
         type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -6679238624837276991, guid: 6dc9b21cfc5d94843b763d3f40342940,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: b024487da57fcce40967862aeb37d733, type: 2}
+    - target: {fileID: -6679238624837276991, guid: 6dc9b21cfc5d94843b763d3f40342940,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
+    - target: {fileID: -2305194058390836447, guid: 6dc9b21cfc5d94843b763d3f40342940,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: -1069714425399189083, guid: 6dc9b21cfc5d94843b763d3f40342940,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -137,26 +247,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: LiftProp_Planter01
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1750288337819980020, guid: 6dc9b21cfc5d94843b763d3f40342940,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2638962858879972634}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9084157506914483502}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1301856416587548221}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8540634638947989227}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6dc9b21cfc5d94843b763d3f40342940, type: 3}
 --- !u!4 &2634961347614825182 stripped
 Transform:
@@ -164,85 +268,3 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2529890630772604213}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &3448230977875673188 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6dc9b21cfc5d94843b763d3f40342940,
-    type: 3}
-  m_PrefabInstance: {fileID: 2529890630772604213}
-  m_PrefabAsset: {fileID: 0}
---- !u!65 &2638962858879972634
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3448230977875673188}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.5913936, y: 0.5149854, z: 0.5092404}
-  m_Center: {x: -0.02456598, y: 0.24250731, z: -0.03487581}
---- !u!54 &9084157506914483502
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3448230977875673188}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
---- !u!114 &1301856416587548221
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3448230977875673188}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  carryPromptObjectType: Planter
---- !u!114 &8540634638947989227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3448230977875673188}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultPromptId: Ptxt_KR_Object_26
-  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
-  objectType: Planter
