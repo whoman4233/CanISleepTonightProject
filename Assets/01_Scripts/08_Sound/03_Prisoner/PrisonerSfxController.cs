@@ -192,10 +192,20 @@ public sealed class PrisonerSfxController : MonoBehaviour
 
             _loopSource.clip = clip;
             _loopSource.Play();
+
+            // (디버깅용) 소리 재생 확인 로그
+            Debug.Log($"[SFX] Playing Loop: {type} / Clip: {clip.name}");
         }
         else
         {
-            // 매핑된 소리가 없으면 그냥 멈춤 (예: Good, Bad 타입 등)
+            // ★ [문제 확인용 로그 추가]
+            // 딕셔너리에 해당 타입의 오디오 클립이 없으면 경고를 띄움
+            if (type != PrisonerAIType.Good && type != PrisonerAIType.Bad) // 소리가 없는게 정상인 타입 제외
+            {
+                Debug.LogWarning($"[PrisonerSfxController] '{type}' 타입에 대한 LoopSoundData가 Inspector에 할당되지 않았습니다!");
+            }
+
+            // 매핑된 소리가 없으면 그냥 멈춤
             StopLoop();
         }
     }
