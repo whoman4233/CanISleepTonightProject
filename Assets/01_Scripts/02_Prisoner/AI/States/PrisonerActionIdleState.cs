@@ -61,6 +61,7 @@ public class PrisonerActionIdleState : BasePrisonerState
 
     public override void Exit()
     {
+        // ★ 상태를 나갈 때(전투 돌입, 사망, 점호 등) 무조건 소리를 끈다
         Controller.StopActionBehavior();
         base.Exit();
     }
