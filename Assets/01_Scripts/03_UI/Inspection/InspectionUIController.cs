@@ -10,6 +10,10 @@ public class InspectionUIController : MonoBehaviour
     [SerializeField] private Volume inspectionBlurVolume;
     [SerializeField] private RawImage inspectionRawImage;
 
+    [Header("UISound")]
+    [SerializeField] private AudioClip onViewClip;
+    [SerializeField] private AudioClip offViewClip;
+
     private Action<InspectionViewRequestedEvent> _onViewRequested;
     private Action<InspectionViewReleasedEvent> _onViewReleased;
 
@@ -38,6 +42,7 @@ public class InspectionUIController : MonoBehaviour
 
     private void OnViewRequested(InspectionViewRequestedEvent e)
     {
+        AudioManager.Instance.PlayUISound(onViewClip);
         inspectionRoot.SetActive(true);
         inspectionBlurVolume.weight = 1f;
 
@@ -55,6 +60,7 @@ public class InspectionUIController : MonoBehaviour
 
     private void OnViewReleased(InspectionViewReleasedEvent e)
     {
+        AudioManager.Instance.PlayUISound(offViewClip);
         inspectionRoot.SetActive(false);
         inspectionBlurVolume.weight = 0f;
     }

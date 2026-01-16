@@ -17,6 +17,13 @@ public class HUDTimer : MonoBehaviour
     [SerializeField] private Color startColor = new Color(0f, 1f, 0f, 1f);
     [SerializeField] private Color endColor = new Color(1f, 0f, 0f, 1f);
 
+    [Header("Sound")]
+    [SerializeField] private AudioClip underOneMinuteLoop;
+    [SerializeField] private AudioClip timeOverClip;
+
+    private bool _underOneMinuteTriggered;
+    private bool _timeOverTriggered;
+
     private bool _isActive;
     private float _currentSeconds;
     private float _lastSeconds;
@@ -69,6 +76,8 @@ public class HUDTimer : MonoBehaviour
         _lastSeconds = 0f;
         _initialSeconds = -1f;
 
+        ResetSoundState(); //사운드 리셋
+
         if (GameManager.Instance != null)
             _currentPhase = GameManager.Instance.CurrentPhase;
 
@@ -78,6 +87,11 @@ public class HUDTimer : MonoBehaviour
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
         _currentPhase = e.Phase;
+
+        // Patrol 종료 시 루프 UI 사운드 정리
+        if (_currentPhase != GamePhase.Patrol)
+            ResetSoundState();
+
         ForceRefreshVisibility();
     }
 
@@ -110,11 +124,16 @@ public class HUDTimer : MonoBehaviour
         if (GameManager.Instance == null)
             return;
 
-        _currentSeconds = GameManager.Instance.CurrentInGameSeconds;
+        float gmSeconds = GameManager.Instance.CurrentInGameSeconds;
 
-        if (_initialSeconds <= 0f)
-            _initialSeconds = Mathf.Max(0.01f, _currentSeconds);
+        // 기준 시간보다 커지면 기준 재설정
+        if (_initialSeconds <= 0f || gmSeconds > _initialSeconds)
+        {
+            _initialSeconds = Mathf.Max(0.01f, gmSeconds);
+            ResetSoundState(); // 사운드도 같이 재동기화
+        }
 
+        _currentSeconds = gmSeconds;
         UpdateVisuals(_currentSeconds);
     }
 
@@ -122,6 +141,9 @@ public class HUDTimer : MonoBehaviour
     {
         _initialSeconds = Mathf.Max(0.01f, e.InitialSeconds);
         _currentSeconds = e.InitialSeconds;
+
+        ResetSoundState(); // 타이머 리셋 시 사운드 리셋
+
         UpdateVisuals(_currentSeconds);
     }
 
@@ -142,6 +164,7 @@ public class HUDTimer : MonoBehaviour
     {
         UpdateText(seconds);
         UpdateFill(seconds);
+        UpdateSound(seconds);
     }
 
     private void UpdateText(float seconds)
@@ -163,6 +186,30 @@ public class HUDTimer : MonoBehaviour
         timerFillImage.fillAmount = normalized;
         timerFillImage.color = Color.Lerp(endColor, startColor, normalized);
     }
+    private void UpdateSound(float seconds)
+    {
+        // 1분 미만 진입 → UI 루프
+        if (!_underOneMinuteTriggered && seconds > 0f && seconds < 60f)
+        {
+            _underOneMinuteTriggered = true;
+            AudioManager.Instance?.PlayUILoop(underOneMinuteLoop);
+        }
+
+        // 0초 도달 → 루프 정지 + UI 원샷
+        if (!_timeOverTriggered && seconds <= 0f)
+        {
+            _timeOverTriggered = true;
+            AudioManager.Instance?.StopUILoop();
+            AudioManager.Instance?.PlayUISound(timeOverClip);
+        }
+    }
+    private void ResetSoundState()
+    {
+        _underOneMinuteTriggered = false;
+        _timeOverTriggered = false;
+        AudioManager.Instance?.StopUILoop();
+    }
+
 }
 
 

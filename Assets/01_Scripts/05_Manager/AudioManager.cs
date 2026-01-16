@@ -114,11 +114,58 @@ public class AudioManager : MonoBehaviour
         if (sfxSource == null || clip == null) return;
         sfxSource.PlayOneShot(clip);
     }
+    public void PlaySFXLoop(AudioClip clip)
+    {
+        if (sfxSource == null || clip == null)
+            return;
+
+        // 같은 클립이 이미 루프 중이면 무시
+        if (sfxSource.isPlaying && sfxSource.clip == clip && sfxSource.loop)
+            return;
+
+        sfxSource.clip = clip;
+        sfxSource.loop = true;
+        sfxSource.Play();
+    }
+    public void StopSFXLoop()
+    {
+        if (sfxSource == null)
+            return;
+
+        sfxSource.Stop();
+        sfxSource.clip = null;
+        sfxSource.loop = false;
+    }
+
     public void PlayUISound(AudioClip clip)
     {
         if (uiSource == null || clip == null) return;
         uiSource.PlayOneShot(clip);
     }
+    public void PlayUILoop(AudioClip clip)
+    {
+        if (uiSource == null || clip == null)
+            return;
+
+        // 같은 클립이 이미 루프 중이면 무시
+        if (uiSource.isPlaying && uiSource.clip == clip && uiSource.loop)
+            return;
+
+        uiSource.clip = clip;
+        uiSource.loop = true;
+        uiSource.Play();
+    }
+    public void StopUILoop()
+    {
+        if (uiSource == null)
+            return;
+
+        uiSource.Stop();
+        uiSource.clip = null;
+        uiSource.loop = false;
+    }
+
+
     // =========================
     // 볼륨/믹서 조절
     // ========================= 
