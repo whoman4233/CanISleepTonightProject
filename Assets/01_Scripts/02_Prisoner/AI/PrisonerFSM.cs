@@ -122,7 +122,6 @@ public class PrisonerFSM : MonoBehaviour
 
         // [수정] 데이터(Controller.AIType)만 믿지 말고, 현재 행동 상태(ActionState)가 시끄러운 타입인지도 확인
         PrisonerAIType myType = Controller.AIType;
-        bool isNoisyAction = false;
 
         // ActionState에 접근하여 현재 설정된 타입 확인 (형변환 필요 없이 ActionState가 public이므로 접근 가능)
         if (ActionState != null)

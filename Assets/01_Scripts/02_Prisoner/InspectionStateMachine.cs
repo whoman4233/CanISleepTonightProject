@@ -10,7 +10,6 @@ public class InspectionStateMachine : MonoBehaviour
     public string CurrentInspectingCellId { get; private set; }
 
     public event Action<string> OnEnteredCell;
-    public event Action<string> OnExitBlocked; // (사용되지 않는다면 추후 삭제 고려)
     public event Action<string, bool, bool> OnResolved; // cellId, isSuspicious, didSuppress
     public event Action<string> OnSuppressStarted;
     public event Action<string> OnSuppressSuccess;
