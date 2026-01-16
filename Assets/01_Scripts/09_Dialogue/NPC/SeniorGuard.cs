@@ -7,7 +7,7 @@ public class SeniorGuard : MonoBehaviour, IInteractable
 {
     [Header("Dialogue Settings")]
     [SerializeField] private string speakerKey = DialogueKeys.Speakers.Frank;
-    [SerializeField] private string missionKey = DialogueKeys.Missions.Mission06;
+    //[SerializeField] private string missionKey = DialogueKeys.Missions.Mission06;
 
     public void Interact(Player player)
     {
