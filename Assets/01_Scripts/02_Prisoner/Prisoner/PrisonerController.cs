@@ -176,28 +176,33 @@ public class PrisonerController : MonoBehaviour
     }
 
 
-    // 애니메이션 이벤트에서 호출할 함수
     public void OnAttackHitCheck()
     {
-        // 1. 내 위치에서 공격 사거리만큼 구(Sphere)를 그려서 충돌체 검사
-        // (Alloc을 막기 위해 NonAlloc 버전 사용 추천)
-        Collider[] hits = new Collider[5];
+        // [수정] 버퍼 크기를 5 -> 20으로 증가 (주변에 물체가 많아도 플레이어를 놓치지 않게 함)
+        Collider[] hits = new Collider[20];
+
+        // 내 위치에서 공격 사거리만큼 검사
         int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
 
         for (int i = 0; i < count; i++)
         {
             var target = hits[i];
 
-            // 2. 부채꼴 각도 계산 (내 앞 45도 안에 있는가?)
+            // [안전장치] 자기 자신은 제외 (혹시 Layer가 겹칠 경우)
+            if (target.gameObject == gameObject) continue;
+
+            // 부채꼴 각도 계산
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
-            if (Vector3.Angle(transform.forward, dirToTarget) < attackAngle)
+            // 높이 차이 무시하고 수평 각도만 비교 (더 정확함)
+            dirToTarget.y = 0;
+            Vector3 myForward = transform.forward;
+            myForward.y = 0;
+
+            if (Vector3.Angle(myForward, dirToTarget) < attackAngle)
             {
-                // 3. 데미지 주기
-                // Player 스크립트나 IDamageable 인터페이스를 찾아 호출
-                var playerHealth = target.GetComponent<Health>(); // 혹은 Player.cs
+                var playerHealth = target.GetComponent<Health>();
                 if (playerHealth != null)
                 {
-                    // 데미지 수치는 기획 데이터에서 가져옴 (여기선 10 예시)
                     playerHealth.TakeDamage(10);
                     Debug.Log($"[Prisoner] {Data.ID}가 플레이어를 때림!");
                 }
