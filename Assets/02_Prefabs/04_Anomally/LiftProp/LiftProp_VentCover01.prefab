@@ -92,9 +92,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6745289218820436662, guid: 092ecfba7be33a548999b3aafca52958,
         type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -6745289218820436662, guid: 092ecfba7be33a548999b3aafca52958,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 5dce42ff19f4c11468cdc225af068c09, type: 2}
+    - target: {fileID: -6745289218820436662, guid: 092ecfba7be33a548999b3aafca52958,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
     - target: {fileID: -407279478571601095, guid: 092ecfba7be33a548999b3aafca52958,
         type: 3}
       propertyPath: m_Layer
@@ -131,6 +141,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 3948041611222466777}
+    - targetCorrespondingSourceObject: {fileID: -407279478571601095, guid: 092ecfba7be33a548999b3aafca52958,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6928537009836223161}
   m_SourcePrefab: {fileID: 100100000, guid: 092ecfba7be33a548999b3aafca52958, type: 3}
 --- !u!1 &4610920445923814831 stripped
 GameObject:
@@ -150,6 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryPromptObjectType: VentCover
 --- !u!64 &8969367526891031462
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -199,6 +214,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &6928537009836223161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4610920445923814831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_20
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: VentCover
 --- !u!4 &4769017005138016637 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 092ecfba7be33a548999b3aafca52958,
