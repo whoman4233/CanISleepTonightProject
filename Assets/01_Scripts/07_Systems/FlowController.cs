@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,6 +20,7 @@ public class FlowController : MonoBehaviour
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
     private Action<RequestSceneReloadEvent> _reloadHandler;
     private Action<LoadGameEvent> _loadGameHandler; // 이어하기 이벤트
+    private Action<IntoPlaySceneEvent> _intoPlay;
 
     private void Awake()
     {
@@ -30,6 +32,7 @@ public class FlowController : MonoBehaviour
             _returnToTitleHandler = e => ReturnToTitle();
             _reloadHandler = e => StartCoroutine(ReloadPlaySceneRoutine());
             _loadGameHandler = e => StartCoroutine(LoadGameSequence());
+            _intoPlay = e => StartCoroutine(LoadActualPlaySceneRoutine());
         }
         else
         {
@@ -48,6 +51,7 @@ public class FlowController : MonoBehaviour
         EventBus.Subscribe(_returnToTitleHandler);
         EventBus.Subscribe(_reloadHandler);
         EventBus.Subscribe(_loadGameHandler);
+        EventBus.Subscribe(_intoPlay);
     }
     private void OnDisable()
     {
@@ -56,6 +60,7 @@ public class FlowController : MonoBehaviour
         EventBus.Unsubscribe(_returnToTitleHandler);
         EventBus.Unsubscribe(_reloadHandler);
         EventBus.Unsubscribe(_loadGameHandler);
+        EventBus.Unsubscribe(_intoPlay);
     }
 
     private IEnumerator LoadGameSequence()
