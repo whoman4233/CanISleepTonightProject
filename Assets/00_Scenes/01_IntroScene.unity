@@ -182,8 +182,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
-  m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
+  m_sharedMaterial: {fileID: 8265486222908070820, guid: 35c8cf6ba49abd546b2336f7c9de4462,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -473,6 +473,7 @@ GameObject:
   - component: {fileID: 339049283}
   - component: {fileID: 339049282}
   - component: {fileID: 339049284}
+  - component: {fileID: 339049285}
   m_Layer: 5
   m_Name: Btn_NewGame
   m_TagString: Untagged
@@ -582,6 +583,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &339049285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339049280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc17f6efc971e44cb3cd5f2c4714ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickClip: {fileID: 8300000, guid: 1e761bbee5f503443bb970e4135ea842, type: 3}
 --- !u!1 &348081800
 GameObject:
   m_ObjectHideFlags: 0
@@ -678,7 +692,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
     type: 2}
   m_fontSharedMaterials: []
@@ -743,7 +757,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &357373421
@@ -1010,6 +1024,7 @@ GameObject:
   - component: {fileID: 664063404}
   - component: {fileID: 664063403}
   - component: {fileID: 664063405}
+  - component: {fileID: 664063406}
   m_Layer: 5
   m_Name: Btn_Start
   m_TagString: Untagged
@@ -1119,6 +1134,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &664063406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 664063401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc17f6efc971e44cb3cd5f2c4714ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickClip: {fileID: 8300000, guid: 0304aa6e433537e49aff8fa8c1b24785, type: 3}
 --- !u!1 &719221410
 GameObject:
   m_ObjectHideFlags: 0
@@ -1217,7 +1245,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
     type: 2}
   m_fontSharedMaterials: []
@@ -1282,7 +1310,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &757054040
@@ -1368,6 +1396,7 @@ GameObject:
   - component: {fileID: 940347021}
   - component: {fileID: 940347020}
   - component: {fileID: 940347022}
+  - component: {fileID: 940347023}
   m_Layer: 5
   m_Name: Btn_LoadGame
   m_TagString: Untagged
@@ -1477,6 +1506,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &940347023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940347018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc17f6efc971e44cb3cd5f2c4714ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickClip: {fileID: 8300000, guid: 1e761bbee5f503443bb970e4135ea842, type: 3}
 --- !u!1 &1003285912
 GameObject:
   m_ObjectHideFlags: 0
@@ -1489,6 +1531,7 @@ GameObject:
   - component: {fileID: 1003285915}
   - component: {fileID: 1003285914}
   - component: {fileID: 1003285916}
+  - component: {fileID: 1003285917}
   m_Layer: 5
   m_Name: Btn_Settings
   m_TagString: Untagged
@@ -1598,6 +1641,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1003285917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1003285912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc17f6efc971e44cb3cd5f2c4714ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickClip: {fileID: 8300000, guid: 0304aa6e433537e49aff8fa8c1b24785, type: 3}
 --- !u!1 &1010194939
 GameObject:
   m_ObjectHideFlags: 0
@@ -1658,7 +1714,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
     type: 2}
   m_fontSharedMaterials: []
@@ -1723,7 +1779,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1010194942
@@ -1878,6 +1934,7 @@ GameObject:
   - component: {fileID: 1195906734}
   - component: {fileID: 1195906733}
   - component: {fileID: 1195906732}
+  - component: {fileID: 1195906736}
   m_Layer: 5
   m_Name: Btn_Back
   m_TagString: Untagged
@@ -1987,6 +2044,19 @@ RectTransform:
   m_AnchoredPosition: {x: 180, y: -220}
   m_SizeDelta: {x: 250, y: 130}
   m_Pivot: {x: 0, y: 0.5}
+--- !u!114 &1195906736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1195906731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc17f6efc971e44cb3cd5f2c4714ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickClip: {fileID: 8300000, guid: 0304aa6e433537e49aff8fa8c1b24785, type: 3}
 --- !u!1 &1463930853
 GameObject:
   m_ObjectHideFlags: 0
@@ -2129,7 +2199,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
     type: 2}
   m_fontSharedMaterials: []
@@ -2194,7 +2264,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1680625643
@@ -2279,7 +2349,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
     type: 2}
   m_fontSharedMaterials: []
@@ -2344,7 +2414,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1754351311
@@ -2426,6 +2496,7 @@ GameObject:
   - component: {fileID: 1964976555}
   - component: {fileID: 1964976554}
   - component: {fileID: 1964976556}
+  - component: {fileID: 1964976557}
   m_Layer: 5
   m_Name: Btn_Exit
   m_TagString: Untagged
@@ -2535,6 +2606,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1964976557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964976552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc17f6efc971e44cb3cd5f2c4714ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickClip: {fileID: 8300000, guid: 0304aa6e433537e49aff8fa8c1b24785, type: 3}
 --- !u!1 &1987756461
 GameObject:
   m_ObjectHideFlags: 0
@@ -2707,7 +2791,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9907318b5317fe4dbad3d6166c4af60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35c8cf6ba49abd546b2336f7c9de4462, type: 2}
   m_sharedMaterial: {fileID: -2847498607463994172, guid: a9907318b5317fe4dbad3d6166c4af60,
     type: 2}
   m_fontSharedMaterials: []
@@ -2772,7 +2856,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &2070433652

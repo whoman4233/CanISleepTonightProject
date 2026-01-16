@@ -17,6 +17,7 @@ public class HUDCellInspectionStatus : MonoBehaviour
 
     private Action<CellInspectionInProgressEvent> _onStart;
     private Action<CellInspectionCompletedEvent> _onEnd;
+    private Action<UIHardResetEvent> _onHardReset;
 
     private void Awake()
     {
@@ -24,18 +25,21 @@ public class HUDCellInspectionStatus : MonoBehaviour
 
         _onStart = OnInspectionStart;
         _onEnd = OnInspectionEnd;
+        _onHardReset = OnUIHardReset;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onStart);
         EventBus.Subscribe(_onEnd);
+        EventBus.Subscribe(_onHardReset);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onStart);
         EventBus.Unsubscribe(_onEnd);
+        EventBus.Unsubscribe(_onHardReset);
         KillTween();
     }
 
@@ -56,7 +60,11 @@ public class HUDCellInspectionStatus : MonoBehaviour
         _active = false;
         Hide();
     }
-
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        _active = false;
+        Hide();
+    }
     private void Show()
     {
         canvasGroup.gameObject.SetActive(true);

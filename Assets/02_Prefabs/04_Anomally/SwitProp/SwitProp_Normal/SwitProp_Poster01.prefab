@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2481284151023837106}
-  - component: {fileID: 4545051545899314982}
+  - component: {fileID: 1041191491162386355}
   - component: {fileID: 7187528985958922897}
   - component: {fileID: 4444487030159386908}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: SwitProp_Poster01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -27,15 +27,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3395027025039238225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 3.506, y: 1.636, z: -3.222}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7285018251735101902}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &4545051545899314982
+--- !u!65 &1041191491162386355
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -54,8 +54,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.82634234, y: 1.2014041, z: 0.088699214}
-  m_Center: {x: 0.0021470785, y: 0.57763004, z: -0.012252178}
+  m_Size: {x: 0.8077895, y: 1.2733141, z: 0.011510841}
+  m_Center: {x: 0.012404144, y: 0.55488926, z: 0.0049485853}
 --- !u!114 &7187528985958922897
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,22 +94,22 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.506
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.636
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.222
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
@@ -119,7 +119,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
@@ -134,7 +134,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
@@ -143,13 +143,33 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 702520645589286874, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 702520645589286874, guid: f8ff04d72f7877a44add693cbb2eb810,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: f1eb1ac8f5bb3ba4f874d7af66932f75, type: 2}
+    - target: {fileID: 702520645589286874, guid: f8ff04d72f7877a44add693cbb2eb810,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
     - target: {fileID: 919132149155446097, guid: f8ff04d72f7877a44add693cbb2eb810,
         type: 3}
       propertyPath: m_Name
       value: SwitProp_Poster01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f8ff04d72f7877a44add693cbb2eb810,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7998657975945618945, guid: f8ff04d72f7877a44add693cbb2eb810,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

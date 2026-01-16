@@ -48,7 +48,15 @@ public class TutorialNPC : MonoBehaviour , IInteractable
 
         string speakerKey = speakerRole.ToString();
         string textType = currentSubStep.ToString();
-        dialogueManager.StartDialogueByKeys(speakerKey, textType);
+        System.Action onComplete = null;
+        if (currentSubStep == DialogueKeys.DialogueType.BookRead)
+        {
+            onComplete = () => {
+                Debug.Log("최종 튜토리얼 대화 종료. 플레이 씬으로 이동합니다.");
+                EventBus.Publish(new IntoPlaySceneEvent());
+            };
+        }
+        dialogueManager.StartDialogueByKeys(speakerKey, textType, onComplete);
         finishedDialogue = true;
     }
 
@@ -58,6 +66,8 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         {
             EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.NPCHit));
             Debug.Log("이벤트 발행: NPCHit");
+            StartCoroutine(DelayedDialogue());
+            finishedDialogue = true;
         }
     }
 
@@ -70,5 +80,11 @@ public class TutorialNPC : MonoBehaviour , IInteractable
             finishedDialogue = false;
             Debug.Log($"튜토리얼 스텝이 업데이트 되었읍니다. {nextStep}");
         }
+    }
+
+    private IEnumerator DelayedDialogue() // 때린 후 대화생성 딜레이를 주기 위한 코루틴
+    {
+        yield return new WaitForSeconds(0.5f);
+        DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, currentSubStep.ToString());
     }
 }

@@ -28,7 +28,7 @@ public class InspectableObject : MonoBehaviour, IInteractable, IInspectable, IHi
             visualRoot.SetActive(true);
     }
 
-    public void Interact(Player player)
+    public virtual void Interact(Player player)
     {
         EventBus.Publish(new InspectionRequestedEvent
         {

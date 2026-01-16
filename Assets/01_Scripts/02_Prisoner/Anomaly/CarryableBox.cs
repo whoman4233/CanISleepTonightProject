@@ -19,7 +19,7 @@ public class CarryableBox : MonoBehaviour, ICarryable
     {
         return carryPromptObjectType;
     }
-    public void Interact(Player player) // 들기
+    public virtual void Interact(Player player) // 들기
     {
         var interactor = player.Interactor;
         if (interactor == null)

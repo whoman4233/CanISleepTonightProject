@@ -10,6 +10,9 @@ public class MissionPopup : MonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button confirmButton;
 
+    [Header("UISound")]
+    [SerializeField] private AudioClip openClip;
+
     private Action<MissionPopupShowRequestedEvent> _onShow;
 
     private void Awake()
@@ -37,6 +40,7 @@ public class MissionPopup : MonoBehaviour
 
     private void Show()
     {
+        AudioManager.Instance?.PlayUISound(openClip);
         contentRoot.SetActive(true);
         InputManager.Instance?.SetDialogueActive(true);
     }
@@ -44,7 +48,6 @@ public class MissionPopup : MonoBehaviour
     private void OnConfirmClicked()
     {
         contentRoot.SetActive(false);
-
         InputManager.Instance?.SetDialogueActive(false);
 
         var mission = DailyMissionManager.Instance?.CurrentMission;

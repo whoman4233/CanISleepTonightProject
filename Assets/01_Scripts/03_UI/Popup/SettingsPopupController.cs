@@ -11,7 +11,7 @@ public class SettingsPopupController : MonoBehaviour
     [SerializeField] private Slider masterSlider;
     [SerializeField] private Slider bgmSlider;
     [SerializeField] private Slider sfxSlider;
-
+    [SerializeField] private Slider uiSlider;
     public bool IsOpen { get; private set; }
 
     private void Awake()
@@ -35,6 +35,7 @@ public class SettingsPopupController : MonoBehaviour
         masterSlider.onValueChanged.RemoveAllListeners();
         bgmSlider.onValueChanged.RemoveAllListeners();
         sfxSlider.onValueChanged.RemoveAllListeners();
+        uiSlider.onValueChanged.RemoveAllListeners();
     }
 
     private IEnumerator InitSlidersNextFrame()
@@ -44,13 +45,16 @@ public class SettingsPopupController : MonoBehaviour
         var audio = AudioManager.Instance;
         if (audio == null) yield break;
 
+        // ===== 초기값 세팅 =====
         masterSlider.SetValueWithoutNotify(audio.GetMasterVolume());
         bgmSlider.SetValueWithoutNotify(audio.GetBgmVolume());
         sfxSlider.SetValueWithoutNotify(audio.GetSfxVolume());
-
+        uiSlider.SetValueWithoutNotify(audio.GetUiVolume());
+        // ===== 리스너 연결 =====
         masterSlider.onValueChanged.AddListener(audio.SetMasterVolume);
         bgmSlider.onValueChanged.AddListener(audio.SetBgmVolume);
         sfxSlider.onValueChanged.AddListener(audio.SetSfxVolume);
+        uiSlider.onValueChanged.AddListener(audio.SetUiVolume);
     }
     public void Show()
     {

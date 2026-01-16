@@ -8,7 +8,9 @@ public class InGameMenuController : MonoBehaviour
     [SerializeField] private Button btnResume;
     [SerializeField] private Button btnReturnToTitle;
     [SerializeField] private Button btnOptions;
-
+    [Header("UI Sounds")]
+    [SerializeField] private AudioClip openClip;
+    [SerializeField] private AudioClip closeClip;
     private bool isOpen;
 
     private Action<PauseMenuOpenRequestedEvent> _onOpenRequested;
@@ -72,6 +74,7 @@ public class InGameMenuController : MonoBehaviour
 
         if (open)
         {
+            AudioManager.Instance?.PlayUISound(openClip);
             EventBus.Publish(new PauseGameRequestedEvent());
 
             // 반드시 UI Lock 요청
@@ -81,6 +84,7 @@ public class InGameMenuController : MonoBehaviour
         }
         else
         {
+            AudioManager.Instance?.PlayUISound(closeClip);
             EventBus.Publish(new ResumeGameRequestedEvent());
 
             // 반드시 UI Lock 해제

@@ -12,6 +12,9 @@ public abstract class ResultPanelBase : MonoBehaviour
     [Header("Buttons")]
     [SerializeField] protected CanvasGroup buttonsGroup;
 
+    [Header("UISound")]
+    [SerializeField] private AudioClip stampSound;
+
     private bool _waitingForStampClick;
     private bool _stampPlayed;
 
@@ -68,6 +71,7 @@ public abstract class ResultPanelBase : MonoBehaviour
 
         if (stampAnimator != null)
             stampAnimator.SetTrigger("Stamp");
+        AudioManager.Instance.PlayUISound(stampSound);
     }
 
     // Animation Event
