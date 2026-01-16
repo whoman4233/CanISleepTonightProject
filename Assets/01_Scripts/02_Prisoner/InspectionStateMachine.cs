@@ -48,9 +48,6 @@ public class InspectionStateMachine : MonoBehaviour
         // 2. 상태 체크 (오늘 활성 여부)
         if (!cell.IsActiveToday) return false;
 
-        // ★ [수정] 닫은 문(완료된 방)도 다시 들어갈 수 있게 잠김 체크 주석 처리
-        // if (cell.IsLockedForDay) return false;
-
         // 3. 상태 변경 적용
         cell.IsInspectingNow = true;
         cell.State = CellState.Inspecting;
@@ -58,7 +55,7 @@ public class InspectionStateMachine : MonoBehaviour
         _isSuppressionCleared = false;
 
         // 4. 죄수 상태 변경 명령
-        // ★ [수정] 무조건 InspectionState로 바꾸지 않고, FSM에게 '점검 시작' 신호만 보냄
+        //    무조건 InspectionState로 바꾸지 않고, FSM에게 '점검 시작' 신호만 보냄
         //    (FSM 내부에서 AIType에 따라 순응할지, 무시할지, 도망갈지 결정)
         SetPrisonerState(cellId, pFsm => pFsm.OnStartInspection());
 

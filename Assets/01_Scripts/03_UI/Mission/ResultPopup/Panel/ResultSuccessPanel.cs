@@ -42,6 +42,10 @@ public class ResultSuccessPanel : ResultPanelBase
     private void OnNextDayClicked()
     {
         DailyMissionManager.Instance.MarkReported();
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+
+        
+        Time.timeScale = 1.0f;
         EventBus.Publish(new RequestSceneReloadEvent());
     }
 
