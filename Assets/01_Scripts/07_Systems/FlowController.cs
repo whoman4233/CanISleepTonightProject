@@ -210,6 +210,7 @@ public class FlowController : MonoBehaviour
         EventBus.Publish(new UIHardResetEvent());
         EventBus.Publish(new InputHardResetEvent());
 
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
         // 1. 현재 로드된 'PlayScene'만 비동기로 언로드합니다.
         Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.isLoaded)
@@ -227,6 +228,12 @@ public class FlowController : MonoBehaviour
         if (!SceneManager.GetSceneByName(introSceneName).isLoaded)
         {
             yield return SceneManager.LoadSceneAsync(introSceneName, LoadSceneMode.Additive);
+        }
+
+        Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
+        if (loadingScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
         }
 
         // 3. 인트로 씬을 메인으로 설정
