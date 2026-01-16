@@ -204,4 +204,14 @@ public class PrisonerController : MonoBehaviour
             }
         }
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        // 기습 범위 그리기
+        if (AIType == PrisonerAIType.Ambusher)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, 3.5f); // 3.5f는 AmbushDistance와 맞춰주세요
+        }
+    }
 }
