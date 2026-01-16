@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6372233669124782133}
   - component: {fileID: 2931455350116192882}
   - component: {fileID: 3394889808062050637}
+  - component: {fileID: 8530443203038113902}
   m_Layer: 10
   m_Name: PSNA_SmutRag01
   m_TagString: Untagged
@@ -82,7 +83,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 00388c5b56f1532418fc039911915e1a, type: 2}
+  itemDefinition: {fileID: 11400000, guid: 00388c5b56f1532418fc039911915e1a, type: 2}
+--- !u!114 &8530443203038113902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9021483721195144104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_37
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1001 &2885278615760944240
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -143,9 +159,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7086817804736110510, guid: a92461935c8da9642b25f21c3388e465,
         type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -7086817804736110510, guid: a92461935c8da9642b25f21c3388e465,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: fff88fa8fca1c0b4a83b3a7d6b1126ab, type: 2}
+    - target: {fileID: -7086817804736110510, guid: a92461935c8da9642b25f21c3388e465,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 830e06a2b89369149955de4370a07111, type: 2}
     - target: {fileID: 287712921749967772, guid: a92461935c8da9642b25f21c3388e465,
         type: 3}
       propertyPath: m_Layer

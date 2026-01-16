@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7754726727793010716}
   - component: {fileID: 5603064332923165798}
   - component: {fileID: 583915588507267509}
+  - component: {fileID: 5724034148196727894}
   m_Layer: 10
   m_Name: PSNA_Pocker01
   m_TagString: Untagged
@@ -82,7 +83,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 0bc12a4c615d85940b68534edb19fbd7, type: 2}
+  itemDefinition: {fileID: 11400000, guid: 0bc12a4c615d85940b68534edb19fbd7, type: 2}
+--- !u!114 &5724034148196727894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019402527748091922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_38
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1001 &8705448640962937503
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -45,7 +45,7 @@ public class DayDebugConsole : MonoBehaviour
         // ★ 이게 없으면 "No prisoner active" 에러 발생함
         scheduleManager.ForceRebuildDatabase();
 
-        if(day > 7)
+        if(day >= 8)
         {
             missionManager.StartDay(day); //랜덤
         }

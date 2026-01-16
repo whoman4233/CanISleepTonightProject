@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq; // Log 출력을 위해 Linq 사용 (Select, String.Join)
 
 public class AnomalyDistributor : MonoBehaviour
 {
-    public static AnomalyDistributor Instance; // 외부 접근 편의용
+    public static AnomalyDistributor Instance;
 
     [Header("Database")]
     [SerializeField] private AnomalyDatabaseSO masterDatabase;
@@ -17,18 +17,15 @@ public class AnomalyDistributor : MonoBehaviour
     [SerializeField] private int individualCount = 1;
     [SerializeField] private int specialCount = 1;
 
-    // 오늘 등장 가능한 이상현상 후보군 (테마 필터링 완료된 목록)
     private List<AnomalyDefinitionSO> currentDayPool = new List<AnomalyDefinitionSO>();
 
     private void Awake()
     {
         Instance = this;
-        // 싱글톤이 있다면 자동 할당 시도
         if (scheduleManager == null) scheduleManager = PrisonerScheduleManager.Instance;
         if (prisonManager == null) prisonManager = FindObjectOfType<PrisonManager>();
     }
 
-    // 1단계: 전략 패턴(DailyStrategy)에서 호출하여 "오늘의 후보군"을 추립니다.
     public void FilterAnomalies(MissionDayTheme dayTheme)
     {
         currentDayPool.Clear();
@@ -37,51 +34,62 @@ public class AnomalyDistributor : MonoBehaviour
 
         foreach (var anomaly in masterDatabase.defs)
         {
-            // 비트 연산: (이상현상 속성 & 오늘 테마)가 겹치면 후보 등록
             if ((anomaly.validThemes & dayTheme) != 0)
             {
                 currentDayPool.Add(anomaly);
             }
         }
-
         Debug.Log($"[AnomalyDistributor] 테마({dayTheme}) 필터링 완료. 후보군: {currentDayPool.Count}개");
     }
 
-    // 2단계: 필터링된 후보군(currentDayPool)을 바탕으로 각 감방에 배정합니다.
     public void DistributeAnomalies()
     {
         int currentRiotGauge = (GameManager.Instance != null) ? GameManager.Instance.CurrentRiotGauge : 0;
         var allCellIds = anchorRegistry.GetAllCellIds();
 
+        Debug.Log("========== [AnomalyDistributor] 이상현상 배정 시작 ==========");
+
         foreach (var cellId in allCellIds)
         {
             if (!anchorRegistry.TryGet(cellId, out var anchor)) continue;
 
-            // 기존 배정 내역 초기화
             anchor.ClearDailyAnomalies();
-
-            // 중복 배치 방지용 Set
             HashSet<AnomalyTargetType> usedTargets = new HashSet<AnomalyTargetType>();
 
-            // ?? [수정됨] 리팩토링된 ScheduleManager에서 죄수 데이터 가져오기
             PrisonerData pData = scheduleManager.GetPrisonerData(cellId);
+            var dailyRole = scheduleManager.GetDailyRole(cellId);
 
-            // 죄수가 없으면 None, 있으면 그 죄수의 성향(Trait) 가져오기
             PrisonerType pType = (pData != null) ? pData.definition.traitType : PrisonerType.None;
 
             // =============================================================
-            // [배정 로직] MasterDB가 아닌 currentDayPool(오늘의 후보군)에서 뽑습니다.
+            // 0. 미션 타겟(용의자) 강제 배정 (구조체 null 체크 오류 수정됨)
             // =============================================================
+            if (dailyRole.isSuspicious)
+            {
+                var missionCandidates = currentDayPool
+                    .Where(d => d.category == AnomalyCategory.Individual)
+                    .ToList();
 
-            // 1. 특수(Special) 배정: 폭동 게이지 조건 만족하는 것만
+                if (missionCandidates.Count == 0) missionCandidates = currentDayPool;
+
+                if (missionCandidates.Count > 0)
+                {
+                    Shuffle(missionCandidates);
+                    var missionAnomaly = missionCandidates[0];
+
+                    anchor.currentDailyAnomalies.Add(missionAnomaly);
+                    usedTargets.Add(missionAnomaly.targetType);
+                }
+            }
+
+            // 1. 특수(Special) 배정
             var cellSpecials = currentDayPool
                 .Where(d => d.category == AnomalyCategory.Special && currentRiotGauge >= d.minRiotGauge)
                 .ToList();
             Shuffle(cellSpecials);
             AddUniqueAnomalies(cellSpecials, anchor.currentDailyAnomalies, specialCount, usedTargets);
 
-            // 2. 개별(Individual) 배정: 죄수 타입 일치하는 것만
-            // (빈 방인 경우 pType이 None이므로 매칭되는 이상현상이 없게 됨 -> 자연스러움)
+            // 2. 개별(Individual) 배정
             var cellIndividual = currentDayPool
                 .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
                 .ToList();
@@ -94,9 +102,24 @@ public class AnomalyDistributor : MonoBehaviour
                 .ToList();
             Shuffle(cellCommons);
             AddUniqueAnomalies(cellCommons, anchor.currentDailyAnomalies, commonCount, usedTargets);
+
+            // =============================================================
+            // ★ [추가] 배정 결과 로그 출력
+            // =============================================================
+            if (anchor.currentDailyAnomalies.Count > 0)
+            {
+                // 리스트에 있는 이상현상 이름들을 쉼표로 연결해서 출력
+                string assignedNames = string.Join(", ", anchor.currentDailyAnomalies.Select(a => a.name));
+                Debug.Log($"[AnomalyDistributor] 방 {cellId} 배정됨 ({anchor.currentDailyAnomalies.Count}개): [{assignedNames}]");
+            }
+            else
+            {
+                // 이상현상이 하나도 없는 경우 (필요하다면 주석 해제)
+                Debug.Log($"[AnomalyDistributor] 방 {cellId} 배정 없음");
+            }
         }
 
-        Debug.Log("[AnomalyDistributor] 모든 감방에 이상현상 배정 완료. (스폰은 Spawner가 담당)");
+        Debug.Log("========== [AnomalyDistributor] 이상현상 배정 완료 ==========");
     }
 
     private void AddUniqueAnomalies(List<AnomalyDefinitionSO> source, List<AnomalyDefinitionSO> dest, int maxCount, HashSet<AnomalyTargetType> usedSet)
@@ -106,7 +129,6 @@ public class AnomalyDistributor : MonoBehaviour
         {
             if (count >= maxCount) break;
 
-            // Slot 타입(포스터 등)은 여러 개 가능, 그 외(가구 교체)는 중복 불가
             if (def.targetType != AnomalyTargetType.Slot)
             {
                 if (usedSet.Contains(def.targetType)) continue;

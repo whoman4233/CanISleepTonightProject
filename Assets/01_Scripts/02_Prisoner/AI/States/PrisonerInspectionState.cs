@@ -68,14 +68,15 @@ public class PrisonerInspectionState : BasePrisonerState
 
         anim.SetTrigger("Hit");
 
-        // 이동 중 맞았을 수도 있으니 즉시 정지
+        // [수정] 이동 즉시 정지 및 경로 초기화 (가장 중요)
         if (agent != null)
         {
             agent.isStopped = true;
-            agent.velocity = Vector3.zero; // ★ [추가] 관성 제거 (미끄러짐 방지)
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
         }
 
-        // 반항형(Bad, Ambusher 등)은 전투, 순응형(Good)은 쫄기
+        // 상태 전환 로직
         if (IsAggressiveType(Controller.AIType))
         {
             fsm.ChangeState(fsm.CombatState);

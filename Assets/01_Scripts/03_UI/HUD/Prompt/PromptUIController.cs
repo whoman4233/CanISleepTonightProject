@@ -49,11 +49,12 @@ public class PromptUIController : MonoBehaviour
             return;
         }
 
-        interactText.text =
-            TextManager.Instance.GetPromptText(id);
+        // Inspection이 활성 중이면 Interact 무시
+        if (inspectionPanel.activeSelf)
+            return;
 
+        interactText.text = TextManager.Instance.GetPromptText(id);
         interactPanel.SetActive(true);
-        inspectionPanel.SetActive(false);
     }
 
     private void UpdateInspectionPrompt(string id)

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 453880790050526431}
   - component: {fileID: 3910611473473269303}
   - component: {fileID: 1175263199762551389}
+  - component: {fileID: 5170977233293528805}
   m_Layer: 10
   m_Name: PSNA_BundleOfBill01
   m_TagString: Untagged
@@ -82,7 +83,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: e8bf12ba034db8b4680d062f7c9ebced, type: 2}
+  itemDefinition: {fileID: 11400000, guid: e8bf12ba034db8b4680d062f7c9ebced, type: 2}
+--- !u!114 &5170977233293528805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8811747148164974602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 0}
+  objectType: 
 --- !u!1001 &8690546296520547156
 PrefabInstance:
   m_ObjectHideFlags: 0

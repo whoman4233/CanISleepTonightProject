@@ -59,4 +59,11 @@ public sealed class PlayerAttackState : PlayerState
 
         P.Controller.Move(horizontalMove + verticalMove);
     }
+
+    public override void Exit()
+    {
+        // 상태를 나갈 때 무조건 공격 판정을 종료시킴 (안전장치)
+        // 플레이어가 피격되어 상태가 강제 종료되더라도 스윙이 꼬이지 않게 함
+        P.WeaponHandler.SetHitColliderEnabled(false);
+    }
 }

@@ -40,6 +40,7 @@ public class InspectionManager : MonoBehaviour
     public bool IsInspecting => _isInspecting;
     private bool _isInspecting;
     private bool _isRotating;
+    private bool _inspectionViewReady;
     private float yaw;
     private float pitch;
 
@@ -178,6 +179,8 @@ public class InspectionManager : MonoBehaviour
     }
     public void ExitInspection()
     {
+        _inspectionViewReady = false;
+        inspectionViewRect = null;
         _currentWorldInspectable = null;
 
         if (!_isInspecting)
@@ -230,6 +233,7 @@ public class InspectionManager : MonoBehaviour
         }
 
         inspectionViewRect = ui.GetInspectionViewRect();
+        _inspectionViewReady = inspectionViewRect != null;
     }
 
     // =========================
@@ -325,7 +329,7 @@ public class InspectionManager : MonoBehaviour
 
     private void HandleHoverOutline()
     {
-        if (inspectionViewRect == null)
+        if (!_inspectionViewReady)
             return;
 
         Vector2 screenPos = Mouse.current.position.ReadValue();

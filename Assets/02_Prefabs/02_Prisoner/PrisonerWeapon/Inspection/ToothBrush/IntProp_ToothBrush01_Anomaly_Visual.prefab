@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8009459169136606239}
   - component: {fileID: 2330655016464045027}
   - component: {fileID: 5414974631981373123}
+  - component: {fileID: 3579406255120023951}
   m_Layer: 12
   m_Name: IntProp_ToothBrush01_Anomaly_Visual
   m_TagString: Untagged
@@ -137,6 +138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 2330655016464045027}
+  revealOnInspect: 0
 --- !u!114 &2330655016464045027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,3 +167,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDefinition: {fileID: 11400000, guid: c209aaa12ede4d44a8609f428d083a3f, type: 2}
   inspectVisual: {fileID: 4822253716155718841}
+--- !u!114 &3579406255120023951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4822253716155718841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_32
+  ruleTable: {fileID: 0}
+  objectType: 
