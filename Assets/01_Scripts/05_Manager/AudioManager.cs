@@ -8,14 +8,16 @@ public class AudioManager : MonoBehaviour
     [Header("Audio Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
-
+    [SerializeField] private AudioSource uiSource;
     [Header("Audio Mixer")]
     [SerializeField] private AudioMixer mainMixer;
 
     private const string MasterParam = "MasterVolume";
     private const string BgmParam = "BGMVolume";
     private const string SfxParam = "SFXVolume";
+    private const string UiParam = "UIVolume";
 
+    private const string UiKey = "UIVolume";
     private const string MasterKey = "MasterVolume";
     private const string BgmKey = "BGMVolume";
     private const string SfxKey = "SFXVolume";
@@ -27,6 +29,7 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)] private float masterVolume = 1f;
     [Range(0f, 1f)] private float bgmVolume = 1f;
     [Range(0f, 1f)] private float sfxVolume = 1f;
+    [Range(0f, 1f)] private float uiVolume = 0.8f;
     private bool isMuted;
 
     // =========================
@@ -35,6 +38,7 @@ public class AudioManager : MonoBehaviour
     public float GetMasterVolume() => masterVolume;
     public float GetBgmVolume() => bgmVolume;
     public float GetSfxVolume() => sfxVolume;
+    public float GetUiVolume() => uiVolume;
     public bool IsMuted() => isMuted;
     private void Awake()
     {
@@ -79,7 +83,12 @@ public class AudioManager : MonoBehaviour
         ApplyVolumes();
         SaveSettings();
     }
-
+    public void SetUiVolume(float value)
+    {
+        uiVolume = Mathf.Clamp01(value);
+        ApplyVolumes();
+        SaveSettings();
+    }
     public void SetMute(bool mute)
     {
         isMuted = mute;
@@ -88,7 +97,7 @@ public class AudioManager : MonoBehaviour
     }
 
     // =========================
-    // BGM/SFX
+    // BGM/SFX/UI
     // ========================= 
 
     public void PlayBGM(AudioClip clip, bool loop = true)
@@ -105,7 +114,11 @@ public class AudioManager : MonoBehaviour
         if (sfxSource == null || clip == null) return;
         sfxSource.PlayOneShot(clip);
     }
-
+    public void PlayUISound(AudioClip clip)
+    {
+        if (uiSource == null || clip == null) return;
+        uiSource.PlayOneShot(clip);
+    }
     // =========================
     // 볼륨/믹서 조절
     // ========================= 
@@ -117,7 +130,7 @@ public class AudioManager : MonoBehaviour
         SetMixerVolume(MasterParam, master);
         SetMixerVolume(BgmParam, master * bgmVolume);
         SetMixerVolume(SfxParam, master * sfxVolume);
-
+        SetMixerVolume(UiParam, master * uiVolume);
         Debug.Log(
             $"[AudioManager] ApplyVolumes M:{masterVolume} B:{bgmVolume} S:{sfxVolume} Muted:{isMuted}"
         );
@@ -151,6 +164,7 @@ public class AudioManager : MonoBehaviour
         PlayerPrefs.SetFloat(MasterKey, masterVolume);
         PlayerPrefs.SetFloat(BgmKey, bgmVolume);
         PlayerPrefs.SetFloat(SfxKey, sfxVolume);
+        PlayerPrefs.SetFloat(UiKey, uiVolume);
         PlayerPrefs.SetInt(MuteKey, isMuted ? 1 : 0);
         PlayerPrefs.Save();
     }
@@ -160,6 +174,7 @@ public class AudioManager : MonoBehaviour
         masterVolume = PlayerPrefs.GetFloat(MasterKey, 1f);
         bgmVolume = PlayerPrefs.GetFloat(BgmKey, 1f);
         sfxVolume = PlayerPrefs.GetFloat(SfxKey, 1f);
+        uiVolume = PlayerPrefs.GetFloat(UiKey, 1f);
         isMuted = PlayerPrefs.GetInt(MuteKey, 0) == 1;
     }
 }
