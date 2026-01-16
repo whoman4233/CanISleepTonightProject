@@ -58,6 +58,8 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         {
             EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.NPCHit));
             Debug.Log("이벤트 발행: NPCHit");
+            StartCoroutine(DelayedDialogue());
+            finishedDialogue = true;
         }
     }
 
@@ -70,5 +72,11 @@ public class TutorialNPC : MonoBehaviour , IInteractable
             finishedDialogue = false;
             Debug.Log($"튜토리얼 스텝이 업데이트 되었읍니다. {nextStep}");
         }
+    }
+
+    private IEnumerator DelayedDialogue() // 때린 후 대화생성 딜레이를 주기 위한 코루틴
+    {
+        yield return new WaitForSeconds(0.5f);
+        DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, currentSubStep.ToString());
     }
 }
