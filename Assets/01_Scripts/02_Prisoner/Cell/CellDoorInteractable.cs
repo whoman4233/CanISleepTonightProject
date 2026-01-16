@@ -25,6 +25,12 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [SerializeField] private bool useRedOutlineOnCloseOnlySlidingDoor = false;
     [SerializeField] private InteractableOutliner outliner;
 
+    [Header("Door SFX")]
+    [SerializeField] private AudioClip slidingOpenClip;
+    [SerializeField] private AudioClip slidingCloseClip;
+    [SerializeField] private AudioClip hingedOpenClip;
+    [SerializeField] private AudioClip hingedCloseClip;
+
     // [상태]
     [SerializeField] private bool _isPlayerInside;
     private bool _isSimpleDoorOpen = false;
@@ -120,7 +126,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             // [열기]
             PlayOpen();
             _isSimpleDoorOpen = true;
-
             // ★ [추가] 열릴 때 자동 닫힘 코루틴 시작
             if (_autoCloseCoroutine != null) StopCoroutine(_autoCloseCoroutine);
             _autoCloseCoroutine = StartCoroutine(CoAutoCloseSimpleDoor());
@@ -255,20 +260,23 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void PlayOpen()
     {
+        Debug.Log($"[Door] PlayOpen called : {name}");
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(CloseHash);
         doorAnimator.SetTrigger(OpenHash);
-
+        PlayOpenSound();
     }
 
     private void PlayClose()
     {
+        Debug.Log($"[Door] PlayClose called : {name}");
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(OpenHash);
         doorAnimator.SetTrigger(CloseHash);
 
         if (useRedOutlineOnCloseOnlySlidingDoor && outliner != null)
             outliner.SetHighlight(true, Color.red);
+        PlayCloseSound();
     }
 
     private void PlayLocked()
@@ -349,6 +357,47 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
         // 그 외는 열려 있음 (닫기 가능)
         return OpenClosePromptState.Open;
+    }
+    //==========================================
+    //문열기 사운드 재생용 함수
+    //==========================================
+    private void PlayOpenSound()
+    {
+        AudioClip clip = null;
+
+        if (string.IsNullOrWhiteSpace(cellId))
+        {
+            // 일반 문 → 여닫이
+            clip = hingedOpenClip;
+        }
+        else
+        {
+            // 감방 문 → 슬라이딩
+            clip = slidingOpenClip;
+        }
+
+        if (clip == null)
+            return;
+
+        AudioManager.Instance.PlaySFX(clip);
+    }
+    private void PlayCloseSound()
+    {
+        AudioClip clip = null;
+
+        if (string.IsNullOrWhiteSpace(cellId))
+        {
+            clip = hingedCloseClip;
+        }
+        else
+        {
+            clip = slidingCloseClip;
+        }
+
+        if (clip == null)
+            return;
+
+        AudioManager.Instance.PlaySFX(clip);
     }
 
 }
