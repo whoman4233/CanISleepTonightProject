@@ -29,7 +29,7 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)] private float masterVolume = 1f;
     [Range(0f, 1f)] private float bgmVolume = 1f;
     [Range(0f, 1f)] private float sfxVolume = 1f;
-    [Range(0f, 1f)] private float uiVolume = 1f;
+    [Range(0f, 1f)] private float uiVolume = 0.8f;
     private bool isMuted;
 
     // =========================
@@ -97,7 +97,7 @@ public class AudioManager : MonoBehaviour
     }
 
     // =========================
-    // BGM/SFX
+    // BGM/SFX/UI
     // ========================= 
 
     public void PlayBGM(AudioClip clip, bool loop = true)
