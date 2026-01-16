@@ -50,6 +50,10 @@ public struct PatrolTimerResetEvent // 타이머 초기화
         InitialSeconds = initialSeconds;
     }
 }
+public struct PatrolTimeoutEvent
+{
+
+}
 
 public readonly struct InteractableHoverChangedEvent //크로스 헤어 관련 이벤트(PlayerInteractor Ray 상태 수신)
 {

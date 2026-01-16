@@ -22,8 +22,6 @@ public class HUDTimer : MonoBehaviour
     [SerializeField] private AudioClip timeOverClip;
 
     private bool _underOneMinuteTriggered;
-    private bool _timeOverTriggered;
-
     private bool _isActive;
     private float _currentSeconds;
     private float _lastSeconds;
@@ -33,11 +31,13 @@ public class HUDTimer : MonoBehaviour
 
     private Action<GameContextReadyEvent> _onContextReady;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<PatrolTimeoutEvent> _onTimeout;
 
     private void Awake()
     {
         _onContextReady = OnGameContextReady;
         _onPhaseChanged = OnPhaseChanged;
+        _onTimeout = _ => OnPatrolTimeout();
     }
 
     private void OnEnable()
@@ -45,6 +45,7 @@ public class HUDTimer : MonoBehaviour
         EventBus.Subscribe(_onContextReady);
         EventBus.Subscribe(_onPhaseChanged);
         EventBus.Subscribe<PatrolTimerResetEvent>(OnTimerReset);
+        EventBus.Subscribe(_onTimeout);
 
         if (GameManager.Instance != null)
         {
@@ -60,6 +61,7 @@ public class HUDTimer : MonoBehaviour
         EventBus.Unsubscribe(_onContextReady);
         EventBus.Unsubscribe(_onPhaseChanged);
         EventBus.Unsubscribe<PatrolTimerResetEvent>(OnTimerReset);
+        EventBus.Unsubscribe(_onTimeout);
 
         if (GameManager.Instance != null)
             GameManager.Instance.OnInGameTimeUpdated -= OnTimeUpdated;
@@ -188,28 +190,25 @@ public class HUDTimer : MonoBehaviour
     }
     private void UpdateSound(float seconds)
     {
-        // 1분 미만 진입 → UI 루프
+        // 60초 미만 진입 → UI 루프 사운드
         if (!_underOneMinuteTriggered && seconds > 0f && seconds < 60f)
         {
             _underOneMinuteTriggered = true;
             AudioManager.Instance?.PlayUILoop(underOneMinuteLoop);
         }
-
-        // 0초 도달 → 루프 정지 + UI 원샷
-        if (!_timeOverTriggered && seconds <= 0f)
-        {
-            _timeOverTriggered = true;
-            AudioManager.Instance?.StopUILoop();
-            AudioManager.Instance?.PlayUISound(timeOverClip);
-        }
     }
+
+    private void OnPatrolTimeout()
+    {
+        AudioManager.Instance?.StopUILoop();
+        AudioManager.Instance?.PlayUISound(timeOverClip);
+    }
+
     private void ResetSoundState()
     {
         _underOneMinuteTriggered = false;
-        _timeOverTriggered = false;
         AudioManager.Instance?.StopUILoop();
     }
-
 }
 
 

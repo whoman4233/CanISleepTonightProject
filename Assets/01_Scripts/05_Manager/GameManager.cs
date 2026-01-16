@@ -38,6 +38,8 @@ public class GameManager : MonoBehaviour
 
     [Header("순찰 페이즈 타임어택")]
     [SerializeField] private float patrolDurationSeconds = 480f;
+    private bool _patrolTimeoutHandled; // 중복 방지
+
     public float CurrentInGameSeconds { get; private set; }
     public event Action<float> OnInGameTimeUpdated;
 
@@ -141,6 +143,8 @@ public class GameManager : MonoBehaviour
     {
         EventBus.Subscribe(_requestPhaseChange);
         EventBus.Subscribe(_onEndingConditionMet);
+        // Pause는 옵션/메뉴 전용
+        // 결과 UI / 타임아웃 실패에서는 사용하지 않음
         EventBus.Subscribe<PauseGameRequestedEvent>(_ => Time.timeScale = 0f);
         EventBus.Subscribe<ResumeGameRequestedEvent>(_ => Time.timeScale = 1f);
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -214,6 +218,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterPatrol()
     {
+        _patrolTimeoutHandled = false;
         EventBus.Publish(new ShowTimedTextPopupEvent("순찰 시작", 1.5f));
         patrolDurationSeconds = 480;
         CurrentInGameSeconds = patrolDurationSeconds;
@@ -248,18 +253,43 @@ public class GameManager : MonoBehaviour
     private IEnumerator UpdateTimer()
     {
         yield return new WaitForSeconds(1.0f);
-        while (CurrentPhase == GamePhase.Patrol && patrolDurationSeconds > 0)
+
+        while (CurrentPhase == GamePhase.Patrol)
         {
             patrolDurationSeconds -= Time.deltaTime;
+
+            if (patrolDurationSeconds <= 0f)
+            {
+                HandlePatrolTimeout();   // ★ 핵심
+                yield break;
+            }
+
             CurrentInGameSeconds = patrolDurationSeconds;
             OnInGameTimeUpdated?.Invoke(patrolDurationSeconds);
+
             yield return null;
         }
-        if (patrolDurationSeconds <= 0f)
+    }
+    private void HandlePatrolTimeout()
+    {
+        if (_patrolTimeoutHandled)
+            return;
+
+        _patrolTimeoutHandled = true;
+
+        // 타이머 코루틴 정리
+        if (patrolTimerCoroutine != null)
         {
-            patrolDurationSeconds = 0;
-            ChangePhase(GamePhase.Settlement);
+            StopCoroutine(patrolTimerCoroutine);
+            patrolTimerCoroutine = null;
         }
+        EventBus.Publish(new PatrolTimeoutEvent());
+        // 입력만 잠금 (Pause 아님)
+        EventBus.Publish(new GlobalInputLockRequestedEvent());
+
+        // 실패 결과 UI 즉시 표시
+        EventBus.Publish(new ResultUIShowRequestedEvent(false, "순찰 시간이 초과되었습니다."));
+        Debug.Log("[GameManager] Patrol Timeout → Mission Failed");
     }
 
     private IEnumerator SettlementProcessRoutine()
