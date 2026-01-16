@@ -20,7 +20,7 @@ public class DayDebugConsole : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha5)) StartTestMission(5);
         if (Input.GetKeyDown(KeyCode.Alpha6)) StartTestMission(6);
         if (Input.GetKeyDown(KeyCode.Alpha7)) StartTestMission(7); // 탈옥 저지
-        if (Input.GetKeyDown(KeyCode.Alpha7)) StartTestMission(8); //랜덤미션
+        if (Input.GetKeyDown(KeyCode.Alpha8)) StartTestMission(8); //랜덤미션
 
     }
 

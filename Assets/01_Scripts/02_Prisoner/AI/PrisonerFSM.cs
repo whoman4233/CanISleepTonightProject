@@ -80,10 +80,24 @@ public class PrisonerFSM : MonoBehaviour
         }
         else
         {
-            // 그 외 일반 타입들은 ActionState로 통합 관리
+            // 1. 행동 타입 설정
             ActionState.SetActionType(aiType);
-            ChangeState(ActionState);
-            Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState");
+
+            // 2. [수정] 이미 ActionState 상태라면 ChangeState가 무시되므로, 강제로 재시작
+            if (_currentState == ActionState)
+            {
+                // 강제로 나갔다 들어오게 하여 Enter() 내부의 로그와 소리를 실행시킴
+                ActionState.Exit();
+                ActionState.Enter();
+
+                Debug.Log($"[FSM Init] {name} Refreshed ActionState for {aiType}");
+            }
+            else
+            {
+                // 다른 상태(예: 초기화 전 null 등)였다면 정상적으로 변경
+                ChangeState(ActionState);
+                Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState");
+            }
         }
     }
 
