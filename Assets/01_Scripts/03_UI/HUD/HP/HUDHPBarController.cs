@@ -4,46 +4,62 @@ using System;
 
 public class UIHPBarController : MonoBehaviour
 {
+    [Header("Root")]
+    [SerializeField] private GameObject root;
+
     [SerializeField] private Image fillImage;
     [SerializeField] private HUDHeartAnimator heartAnimator;
-    [SerializeField] private CanvasGroup canvasGroup;
 
     [Header("Fill Range")]
-    [SerializeField] private float fillMin = 0.09f; // HP 0
-    [SerializeField] private float fillMax = 0.9f;  // HP 100
+    [SerializeField] private float fillMin = 0.09f;
+    [SerializeField] private float fillMax = 0.9f;
 
     private const float MaxHp = 100f;
     private GamePhase _currentPhase;
 
     private Action<PlayerHpChangedEvent> _onHpChanged;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<GameContextReadyEvent> _onContextReady;
 
     private void Awake()
     {
         _onHpChanged = OnHpChanged;
-        _onPhaseChanged = OnPhaseChanged;
+        _onPhaseChanged = e =>
+        {
+            _currentPhase = e.Phase;
+            ForceRefreshVisibility();
+        };
+
+        _onContextReady = _ =>
+        {
+            if (GameManager.Instance != null)
+                _currentPhase = GameManager.Instance.CurrentPhase;
+
+            ForceRefreshVisibility();
+        };
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onHpChanged);
         EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_onContextReady);
 
         if (GameManager.Instance != null)
             _currentPhase = GameManager.Instance.CurrentPhase;
 
-        RefreshVisibility();
+        ForceRefreshVisibility();
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onHpChanged);
         EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_onContextReady);
     }
 
-    private void OnPhaseChanged(GamePhaseChangedEvent e)
+    private void ForceRefreshVisibility()
     {
-        _currentPhase = e.Phase;
         RefreshVisibility();
     }
 
@@ -55,9 +71,8 @@ public class UIHPBarController : MonoBehaviour
             _currentPhase == GamePhase.Briefing ||
             _currentPhase == GamePhase.Patrol;
 
-        canvasGroup.alpha = show ? 1f : 0f;
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable = false;
+        if (root != null)
+            root.SetActive(show);
     }
 
     private void OnHpChanged(PlayerHpChangedEvent e)
@@ -68,12 +83,9 @@ public class UIHPBarController : MonoBehaviour
     private void ApplyHp(int hp)
     {
         float normalized = Mathf.Clamp01(hp / MaxHp);
-
-        // FillAmount 범위 고정
         float fillAmount = Mathf.Lerp(fillMin, fillMax, normalized);
-        fillImage.fillAmount = fillAmount;
 
-        // 컬러 변화
+        fillImage.fillAmount = fillAmount;
         fillImage.color = Color.Lerp(Color.red, Color.white, normalized);
 
         if (heartAnimator != null)

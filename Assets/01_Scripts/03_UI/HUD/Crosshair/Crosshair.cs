@@ -5,6 +5,10 @@ using System;
 
 public class Crosshair : MonoBehaviour
 {
+    [Header("Root")]
+    [SerializeField] private GameObject root; //실제 표시 제어용 Root
+
+    [Header("UI")]
     [SerializeField] private RectTransform crosshair;
     [SerializeField] private Image image;
     [SerializeField] private CanvasGroup canvasGroup;
@@ -26,17 +30,23 @@ public class Crosshair : MonoBehaviour
 
     private bool _visible;
 
-    // 상태 캐시 
+    // =========================
+    // 상태 캐시
+    // =========================
     private GamePhase _currentPhase = GamePhase.NotStarted;
     private bool _playerPresent;
     private bool _inspectionActive;
 
+    // =========================
+    // Events
+    // =========================
     private Action<InteractableHoverChangedEvent> _onHover;
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;                 
-    private Action<PlayerPresenceChangedEvent> _onPlayerPresenceChanged;   
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<PlayerPresenceChangedEvent> _onPlayerPresenceChanged;
     private Action<InspectionStartedEvent> _onInspectionStart;
     private Action<InspectionEndedEvent> _onInspectionEnd;
     private Action<GameContextReadyEvent> _onContextReady;
+
     private void Awake()
     {
         if (canvasGroup == null)
@@ -44,6 +54,9 @@ public class Crosshair : MonoBehaviour
 
         ApplyVisible(false);
 
+        // =========================
+        // Hover 연출 (기존 로직 유지)
+        // =========================
         _onHover = e =>
         {
             if (!_visible)
@@ -52,20 +65,27 @@ public class Crosshair : MonoBehaviour
             SetInteractable(e.IsHovering);
         };
 
-        //  페이즈 변경을 이벤트로 추적
+        // =========================
+        // Phase 변경
+        // =========================
         _onPhaseChanged = e =>
         {
             _currentPhase = e.Phase;
             RefreshVisibility();
         };
 
-        //  Player 생성 타이밍(Standby 생성 등) 대응
+        // =========================
+        // Player Presence
+        // =========================
         _onPlayerPresenceChanged = e =>
         {
             _playerPresent = e.IsPresent;
             RefreshVisibility();
         };
 
+        // =========================
+        // Inspection 상태
+        // =========================
         _onInspectionStart = _ =>
         {
             _inspectionActive = true;
@@ -77,16 +97,20 @@ public class Crosshair : MonoBehaviour
             _inspectionActive = false;
             RefreshVisibility();
         };
+
+        // =========================
+        // Context Ready (루프/씬 초기화)
+        // =========================
         _onContextReady = _ =>
         {
-            // 씬 리로드 기준점 초기화
+            // Root 직접 제어 금지, 상태만 리셋
             _inspectionActive = false;
             _playerPresent = false;
 
             if (GameManager.Instance != null)
                 _currentPhase = GameManager.Instance.CurrentPhase;
 
-            RefreshVisibility();
+            RefreshVisibility(); // 강제 재판정
         };
     }
 
@@ -97,17 +121,19 @@ public class Crosshair : MonoBehaviour
         EventBus.Subscribe(_onPlayerPresenceChanged);
         EventBus.Subscribe(_onInspectionStart);
         EventBus.Subscribe(_onInspectionEnd);
+        EventBus.Subscribe(_onContextReady); // 누락돼 있던 부분
 
-        
         if (GameManager.Instance != null)
             _currentPhase = GameManager.Instance.CurrentPhase;
 
-        // Player 존재는 이벤트가 오기 전까지 false일 수 있음.
-        // InputManager state를 통해 추론 가능
-        if (InputManager.Instance != null && InputManager.Instance.CurrentState != InputState.UIOnly)
+        // Player 존재는 이벤트가 오기 전까지 false일 수 있음
+        if (InputManager.Instance != null &&
+            InputManager.Instance.CurrentState != InputState.UIOnly)
+        {
             _playerPresent = true;
+        }
 
-        RefreshVisibility();
+        RefreshVisibility(); // 이벤트 기다리지 않고 즉시 동기화
     }
 
     private void OnDisable()
@@ -117,8 +143,12 @@ public class Crosshair : MonoBehaviour
         EventBus.Unsubscribe(_onPlayerPresenceChanged);
         EventBus.Unsubscribe(_onInspectionStart);
         EventBus.Unsubscribe(_onInspectionEnd);
+        EventBus.Unsubscribe(_onContextReady);
     }
 
+    // =========================
+    // Visibility 판단
+    // =========================
     private void RefreshVisibility()
     {
         bool uiOnly =
@@ -154,10 +184,15 @@ public class Crosshair : MonoBehaviour
         ApplyVisible(show);
     }
 
-
+    // =========================
+    // 실제 표시 적용
+    // =========================
     private void ApplyVisible(bool show)
     {
         _visible = show;
+
+        if (root != null)
+            root.SetActive(show);
 
         canvasGroup.alpha = show ? 1f : 0f;
         canvasGroup.blocksRaycasts = false;
@@ -179,6 +214,9 @@ public class Crosshair : MonoBehaviour
         }
     }
 
+    // =========================
+    // Hover 연출
+    // =========================
     private void SetInteractable(bool interactable)
     {
         _scaleTween?.Kill();
@@ -192,9 +230,3 @@ public class Crosshair : MonoBehaviour
             .DOColor(interactable ? interactColor : normalColor, tweenDuration);
     }
 }
-
-
-
-
-
-
