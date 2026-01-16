@@ -122,11 +122,19 @@ public class PrisonerFSM : MonoBehaviour
 
         PrisonerAIType myType = Controller.AIType;
 
-        // ★ [추가] 기습형(Ambusher)은 점호 신호를 무시하고 계속 숨어있어야 함
-        // (문이 열리는 순간이 기습 타이밍이므로 InspectionState로 가면 안 됨)
-        if (myType == PrisonerAIType.Ambusher)
+        // ================================================================
+        // ★ [수정] 점호를 무시해야 하는 타입들 (기습형 + 시끄러운 죄수들)
+        // ================================================================
+        if (myType == PrisonerAIType.Ambusher ||
+            myType == PrisonerAIType.Singing ||
+            myType == PrisonerAIType.Screaming ||
+            myType == PrisonerAIType.Crying ||
+            myType == PrisonerAIType.Mumbling ||
+            myType == PrisonerAIType.HammeringWall ||
+            myType == PrisonerAIType.Deadlift)
         {
-            Debug.Log($"[FSM] {name} (Ambusher)는 점호 요청을 무시하고 기습 대기합니다.");
+            // 이들은 점호(InspectionState)로 넘어가지 않고 하던 짓을 계속함
+            Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시하고 행동을 계속합니다.");
             return;
         }
 
@@ -138,13 +146,11 @@ public class PrisonerFSM : MonoBehaviour
                 ChangeState(InspectionState);
                 break;
 
-            // 2. 탈주형(Run): 문 열리면 탈주
+            // 2. 탈주형(Run)
             case PrisonerAIType.Escaper:
                 Debug.Log($"[FSM] {name} ({myType}) 탈주 시작!");
-                // if (EscapeState != null) ChangeState(EscapeState);
                 break;
 
-            // 3. 그 외 특이 케이스
             default:
                 Debug.Log($"[FSM] {name} ({myType})는 점호 요청을 무시합니다.");
                 break;

@@ -93,9 +93,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 411939991325282596}
+  - component: {fileID: 5225628763752398589}
   - component: {fileID: 5451894031098673864}
-  - component: {fileID: 108878109615010575}
   - component: {fileID: 6117104055786930900}
+  - component: {fileID: 151374563777192972}
   m_Layer: 10
   m_Name: PSNW_Hammer01
   m_TagString: Untagged
@@ -119,21 +120,7 @@ Transform:
   - {fileID: 3115863725460635774}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5451894031098673864
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4118976167796309959}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 966b72ef3c8b85242ac5286a11a5f89c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineEnabled: 0
-  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
---- !u!136 &108878109615010575
+--- !u!136 &5225628763752398589
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -152,10 +139,24 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.107699454
-  m_Height: 0.42019188
+  m_Radius: 0.015574747
+  m_Height: 0.24778798
   m_Direction: 1
-  m_Center: {x: -0.0044394135, y: 0.09623861, z: 0}
+  m_Center: {x: 0.0006001438, y: 0.06497674, z: 0.00011924002}
+--- !u!114 &5451894031098673864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4118976167796309959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966b72ef3c8b85242ac5286a11a5f89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineEnabled: 0
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &6117104055786930900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,3 +170,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemDefinition: {fileID: 11400000, guid: f308a573b428d97468f969454a02c19c, type: 2}
+--- !u!114 &151374563777192972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4118976167796309959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_30
+  ruleTable: {fileID: 0}
+  objectType: 

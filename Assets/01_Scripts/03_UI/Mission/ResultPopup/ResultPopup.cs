@@ -7,6 +7,9 @@ public class ResultPopup : MonoBehaviour
     [SerializeField] private ResultSuccessPanel successPanel;
     [SerializeField] private ResultFailPanel failPanel;
 
+    [SerializeField] private AudioClip successSound;
+    [SerializeField] private AudioClip failSound;
+
     private Action<ResultUIShowRequestedEvent> _onShow;
     private Action<UIHardResetEvent> _onUIHardReset;
     private void Awake()
@@ -39,9 +42,16 @@ public class ResultPopup : MonoBehaviour
         failPanel.Hide();
 
         if (e.isSuccess)
+        {
+            AudioManager.Instance.PlayUISound(successSound);
+
             successPanel.Show();
+        }
         else
+        {
+            AudioManager.Instance.PlayUISound(failSound);
             failPanel.Show();
+        }
     }
     private void OnUIHardReset(UIHardResetEvent e)
     {

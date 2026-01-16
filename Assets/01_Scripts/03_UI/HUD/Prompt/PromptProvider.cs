@@ -15,10 +15,6 @@ public class PromptProvider : MonoBehaviour, IPromptProvider
 
     public bool TryGetPromptId(PromptContext context, out string promptId)
     {
-        Debug.Log(
-    $"[PromptProvider] {name} context={context}, default={defaultPromptId}"
-);
-
         promptId = null;
 
         // =========================
