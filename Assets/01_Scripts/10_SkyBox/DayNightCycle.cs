@@ -30,7 +30,6 @@ public class Day : MonoBehaviour
     [Header("Skybox Blend")]
     [Tooltip("프리셋 바꿀 때 블렌딩에 걸리는 시간(초)")]
     public float skyBlendDuration = 5f;
-    private string currentPresetKey = "";
     public float currentHour => time * 24;
 
     void Start()

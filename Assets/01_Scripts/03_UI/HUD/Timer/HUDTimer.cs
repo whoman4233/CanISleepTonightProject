@@ -17,6 +17,11 @@ public class HUDTimer : MonoBehaviour
     [SerializeField] private Color startColor = new Color(0f, 1f, 0f, 1f);
     [SerializeField] private Color endColor = new Color(1f, 0f, 0f, 1f);
 
+    [Header("Sound")]
+    [SerializeField] private AudioClip underOneMinuteLoop;
+    [SerializeField] private AudioClip timeOverClip;
+
+    private bool _underOneMinuteTriggered;
     private bool _isActive;
     private float _currentSeconds;
     private float _lastSeconds;
@@ -26,11 +31,13 @@ public class HUDTimer : MonoBehaviour
 
     private Action<GameContextReadyEvent> _onContextReady;
     private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<PatrolTimeoutEvent> _onTimeout;
 
     private void Awake()
     {
         _onContextReady = OnGameContextReady;
         _onPhaseChanged = OnPhaseChanged;
+        _onTimeout = _ => OnPatrolTimeout();
     }
 
     private void OnEnable()
@@ -38,6 +45,7 @@ public class HUDTimer : MonoBehaviour
         EventBus.Subscribe(_onContextReady);
         EventBus.Subscribe(_onPhaseChanged);
         EventBus.Subscribe<PatrolTimerResetEvent>(OnTimerReset);
+        EventBus.Subscribe(_onTimeout);
 
         if (GameManager.Instance != null)
         {
@@ -53,6 +61,7 @@ public class HUDTimer : MonoBehaviour
         EventBus.Unsubscribe(_onContextReady);
         EventBus.Unsubscribe(_onPhaseChanged);
         EventBus.Unsubscribe<PatrolTimerResetEvent>(OnTimerReset);
+        EventBus.Unsubscribe(_onTimeout);
 
         if (GameManager.Instance != null)
             GameManager.Instance.OnInGameTimeUpdated -= OnTimeUpdated;
@@ -69,6 +78,8 @@ public class HUDTimer : MonoBehaviour
         _lastSeconds = 0f;
         _initialSeconds = -1f;
 
+        ResetSoundState(); //사운드 리셋
+
         if (GameManager.Instance != null)
             _currentPhase = GameManager.Instance.CurrentPhase;
 
@@ -78,6 +89,11 @@ public class HUDTimer : MonoBehaviour
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
         _currentPhase = e.Phase;
+
+        // Patrol 종료 시 루프 UI 사운드 정리
+        if (_currentPhase != GamePhase.Patrol)
+            ResetSoundState();
+
         ForceRefreshVisibility();
     }
 
@@ -110,11 +126,16 @@ public class HUDTimer : MonoBehaviour
         if (GameManager.Instance == null)
             return;
 
-        _currentSeconds = GameManager.Instance.CurrentInGameSeconds;
+        float gmSeconds = GameManager.Instance.CurrentInGameSeconds;
 
-        if (_initialSeconds <= 0f)
-            _initialSeconds = Mathf.Max(0.01f, _currentSeconds);
+        // 기준 시간보다 커지면 기준 재설정
+        if (_initialSeconds <= 0f || gmSeconds > _initialSeconds)
+        {
+            _initialSeconds = Mathf.Max(0.01f, gmSeconds);
+            ResetSoundState(); // 사운드도 같이 재동기화
+        }
 
+        _currentSeconds = gmSeconds;
         UpdateVisuals(_currentSeconds);
     }
 
@@ -122,6 +143,9 @@ public class HUDTimer : MonoBehaviour
     {
         _initialSeconds = Mathf.Max(0.01f, e.InitialSeconds);
         _currentSeconds = e.InitialSeconds;
+
+        ResetSoundState(); // 타이머 리셋 시 사운드 리셋
+
         UpdateVisuals(_currentSeconds);
     }
 
@@ -142,6 +166,7 @@ public class HUDTimer : MonoBehaviour
     {
         UpdateText(seconds);
         UpdateFill(seconds);
+        UpdateSound(seconds);
     }
 
     private void UpdateText(float seconds)
@@ -162,6 +187,27 @@ public class HUDTimer : MonoBehaviour
         float normalized = Mathf.Clamp01(seconds / _initialSeconds);
         timerFillImage.fillAmount = normalized;
         timerFillImage.color = Color.Lerp(endColor, startColor, normalized);
+    }
+    private void UpdateSound(float seconds)
+    {
+        // 60초 미만 진입 → UI 루프 사운드
+        if (!_underOneMinuteTriggered && seconds > 0f && seconds < 60f)
+        {
+            _underOneMinuteTriggered = true;
+            AudioManager.Instance?.PlayUILoop(underOneMinuteLoop);
+        }
+    }
+
+    private void OnPatrolTimeout()
+    {
+        AudioManager.Instance?.StopUILoop();
+        AudioManager.Instance?.PlayUISound(timeOverClip);
+    }
+
+    private void ResetSoundState()
+    {
+        _underOneMinuteTriggered = false;
+        AudioManager.Instance?.StopUILoop();
     }
 }
 

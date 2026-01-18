@@ -68,6 +68,10 @@ public class PrisonerActionIdleState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
+        if (fsm != null && fsm.Anim != null)
+        {
+            fsm.Anim.SetTrigger("Hit");
+        }
         if (IsAggressiveType(_currentType))
             fsm.ChangeState(fsm.CombatState);
         else

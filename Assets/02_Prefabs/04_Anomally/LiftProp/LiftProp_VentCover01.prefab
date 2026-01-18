@@ -136,7 +136,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -407279478571601095, guid: 092ecfba7be33a548999b3aafca52958,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8969367526891031462}
+      addedObject: {fileID: 165735714449196897}
     - targetCorrespondingSourceObject: {fileID: -407279478571601095, guid: 092ecfba7be33a548999b3aafca52958,
         type: 3}
       insertIndex: -1
@@ -169,8 +169,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   carryPromptObjectType: VentCover
---- !u!64 &8969367526891031462
-MeshCollider:
+--- !u!65 &165735714449196897
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -187,10 +187,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5621073501938954883, guid: 092ecfba7be33a548999b3aafca52958, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.7980704, y: 0.51221067, z: 0.119399995}
+  m_Center: {x: 0.012946874, y: 0.27313527, z: 0.0045000017}
 --- !u!54 &3948041611222466777
 Rigidbody:
   m_ObjectHideFlags: 0
