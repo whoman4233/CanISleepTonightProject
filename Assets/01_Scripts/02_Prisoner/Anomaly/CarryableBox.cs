@@ -37,7 +37,7 @@ public class CarryableBox : MonoBehaviour, ICarryable
         Debug.Log("물체 들기 완료");
     }
 
-    public void Drop(Player player) // 놓기
+    public virtual void Drop(Player player) // 놓기
     {
         var interactor = player.Interactor;
 
