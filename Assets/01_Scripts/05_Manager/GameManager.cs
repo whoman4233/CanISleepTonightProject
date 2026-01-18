@@ -14,13 +14,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
     [SerializeField] private int currentDay = 0;
-    [SerializeField] private int riotGauge = 20;
-    [SerializeField] private int maxRiotGauge = 100;
     [SerializeField] public int maxDay = 7;
 
-    public int RiotGauge => riotGauge;
-    public int CurrentRiotGauge => riotGauge;
-    public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
     public int MaxDay => maxDay;
     public float PatrolDurationMax => patrolDurationSeconds;
@@ -46,7 +41,7 @@ public class GameManager : MonoBehaviour
     // ScheduleManager 참조
     public PrisonerScheduleManager ScheduleManager;
 
-    private int playerHP = 70;
+    private int playerHP = 100;
     public int PlayerHP
     {
         get => playerHP;
@@ -208,12 +203,15 @@ public class GameManager : MonoBehaviour
     private void OnEnterNotStarted()
     {
         currentDay = 0;
-        riotGauge = 20;
-        playerHP = 70;
+        playerHP = 100;
         PrisonerScheduleManager.ResetStaticData(); // 정적 데이터 초기화
     }
 
-    private void OnEnterStandby() => currentDay++;
+    private void OnEnterStandby()
+    {
+        currentDay++;
+        playerHP += 10;
+    }
     private void OnEnterBriefing() => StandbyEndTrigger();
 
     private void OnEnterPatrol()
@@ -291,13 +289,6 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new ResultUIShowRequestedEvent(false, "순찰 시간이 초과되었습니다."));
         Debug.Log("[GameManager] Patrol Timeout → Mission Failed");
     }
-
-    private IEnumerator SettlementProcessRoutine()
-    {
-        yield return new WaitForSeconds(1.0f);
-        EndTrigger();
-    }
-
     private IEnumerator WaitAndChangePhase(GamePhase nextPhase, float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -309,7 +300,6 @@ public class GameManager : MonoBehaviour
         var data = new GameSaveData
         {
             currentDay = this.currentDay,
-            riotGauge = this.riotGauge,
             currentPhase = this.currentPhase,
             currentHp = this.playerHP
         };
@@ -329,7 +319,6 @@ public class GameManager : MonoBehaviour
         if (data != null)
         {
             this.currentDay = data.currentDay;
-            this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
 
@@ -350,48 +339,16 @@ public class GameManager : MonoBehaviour
         patrolDurationSeconds = 480f;
     }
 
-    public void EndTrigger()
-    {
-        if (riotGauge >= maxRiotGauge)
-        {
-            EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3));
-        }
-        else
-        {
-            if (currentDay >= maxDay)
-            {
-                if (riotGauge < 30) EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1));
-                else if (riotGauge < 90) EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding1));
-                else EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding2));
-            }
-            else
-            {
-                EventBus.Publish(new RequestSceneReloadEvent());
-            }
-        }
-    }
-
-    public void SetRiotGauge(int value) => riotGauge = Mathf.Clamp(value, 0, maxRiotGauge);
-
-    public void AddRiotGauge(int value)
-    {
-        riotGauge += value;
-        riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
-        Debug.Log($"[GM]게이지 변경: {value} 적용됨. 현재: {riotGauge}");
-    }
 
     public void OnClickSettlementButton()
     {
         _saveManager.SaveGame(GetCurrentSaveData());
-        StartCoroutine(SettlementProcessRoutine());
     }
 
     public void OnEnterTutorial() { }
 
     public void StandbyEndTrigger()
     {
-        if (riotGauge >= maxRiotGauge)
-            EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding1));
     }
 
     public void RegisterScheduleManager(PrisonerScheduleManager manager)
