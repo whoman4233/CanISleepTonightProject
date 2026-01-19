@@ -304,6 +304,8 @@ public class GameManager : MonoBehaviour
         ChangePhase(nextPhase);
     }
 
+    // GameManager.cs 내부
+
     public GameSaveData GetCurrentSaveData()
     {
         var data = new GameSaveData
@@ -313,9 +315,16 @@ public class GameManager : MonoBehaviour
             currentHp = this.playerHP
         };
 
+        // 스케줄 데이터 저장
         if (ScheduleManager != null)
         {
             ScheduleManager.ExtractDataForSave(out data.prisonerRoster, out data.dailyRoles);
+        }
+
+        // ★ [추가] 미션 순서 저장
+        if (DailyMissionManager.Instance != null)
+        {
+            data.randomizedMissionIndices = DailyMissionManager.Instance.GetMissionOrderIndices();
         }
 
         return data;
@@ -330,12 +339,19 @@ public class GameManager : MonoBehaviour
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
 
+            // 스케줄 복원
             if (ScheduleManager != null)
             {
                 ScheduleManager.OverrideScheduleFromSave(data.prisonerRoster, data.dailyRoles);
             }
 
-            Debug.Log("세이브 로드 및 스케줄 복원 완료");
+            // ★ [추가] 미션 순서 복원 (가장 먼저 해야 함)
+            if (DailyMissionManager.Instance != null && data.randomizedMissionIndices != null)
+            {
+                DailyMissionManager.Instance.RestoreMissionOrder(data.randomizedMissionIndices);
+            }
+
+            Debug.Log("세이브 로드 완료 (미션 순서 포함)");
             return true;
         }
         return false;
