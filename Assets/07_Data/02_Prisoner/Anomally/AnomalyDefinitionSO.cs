@@ -2,52 +2,49 @@
 
 public enum AnomalyCategory
 {
-    Common,     // 공통 (누구나, 언제나 등장 가능)
+    Common,     // 공통
     Individual, // 개별 (특정 죄수 타입 전용)
-    Special     // 특수 (폭동 게이지 조건)
+    Special     // 특수
 }
 
-// (기존 AnomalyKind는 슬롯 매칭용으로 유지)
 public enum AnomalyKind
 {
     Floor, FrontWall, LeftWall, RightWall, Poster, Tile, Vent,
     Toilet, Sink, Bed, Book, Trash,
     pot, weightDisc, dumbel, Drink, Lighter, SmutRag, Trump, Shoes, Planter, SmartPhone, Bread,
-    ItemInspect, GeneralProp, // ... 기타 등등
-                              
+    ItemInspect, GeneralProp
 }
 
 [CreateAssetMenu(menuName = "GameData/Anomaly Definition", fileName = "AnomalyDef")]
 public class AnomalyDefinitionSO : ScriptableObject
 {
     public string anomalyId;
-    public AnomalyKind kind; // 어디에 스폰될지(슬롯 타입)
+    public AnomalyKind kind;
 
     [Header("Spawn Settings")]
-    [Tooltip("Slot: 빈 곳에 생성, Bed/Toilet...: 기존 가구 교체")]
     public AnomalyTargetType targetType = AnomalyTargetType.Slot;
 
     [Header("Category Settings")]
     public AnomalyCategory category;
-
-    // 개별(Individual)일 경우 대상 죄수 타입 (없으면 None)
-    public PrisonerType targetPrisoner = PrisonerType.None;
-
-    // 특수(Special)일 경우 필요한 최소 폭동 게이지
+    public PrisonerType targetPrisoner = PrisonerType.None; // 개별일 때만 사용
     public int minRiotGauge = 0;
 
     [Header("Assets")]
-    public GameObject normalPrefab;      // 정상 상태 프리팹 (필수)
-    public GameObject suspiciousPrefab;  // 이상현상 프리팹 (필수)
+    public GameObject normalPrefab;
+    public GameObject suspiciousPrefab;
 
     [Header("Inspect Text")]
     [TextArea] public string normalDesc;
     [TextArea] public string suspiciousDesc;
 
-    [Tooltip("체크하면 이상현상이 아닐 때도 NormalPrefab을 생성합니다. (예: 벽시계, 달력)")]
+    [Header("Behavior Flags")]
+    [Tooltip("기존: 체크하면 이상현상이 아닐 때도 NormalPrefab 생성")]
     public bool alwaysSpawnNormal = false;
 
+    // ★ [추가됨] 장식용 플래그
+    [Tooltip("장식용: 체크하면 범인이 아닐 때 무조건 NormalPrefab 생성 (죄수 타입 일치 시)")]
+    public bool isDecorative = false;
+
     [Header("Spawn Settings")]
-    // 이 이상현상이 등장할 수 있는 테마들 (다중 체크 가능)
     public MissionDayTheme validThemes;
 }

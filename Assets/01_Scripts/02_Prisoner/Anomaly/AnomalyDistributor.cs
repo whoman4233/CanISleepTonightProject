@@ -1,6 +1,7 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
-using System.Linq; // Log Ãâ·ÂÀ» À§ÇØ Linq »ç¿ë (Select, String.Join)
+using System.Linq;
+using System.Text; // ë¡œê·¸ìš©
 
 public class AnomalyDistributor : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class AnomalyDistributor : MonoBehaviour
     [Header("Distribution Settings")]
     [SerializeField] private int commonCount = 2;
     [SerializeField] private int individualCount = 1;
-    [SerializeField] private int specialCount = 1;
+
+    [Header("Debug")]
+    [SerializeField] private bool showDetailedLog = true; // ì¼œë‘ë©´ ìƒì„¸ ë¡œê·¸ ë‚˜ì˜´
 
     private List<AnomalyDefinitionSO> currentDayPool = new List<AnomalyDefinitionSO>();
 
@@ -29,27 +32,38 @@ public class AnomalyDistributor : MonoBehaviour
     public void FilterAnomalies(MissionDayTheme dayTheme)
     {
         currentDayPool.Clear();
-
         if (masterDatabase == null || masterDatabase.defs == null) return;
 
         foreach (var anomaly in masterDatabase.defs)
         {
-            // ¡Ú [¼öÁ¤] ¸®½ºÆ® Áß°£¿¡ ºñ¾îÀÖ´Â Ç×¸ñ(Null)ÀÌ ÀÖÀ¸¸é °Ç³Ê¶Ù±â
             if (anomaly == null) continue;
-
+            // í…Œë§ˆ í•„í„°ë§ (ì¼ë‹¨ ë‹¤ ë‹´ê³  ë‚˜ì¤‘ì— ê±°ë¦„)
             if ((anomaly.validThemes & dayTheme) != 0)
             {
                 currentDayPool.Add(anomaly);
             }
         }
-        Debug.Log($"[AnomalyDistributor] Å×¸¶({dayTheme}) ÇÊÅÍ¸µ ¿Ï·á. ÈÄº¸±º: {currentDayPool.Count}°³");
     }
 
     public void DistributeAnomalies()
     {
-        var allCellIds = anchorRegistry.GetAllCellIds();
+        // 1. ì£„ìˆ˜ ë°ì´í„° í™•ì¸
+        if (scheduleManager.GetActiveCellIds().Count == 0)
+        {
+            Debug.LogWarning(" [AnomalyDistributor] ì£„ìˆ˜ ë°ì´í„° ì—†ìŒ -> ê°•ì œ ìƒì„± ì‹œë„");
+            scheduleManager.GenerateNewResidents();
+        }
 
-        Debug.Log("========== [AnomalyDistributor] ÀÌ»óÇö»ó ¹èÁ¤ ½ÃÀÛ ==========");
+        var allCellIds = anchorRegistry.GetAllCellIds();
+        Debug.Log($"[AnomalyDistributor] ì´ {allCellIds.Count}ê°œì˜ ë°©ì— ë°°ì • ì‹œì‘ (Pool: {currentDayPool.Count}ê°œ)");
+
+        if (currentDayPool.Count == 0)
+        {
+            Debug.LogError("ğŸš¨ [Error] í’€ì´ ë¹„ì–´ìˆìŠµë‹ˆë‹¤! FilterAnomaliesê°€ í˜¸ì¶œë˜ì§€ ì•Šì•˜ê±°ë‚˜ DB ì„¤ì • ë¬¸ì œ.");
+            FilterAnomalies((MissionDayTheme)~0); // ë¹„ìƒ ë³µêµ¬
+        }
+
+        int activeRoomCount = 0;
 
         foreach (var cellId in allCellIds)
         {
@@ -60,19 +74,28 @@ public class AnomalyDistributor : MonoBehaviour
 
             PrisonerData pData = scheduleManager.GetPrisonerData(cellId);
             var dailyRole = scheduleManager.GetDailyRole(cellId);
+            PrisonerType pType = (pData != null && pData.definition != null) ? pData.definition.traitType : PrisonerType.None;
 
-            PrisonerType pType = (pData != null) ? pData.definition.traitType : PrisonerType.None;
+            activeRoomCount++;
+            StringBuilder roomLog = new StringBuilder();
+            roomLog.Append($"[{cellId} / {pType}] ");
 
             // =============================================================
-            // 0. ¹Ì¼Ç Å¸°Ù(¿ëÀÇÀÚ) °­Á¦ ¹èÁ¤ (±¸Á¶Ã¼ null Ã¼Å© ¿À·ù ¼öÁ¤µÊ)
+            // 0. ë¯¸ì…˜ íƒ€ê²Ÿ(ë²”ì¸) ë°°ì • - â˜… [ìˆ˜ì •] íƒ€ì… ì¼ì¹˜ í•„ìˆ˜!
             // =============================================================
             if (dailyRole.isSuspicious)
             {
+                // ìˆ˜ì •: ë²”ì¸ì„ ë½‘ì„ ë•Œë„ 'ì£„ìˆ˜ íƒ€ì…'ì´ ë§ëŠ” ê²ƒ ì¤‘ì—ì„œë§Œ ë½‘ëŠ”ë‹¤.
                 var missionCandidates = currentDayPool
-                    .Where(d => d.category == AnomalyCategory.Individual)
+                    .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
                     .ToList();
 
-                if (missionCandidates.Count == 0) missionCandidates = currentDayPool;
+                // ë§Œì•½ íƒ€ì… ë§ëŠ” ê²Œ ì—†ìœ¼ë©´ ê³µí†µ(Common) ì¤‘ì—ì„œë¼ë„ ë½‘ëŠ”ë‹¤.
+                if (missionCandidates.Count == 0)
+                {
+                    missionCandidates = currentDayPool.Where(d => d.category == AnomalyCategory.Common).ToList();
+                    roomLog.Append("<Color=red>[ë²”ì¸í›„ë³´ì—†ìŒ->ê³µí†µëŒ€ì²´]</color> ");
+                }
 
                 if (missionCandidates.Count > 0)
                 {
@@ -81,49 +104,84 @@ public class AnomalyDistributor : MonoBehaviour
 
                     anchor.currentDailyAnomalies.Add(missionAnomaly);
                     usedTargets.Add(missionAnomaly.targetType);
+                    roomLog.Append($"<Color=yellow>ë²”ì¸:{missionAnomaly.name}</color> | ");
+                }
+                else
+                {
+                    roomLog.Append("<Color=red>[ë²”ì¸ë°°ì •ì‹¤íŒ¨-DBí™•ì¸í•„ìš”]</color> | ");
                 }
             }
 
-            // 2. °³º°(Individual) ¹èÁ¤
-            var cellIndividual = currentDayPool
+            // =============================================================
+            // 2. ê°œë³„(Individual) ë°°ì •
+            // =============================================================
+            // ë¡œì§: Alwaysê°€ ì•„ë‹Œ ìˆœìˆ˜ ëœë¤í…œ ìš°ì„ , ì—†ìœ¼ë©´ Alwaysë¼ë„ ê°€ì ¸ì™€ì„œ ì±„ì›€
+            var validIndividuals = currentDayPool
                 .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
                 .ToList();
-            Shuffle(cellIndividual);
-            AddUniqueAnomalies(cellIndividual, anchor.currentDailyAnomalies, individualCount, usedTargets);
 
-            // 3. °øÅë(Common) ¹èÁ¤
-            var cellCommons = currentDayPool
+            // 1ìˆœìœ„: Always ì•„ë‹Œ ì• ë“¤ (ì§„ì§œ ëœë¤)
+            var candidatesIndiv = validIndividuals.Where(d => !d.alwaysSpawnNormal).ToList();
+
+            // ë§Œì•½ ì§„ì§œ ëœë¤ì´ ëª¨ìë¼ë©´? Always ì¼œì§„ ì• ë“¤ë„ í›„ë³´ì— í¬í•¨ (ë¹ˆë°© ë°©ì§€)
+            if (candidatesIndiv.Count < individualCount)
+            {
+                candidatesIndiv = validIndividuals;
+            }
+
+            Shuffle(candidatesIndiv);
+            int addedIndiv = AddUniqueAnomalies(candidatesIndiv, anchor.currentDailyAnomalies, individualCount, usedTargets);
+            roomLog.Append($"ê°œë³„:{addedIndiv}ê°œ ");
+
+            // =============================================================
+            // 3. ê³µí†µ(Common) ë°°ì •
+            // =============================================================
+            var validCommons = currentDayPool
                 .Where(d => d.category == AnomalyCategory.Common)
                 .ToList();
-            Shuffle(cellCommons);
-            AddUniqueAnomalies(cellCommons, anchor.currentDailyAnomalies, commonCount, usedTargets);
+
+            var candidatesCommon = validCommons.Where(d => !d.alwaysSpawnNormal).ToList();
+
+            // ì—­ì‹œ ëª¨ìë¼ë©´ Always í¬í•¨
+            if (candidatesCommon.Count < commonCount)
+            {
+                candidatesCommon = validCommons;
+            }
+
+            Shuffle(candidatesCommon);
+            int addedCommon = AddUniqueAnomalies(candidatesCommon, anchor.currentDailyAnomalies, commonCount, usedTargets);
+            roomLog.Append($"ê³µí†µ:{addedCommon}ê°œ ");
 
             // =============================================================
-            // ¡Ú [Ãß°¡] ¹èÁ¤ °á°ú ·Î±× Ãâ·Â
+            // ë¡œê·¸ ì¶œë ¥
             // =============================================================
-            if (anchor.currentDailyAnomalies.Count > 0)
+            if (showDetailedLog)
             {
-                // ¸®½ºÆ®¿¡ ÀÖ´Â ÀÌ»óÇö»ó ÀÌ¸§µéÀ» ½°Ç¥·Î ¿¬°áÇØ¼­ Ãâ·Â
-                string assignedNames = string.Join(", ", anchor.currentDailyAnomalies.Select(a => a.name));
-                Debug.Log($"[AnomalyDistributor] ¹æ {cellId} ¹èÁ¤µÊ ({anchor.currentDailyAnomalies.Count}°³): [{assignedNames}]");
-            }
-            else
-            {
-                // ÀÌ»óÇö»óÀÌ ÇÏ³ªµµ ¾ø´Â °æ¿ì (ÇÊ¿äÇÏ´Ù¸é ÁÖ¼® ÇØÁ¦)
-                Debug.Log($"[AnomalyDistributor] ¹æ {cellId} ¹èÁ¤ ¾øÀ½");
+                string assignedList = string.Join(", ", anchor.currentDailyAnomalies.Select(a => a.name));
+
+                // í•˜ë‚˜ë„ ë°°ì • ì•ˆ ëìœ¼ë©´ ê²½ê³  ë¡œê·¸
+                if (anchor.currentDailyAnomalies.Count == 0)
+                {
+                    Debug.LogError($"{roomLog} -> ë°°ì •ëœ ì´ìƒí˜„ìƒ 0ê°œ! (í›„ë³´êµ° ë¶€ì¡±: Indiví›„ë³´ {candidatesIndiv.Count}ê°œ / Commoní›„ë³´ {candidatesCommon.Count}ê°œ)");
+                }
+                else
+                {
+                    Debug.Log($"{roomLog} -> [{assignedList}]");
+                }
             }
         }
 
-        Debug.Log("========== [AnomalyDistributor] ÀÌ»óÇö»ó ¹èÁ¤ ¿Ï·á ==========");
+        Debug.Log($" [AnomalyDistributor] ë°°ì • ì¢…ë£Œ. (ì´ í™œì„± ë°©: {activeRoomCount} / 12 ì˜ˆìƒ)");
     }
 
-    private void AddUniqueAnomalies(List<AnomalyDefinitionSO> source, List<AnomalyDefinitionSO> dest, int maxCount, HashSet<AnomalyTargetType> usedSet)
+    private int AddUniqueAnomalies(List<AnomalyDefinitionSO> source, List<AnomalyDefinitionSO> dest, int maxCount, HashSet<AnomalyTargetType> usedSet)
     {
         int count = 0;
         foreach (var def in source)
         {
             if (count >= maxCount) break;
 
+            // ì´ë¯¸ ë²”ì¸ ë“±ìœ¼ë¡œ ì„ ì •ëœ íƒ€ê²Ÿíƒ€ì…(ìŠ¬ë¡¯ ì•„ë‹˜)ì´ë©´ ìŠ¤í‚µ
             if (def.targetType != AnomalyTargetType.Slot)
             {
                 if (usedSet.Contains(def.targetType)) continue;
@@ -133,6 +191,7 @@ public class AnomalyDistributor : MonoBehaviour
             dest.Add(def);
             count++;
         }
+        return count;
     }
 
     private void Shuffle<T>(List<T> list)
