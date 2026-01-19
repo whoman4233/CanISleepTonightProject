@@ -11,6 +11,9 @@ public class ToiletLidInteractable : MonoBehaviour, IInteractable
     [Header("Collider Control")]
     [SerializeField] private Collider outerCollider;
 
+    [Header("Sound")]
+    [SerializeField] private AudioClip openClip;
+
     private int _openTriggerHash;
     private bool _used;
 
@@ -29,6 +32,7 @@ public class ToiletLidInteractable : MonoBehaviour, IInteractable
 
         _used = true;
 
+        AudioManager.Instance.PlaySFX(openClip);
         animator.SetTrigger(_openTriggerHash);
 
         // 변기 재상호작용 차단
