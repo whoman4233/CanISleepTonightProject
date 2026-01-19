@@ -6,9 +6,14 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
     [SerializeField] private Animator animator;
     [SerializeField] private string triggerName = "Inspect";
 
+    [Header("Inspect Identity")]
+    [SerializeField] private InspectObjectType inspectObjectType;
+    [SerializeField] private InspectSfxTableSO inspectSfxTable;
+
     [Header("Collider Control")]
     [SerializeField] private Collider outerCollider;
     [SerializeField] private Collider[] innerColliders;
+
     [Header("아웃라이너 보여줄 대상(숨긴물건)")]
     [SerializeField] private InspectTarget[] revealedTargets;
 
@@ -20,17 +25,34 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
 
         _used = true;
 
+        var entry = inspectSfxTable != null
+            ? inspectSfxTable.GetEntry(inspectObjectType)
+            : null;
+
+        if (entry != null && entry.animationSfx != null)
+        {
+            AudioManager.Instance.PlaySFX(entry.animationSfx);
+        }
+
         if (animator != null)
             animator.SetTrigger(triggerName);
 
-        // 애니메이션 중 중복 클릭 방지
-        if (outerCollider != null)
+        if (outerCollider != null) //애니메이션 중 중복 클릭 방지
             outerCollider.enabled = false;
     }
 
     // Animation Event에서 호출
     public void AE_OnRevealCompleted()
     {
+        var entry = inspectSfxTable != null
+            ? inspectSfxTable.GetEntry(inspectObjectType)
+            : null;
+
+        if (entry != null && entry.discoverySfx != null)
+        {
+            AudioManager.Instance.PlaySFX(entry.discoverySfx);
+        }
+
         foreach (var target in revealedTargets)
         {
             if (target != null)

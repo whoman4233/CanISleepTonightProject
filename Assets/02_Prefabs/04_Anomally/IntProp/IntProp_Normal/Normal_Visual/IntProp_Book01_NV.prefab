@@ -103,6 +103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 1655798316706151783}
+  revealOnInspect: 0
 --- !u!114 &1655798316706151783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116,7 +117,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 841536732086552040}
-  boolName: IsOpen
+  triggerName: Inspect
+  inspectObjectType: 0
+  inspectSfxTable: {fileID: 11400000, guid: 13eb6855be21d4e4b96bf51a28ceedfe, type: 2}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!65 &4205877743360536430
 BoxCollider:
   m_ObjectHideFlags: 0

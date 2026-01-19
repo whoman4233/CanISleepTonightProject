@@ -6,3 +6,12 @@
     Patrol,
     Result
 }
+public enum InspectObjectType
+{
+    Book,
+    Bread,
+    Dumbbell,
+    ToothBrushSet,
+    TrashCan,
+    WornOutShoe
+}

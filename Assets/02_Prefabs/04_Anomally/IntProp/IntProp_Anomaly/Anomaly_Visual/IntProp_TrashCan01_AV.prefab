@@ -115,6 +115,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 1198032591220743134}
+  revealOnInspect: 0
 --- !u!114 &1198032591220743134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,6 +204,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1182050005142013738}
+  - component: {fileID: 8495590088924973833}
+  - component: {fileID: 4375645630631979701}
   m_Layer: 12
   m_Name: VisualRoot
   m_TagString: Untagged
@@ -232,6 +235,39 @@ Transform:
   - {fileID: 1508347793976061817}
   m_Father: {fileID: 2473286508071878153}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8495590088924973833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501172893740761934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actionBehaviour: {fileID: 4375645630631979701}
+  revealOnInspect: 0
+--- !u!114 &4375645630631979701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501172893740761934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  triggerName: Inspect
+  inspectObjectType: 0
+  inspectSfxTable: {fileID: 0}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!1 &880368898576360763
 GameObject:
   m_ObjectHideFlags: 0
@@ -354,6 +390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 5212332690740541515}
+  revealOnInspect: 0
 --- !u!114 &5212332690740541515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -579,6 +616,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 8772252661744970213}
+  revealOnInspect: 0
 --- !u!114 &8772252661744970213
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -728,6 +766,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 1817051074287037639}
+  revealOnInspect: 0
 --- !u!114 &1817051074287037639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -877,6 +916,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 8201067721449797729}
+  revealOnInspect: 0
 --- !u!114 &8201067721449797729
 MonoBehaviour:
   m_ObjectHideFlags: 0
