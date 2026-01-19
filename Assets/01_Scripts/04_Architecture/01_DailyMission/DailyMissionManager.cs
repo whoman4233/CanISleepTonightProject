@@ -14,8 +14,7 @@ public class DailyMissionManager : MonoBehaviour
     // 게임 시작 시 랜덤하게 섞인 1~6일차 미션 목록을 저장할 리스트
     private List<DailyMissionStrategy> _randomizedMissionOrder = new List<DailyMissionStrategy>();
 
-    private Action<ForceMissionFailRequestedEvent> _onForceMissionFailRequested;
-
+    private Action<MissionEndRequestedEvent> _onMissionEndRequested;
     public DailyMissionStrategy CurrentMission { get; private set; }
     public bool IsBriefingCompleted { get; private set; }
     public bool IsReported { get; private set; }
@@ -26,15 +25,21 @@ public class DailyMissionManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        _onForceMissionFailRequested = OnForceMissionFailRequested;
+        _onMissionEndRequested = OnMissionEndRequested;
 
         // 게임 시작 시 미션 순서 미리 섞기
         // (세이브 파일 로드 시에는 이 순서가 덮어씌워져야 함)
         InitializeMissionOrder();
     }
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onMissionEndRequested);
+    }
 
-    private void OnEnable() => EventBus.Subscribe(_onForceMissionFailRequested);
-    private void OnDisable() => EventBus.Unsubscribe(_onForceMissionFailRequested);
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onMissionEndRequested);
+    }
 
     // ★ 1~6일차 미션을 섞어서 리스트에 저장
     public void InitializeMissionOrder()
@@ -227,13 +232,6 @@ public class DailyMissionManager : MonoBehaviour
         IsReported = false;
     }
 
-    private void OnForceMissionFailRequested(ForceMissionFailRequestedEvent e)
-    {
-        bool success = false;
-        EvaluateDayResult(out string failReason);
-        EventBus.Publish(new ResultUIShowRequestedEvent(success, failReason));
-    }
-
     // [추가] 현재 섞인 미션들의 인덱스 리스트 추출 (저장용)
     public List<int> GetMissionOrderIndices()
     {
@@ -263,5 +261,12 @@ public class DailyMissionManager : MonoBehaviour
             }
         }
         Debug.Log("[Mission] 저장된 데이터 기반으로 미션 순서를 복원했습니다.");
+    }
+
+    private void OnMissionEndRequested(MissionEndRequestedEvent e) //미션 종료 이벤트 - SequenceExecutor 연계
+    {
+        // 기존 EvaluateDayResult 흐름 재사용
+        EvaluateDayResult(out string failReason);
+        EventBus.Publish(new ResultUIShowRequestedEvent(e.IsSuccess, failReason));
     }
 }

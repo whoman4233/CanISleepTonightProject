@@ -12,20 +12,22 @@ public struct MissionProgressChangedEvent
     public int target;
 }
 
-public struct MissionCompletedEvent
+// ==========================================
+// 연출 종료 후 미션 종료 요청
+// ==========================================
+public struct MissionEndRequestedEvent
 {
-}
-
-public struct ForceMissionFailRequestedEvent // 강제 미션 종료(ex:진짜 프랭크 찾기 미션)
-{
-
+    public bool IsSuccess;
 }
 
 public struct MissionFailDialogueRequestedEvent // 미션 04 진짜 프랭크 타격 시 다이얼로그 출력용 이벤트
 {
 
 }
+public struct MissionAutoReportRequestedEvent // 미션 자동 보고용 이벤트(미션 04)
+{
 
+}
 //==========================================
 //Mission 숨겨진 아이템 관련 이벤트(SFX 재생용)
 //==========================================

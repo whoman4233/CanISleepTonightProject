@@ -12,7 +12,7 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
 
     private Action<SettlementReportConfirmedEvent> _onReportConfirmed;
     private Action<UIHardResetEvent> _onUIHardReset;
-
+    private Action<MissionAutoReportRequestedEvent> _onAutoReport;
     private void Awake()
     {
         if (dialogueManager == null)
@@ -20,18 +20,21 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
 
         _onReportConfirmed = OnReportConfirmed;
         _onUIHardReset = OnUIHardReset;
+        _onAutoReport = OnAutoReportRequested;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onReportConfirmed); 
-        EventBus.Subscribe(_onUIHardReset); 
+        EventBus.Subscribe(_onUIHardReset);
+        EventBus.Subscribe(_onAutoReport);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onReportConfirmed);
         EventBus.Unsubscribe(_onUIHardReset);
+        EventBus.Unsubscribe(_onAutoReport);
     }
 
     public void Interact(Player player)
@@ -116,16 +119,33 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
             yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
         }
 
-        // [유지/중요] 대화가 끝난 뒤에만 ResultUI 표시
+        // 대화가 끝난 뒤에만 ResultUI 표시
         EventBus.Publish(new ResultUIShowRequestedEvent(success, failReason));
 
         _busy = false;
     }
 
-    private void OnUIHardReset(UIHardResetEvent e) // [추가]
+    private void OnUIHardReset(UIHardResetEvent e)
     {
         _busy = false;
     }
+    private void OnAutoReportRequested(MissionAutoReportRequestedEvent e)
+    {
+        Debug.Log("[MissionBriefingNPC] AutoReport received"); // 반드시 추가
+
+        StopAllCoroutines();
+        _busy = false;
+
+        var missionManager = DailyMissionManager.Instance;
+        if (missionManager == null) return;
+
+        // 보고 상태 강제
+        missionManager.MarkReported();
+
+        // 결과 다이얼로그 파이프라인 시작
+        StartCoroutine(Co_PlayResultDialogue());
+    }
+
 }
 
 

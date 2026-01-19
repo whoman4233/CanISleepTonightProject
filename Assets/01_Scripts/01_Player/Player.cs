@@ -55,6 +55,10 @@ public class Player : MonoBehaviour
     private Action<QTEEndedEvent> _onQTEEnded;
     private Action<DialogueStartedEvent> _onDialogueStarted;
     private Action<DialogueEndedEvent> _onDialogueEnded;
+    private Action<PlayerCinematicLockRequestedEvent> _onCinematicLock;
+    private Action<PlayerCinematicLockReleasedEvent> _onCinematicUnlock;
+
+    private bool _cinematicLocked; // 연출용 Lock 상태
     private void Awake()
     {
         Interactor = GetComponent<PlayerInteractor>(); // 캐싱용
@@ -93,6 +97,8 @@ public class Player : MonoBehaviour
         _onQTEEnded = OnQTEEnded;
         _onDialogueStarted = OnDialogueStarted;
         _onDialogueEnded = OnDialogueEnded;
+        _onCinematicLock = OnCinematicLock;
+        _onCinematicUnlock = OnCinematicUnlock;
         Sfx = GetComponent<PlayerSfxController>();
     }
 
@@ -108,6 +114,8 @@ public class Player : MonoBehaviour
         EventBus.Subscribe(_onQTEEnded);
         EventBus.Subscribe(_onDialogueStarted);
         EventBus.Subscribe(_onDialogueEnded);
+        EventBus.Subscribe(_onCinematicLock);
+        EventBus.Subscribe(_onCinematicUnlock);
     }
 
     private void OnDisable()
@@ -122,6 +130,8 @@ public class Player : MonoBehaviour
         EventBus.Unsubscribe(_onQTEEnded);
         EventBus.Unsubscribe(_onDialogueStarted);
         EventBus.Unsubscribe(_onDialogueEnded);
+        EventBus.Unsubscribe(_onCinematicLock);
+        EventBus.Unsubscribe(_onCinematicUnlock);
     }
 
     // Player는 Input을 소유하지 않음
@@ -343,4 +353,25 @@ public class Player : MonoBehaviour
     {
         StateMachine.SetPaused(false);
     }
+
+    // 플레이어 연출 이벤트 이동 강제용
+    private void OnCinematicLock(PlayerCinematicLockRequestedEvent e)
+    {
+        _cinematicLocked = true;
+        StateMachine.SetPaused(true);
+
+        if (Controller != null)
+            Controller.enabled = false;
+    }
+
+    private void OnCinematicUnlock(PlayerCinematicLockReleasedEvent e)
+    {
+        _cinematicLocked = false;
+
+        if (Controller != null)
+            Controller.enabled = true;
+
+        StateMachine.SetPaused(false);
+    }
+
 }

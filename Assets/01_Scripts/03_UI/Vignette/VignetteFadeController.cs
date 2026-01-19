@@ -5,62 +5,119 @@ using UnityEngine.Rendering.Universal;
 
 public class VignetteFadeController : MonoBehaviour
 {
+    [Header("Volume")]
     [SerializeField] private Volume volume;
-    [SerializeField] private float fadeDuration = 0.5f;
+
+    [Header("Exposure")]
+    [Tooltip("암전 시 목표 Exposure 값 (보통 -10 ~ -15)")]
+    [SerializeField] private float blackoutExposure = -12f;
 
     private Vignette _vignette;
+    private ColorAdjustments _colorAdjustments;
+
     private Coroutine _routine;
 
     private void Awake()
     {
-        if (volume == null || !volume.profile.TryGet(out _vignette))
+        if (volume == null)
+            return;
+        if (!volume.profile.TryGet(out _vignette))
         {
-            Debug.LogError("[VignetteFade] Vignette not found in Volume Profile");
+            return;
+        }
+        else
+        {
+            _vignette.intensity.overrideState = true;
+            _vignette.intensity.value = 0f;
         }
 
-        // 초기 상태
-        SetIntensity(0f);
+        if (!volume.profile.TryGet(out _colorAdjustments))
+        {
+            return;
+        }
+        else
+        {
+            _colorAdjustments.postExposure.overrideState = true;
+            _colorAdjustments.postExposure.value = 0f;
+        }
     }
 
-    public Coroutine FadeOut(MonoBehaviour owner)
+    // =========================
+    // Public API
+    // =========================
+
+    /// <summary>
+    /// 화면을 암전 상태로 페이드
+    /// </summary>
+    public Coroutine FadeOut(MonoBehaviour owner, float duration)
     {
-        return StartFade(owner, 1f);
+        return StartFade(owner, targetVignette: 1f, targetExposure: blackoutExposure, duration);
     }
 
-    public Coroutine FadeIn(MonoBehaviour owner)
+    /// <summary>
+    /// 암전을 해제하며 화면 복구
+    /// </summary>
+    public Coroutine FadeIn(MonoBehaviour owner, float duration)
     {
-        return StartFade(owner, 0f);
+        return StartFade(owner, targetVignette: 0f, targetExposure: 0f, duration);
     }
 
-    private Coroutine StartFade(MonoBehaviour owner, float target)
+    // =========================
+    // Internal
+    // =========================
+
+    private Coroutine StartFade(
+        MonoBehaviour owner,
+        float targetVignette,
+        float targetExposure,
+        float duration)
     {
         if (_routine != null)
             owner.StopCoroutine(_routine);
 
-        _routine = owner.StartCoroutine(Co_Fade(target));
+        _routine = owner.StartCoroutine(
+            Co_Fade(targetVignette, targetExposure, duration)
+        );
         return _routine;
     }
 
-    private IEnumerator Co_Fade(float target)
+    private IEnumerator Co_Fade(
+        float targetVignette,
+        float targetExposure,
+        float duration)
     {
-        float start = _vignette.intensity.value;
+        float startVignette = _vignette != null ? _vignette.intensity.value : 0f;
+        float startExposure = _colorAdjustments != null ? _colorAdjustments.postExposure.value : 0f;
+
         float t = 0f;
 
-        while (t < fadeDuration)
+        while (t < duration)
         {
             t += Time.unscaledDeltaTime;
-            float value = Mathf.Lerp(start, target, t / fadeDuration);
-            SetIntensity(value);
+            float lerp = t / duration;
+
+            if (_vignette != null)
+            {
+                _vignette.intensity.value =
+                    Mathf.Lerp(startVignette, targetVignette, lerp);
+            }
+
+            if (_colorAdjustments != null)
+            {
+                _colorAdjustments.postExposure.value =
+                    Mathf.Lerp(startExposure, targetExposure, lerp);
+            }
+
             yield return null;
         }
 
-        SetIntensity(target);
+        if (_vignette != null)
+            _vignette.intensity.value = targetVignette;
+
+        if (_colorAdjustments != null)
+            _colorAdjustments.postExposure.value = targetExposure;
+
         _routine = null;
     }
-
-    private void SetIntensity(float value)
-    {
-        if (_vignette != null)
-            _vignette.intensity.value = value;
-    }
 }
+

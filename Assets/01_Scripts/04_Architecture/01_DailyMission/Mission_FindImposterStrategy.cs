@@ -15,6 +15,10 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     [Tooltip("진짜를 잡았을 때 실패 사유 텍스트")]
     public string failReasonText = "진짜 프랭크를 공격하여 제압 실패";
 
+    [Header("Sequence Options")]
+    [SerializeField] private SequenceOptionSO failSequence;
+    [SerializeField] private SequenceOptionSO successSequence;
+
     [Header("Special Dialogue Keys")]
     [SerializeField] private string immediateFailDialogueKey;   // DTxt_KR_M04_09 실패 다이얼로그
     [SerializeField] private string immediateSuccessDialogueKey; // DTxt_KR_M04_08 성공 다이얼로그
@@ -88,32 +92,17 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
 
         _immediateFailTriggered = true;
 
-        // 1. 현장 대사 시작 요청
-        EventBus.Publish(new MissionFailDialogueRequestedEvent());
-
-        // 2. 플레이 흐름 잠금
-        EventBus.Publish(new GlobalInputLockRequestedEvent());
-
-        // 1. 대사 출력 (추후 구현 예정이라 하셨지만, 일단 로그나 팝업 이벤트 발생)
-        // "너 지금 누굴 때리는 거야 멍청아!"
-        Debug.Log("[Dialogue] Frank: '너 지금 누굴 때리는 거야 멍청아!'");
-        EventBus.Publish(new ShowTimedTextPopupEvent("진짜 프랭크를 공격했습니다!", 2.0f));
-
-        // 2. 강제 정산 페이즈 진입 (실패)
-        // 약간의 딜레이를 두고 넘기는 게 자연스러우므로 코루틴 등을 쓰면 좋겠지만,
-        // 여기선 즉시 요청하거나 GameManager를 통해 처리
-        EventBus.Publish(new ForceMissionFailRequestedEvent());
-
-        //=======================================
-        //미션 강제 실패 시 아예 게임이 멈추는 현상이 있어서 하단의 게임매니저 페이즈 변경 주석처리했습니다.
-        //=======================================
-
-        //if (GameManager.Instance != null)
-        //{
-        //    // 대사 읽을 시간 2초 정도 뒤에 넘어가도록 코루틴 호출 권장 (GameManager 위임)
-        //    // 여기서는 즉시 전환 예시:
-        //    GameManager.Instance.ChangePhase(GamePhase.Settlement);
-        //}
+        // =====================================================
+        // 연출 시퀀스 요청
+        // =====================================================
+        if (failSequence != null)
+        {
+            EventBus.Publish(new SequencePlayRequestedEvent
+            {
+                Sequence = failSequence,
+                TargetPoint = null // NPC ArrivalPoint는 SequenceExecutor 쪽에서 지정
+            });
+        }
     }
 
     public override bool CheckWinCondition(int currentScore, out string failReason)

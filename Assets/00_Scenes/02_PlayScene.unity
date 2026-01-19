@@ -315,6 +315,52 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 127107855}
   m_Mesh: {fileID: -3158424928704913382, guid: e0813195baf5e87469eb1c5bdebc860c, type: 3}
+--- !u!1 &144340682
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 144340683}
+  - component: {fileID: 144340684}
+  m_Layer: 0
+  m_Name: SequenceExecutor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &144340683
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 144340682}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2105265944}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &144340684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 144340682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ebb614a42c3a6047af8c02adbda48fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vignetteFade: {fileID: 2131051319}
+  defaultArrivalPoint: {fileID: 873644080}
 --- !u!1 &168449256
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,7 +981,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IsGlobal: 1
-  priority: 0
+  priority: 100
   blendDistance: 0
   weight: 1
   sharedProfile: {fileID: 11400000, guid: a71725affe088e84099ff96fecd7ad3c, type: 2}
@@ -1579,7 +1625,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1251861141}
   - component: {fileID: 1251861142}
-  - component: {fileID: 1251861143}
   m_Layer: 0
   m_Name: DailyMissionManager
   m_TagString: Untagged
@@ -1622,20 +1667,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0020feb15d527c946ad0773f2ae3ce1b, type: 2}
   - {fileID: 11400000, guid: 7da5c47dcbdc0ad4cadda1cb8129e222, type: 2}
   - {fileID: 11400000, guid: f47fe429015625d4ba1c60862c2fa061, type: 2}
---- !u!114 &1251861143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1251861140}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 577f1331bb107d54e82b5066b7253155, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  missionNpcArrivalPoint: {fileID: 873644080}
-  vignetteFade: {fileID: 2131051319}
 --- !u!1 &1358555037
 GameObject:
   m_ObjectHideFlags: 0
@@ -2747,6 +2778,7 @@ Transform:
   - {fileID: 1251861141}
   - {fileID: 693023725}
   - {fileID: 2131051318}
+  - {fileID: 144340683}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2105265945
