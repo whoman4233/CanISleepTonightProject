@@ -46,6 +46,13 @@ public static class EventBus
         });
     }
 
+    // [추가] 모든 구독 정보 초기화 (씬 전환 시 호출용)
+    public static void Clear()
+    {
+        _subscribers.Clear();
+        Debug.Log("[EventBus] 모든 이벤트 구독자가 초기화되었습니다.");
+    }
+
     //발행
     public static void Publish<T>(T eventData)
     {

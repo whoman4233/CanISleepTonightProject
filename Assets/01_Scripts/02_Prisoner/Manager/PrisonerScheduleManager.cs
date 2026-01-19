@@ -223,6 +223,35 @@ public class PrisonerScheduleManager : MonoBehaviour
         _cachedResidents = null;
     }
 
+    // ★★★ [신규 추가] 시뮬레이션 완전 초기화 (새 게임 시 호출) ★★★
+    public void ResetAllSimulationData()
+    {
+        if (_residents == null) return;
+
+        foreach (var kvp in _residents)
+        {
+            PrisonerData prisoner = kvp.Value;
+
+            // 1. 체력 회복
+            prisoner.CurrentHealth = 100f; // 초기 체력값 (SO 설정에 따라 다를 수 있음)
+
+            // 2. 상태 이상 해제
+            prisoner.IsSuppressed = false;
+            // prisoner.isStunned = false; // PrisonerData에 해당 필드가 있다면
+
+            // 3. 기타 상태 초기화
+            Debug.Log($"[Schedule] 죄수({kvp.Key}) 상태 리셋 완료.");
+        }
+
+        // 일일 배역도 초기화
+        _todayRoles.Clear();
+
+        // 캐시도 동기화
+        _cachedResidents = _residents;
+
+        Debug.Log("[Schedule] 모든 죄수 시뮬레이션 데이터가 초기화되었습니다. (New Game Ready)");
+    }
+
     public void ExtractDataForSave(out List<PrisonerSaveData> outRoster, out List<DailyRoleSaveData> outDailyRoles)
     {
         // 1. 명부 저장
@@ -283,7 +312,7 @@ public class PrisonerScheduleManager : MonoBehaviour
         _cachedResidents = _residents;
     }
 
-    // ★ [신규 추가] 테스트용: 명부와 역할을 싹 초기화하고 새로 생성
+    // 테스트용: 명부와 역할을 싹 초기화하고 새로 생성
     public void ForceRebuildDatabase()
     {
         // 1. 기존 데이터 클리어
@@ -314,7 +343,7 @@ public class PrisonerScheduleManager : MonoBehaviour
         }
     }
 
-    // ★ [추가] 외부(미션 전략)에서 특정 방의 역할을 직접 지정할 때 사용
+    // 외부(미션 전략)에서 특정 방의 역할을 직접 지정할 때 사용
     public void SetDailyRole(string cellId, PrisonerAIType aiType, VisualAnomalyType visualType, bool isSuspicious)
     {
         // 딕셔너리가 없으면 생성 (안전장치)
@@ -331,7 +360,7 @@ public class PrisonerScheduleManager : MonoBehaviour
         _todayRoles[cellId] = role;
     }
 
-    // ★ [추가] 현재 입주민이 있는 방 목록 반환 (미션에서 섞어 쓸 때 필요)
+    // 현재 입주민이 있는 방 목록 반환 (미션에서 섞어 쓸 때 필요)
     public List<string> GetActiveCellIds()
     {
         return _residents.Keys.ToList();
@@ -366,6 +395,7 @@ public class PrisonerScheduleManager : MonoBehaviour
             }
         }
     }
+
 }
 
 // =======================================================================
