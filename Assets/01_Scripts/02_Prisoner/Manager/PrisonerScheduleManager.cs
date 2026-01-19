@@ -78,12 +78,14 @@ public class PrisonerScheduleManager : MonoBehaviour
         // 3. 방 목록 가져오기
         var allAnchors = anchorRegistry.GetAllCellIds();
 
-        // ★ [디버깅] 방 목록 개수 출력 (이게 0이면 AnchorRegistry 문제)
+        // [디버깅] 방 목록 개수 출력 (이게 0이면 AnchorRegistry 문제)
         Debug.Log($"[Schedule] AnchorRegistry에서 가져온 방 개수: {allAnchors.Count}");
 
         foreach (var cellId in allAnchors)
         {
-            var def = prisonerDatabase.GetRandomDefinition();
+            //[수정] 랜덤이 아니라 필터링된 함수를 사용하여 '일반 죄수'만 가져옴
+            var def = GetRandomNormalPrisoner();
+
             if (def != null)
             {
                 PrisonerData newPrisoner = new PrisonerData(def, PrisonerAIType.Good, cellId);
@@ -127,14 +129,14 @@ public class PrisonerScheduleManager : MonoBehaviour
     // [2] 일일 역할 배정 (Daily Roles) - 오늘은 누가 무엇을 하는가?
     // =======================================================================
 
-    // 🔥 매일 아침 GameFlowController(Strategy)가 호출해야 함
+    // 매일 아침 GameFlowController(Strategy)가 호출해야 함
     public void AssignRolesForNewDay(
         int suspiciousCount,
         PrisonerAIType defaultAI, // 이건 이제 '대표값'으로만 쓰고, 내부에서 섞음
         List<PrisonerAIType> specialBehaviors = null,
         List<VisualAnomalyType> specialVisuals = null)
     {
-        // ★ [안전장치] 만약 Start()보다 미션 설정이 먼저 실행되어 입주민이 없다면 강제 생성
+        // [안전장치] 만약 Start()보다 미션 설정이 먼저 실행되어 입주민이 없다면 강제 생성
         if (_residents == null || _residents.Count == 0)
         {
             Debug.LogWarning("[Schedule] 역할 배정 시도 중 거주민 명부가 비어있어 재생성합니다.");
@@ -223,7 +225,7 @@ public class PrisonerScheduleManager : MonoBehaviour
         _cachedResidents = null;
     }
 
-    // ★★★ [신규 추가] 시뮬레이션 완전 초기화 (새 게임 시 호출) ★★★
+    //[신규 추가] 시뮬레이션 완전 초기화 (새 게임 시 호출)
     public void ResetAllSimulationData()
     {
         if (_residents == null) return;
@@ -394,6 +396,37 @@ public class PrisonerScheduleManager : MonoBehaviour
                 _residents[cellId] = new PrisonerData(newDef, PrisonerAIType.Bad, cellId);
             }
         }
+    }
+
+    // [추가] 특수 캐릭터(VisualAnomalyType에 해당하는 녀석들)를 제외하고 '일반 죄수'만 뽑는 함수
+    private PrisonerDefinition GetRandomNormalPrisoner()
+    {
+        // 최대 10번 시도 (무한 루프 방지용)
+        for (int i = 0; i < 10; i++)
+        {
+            var def = prisonerDatabase.GetRandomDefinition();
+
+            if (def == null) continue;
+
+            string id = def.templateId; // 예: "PSN_Skinny_01", "PSN_FrankeR"
+
+            // =========================================================
+            // [핵심 필터] 말씀하신 VisualAnomalyType 관련 키워드 제외
+            // =========================================================
+            if (id.Contains("Bikini")) continue;   // 비키니 모델 제외
+            if (id.Contains("Goat")) continue;     // 염소 제외
+            if (id.Contains("Frank")) continue;    // 프랭크(A, B, R) 제외
+            if (id.Contains("Suspect")) continue;  // 용의자(1, 2, 3) 제외
+
+            // (혹시 몰라 교도소장도 제외)
+            if (id.Contains("Victor")) continue;
+
+            // 여기까지 통과했으면 일반 죄수(Skinny, Muscular, Gang, Elite 등)임
+            return def;
+        }
+
+        // 운이 너무 없어서 10번 다 실패하면... 어쩔 수 없이 아무나 리턴 (보통 여기까지 안 옴)
+        return prisonerDatabase.GetRandomDefinition();
     }
 
 }

@@ -190,9 +190,9 @@ public class PrisonerFSM : MonoBehaviour
         var role = PrisonerScheduleManager.Instance.GetDailyRole(Controller.Data.CellID);
         var type = role.visualType;
 
-        return type == VisualAnomalyType.Imposter_Guard ||
-               type == VisualAnomalyType.Imposter_NoBeard ||
-               type == VisualAnomalyType.Imposter_Earring ||
+        return type == VisualAnomalyType.PSN_FrankeA ||
+               type == VisualAnomalyType.PSN_FrankeB ||
+               type == VisualAnomalyType.PSN_FrankeR ||
                type == VisualAnomalyType.Suspect1 ||
                type == VisualAnomalyType.Suspect2 ||
                type == VisualAnomalyType.Suspect3;
