@@ -45,13 +45,14 @@ public class WarningPopupController : MonoBehaviour
         if (text != null)
             text.text = e.Message;
 
-        if (warningClip != null)
+        if (e.PlayBeep && warningClip != null)
         {
-            AudioManager.Instance.PlaySFX(warningClip);
+            AudioManager.Instance.PlayUISound(warningClip);
         }
 
         _routine = StartCoroutine(ShowRoutineRealtime(e.Duration));
     }
+
 
     private IEnumerator ShowRoutineRealtime(float duration)
     {

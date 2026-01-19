@@ -104,7 +104,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
                 Debug.LogWarning("[Door] 감방 문이 열려있어 계단 문을 열 수 없습니다.");
 
                 // (선택사항) "감방 문을 먼저 닫으세요" 같은 팝업 띄우기
-                EventBus.Publish(new ShowTimedTextPopupEvent("감방 문이 열려있습니다! 문을 닫고 이동하세요.", 2.0f));
+                EventBus.Publish(new ShowTimedTextPopupEvent("감방 문이 열려있습니다! 문을 닫고 이동하세요.", 2.0f, true));
 
                 // 잠김 애니메이션/소리 재생
                 PlayLocked();
