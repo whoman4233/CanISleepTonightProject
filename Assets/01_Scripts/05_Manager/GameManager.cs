@@ -201,12 +201,25 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new GamePhaseChangedEvent(newPhase));
     }
 
+    // [수정] NotStarted (타이틀/초기화) 상태 진입 시
     private void OnEnterNotStarted()
     {
         currentDay = 0;
         playerHP = 100;
-        PrisonerScheduleManager.ResetStaticData();
+
+        // ★ [핵심] 죄수 데이터 완전 초기화 (새 게임 시 좀비 데이터 제거)
+        if (ScheduleManager != null)
+        {
+            ScheduleManager.ResetAllSimulationData();
+        }
+        else
+        {
+            // 아직 로드되지 않았을 경우를 대비해 검색
+            var sm = FindObjectOfType<PrisonerScheduleManager>();
+            if (sm != null) sm.ResetAllSimulationData();
+        }
     }
+
     public void SetStandbyEnterReason(StandbyEnterReason reason)
     {
         standbyEnterReason = reason;
@@ -225,7 +238,20 @@ public class GameManager : MonoBehaviour
 
         standbyEnterReason = StandbyEnterReason.None;
     }
-    private void OnEnterBriefing() => StandbyEndTrigger();
+
+    // [수정] 브리핑 진입 시 프랭크 위치 배정 추가
+    private void OnEnterBriefing()
+    {
+        // ★ [핵심] 현재 미션에 맞춰 프랭크 위치 배정 (셔플 대응)
+        var frankManager = FindObjectOfType<FrankSpawnManager>();
+        if (frankManager != null && DailyMissionManager.Instance != null)
+        {
+            // 섞인 미션 정보(CurrentMission)를 전달
+            frankManager.SpawnFrankForMission(DailyMissionManager.Instance.CurrentMission);
+        }
+
+        StandbyEndTrigger();
+    }
 
     private void OnEnterPatrol()
     {
@@ -304,8 +330,6 @@ public class GameManager : MonoBehaviour
         ChangePhase(nextPhase);
     }
 
-    // GameManager.cs 내부
-
     public GameSaveData GetCurrentSaveData()
     {
         var data = new GameSaveData
@@ -345,7 +369,6 @@ public class GameManager : MonoBehaviour
                 ScheduleManager.OverrideScheduleFromSave(data.prisonerRoster, data.dailyRoles);
             }
 
-            // ★ [추가] 미션 순서 복원 (가장 먼저 해야 함)
             if (DailyMissionManager.Instance != null && data.randomizedMissionIndices != null)
             {
                 DailyMissionManager.Instance.RestoreMissionOrder(data.randomizedMissionIndices);
