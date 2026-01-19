@@ -175,7 +175,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 30066481991478545}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0.342, z: 1.003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -204,8 +204,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1182050005142013738}
-  - component: {fileID: 8495590088924973833}
-  - component: {fileID: 4375645630631979701}
+  - component: {fileID: 6670183660434575111}
   m_Layer: 12
   m_Name: VisualRoot
   m_TagString: Untagged
@@ -235,39 +234,27 @@ Transform:
   - {fileID: 1508347793976061817}
   m_Father: {fileID: 2473286508071878153}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8495590088924973833
-MonoBehaviour:
+--- !u!95 &6670183660434575111
+Animator:
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 501172893740761934}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actionBehaviour: {fileID: 4375645630631979701}
-  revealOnInspect: 0
---- !u!114 &4375645630631979701
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 501172893740761934}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 0}
-  triggerName: Inspect
-  inspectObjectType: 0
-  inspectSfxTable: {fileID: 0}
-  outerCollider: {fileID: 0}
-  innerColliders: []
-  revealedTargets: []
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: f90d889232e09f949914c876de063f8f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &880368898576360763
 GameObject:
   m_ObjectHideFlags: 0
