@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Linq; 
+using System.Linq;
 
 public class DailyMissionManager : MonoBehaviour
 {
@@ -29,6 +29,7 @@ public class DailyMissionManager : MonoBehaviour
         _onForceMissionFailRequested = OnForceMissionFailRequested;
 
         // 게임 시작 시 미션 순서 미리 섞기
+        // (세이브 파일 로드 시에는 이 순서가 덮어씌워져야 함)
         InitializeMissionOrder();
     }
 
@@ -36,7 +37,7 @@ public class DailyMissionManager : MonoBehaviour
     private void OnDisable() => EventBus.Unsubscribe(_onForceMissionFailRequested);
 
     // ★ 1~6일차 미션을 섞어서 리스트에 저장
-    private void InitializeMissionOrder()
+    public void InitializeMissionOrder()
     {
         _randomizedMissionOrder.Clear();
 
@@ -125,7 +126,13 @@ public class DailyMissionManager : MonoBehaviour
         // 이렇게 하면 UI나 DayDebugConsole이 GetMissionStrategy(day)를 호출해도 
         // 엉뚱한(섞인) 미션이 아니라, 지금 실행한 고정 미션을 반환하게 됩니다.
         if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
-        
+
+        // 리스트 크기가 부족하면 채워넣기 (안전장치)
+        while (_randomizedMissionOrder.Count <= targetIndex)
+        {
+            _randomizedMissionOrder.Add(null);
+        }
+
         if (targetIndex < _randomizedMissionOrder.Count)
         {
             _randomizedMissionOrder[targetIndex] = fixedMission;
@@ -133,7 +140,7 @@ public class DailyMissionManager : MonoBehaviour
         }
 
         Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 고정 미션 강제 시작: {CurrentMission.title}");
-        
+
         StartMissionSetup(dayIndex);
     }
 

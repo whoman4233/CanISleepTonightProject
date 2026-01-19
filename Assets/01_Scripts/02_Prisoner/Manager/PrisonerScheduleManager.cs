@@ -63,7 +63,7 @@ public class PrisonerScheduleManager : MonoBehaviour
         // 1. 초기화 확인
         if (_residents == null) _residents = new Dictionary<string, PrisonerData>();
 
-        // 2. 필수 참조 확인 (여기서 로그가 안 뜨면 연결 문제)
+        // 2. 필수 참조 확인
         if (prisonerDatabase == null)
         {
             Debug.LogError("[Schedule] PrisonerDatabaseSO가 연결되지 않았습니다! (Inspector 확인)");
@@ -75,16 +75,40 @@ public class PrisonerScheduleManager : MonoBehaviour
             return;
         }
 
-        // 3. 방 목록 가져오기
+        // 3. 방 목록 가져오기 및 섞기 (방 배정도 랜덤하게 하기 위함)
         var allAnchors = anchorRegistry.GetAllCellIds();
+        Shuffle(allAnchors); // 방 순서를 섞습니다.
 
-        // [디버깅] 방 목록 개수 출력 (이게 0이면 AnchorRegistry 문제)
-        Debug.Log($"[Schedule] AnchorRegistry에서 가져온 방 개수: {allAnchors.Count}");
+        Debug.Log($"[Schedule] 방 개수: {allAnchors.Count}, 생성 목표: 4종류(멸치,근육,갱단,엘리트) x 3명 = 12명");
 
-        foreach (var cellId in allAnchors)
+        // 4. [핵심] 확정 명단(Deck) 만들기
+        List<PrisonerDefinition> spawnDeck = new List<PrisonerDefinition>();
+
+        // 각 타입별로 3명씩 뽑아서 덱에 추가
+        spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Skinny", 3));
+        spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Muscular", 3));
+        spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Gang", 3));
+        spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Elite", 3));
+
+        // 덱을 한 번 더 섞음 (누가 몇 번 방에 갈지 모르게)
+        Shuffle(spawnDeck);
+
+        // 5. 방에 배정
+        for (int i = 0; i < allAnchors.Count; i++)
         {
-            //[수정] 랜덤이 아니라 필터링된 함수를 사용하여 '일반 죄수'만 가져옴
-            var def = GetRandomNormalPrisoner();
+            string cellId = allAnchors[i];
+            PrisonerDefinition def = null;
+
+            // 덱에 카드가 남아있다면 덱에서 꺼냄 (처음 12명)
+            if (i < spawnDeck.Count)
+            {
+                def = spawnDeck[i];
+            }
+            else
+            {
+                // 방이 12개보다 많아서 덱이 동났다면? -> 남은 방은 랜덤(일반)으로 채움
+                def = GetRandomNormalPrisoner();
+            }
 
             if (def != null)
             {
@@ -93,12 +117,12 @@ public class PrisonerScheduleManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("[Schedule] 죄수 정의(Definition)를 가져오지 못했습니다. DB가 비어있나요?");
+                Debug.LogWarning("[Schedule] 죄수 정의를 가져오지 못했습니다.");
             }
         }
 
-        // 4. 최종 결과 출력
-        Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 데이터 생성 완료.");
+        // 6. 최종 결과 출력
+        Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 데이터 생성 완료. (밸런스 조정됨)");
         _cachedResidents = _residents; // 캐시 동기화
     }
 
@@ -398,7 +422,40 @@ public class PrisonerScheduleManager : MonoBehaviour
         }
     }
 
-    // [추가] 특수 캐릭터(VisualAnomalyType에 해당하는 녀석들)를 제외하고 '일반 죄수'만 뽑는 함수
+    // [추가] 특정 키워드(Skinny 등)를 가진 죄수를 count만큼 랜덤하게 뽑아오는 함수
+    private List<PrisonerDefinition> GetRandomDefinitionsByKeyword(string keyword, int count)
+    {
+        List<PrisonerDefinition> result = new List<PrisonerDefinition>();
+
+        // 1. 해당 키워드를 포함하는 모든 후보군 검색 (예: TemplateId에 "Skinny"가 포함된 애들)
+        // 특수 캐릭터(Frank 등)가 섞이지 않도록 필터링
+        var candidates = prisonerDatabase.prisoners.Where(p =>
+            p.templateId.Contains(keyword) &&
+            !p.templateId.Contains("Frank") &&
+            !p.templateId.Contains("Victor") &&
+            !p.templateId.Contains("Bikini") &&
+            !p.templateId.Contains("Goat") &&
+            !p.templateId.Contains("Suspect")
+        ).ToList();
+
+        if (candidates.Count == 0)
+        {
+            Debug.LogWarning($"[Schedule] '{keyword}' 타입의 죄수 데이터를 찾을 수 없습니다.");
+            return result;
+        }
+
+        // 2. 랜덤하게 count만큼 뽑기
+        for (int i = 0; i < count; i++)
+        {
+            // 중복 허용해서 뽑기 (데이터 종류가 적을 수 있으므로)
+            var randomPick = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+            result.Add(randomPick);
+        }
+
+        return result;
+    }
+
+    // [기존] 특수 캐릭터(VisualAnomalyType에 해당하는 녀석들)를 제외하고 '일반 죄수'만 뽑는 함수
     private PrisonerDefinition GetRandomNormalPrisoner()
     {
         // 최대 10번 시도 (무한 루프 방지용)

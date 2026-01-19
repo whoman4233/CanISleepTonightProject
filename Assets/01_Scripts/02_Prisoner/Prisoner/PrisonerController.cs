@@ -15,9 +15,6 @@ public class PrisonerController : MonoBehaviour
     // [1] 데이터 정의
     // ================================================================
 
-    // ★ VisualSkinData, specialSkins, _skinMap 삭제됨!
-    // 프리팹 자체가 외형이므로 내부 교체 로직 불필요.
-
     [System.Serializable]
     public struct ActionPropData
     {
@@ -61,9 +58,7 @@ public class PrisonerController : MonoBehaviour
 
     private void InitializeDictionaries()
     {
-        // ★ 스킨 맵핑 로직 삭제됨
-
-        // 도구 맵핑 (이건 여전히 필요. 비키니 입은 죄수도 망치는 들어야 하니까)
+        // 도구 맵핑
         _propMap = new Dictionary<PrisonerAIType, GameObject>();
         if (actionProps != null)
         {
@@ -75,24 +70,35 @@ public class PrisonerController : MonoBehaviour
         }
     }
 
-    // Assets/01_Scripts/02_Prisoner/Prisoner/PrisonerController.cs
-
+    // [수정] 스폰 컨트롤러와 호환되도록 원래 파라미터(cell, isSuspicious) 유지
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
     {
         this.Data = data;
 
         // ================================================================
-        // ★ [FIX] 데이터가 재사용될 수 있으므로, 소환 시 체력을 반드시 초기화
+        // [핵심] 스탯 동기화 및 안전장치 (데이터 -> 실제 적용)
         // ================================================================
         if (this.Data != null)
         {
-            // 1. MaxHealth가 정의되어 있다면 그 값으로, 없다면 100으로 설정
+            // 1. 공격력 초기화 (데이터에 없거나 0이면 기본값 10 부여)
+            if (this.Data.AttackPower <= 0) this.Data.AttackPower = 10f;
+
+            // 2. 체력 초기화 (데이터에 없거나 0이면 기본값 100 부여)
+            if (this.Data.MaxHealth <= 0) this.Data.MaxHealth = 100f;
+
+            // 3. 현재 체력을 최대 체력으로 리셋 (재사용 시 필수)
             this.Data.CurrentHealth = this.Data.MaxHealth;
         }
-        // ================================================================
 
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
+
+        // NavMeshAgent 설정 (멈춤 현상 방지용)
+        if (agent != null && data != null && data.definition != null)
+        {
+            agent.speed = data.definition.spd > 0 ? data.definition.spd : 3.5f;
+            agent.enabled = true;
+        }
 
         // FSM 초기화
         if (fsm != null)
@@ -100,6 +106,8 @@ public class PrisonerController : MonoBehaviour
             fsm.Setup(this, agent, animator);
             fsm.InitializeBehavior(data.RuntimeAIType);
         }
+
+        Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | HP:{Data?.CurrentHealth} | ATK:{Data?.AttackPower}");
     }
 
     // ================================================================
@@ -155,7 +163,7 @@ public class PrisonerController : MonoBehaviour
     {
         if (Data == null || Data.CurrentHealth <= 0) return false;
 
-        // 1. 체력 데이터 깎기 (Controller의 역할)
+        // 1. 체력 데이터 깎기
         Data.CurrentHealth -= dmg;
 
         if (Data.CurrentHealth <= 0)
@@ -165,10 +173,10 @@ public class PrisonerController : MonoBehaviour
         }
         else
         {
-            // 2. ★ FSM에게 "맞았다"고 알리기 (이게 없으면 피는 튀는데 가만히 있음)
+            // 2. FSM에게 피격 알림
             fsm.OnDamaged(dmg, hitPoint, hitDirection);
 
-            // 3. 비명 소리 등 (Controller가 관리하는 사운드)
+            // 3. 사운드 재생
             if (sfx != null) sfx.PlayHitAndRandomMoan();
         }
         return true;
@@ -176,29 +184,27 @@ public class PrisonerController : MonoBehaviour
 
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
-        // 1. 행동 중단 (애니메이션, 도구 등)
         StopActionBehavior();
 
-        // 2.모든 사운드 강제 종료 (비명 지르다 죽는 건 괜찮지만 루프는 끊어야 함)
         if (sfx != null)
         {
-            sfx.StopAllSounds(); // 위에서 만든 함수 호출
-            sfx.PlayRandomDieOnce(); // 그 후 단말마 1회 재생
+            sfx.StopAllSounds();
+            sfx.PlayRandomDieOnce();
         }
 
-        // 3. 상태 전환
         fsm.ChangeState(fsm.DeadState);
 
-        // 4. 랙돌 적용
         if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
 
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 
-
+    // ================================================================
+    // ★ [핵심 수정] 애니메이션 이벤트에서 호출되는 공격 함수
+    // ================================================================
     public void OnAttackHitCheck()
     {
-        // [수정] 버퍼 크기를 5 -> 20으로 증가 (주변에 물체가 많아도 플레이어를 놓치지 않게 함)
+        // 버퍼 크기 증가 (안정성 확보)
         Collider[] hits = new Collider[20];
 
         // 내 위치에서 공격 사거리만큼 검사
@@ -208,12 +214,10 @@ public class PrisonerController : MonoBehaviour
         {
             var target = hits[i];
 
-            // [안전장치] 자기 자신은 제외 (혹시 Layer가 겹칠 경우)
             if (target.gameObject == gameObject) continue;
 
             // 부채꼴 각도 계산
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
-            // 높이 차이 무시하고 수평 각도만 비교 (더 정확함)
             dirToTarget.y = 0;
             Vector3 myForward = transform.forward;
             myForward.y = 0;
@@ -223,8 +227,12 @@ public class PrisonerController : MonoBehaviour
                 var playerHealth = target.GetComponent<Health>();
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(10);
-                    Debug.Log($"[Prisoner] {Data.ID}가 플레이어를 때림!");
+                    // ★ [수정] 하드코딩(10) 제거 -> 데이터 공격력 사용
+                    // 데이터가 없거나 0이면 최소 1데미지라도 주도록 설정
+                    int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
+
+                    playerHealth.TakeDamage(finalDamage);
+                    Debug.Log($"[Prisoner] {Data?.Name ?? "Unknown"}가 플레이어를 공격! (피해량: {finalDamage})");
                 }
             }
         }
@@ -236,7 +244,11 @@ public class PrisonerController : MonoBehaviour
         if (AIType == PrisonerAIType.Ambusher)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, 3.5f); // 3.5f는 AmbushDistance와 맞춰주세요
+            Gizmos.DrawWireSphere(transform.position, 3.5f);
         }
+
+        // 공격 범위 디버깅용
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
