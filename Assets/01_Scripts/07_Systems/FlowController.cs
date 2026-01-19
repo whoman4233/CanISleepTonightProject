@@ -19,6 +19,7 @@ public class FlowController : MonoBehaviour
     private Action<RequestStartNewGameEvent> _startNewGameHandler;
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
     private Action<RequestSceneReloadEvent> _reloadHandler;
+    private Action<RequestGameRestartEvent> _restartHandler;
     private Action<LoadGameEvent> _loadGameHandler; // 이어하기 이벤트
     private Action<IntoPlaySceneEvent> _intoPlay;
 
@@ -31,6 +32,7 @@ public class FlowController : MonoBehaviour
             _startNewGameHandler = e => StartNewGame();
             _returnToTitleHandler = e => ReturnToTitle();
             _reloadHandler = e => StartCoroutine(ReloadPlaySceneRoutine());
+            _restartHandler = e => StartCoroutine(ReloadPlaySceneRoutine());
             _loadGameHandler = e => StartCoroutine(LoadGameSequence());
             _intoPlay = e => StartCoroutine(LoadActualPlaySceneRoutine());
         }
@@ -50,6 +52,7 @@ public class FlowController : MonoBehaviour
         EventBus.Subscribe(_startNewGameHandler);
         EventBus.Subscribe(_returnToTitleHandler);
         EventBus.Subscribe(_reloadHandler);
+        EventBus.Subscribe(_restartHandler);
         EventBus.Subscribe(_loadGameHandler);
         EventBus.Subscribe(_intoPlay);
     }
@@ -59,6 +62,7 @@ public class FlowController : MonoBehaviour
         EventBus.Unsubscribe(_startNewGameHandler);
         EventBus.Unsubscribe(_returnToTitleHandler);
         EventBus.Unsubscribe(_reloadHandler);
+        EventBus.Unsubscribe(_restartHandler);
         EventBus.Unsubscribe(_loadGameHandler);
         EventBus.Unsubscribe(_intoPlay);
     }

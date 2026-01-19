@@ -46,6 +46,7 @@ public class ResultSuccessPanel : ResultPanelBase
 
         
         Time.timeScale = 1.0f;
+        GameManager.Instance.SetStandbyEnterReason(StandbyEnterReason.NextDay);
         EventBus.Publish(new RequestSceneReloadEvent());
     }
 

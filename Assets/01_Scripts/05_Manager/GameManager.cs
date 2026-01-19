@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GamePhase initialPhase = GamePhase.NotStarted; // [TEST ONLY] 테스트 시작 페이즈
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
+    private StandbyEnterReason standbyEnterReason = StandbyEnterReason.None;
     [SerializeField] private int currentDay = 0;
     [SerializeField] public int maxDay = 7;
 
@@ -206,11 +207,24 @@ public class GameManager : MonoBehaviour
         playerHP = 100;
         PrisonerScheduleManager.ResetStaticData(); // 정적 데이터 초기화
     }
-
+    public void SetStandbyEnterReason(StandbyEnterReason reason)
+    {
+        standbyEnterReason = reason;
+    }
     private void OnEnterStandby()
     {
-        currentDay++;
-        playerHP += 10;
+        if (standbyEnterReason == StandbyEnterReason.NextDay)
+        {
+            currentDay++;
+            playerHP += 10;
+        }
+        else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
+        {
+            // 같은 날 재시작
+            playerHP = 100; 
+        }
+
+        standbyEnterReason = StandbyEnterReason.None; // 반드시 리셋
     }
     private void OnEnterBriefing() => StandbyEndTrigger();
 
