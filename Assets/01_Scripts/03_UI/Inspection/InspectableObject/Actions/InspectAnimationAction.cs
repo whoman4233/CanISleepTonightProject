@@ -18,6 +18,7 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
     [SerializeField] private InspectTarget[] revealedTargets;
 
     private bool _used;
+
     public void InspectAction(IInspectable owner)
     {
         if (_used)
@@ -25,40 +26,40 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
 
         _used = true;
 
-        var entry = inspectSfxTable != null
-            ? inspectSfxTable.GetEntry(inspectObjectType)
-            : null;
-
-        if (entry != null && entry.animationSfx != null)
+        // Inspect 애니메이션 시작 SFX
+        if (inspectSfxTable != null)
         {
-            AudioManager.Instance.PlaySFX(entry.animationSfx);
+            AudioClip animationSfx =
+                inspectSfxTable.GetAnimationSfx(inspectObjectType);
+
+            if (animationSfx != null)
+            {
+                AudioManager.Instance.PlaySFX(animationSfx);
+            }
         }
 
+        // 애니메이션 트리거
         if (animator != null)
             animator.SetTrigger(triggerName);
 
-        if (outerCollider != null) //애니메이션 중 중복 클릭 방지
+        // 애니메이션 중 중복 클릭 방지
+        if (outerCollider != null)
             outerCollider.enabled = false;
     }
 
     // Animation Event에서 호출
     public void AE_OnRevealCompleted()
     {
-        var entry = inspectSfxTable != null
-            ? inspectSfxTable.GetEntry(inspectObjectType)
-            : null;
-
-        if (entry != null && entry.discoverySfx != null)
-        {
-            AudioManager.Instance.PlaySFX(entry.discoverySfx);
-        }
-
+        // Inspect 대상 Reveal (연출)
         foreach (var target in revealedTargets)
         {
-            if (target != null)
-                target.MarkRevealed();
+            if (target == null)
+                continue;
+
+            target.MarkRevealed();
         }
 
+        // 내부 콜라이더 활성화
         foreach (var col in innerColliders)
         {
             if (col != null)
@@ -66,3 +67,5 @@ public class InspectAnimatedRevealAction : MonoBehaviour, IInspectAction
         }
     }
 }
+
+

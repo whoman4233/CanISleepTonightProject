@@ -9,10 +9,9 @@ public class InspectSfxEntry
 
     [Header("SFX")]
     public AudioClip animationSfx;   // 애니메이션 시작
-    public AudioClip discoverySfx;   // 발견 시
 }
 
-[CreateAssetMenu(menuName = "Audio/Inspect SFX Table")]
+[CreateAssetMenu(menuName = "Audio/Inspect Animation SFX Table")]
 public class InspectSfxTableSO : ScriptableObject
 {
     [SerializeField] private List<InspectSfxEntry> entries;
@@ -45,12 +44,13 @@ public class InspectSfxTableSO : ScriptableObject
         }
     }
 
-    public InspectSfxEntry GetEntry(InspectObjectType type)
+    public AudioClip GetAnimationSfx(InspectObjectType type)
     {
         if (_lookup == null)
             BuildLookup();
 
-        _lookup.TryGetValue(type, out var entry);
-        return entry;
+        return _lookup.TryGetValue(type, out var entry)
+            ? entry.animationSfx
+            : null;
     }
 }

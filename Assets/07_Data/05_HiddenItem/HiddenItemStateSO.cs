@@ -13,6 +13,7 @@ public abstract class HiddenItemStateSO : ScriptableObject
         if (isFound) return;
         isFound = true;
         OnFoundStateChanged?.Invoke(isFound);
+        EventBus.Publish(new HiddenItemFoundEvent(this as HiddenItemDefinitionSO));
     }
 
     public virtual void ResetState()

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6571951892954406854}
   - component: {fileID: 8819760505683285428}
   - component: {fileID: 1194470789968502753}
-  - component: {fileID: 1198032591220743134}
+  - component: {fileID: 4374199942326531023}
   - component: {fileID: 6445962688505769009}
   m_Layer: 12
   m_Name: IntlProp_TrashCan01_Trash03
@@ -114,9 +114,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionBehaviour: {fileID: 1198032591220743134}
+  actionBehaviour: {fileID: 4374199942326531023}
   revealOnInspect: 0
---- !u!114 &1198032591220743134
+--- !u!114 &4374199942326531023
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,10 +125,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 8443668847383400}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9a26abd15c4a2b409a025f38ffeba83, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visual: {fileID: 8443668847383400}
+  animator: {fileID: 6670183660434575111}
+  triggerName: Inspect
+  inspectObjectType: 4
+  inspectSfxTable: {fileID: 11400000, guid: 13eb6855be21d4e4b96bf51a28ceedfe, type: 2}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!135 &6445962688505769009
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -268,7 +274,7 @@ GameObject:
   - component: {fileID: 7590895644705402606}
   - component: {fileID: 6841494066842512586}
   - component: {fileID: 639226655298092138}
-  - component: {fileID: 5212332690740541515}
+  - component: {fileID: 2677839225688032221}
   - component: {fileID: 3311609900643744208}
   m_Layer: 12
   m_Name: IntlProp_TrashCan01_Trash05
@@ -376,9 +382,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionBehaviour: {fileID: 5212332690740541515}
+  actionBehaviour: {fileID: 2677839225688032221}
   revealOnInspect: 0
---- !u!114 &5212332690740541515
+--- !u!114 &2677839225688032221
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -387,10 +393,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 880368898576360763}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9a26abd15c4a2b409a025f38ffeba83, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visual: {fileID: 880368898576360763}
+  animator: {fileID: 6670183660434575111}
+  triggerName: Inspect
+  inspectObjectType: 4
+  inspectSfxTable: {fileID: 11400000, guid: 13eb6855be21d4e4b96bf51a28ceedfe, type: 2}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!114 &3311609900643744208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -501,7 +513,7 @@ GameObject:
   - component: {fileID: 8678938113159285406}
   - component: {fileID: 5016134280146643187}
   - component: {fileID: 8001431856742354212}
-  - component: {fileID: 8772252661744970213}
+  - component: {fileID: 5917011171796073917}
   - component: {fileID: 4513784603830629299}
   m_Layer: 12
   m_Name: IntlProp_TrashCan01_Trash04
@@ -602,9 +614,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionBehaviour: {fileID: 8772252661744970213}
+  actionBehaviour: {fileID: 5917011171796073917}
   revealOnInspect: 0
---- !u!114 &8772252661744970213
+--- !u!114 &5917011171796073917
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -613,10 +625,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 2980931189612005505}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9a26abd15c4a2b409a025f38ffeba83, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visual: {fileID: 2980931189612005505}
+  animator: {fileID: 6670183660434575111}
+  triggerName: Inspect
+  inspectObjectType: 4
+  inspectSfxTable: {fileID: 11400000, guid: 13eb6855be21d4e4b96bf51a28ceedfe, type: 2}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!135 &4513784603830629299
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -651,7 +669,7 @@ GameObject:
   - component: {fileID: 1099281219736714139}
   - component: {fileID: 7246681909386585126}
   - component: {fileID: 6127845031796532559}
-  - component: {fileID: 1817051074287037639}
+  - component: {fileID: 4243671939703446055}
   - component: {fileID: 3118458140823818386}
   m_Layer: 12
   m_Name: IntlProp_TrashCan01_Trash02
@@ -752,9 +770,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionBehaviour: {fileID: 1817051074287037639}
+  actionBehaviour: {fileID: 4243671939703446055}
   revealOnInspect: 0
---- !u!114 &1817051074287037639
+--- !u!114 &4243671939703446055
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -763,10 +781,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 5174629031242837464}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9a26abd15c4a2b409a025f38ffeba83, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visual: {fileID: 5174629031242837464}
+  animator: {fileID: 6670183660434575111}
+  triggerName: Inspect
+  inspectObjectType: 4
+  inspectSfxTable: {fileID: 11400000, guid: 13eb6855be21d4e4b96bf51a28ceedfe, type: 2}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!135 &3118458140823818386
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -801,7 +825,7 @@ GameObject:
   - component: {fileID: 3188901949591733645}
   - component: {fileID: 592439054389354727}
   - component: {fileID: 9051752418299589070}
-  - component: {fileID: 8201067721449797729}
+  - component: {fileID: 7293430181222201022}
   - component: {fileID: 3798935137277925881}
   m_Layer: 12
   m_Name: IntlProp_TrashCan01_Trash01
@@ -902,9 +926,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185da1b11d42e304a99093f7ae0ce56a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionBehaviour: {fileID: 8201067721449797729}
+  actionBehaviour: {fileID: 7293430181222201022}
   revealOnInspect: 0
---- !u!114 &8201067721449797729
+--- !u!114 &7293430181222201022
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -913,10 +937,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 8188626834453920201}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9a26abd15c4a2b409a025f38ffeba83, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d6eea610a9d29044a4ccc1d4d9a0e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visual: {fileID: 8188626834453920201}
+  animator: {fileID: 6670183660434575111}
+  triggerName: Inspect
+  inspectObjectType: 4
+  inspectSfxTable: {fileID: 11400000, guid: 13eb6855be21d4e4b96bf51a28ceedfe, type: 2}
+  outerCollider: {fileID: 0}
+  innerColliders: []
+  revealedTargets: []
 --- !u!135 &3798935137277925881
 SphereCollider:
   m_ObjectHideFlags: 0
