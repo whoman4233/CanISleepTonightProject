@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 30066481991478545}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0.342, z: 1.003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -230,6 +230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 1384440499921232514}
+  revealOnInspect: 0
 --- !u!114 &1384440499921232514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -386,6 +387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 251224760079839192}
+  revealOnInspect: 0
 --- !u!114 &251224760079839192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -528,6 +530,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 375850006641869070}
+  revealOnInspect: 0
 --- !u!114 &375850006641869070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -677,6 +680,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 3477248488328929566}
+  revealOnInspect: 0
 --- !u!114 &3477248488328929566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -720,6 +724,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5244811663090108162}
+  - component: {fileID: 8044371170042841419}
   m_Layer: 12
   m_Name: VisualRoot
   m_TagString: Untagged
@@ -748,6 +753,27 @@ Transform:
   - {fileID: 3215329314332124194}
   m_Father: {fileID: 2473286508071878153}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &8044371170042841419
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7665176118306813683}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: f90d889232e09f949914c876de063f8f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &8719022860845917838
 GameObject:
   m_ObjectHideFlags: 0
@@ -863,6 +889,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionBehaviour: {fileID: 2487371361917808983}
+  revealOnInspect: 0
 --- !u!114 &2487371361917808983
 MonoBehaviour:
   m_ObjectHideFlags: 0
