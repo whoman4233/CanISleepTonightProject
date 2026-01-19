@@ -17,6 +17,8 @@ public class TutorialEventTrigger : MonoBehaviour , IInteractable
         {
             EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
+            Destroy(gameObject);
+            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
             Debug.Log("튜토리얼 이벤트 발행 완료");
         }
         else

@@ -1,4 +1,5 @@
 using UnityEngine;
+using static PrisonerSpawnController;
 
 [System.Serializable]
 public class PrisonerDefinition
@@ -18,5 +19,5 @@ public class PrisonerDefinition
 
     public bool isQte;
     public string qteId;
-    [TextArea] public string info;
+    [TextArea] public string info; 
 }

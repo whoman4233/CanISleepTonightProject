@@ -34,6 +34,9 @@ public class AnomalyDistributor : MonoBehaviour
 
         foreach (var anomaly in masterDatabase.defs)
         {
+            // ★ [수정] 리스트 중간에 비어있는 항목(Null)이 있으면 건너뛰기
+            if (anomaly == null) continue;
+
             if ((anomaly.validThemes & dayTheme) != 0)
             {
                 currentDayPool.Add(anomaly);
@@ -44,7 +47,6 @@ public class AnomalyDistributor : MonoBehaviour
 
     public void DistributeAnomalies()
     {
-        int currentRiotGauge = (GameManager.Instance != null) ? GameManager.Instance.CurrentRiotGauge : 0;
         var allCellIds = anchorRegistry.GetAllCellIds();
 
         Debug.Log("========== [AnomalyDistributor] 이상현상 배정 시작 ==========");
@@ -81,13 +83,6 @@ public class AnomalyDistributor : MonoBehaviour
                     usedTargets.Add(missionAnomaly.targetType);
                 }
             }
-
-            // 1. 특수(Special) 배정
-            var cellSpecials = currentDayPool
-                .Where(d => d.category == AnomalyCategory.Special && currentRiotGauge >= d.minRiotGauge)
-                .ToList();
-            Shuffle(cellSpecials);
-            AddUniqueAnomalies(cellSpecials, anchor.currentDailyAnomalies, specialCount, usedTargets);
 
             // 2. 개별(Individual) 배정
             var cellIndividual = currentDayPool

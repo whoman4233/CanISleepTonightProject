@@ -11,11 +11,9 @@ public class PrisonerCombatState : BasePrisonerState
     {
         base.Enter();
 
-        // [수정] 진입 시 즉시 공격하지 않고, 피격 모션을 보여줄 시간(0.5초~1초)을 벎
-        // 이렇게 하면 "맞자마자 반격"하는 부자연스러운 동작도 사라지고, 애니메이션 씹힘도 방지됨
-        _attackTimer = 0.5f; // 0.5초 딜레이
+        // 진입 시 0.5초 딜레이 (바로 때리면 부자연스러움)
+        _attackTimer = 0.5f;
 
-        // 추격 시작
         agent.isStopped = false;
         anim.SetBool("Run", true);
     }
@@ -29,18 +27,18 @@ public class PrisonerCombatState : BasePrisonerState
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        if (dist <= 1.5f) // 공격 사거리
+        // ================================================================
+        // [1] 공격 사거리 내부 (공격 시도)
+        // ================================================================
+        if (dist <= 1.5f)
         {
+            // 확실하게 멈춤 처리
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
             anim.SetBool("Run", false);
 
-            Vector3 dir = (player.position - fsm.transform.position).normalized;
-            dir.y = 0;
-            if (dir != Vector3.zero)
-            {
-                fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
-            }
+            // 플레이어 바라보기
+            RotateTowardsPlayer();
 
             // 쿨타임 찼으면 공격
             if (_attackTimer <= 0f)
@@ -49,11 +47,21 @@ public class PrisonerCombatState : BasePrisonerState
                 _attackTimer = AttackCooldown;
             }
         }
+        // ================================================================
+        // [2] 공격 사거리 밖 (추격)
+        // ================================================================
         else
         {
-            // [추가] 공격 타이머가(경직이) 조금 남았어도 거리가 멀면 이동은 가능하게 처리
-            // 단, 너무 짧은 찰나의 이동 방지를 위해 0.2초 정도는 기다림
-            if (_attackTimer < 0.3f)
+            // ★ [수정] 경직/피격 상태(0.3초 이상 남음)라면 확실히 '정지' 시킴
+            // 이 처리가 없으면 맞았는데도 미끄러지듯 이동하거나, 어정쩡하게 굳어버림
+            if (_attackTimer >= 0.3f)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+                anim.SetBool("Run", false);
+            }
+            // ★ [수정] 경직이 풀렸으면 다시 추격 재개
+            else
             {
                 agent.isStopped = false;
                 agent.SetDestination(player.position);
@@ -65,7 +73,17 @@ public class PrisonerCombatState : BasePrisonerState
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         anim.SetTrigger("Hit");
-        // [추가] 전투 중 맞으면 공격 쿨타임을 늘려서 "아파하는" 시간 확보 (연타 방지)
+        // 맞으면 경직 시간을 0.5초로 늘려서 "아파하는 모션" 동안 이동/공격 불가하게 함
         _attackTimer = Mathf.Max(_attackTimer, 0.5f);
+    }
+
+    private void RotateTowardsPlayer()
+    {
+        Vector3 dir = (player.position - fsm.transform.position).normalized;
+        dir.y = 0;
+        if (dir != Vector3.zero)
+        {
+            fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
+        }
     }
 }

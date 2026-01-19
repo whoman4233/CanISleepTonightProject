@@ -21,17 +21,20 @@ public class SeniorGuard : MonoBehaviour, IInteractable
                 // 선택지 2: 경고 텍스트 (원하면)
                 // EventBus.Publish(new ShowTimedTextPopupEvent("이미 보고를 마쳤다.", 1.5f));
             }
+            System.Action onDialogueEnd = () =>
+            {
+                EventBus.Publish(new Mission06PuzzleShowRequestedEvent());
+            };
+
+            DialogueManager.Instance.StartDialogueByKeys(
+                speakerKey,
+                DialogueKeys.Types.Fin,
+                onDialogueEnd
+            );
         }
-
-        System.Action onDialogueEnd = () =>
+        else
         {
-            EventBus.Publish(new Mission06PuzzleShowRequestedEvent());
-        };
-
-        DialogueManager.Instance.StartDialogueByKeys(
-            speakerKey,
-            DialogueKeys.Types.Fin,
-            onDialogueEnd
-        );
+            DialogueManager.Instance.StartDialogueByKeys(speakerKey, DialogueKeys.Types.Dialogue);
+        }
     }
 }

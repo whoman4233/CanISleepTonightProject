@@ -4,48 +4,72 @@ using UnityEngine;
 
 public class FrankSpawnManager : MonoBehaviour
 {
-    [Header("Settings")]
-    [SerializeField] private GameObject seniorGuardPrefab; // 선임 교도관 프리팹
-    [SerializeField] private Transform spawnPoint; // 선임 교도관 스폰 위치
+    [Header("Spawn Points")]
+    [SerializeField] private Transform[] spawnPoints_B1; // 미션 4, 6 (지하)
+    [SerializeField] private Transform[] spawnPoints_1F; // 나머지 (1층)
 
-    private GameObject _currentGuard;
+    [Header("Prefab")]
+    [SerializeField] private GameObject frankPrefab;
 
-    private void OnEnable() => EventBus.Subscribe<GamePhaseChangedEvent>(OnPhaseChanged);
-    private void OnDisable() => EventBus.Unsubscribe<GamePhaseChangedEvent>(OnPhaseChanged);
+    private GameObject _currentFrankInstance;
 
-    private void OnPhaseChanged(GamePhaseChangedEvent e)
+    // ★ [수정] 인자를 dayIndex가 아닌 missionID로 받도록 변경 (혹은 내부에서 확인)
+    public void SpawnFrankForMission(DailyMissionStrategy mission)
     {
-        // 스탠바이 페이즈 시 미션6 이면 소환
-        if (e.Phase == GamePhase.Standby)
+        ClearFrank();
+
+        if (mission == null) return;
+
+        // 미션 ID 파싱 (예: "Mission_04" -> 4)
+        int missionNum = ParseMissionID(mission.missionId);
+
+        Transform targetPoint = null;
+
+        // ★ [핵심] 미션 번호에 따라 층 결정
+        // 미션 4, 6은 B1층 / 나머지는 1F
+        if (missionNum == 4 || missionNum == 6)
         {
-            if (DailyMissionManager.Instance.CurrentMission is Mission06Strategy)
+            if (spawnPoints_B1 != null && spawnPoints_B1.Length > 0)
             {
-                SpawnFrank();
+                targetPoint = spawnPoints_B1[Random.Range(0, spawnPoints_B1.Length)];
             }
         }
-        else if (e.Phase == GamePhase.NotStarted)
+        else
         {
-            CleanupGuard();
+            if (spawnPoints_1F != null && spawnPoints_1F.Length > 0)
+            {
+                targetPoint = spawnPoints_1F[Random.Range(0, spawnPoints_1F.Length)];
+            }
+        }
+
+        if (targetPoint != null && frankPrefab != null)
+        {
+            _currentFrankInstance = Instantiate(frankPrefab, targetPoint.position, targetPoint.rotation);
+            Debug.Log($"[Frank] 선임 교도관 생성 완료 (Mission {missionNum}, 위치: {targetPoint.name})");
+        }
+        else
+        {
+            Debug.LogWarning("[Frank] 스폰 포인트가 없거나 프리팹이 없습니다.");
         }
     }
 
-    private void SpawnFrank()
+    public void ClearFrank()
     {
-        if (_currentGuard != null) return;
-
-        if (seniorGuardPrefab != null && spawnPoint != null)
+        if (_currentFrankInstance != null)
         {
-            _currentGuard = Instantiate(seniorGuardPrefab, spawnPoint.position, spawnPoint.rotation);
-            _currentGuard.name = DialogueKeys.Speakers.Frank;
+            Destroy(_currentFrankInstance);
+            _currentFrankInstance = null;
         }
     }
 
-    private void CleanupGuard()
+    private int ParseMissionID(string missionID)
     {
-        if (_currentGuard != null)
+        // "Mission_04" 같은 문자열에서 숫자 추출
+        string numberPart = System.Text.RegularExpressions.Regex.Replace(missionID, @"\D", "");
+        if (int.TryParse(numberPart, out int result))
         {
-            Destroy(_currentGuard);
-            _currentGuard = null;
+            return result;
         }
+        return 1; // 실패 시 기본값
     }
 }

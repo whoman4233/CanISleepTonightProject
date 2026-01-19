@@ -13,14 +13,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GamePhase initialPhase = GamePhase.NotStarted; // [TEST ONLY] 테스트 시작 페이즈
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
+    private StandbyEnterReason standbyEnterReason = StandbyEnterReason.None;
     [SerializeField] private int currentDay = 0;
-    [SerializeField] private int riotGauge = 20;
-    [SerializeField] private int maxRiotGauge = 100;
     [SerializeField] public int maxDay = 7;
 
-    public int RiotGauge => riotGauge;
-    public int CurrentRiotGauge => riotGauge;
-    public int MaxRiotGauge => maxRiotGauge;
     public int CurrentDay => currentDay;
     public int MaxDay => maxDay;
     public float PatrolDurationMax => patrolDurationSeconds;
@@ -46,7 +42,7 @@ public class GameManager : MonoBehaviour
     // ScheduleManager 참조
     public PrisonerScheduleManager ScheduleManager;
 
-    private int playerHP = 70;
+    private int playerHP = 100;
     public int PlayerHP
     {
         get => playerHP;
@@ -64,18 +60,13 @@ public class GameManager : MonoBehaviour
 
             // =========================
             // GameOver 처리
-            // - Ending과 분리
-            // - Phase는 유지 (Patrol)
             // =========================
             if (playerHP <= 0 && currentPhase == GamePhase.Patrol)
             {
                 EventBus.Publish(new GameOverEvent());
                 EventBus.Publish(new ForceExitInspectionEvent());
-                // 기존 Ending 로직은 GameOver 이후
-                // UI 버튼을 통해서만 진입하도록 함
                 return;
             }
-
         }
     }
 
@@ -108,18 +99,8 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
 #if UNITY_EDITOR
-        // ============================================================
-        // [TEST ONLY]
-        // 테스트 환경에서는 다른 매니저들의 초기화가 끝난 뒤
-        // initialPhase로 "정식 페이즈 진입"을 보장하기 위해
-        // 1프레임 지연 부트스트랩을 사용한다.
-        // ============================================================
         StartCoroutine(CoBootstrapInitialPhase());
 #else
-        // ============================================================
-        // [BUILD]
-        // 빌드 환경에서는 기존과 동일하게 항상 NotStarted로 시작
-        // ============================================================
         ChangePhase(GamePhase.NotStarted);
 #endif
     }
@@ -127,38 +108,56 @@ public class GameManager : MonoBehaviour
 #if UNITY_EDITOR
     private IEnumerator CoBootstrapInitialPhase()
     {
-        // 다른 매니저 Awake / OnEnable / SceneLoaded 이후
         yield return null;
-
-        // ============================================================
-        // [TEST ONLY]
-        // 반드시 ChangePhase를 통해 진입해야
-        // GameManager 내부 상태 + 모든 시스템이 일관됨
-        // ============================================================
         ChangePhase(initialPhase);
     }
 #endif
 
-    private void OnEnable()
+    // [수정] 이벤트 구독 로직 분리 (재사용 목적)
+    private void RegisterSystemEvents()
     {
         EventBus.Subscribe(_requestPhaseChange);
         EventBus.Subscribe(_onEndingConditionMet);
-        // Pause는 옵션/메뉴 전용
-        // 결과 UI / 타임아웃 실패에서는 사용하지 않음
-        EventBus.Subscribe<PauseGameRequestedEvent>(_ => Time.timeScale = 0f);
-        EventBus.Subscribe<ResumeGameRequestedEvent>(_ => Time.timeScale = 1f);
+        EventBus.Subscribe<PauseGameRequestedEvent>(OnPauseRequested);
+        EventBus.Subscribe<ResumeGameRequestedEvent>(OnResumeRequested);
+    }
+
+    // [수정] 이벤트 해지 로직 분리
+    private void UnregisterSystemEvents()
+    {
+        if (_requestPhaseChange != null) EventBus.Unsubscribe(_requestPhaseChange);
+        if (_onEndingConditionMet != null) EventBus.Unsubscribe(_onEndingConditionMet);
+        EventBus.Unsubscribe<PauseGameRequestedEvent>(OnPauseRequested);
+        EventBus.Unsubscribe<ResumeGameRequestedEvent>(OnResumeRequested);
+    }
+
+    private void OnEnable()
+    {
+        RegisterSystemEvents();
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_requestPhaseChange);
-        EventBus.Unsubscribe(_onEndingConditionMet);
+        UnregisterSystemEvents();
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    // 람다 대신 메서드로 분리 (안전한 구독/해지)
+    private void OnPauseRequested(PauseGameRequestedEvent e) => Time.timeScale = 0f;
+    private void OnResumeRequested(ResumeGameRequestedEvent e) => Time.timeScale = 1f;
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // EventBus.Clear(); 
+
+        // GameManager는 DontDestroyOnLoad라서 연결이 끊기지 않지만,
+        // 혹시 모를 중복 방지 등을 위해 재구독 로직은 유지해도 괜찮습니다.
+        // 다만 Clear를 안 했다면 굳이 다시 할 필요도 없습니다.
+
+        // 안전하게 가려면 그냥 로그와 코루틴만 남기세요.
+        Debug.Log("[GameManager] 씬 로드 완료");
+
         StartCoroutine(CoPublishGameContextReady());
     }
 
@@ -174,8 +173,6 @@ public class GameManager : MonoBehaviour
 
         EventBus.Publish(new GameContextReadyEvent(currentDay, maxDay, currentPhase));
         EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
-
-        // 현재 HP 상태 동기화
         EventBus.Publish(new PlayerHpChangedEvent(playerHP));
     }
 
@@ -198,23 +195,64 @@ public class GameManager : MonoBehaviour
             case GamePhase.Settlement: OnEnterSettlement(); break;
             case GamePhase.Ending: OnEnterEnding(); break;
             case GamePhase.Tutorial: OnEnterTutorial(); break;
-            case GamePhase.Test: break; // [TEST ONLY] 별도 처리 없음
+            case GamePhase.Test: break;
         }
 
         if (currentPhase == GamePhase.Ending) return;
         EventBus.Publish(new GamePhaseChangedEvent(newPhase));
     }
 
+    // [수정] NotStarted (타이틀/초기화) 상태 진입 시
     private void OnEnterNotStarted()
     {
         currentDay = 0;
-        riotGauge = 20;
-        playerHP = 70;
-        PrisonerScheduleManager.ResetStaticData(); // 정적 데이터 초기화
+        playerHP = 100;
+
+        // ★ [핵심] 죄수 데이터 완전 초기화 (새 게임 시 좀비 데이터 제거)
+        if (ScheduleManager != null)
+        {
+            ScheduleManager.ResetAllSimulationData();
+        }
+        else
+        {
+            // 아직 로드되지 않았을 경우를 대비해 검색
+            var sm = FindObjectOfType<PrisonerScheduleManager>();
+            if (sm != null) sm.ResetAllSimulationData();
+        }
     }
 
-    private void OnEnterStandby() => currentDay++;
-    private void OnEnterBriefing() => StandbyEndTrigger();
+    public void SetStandbyEnterReason(StandbyEnterReason reason)
+    {
+        standbyEnterReason = reason;
+    }
+    private void OnEnterStandby()
+    {
+        if (standbyEnterReason == StandbyEnterReason.NextDay)
+        {
+            currentDay++;
+            playerHP += 10;
+        }
+        else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
+        {
+            playerHP = 100;
+        }
+
+        standbyEnterReason = StandbyEnterReason.None;
+    }
+
+    // [수정] 브리핑 진입 시 프랭크 위치 배정 추가
+    private void OnEnterBriefing()
+    {
+        // ★ [핵심] 현재 미션에 맞춰 프랭크 위치 배정 (셔플 대응)
+        var frankManager = FindObjectOfType<FrankSpawnManager>();
+        if (frankManager != null && DailyMissionManager.Instance != null)
+        {
+            // 섞인 미션 정보(CurrentMission)를 전달
+            frankManager.SpawnFrankForMission(DailyMissionManager.Instance.CurrentMission);
+        }
+
+        StandbyEndTrigger();
+    }
 
     private void OnEnterPatrol()
     {
@@ -223,7 +261,7 @@ public class GameManager : MonoBehaviour
         patrolDurationSeconds = 480;
         CurrentInGameSeconds = patrolDurationSeconds;
         EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
-        EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin)); // 순찰페이즈 들어가는 순간 대사내용 바꿔주는 이벤트 발행
+        EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin));
 
         patrolTimerCoroutine = StartCoroutine(UpdateTimer());
     }
@@ -260,7 +298,7 @@ public class GameManager : MonoBehaviour
 
             if (patrolDurationSeconds <= 0f)
             {
-                HandlePatrolTimeout();   // ★ 핵심
+                HandlePatrolTimeout();
                 yield break;
             }
 
@@ -277,27 +315,16 @@ public class GameManager : MonoBehaviour
 
         _patrolTimeoutHandled = true;
 
-        // 타이머 코루틴 정리
         if (patrolTimerCoroutine != null)
         {
             StopCoroutine(patrolTimerCoroutine);
             patrolTimerCoroutine = null;
         }
         EventBus.Publish(new PatrolTimeoutEvent());
-        // 입력만 잠금 (Pause 아님)
         EventBus.Publish(new GlobalInputLockRequestedEvent());
-
-        // 실패 결과 UI 즉시 표시
         EventBus.Publish(new ResultUIShowRequestedEvent(false, "순찰 시간이 초과되었습니다."));
         Debug.Log("[GameManager] Patrol Timeout → Mission Failed");
     }
-
-    private IEnumerator SettlementProcessRoutine()
-    {
-        yield return new WaitForSeconds(1.0f);
-        EndTrigger();
-    }
-
     private IEnumerator WaitAndChangePhase(GamePhase nextPhase, float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -309,15 +336,20 @@ public class GameManager : MonoBehaviour
         var data = new GameSaveData
         {
             currentDay = this.currentDay,
-            riotGauge = this.riotGauge,
             currentPhase = this.currentPhase,
             currentHp = this.playerHP
         };
 
+        // 스케줄 데이터 저장
         if (ScheduleManager != null)
         {
-            // out 변수로 dailyRoles를 받아옵니다.
             ScheduleManager.ExtractDataForSave(out data.prisonerRoster, out data.dailyRoles);
+        }
+
+        // ★ [추가] 미션 순서 저장
+        if (DailyMissionManager.Instance != null)
+        {
+            data.randomizedMissionIndices = DailyMissionManager.Instance.GetMissionOrderIndices();
         }
 
         return data;
@@ -329,17 +361,21 @@ public class GameManager : MonoBehaviour
         if (data != null)
         {
             this.currentDay = data.currentDay;
-            this.riotGauge = data.riotGauge;
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
 
+            // 스케줄 복원
             if (ScheduleManager != null)
             {
-                // 로드된 dailyRoles를 매니저에 주입합니다.
                 ScheduleManager.OverrideScheduleFromSave(data.prisonerRoster, data.dailyRoles);
             }
 
-            Debug.Log("세이브 로드 및 스케줄 복원 완료");
+            if (DailyMissionManager.Instance != null && data.randomizedMissionIndices != null)
+            {
+                DailyMissionManager.Instance.RestoreMissionOrder(data.randomizedMissionIndices);
+            }
+
+            Debug.Log("세이브 로드 완료 (미션 순서 포함)");
             return true;
         }
         return false;
@@ -350,48 +386,15 @@ public class GameManager : MonoBehaviour
         patrolDurationSeconds = 480f;
     }
 
-    public void EndTrigger()
-    {
-        if (riotGauge >= maxRiotGauge)
-        {
-            EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding3));
-        }
-        else
-        {
-            if (currentDay >= maxDay)
-            {
-                if (riotGauge < 30) EventBus.Publish(new EndingConditionMetEvent(GameEndingType.HappyEnding1));
-                else if (riotGauge < 90) EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding1));
-                else EventBus.Publish(new EndingConditionMetEvent(GameEndingType.NomalEnding2));
-            }
-            else
-            {
-                EventBus.Publish(new RequestSceneReloadEvent());
-            }
-        }
-    }
-
-    public void SetRiotGauge(int value) => riotGauge = Mathf.Clamp(value, 0, maxRiotGauge);
-
-    public void AddRiotGauge(int value)
-    {
-        riotGauge += value;
-        riotGauge = Mathf.Clamp(riotGauge, 0, maxRiotGauge);
-        Debug.Log($"[GM]게이지 변경: {value} 적용됨. 현재: {riotGauge}");
-    }
-
     public void OnClickSettlementButton()
     {
         _saveManager.SaveGame(GetCurrentSaveData());
-        StartCoroutine(SettlementProcessRoutine());
     }
 
     public void OnEnterTutorial() { }
 
     public void StandbyEndTrigger()
     {
-        if (riotGauge >= maxRiotGauge)
-            EventBus.Publish(new EndingConditionMetEvent(GameEndingType.BadEnding1));
     }
 
     public void RegisterScheduleManager(PrisonerScheduleManager manager)
@@ -403,7 +406,6 @@ public class GameManager : MonoBehaviour
     public void SetDailyTimeLimit(float seconds)
     {
         this.patrolDurationSeconds = seconds;
-        // 필요하다면 UI 갱신 이벤트 즉시 발생
         EventBus.Publish(new PatrolTimerResetEvent(seconds));
         Debug.Log($"[GameManager] 오늘 제한시간 설정됨: {seconds}초");
     }

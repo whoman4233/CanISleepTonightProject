@@ -84,8 +84,13 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         if (GameManager.Instance == null || dayText == null)
             return;
-        int day = GameManager.Instance.CurrentDay;
-        dayText.text = $"{day - 1}";
+
+        int systemDay = GameManager.Instance.CurrentDay;
+
+        // 기획: 0일차부터 표시
+        int displayDay = Mathf.Max(0, systemDay);
+
+        dayText.text = $"{displayDay}";
     }
 }
 

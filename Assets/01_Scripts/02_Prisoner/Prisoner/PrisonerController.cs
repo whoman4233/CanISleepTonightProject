@@ -75,14 +75,24 @@ public class PrisonerController : MonoBehaviour
         }
     }
 
-    // 스포너에서 호출하는 초기화 함수
+    // Assets/01_Scripts/02_Prisoner/Prisoner/PrisonerController.cs
+
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
     {
         this.Data = data;
+
+        // ================================================================
+        // ★ [FIX] 데이터가 재사용될 수 있으므로, 소환 시 체력을 반드시 초기화
+        // ================================================================
+        if (this.Data != null)
+        {
+            // 1. MaxHealth가 정의되어 있다면 그 값으로, 없다면 100으로 설정
+            this.Data.CurrentHealth = this.Data.MaxHealth;
+        }
+        // ================================================================
+
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
-
-        // ★ ApplyVisualAnomaly 호출 삭제됨 (이미 맞는 프리팹으로 소환되었음)
 
         // FSM 초기화
         if (fsm != null)

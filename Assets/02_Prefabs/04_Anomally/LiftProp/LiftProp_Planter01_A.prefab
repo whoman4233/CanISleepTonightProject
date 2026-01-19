@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7232866610217952680}
   m_Layer: 10
-  m_Name: LiftProp_Planter01
+  m_Name: LiftProp_Planter01_A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30,7 +30,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2748111448301766891}
-  - {fileID: 432361345260702403}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8010568277223071873
@@ -131,6 +130,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   carryPromptObjectType: Planter
+  sfxRuleTable: {fileID: 11400000, guid: 71a49ea2082f73841ac17f4944648095, type: 2}
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 8192
 --- !u!114 &8838422313811159153
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,95 +163,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineEnabled: 0
   defaultOutlineColor: {r: 255, g: 255, b: 255, a: 255}
---- !u!1001 &1273655205881902024
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 7232866610217952680}
-    m_Modifications:
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.008
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.093
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7207112
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.6932355
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -87.774
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4759980538287928928, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Name
-      value: PSNA_Cigarette01
-      objectReference: {fileID: 0}
-    - target: {fileID: 8166659977851307824, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Size.z
-      value: 0.010480273
-      objectReference: {fileID: 0}
-    - target: {fileID: 8166659977851307824, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Center.y
-      value: 0.09615528
-      objectReference: {fileID: 0}
-    - target: {fileID: 8166659977851307824, guid: 01d7e11f1accf1c489efa0326f5f5098,
-        type: 3}
-      propertyPath: m_Center.z
-      value: -0.03305383
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 01d7e11f1accf1c489efa0326f5f5098, type: 3}
---- !u!4 &432361345260702403 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1705985693923490059, guid: 01d7e11f1accf1c489efa0326f5f5098,
-    type: 3}
-  m_PrefabInstance: {fileID: 1273655205881902024}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2529890630772604213
 PrefabInstance:
   m_ObjectHideFlags: 0

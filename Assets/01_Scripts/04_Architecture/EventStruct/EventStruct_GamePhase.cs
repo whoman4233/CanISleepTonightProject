@@ -44,6 +44,10 @@ public struct RequestSceneReloadEvent // 씬 재로딩 요청 이벤트
 {
 
 }
+public struct RequestGameRestartEvent //게임 재시작 이벤트
+{
+
+}
 
 public struct EndingUIShowRequestedEvent
 {

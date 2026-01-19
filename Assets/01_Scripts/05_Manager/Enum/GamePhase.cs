@@ -11,4 +11,9 @@ public enum GamePhase
     Ending,          // 5. 엔딩 페이즈 (엔딩 분기에 따라 진행)
     Test             // UI테스트 및 테스트환경용 페이즈
 }
-
+public enum StandbyEnterReason // 스탠바이 진입조건 UI / 다음날/게임재시작
+{
+    None,
+    NextDay,
+    RestartSameDay
+}
