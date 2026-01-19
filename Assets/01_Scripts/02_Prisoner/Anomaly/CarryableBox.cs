@@ -7,9 +7,15 @@ public class CarryableBox : MonoBehaviour, ICarryable
     [Header("Prompt")]
     [SerializeField] private string carryPromptObjectType; //드는 오브젝트에 인스펙터 상으로 이름을 입력해야 프롬프트 출력으로 돌려줌.
 
+    [Header("SFX")]
+    [SerializeField] private InteractionSfxRuleTableSO sfxRuleTable;
+    [SerializeField] private LayerMask groundLayerMask;
+
     private Rigidbody rb;
     private Collider col;
 
+    private bool _isDropping;
+    private bool _landed;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -27,6 +33,11 @@ public class CarryableBox : MonoBehaviour, ICarryable
             Debug.Log("interactor가 존재하지 않음");
             return;
         }
+        // =========================
+        // PickUp SFX
+        // =========================
+        PlayInteractionSfx(InteractionState.CanPickUp);
+
         rb.isKinematic = true; // 들면 물리,충돌 끄기
         col.enabled = false;
         transform.SetParent(interactor.CarryParent);
@@ -34,6 +45,9 @@ public class CarryableBox : MonoBehaviour, ICarryable
         transform.localRotation = Quaternion.identity; // 들었을 때 물체 회전값 0,0,0으로 맞춰줌 (들었을 때 똑바로 서라)
 
         interactor.SetHeldItem(this); // SetHeldItem에 들린 물체 넣어줌
+        // Drop 상태 리셋
+        _isDropping = false;
+        _landed = false;
         Debug.Log("물체 들기 완료");
     }
 
@@ -49,6 +63,46 @@ public class CarryableBox : MonoBehaviour, ICarryable
 
         // 던지기
         rb.AddForce(player.transform.forward * 2f, ForceMode.Impulse); // 추후 수치조정
+
+        // =========================
+        // Drop 상태 진입
+        // =========================
+        _isDropping = true;
+        _landed = false;
+
         Debug.Log("물체 놓기 완료");
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!_isDropping || _landed)
+            return;
+
+        // 바닥 판정 (레이어 or 태그 중 택1)
+        if ((groundLayerMask.value & (1 << collision.collider.gameObject.layer)) == 0)
+            return;
+
+        // 충돌 강도 체크 (너무 약하면 무시)
+        float impact = collision.relativeVelocity.magnitude;
+        if (impact < 1.2f)
+            return;
+
+        _landed = true;
+        _isDropping = false;
+
+        PlayInteractionSfx(InteractionState.CanDrop);
+    }
+
+    private void PlayInteractionSfx(InteractionState state)
+    {
+        if (sfxRuleTable == null)
+            return;
+
+        var clip = sfxRuleTable.GetClip(carryPromptObjectType, state);
+        if (clip != null)
+        {
+            AudioManager.Instance.PlaySFX(clip);
+        }
+    }
+
 }
