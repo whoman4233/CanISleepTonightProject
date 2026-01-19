@@ -14,8 +14,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GamePhase currentPhase = GamePhase.NotStarted;
     public GamePhase CurrentPhase => currentPhase;
     private StandbyEnterReason standbyEnterReason = StandbyEnterReason.None;
+
     [SerializeField] private int currentDay = 0;
     [SerializeField] public int maxDay = 7;
+
+    // ★ [추가] 무사고 날짜 추적 변수
+    public int CurrentAccidentFreeDay { get; private set; } = 0;
 
     public int CurrentDay => currentDay;
     public int MaxDay => maxDay;
@@ -149,15 +153,7 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // EventBus.Clear(); 
-
-        // GameManager는 DontDestroyOnLoad라서 연결이 끊기지 않지만,
-        // 혹시 모를 중복 방지 등을 위해 재구독 로직은 유지해도 괜찮습니다.
-        // 다만 Clear를 안 했다면 굳이 다시 할 필요도 없습니다.
-
-        // 안전하게 가려면 그냥 로그와 코루틴만 남기세요.
         Debug.Log("[GameManager] 씬 로드 완료");
-
         StartCoroutine(CoPublishGameContextReady());
     }
 
@@ -174,6 +170,7 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new GameContextReadyEvent(currentDay, maxDay, currentPhase));
         EventBus.Publish(new GamePhaseChangedEvent(currentPhase));
         EventBus.Publish(new PlayerHpChangedEvent(playerHP));
+        // 무사고일 갱신 이벤트 필요시 발행
     }
 
     public void ChangePhase(GamePhase newPhase)
@@ -207,6 +204,7 @@ public class GameManager : MonoBehaviour
     {
         currentDay = 0;
         playerHP = 100;
+        CurrentAccidentFreeDay = 0; // ★ 완전 초기화 시 무사고일도 리셋
 
         // ★ [핵심] 죄수 데이터 완전 초기화 (새 게임 시 좀비 데이터 제거)
         if (ScheduleManager != null)
@@ -231,10 +229,12 @@ public class GameManager : MonoBehaviour
         {
             currentDay++;
             playerHP += 10;
+            CurrentAccidentFreeDay++; // ★ 다음날로 넘어가면 무사고 +1
         }
         else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
         {
             playerHP = 100;
+            // 같은 날 재시작이면 무사고일은 증가하지 않음 (유지 or 초기화 정책에 따름)
         }
 
         standbyEnterReason = StandbyEnterReason.None;
@@ -337,7 +337,9 @@ public class GameManager : MonoBehaviour
         {
             currentDay = this.currentDay,
             currentPhase = this.currentPhase,
-            currentHp = this.playerHP
+            currentHp = this.playerHP,
+            // ★ 무사고일 저장 (GameSaveData에 필드가 없다면 추가 필요)
+            // accidentFreeDay = this.CurrentAccidentFreeDay 
         };
 
         // 스케줄 데이터 저장
@@ -364,6 +366,9 @@ public class GameManager : MonoBehaviour
             this.currentPhase = data.currentPhase;
             this.playerHP = data.currentHp;
 
+            // ★ 무사고일 복원 (필드 있다면)
+            // this.CurrentAccidentFreeDay = data.accidentFreeDay;
+
             // 스케줄 복원
             if (ScheduleManager != null)
             {
@@ -379,6 +384,45 @@ public class GameManager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    // ★ [추가] 미션 실패 시 호출될 재시작 메서드
+    public void RetryGameFromFailure()
+    {
+        Debug.Log("[GameManager] 미션 실패 -> 해당 일차 재시작 (무사고 기록 초기화)");
+
+        // 1. 무사고 기록은 깨졌으므로 0으로 초기화
+        CurrentAccidentFreeDay = 0;
+
+        // 2. 날짜(currentDay)는 유지하되, 체력 등은 초기화
+        playerHP = 100;
+
+        // 3. 재시작 이유 설정 (같은 날 재시작)
+        standbyEnterReason = StandbyEnterReason.RestartSameDay;
+
+        // 4. 씬 리로드 (데이터는 유지된 상태로 씬 다시 시작)
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        // 주의: 씬이 로드되면 GameManager는 DontDestroyOnLoad라 유지되지만, 
+        // Start() 로직 등에 의해 NotStarted로 초기화되지 않도록 주의해야 함.
+        // 현재 코드상 씬 로드 시 CoPublishGameContextReady만 호출하므로 데이터는 유지됨.
+    }
+
+    // ★ [추가] 게임 오버 후 완전히 1일차로 돌아가려면 이 함수 사용
+    public void RestartGameCompletely()
+    {
+        Debug.Log("[GameManager] 게임 완전 재시작 (Reset to Day 0)");
+
+        // 1. 모든 데이터 초기화
+        currentDay = 0;
+        playerHP = 100;
+        CurrentAccidentFreeDay = 0;
+
+        // 2. 초기화 페이즈로 전환
+        ChangePhase(GamePhase.NotStarted);
+
+        // 3. 씬 리로드
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void ResetTimer()
