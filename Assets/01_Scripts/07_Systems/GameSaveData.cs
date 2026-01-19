@@ -5,7 +5,6 @@
 public class GameSaveData
 {
     public int currentDay;
-    public int riotGauge;
     public GamePhase currentPhase;
     public int currentHp;
 
