@@ -8,6 +8,14 @@ public struct PlayerPresenceChangedEvent
     public PlayerPresenceChangedEvent(bool isPresent) => IsPresent = isPresent;
 }
 
+// ==========================================
+// Player 생성 이벤트
+// ==========================================
+public struct PlayerSpawnedEvent 
+{
+    public Player Player;
+}
+
 //==========================================
 // 플레이어 HP 변경 이벤트 (HUD 수신)
 //==========================================

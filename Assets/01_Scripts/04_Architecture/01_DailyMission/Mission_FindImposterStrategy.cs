@@ -15,6 +15,11 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     [Tooltip("진짜를 잡았을 때 실패 사유 텍스트")]
     public string failReasonText = "진짜 프랭크를 공격하여 제압 실패";
 
+    [Header("Special Dialogue Keys")]
+    [SerializeField] private string immediateFailDialogueKey;   // DTxt_KR_M04_09 실패 다이얼로그
+    [SerializeField] private string immediateSuccessDialogueKey; // DTxt_KR_M04_08 성공 다이얼로그
+    public string ImmediateFailDialogueKey => immediateFailDialogueKey;
+    public string ImmediateSuccessDialogueKey => immediateSuccessDialogueKey;
     // 런타임 상태 변수
     private bool _killedRealFrank = false;
 
@@ -84,7 +89,7 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
         _immediateFailTriggered = true;
 
         // 1. 현장 대사 시작 요청
-
+        EventBus.Publish(new MissionFailDialogueRequestedEvent());
 
         // 2. 플레이 흐름 잠금
         EventBus.Publish(new GlobalInputLockRequestedEvent());

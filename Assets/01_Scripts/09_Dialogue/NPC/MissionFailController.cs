@@ -5,67 +5,83 @@ using UnityEngine;
 public class MissionFailController : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private Transform missionNpcPoint;
-    [SerializeField] private DialogueManager dialogueManager;
-    [SerializeField] private Player player;
+    [SerializeField] private Transform missionNpcArrivalPoint;
     [SerializeField] private VignetteFadeController vignetteFade;
 
+    private Player _player;
     private Action<SettlementReportConfirmedEvent> _onSettlementConfirmed;
+    private Action<PlayerSpawnedEvent> _onPlayerSpawned;
+
+    private DialogueManager Dialogue => DialogueManager.Instance;
 
     private void Awake()
     {
         _onSettlementConfirmed = OnSettlementConfirmed;
+        _onPlayerSpawned = e => _player = e.Player;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onSettlementConfirmed);
+        EventBus.Subscribe(_onPlayerSpawned);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onSettlementConfirmed);
+        EventBus.Unsubscribe(_onPlayerSpawned);
     }
 
     private void OnSettlementConfirmed(SettlementReportConfirmedEvent e)
     {
-        var missionManager = DailyMissionManager.Instance;
-        if (missionManager == null || missionManager.CurrentMission == null)
+        var mission = DailyMissionManager.Instance?.CurrentMission
+            as Mission_FindImposterStrategy;
+
+        if (mission == null || !mission.ImmediateFailTriggered)
             return;
 
-        bool success = missionManager.EvaluateDayResult(out _);
-        if (success)
-            return;
-
-        StartCoroutine(Co_FailFlow());
+        StartCoroutine(Co_ImmediateFailFlow(mission));
     }
 
-    private IEnumerator Co_FailFlow()
+    private IEnumerator Co_ImmediateFailFlow(Mission_FindImposterStrategy mission)
     {
-        // 1. 실패 결과 다이얼로그 종료 대기
-        yield return new WaitUntil(() => !dialogueManager.IsDialogueOpen);
+        if (Dialogue == null || _player == null)
+        {
+            Debug.LogError("[MissionFailController] Required references missing.");
+            yield break;
+        }
 
-        // 2. Vignette Fade Out
+        yield return new WaitUntil(() => !Dialogue.IsDialogueOpen);
+
         if (vignetteFade != null)
             yield return vignetteFade.FadeOut(this);
 
-        // 3. 강제 이동
-        if (player != null && missionNpcPoint != null)
-        {
-            player.transform.position = missionNpcPoint.position;
-            player.transform.rotation = missionNpcPoint.rotation;
-        }
+        MovePlayerSafely();
 
-        // 4. Fade In
         if (vignetteFade != null)
             yield return vignetteFade.FadeIn(this);
 
-        // 5. 실패 연계 다이얼로그
-        dialogueManager.StartDialogueByKeys(
-            DialogueKeys.Speakers.Frank,
-            DialogueKeys.Types.Fail
+        Dialogue.StartDialogueByKey(mission.ImmediateFailDialogueKey);
+    }
+
+    private void MovePlayerSafely()
+    {
+        if (missionNpcArrivalPoint == null)
+            return;
+
+        const float offset = 0.5f;
+        Vector3 pos =
+            missionNpcArrivalPoint.position -
+            missionNpcArrivalPoint.forward * offset;
+
+        _player.transform.SetPositionAndRotation(
+            pos,
+            missionNpcArrivalPoint.rotation
         );
     }
 }
+
+
+
 
 

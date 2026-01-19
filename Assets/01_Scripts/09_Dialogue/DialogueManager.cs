@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -112,7 +113,7 @@ public class DialogueManager : MonoBehaviour
         _allowContinueInput = true;
     }
 
-    private void OnDialogueSkip(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    private void OnDialogueSkip(InputAction.CallbackContext ctx)
     {
         //  전체 대화 스킵
         SkipAllDialogue();
@@ -217,6 +218,21 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.SetActive(true);
         DisplayNextLine();
         Debug.Log("StartDialogue");
+    }
+    public void StartDialogueByKey(string textKey, Action onComplete = null) // 미션04를 위한 단일 키 실행 메서드
+    {
+        if (dialoguePanel.activeSelf)
+            return;
+
+        _onDialogueComplete = onComplete;
+
+        EnterDialogueMode();
+
+        dialogueQueue.Clear();
+        dialogueQueue.Enqueue(new DialogueLine { textKey = textKey });
+
+        dialoguePanel.SetActive(true);
+        DisplayNextLine();
     }
 
     //미션 대사용
@@ -372,7 +388,7 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue", System.Action onComplete = null)
+    public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue", Action onComplete = null)
     {
         if (dialoguePanel.activeSelf) return; // 이미 대화 중이면 무시
         _onDialogueComplete = onComplete;
