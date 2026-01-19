@@ -149,13 +149,14 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ★★★ [핵심] 씬 로드 시 EventBus 초기화 및 재구독 ★★★
-        EventBus.Clear();
+        // EventBus.Clear(); 
 
-        // 초기화로 인해 끊어진 GameManager의 구독을 다시 연결
-        RegisterSystemEvents();
+        // GameManager는 DontDestroyOnLoad라서 연결이 끊기지 않지만,
+        // 혹시 모를 중복 방지 등을 위해 재구독 로직은 유지해도 괜찮습니다.
+        // 다만 Clear를 안 했다면 굳이 다시 할 필요도 없습니다.
 
-        Debug.Log("[GameManager] 씬 로드 완료: EventBus 초기화 및 시스템 이벤트 재구독 완료");
+        // 안전하게 가려면 그냥 로그와 코루틴만 남기세요.
+        Debug.Log("[GameManager] 씬 로드 완료");
 
         StartCoroutine(CoPublishGameContextReady());
     }
