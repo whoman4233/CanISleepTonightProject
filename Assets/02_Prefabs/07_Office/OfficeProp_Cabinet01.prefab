@@ -10,7 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7771606677672102386}
   - component: {fileID: 1122646227953283970}
-  m_Layer: 0
+  - component: {fileID: 7213274538132096704}
+  - component: {fileID: 8340966497536981059}
+  m_Layer: 10
   m_Name: OfficeProp_Cabinet01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,6 +56,41 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7213274538132096704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5837890101524807277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f3d0d2f4c23b564bb704909268bf9fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  triggerName: Open
+--- !u!65 &8340966497536981059
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5837890101524807277}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.7478092, y: 2.0663893, z: 1}
+  m_Center: {x: 0.016519308, y: 0.9949063, z: 0}
 --- !u!1001 &6746175926220262637
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -112,10 +149,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4439851771969073326, guid: 2d66683e713b33548a5e03eb1c0a1016,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -3015509356676371922, guid: 2d66683e713b33548a5e03eb1c0a1016,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2d66683e713b33548a5e03eb1c0a1016,
         type: 3}
       propertyPath: m_Name
       value: OfficeProp_Cabinet01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2d66683e713b33548a5e03eb1c0a1016,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 924344461018113085, guid: 2d66683e713b33548a5e03eb1c0a1016,
         type: 3}

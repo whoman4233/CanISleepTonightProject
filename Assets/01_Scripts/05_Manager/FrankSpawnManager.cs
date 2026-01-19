@@ -27,7 +27,15 @@ public class FrankSpawnManager : MonoBehaviour
 
         // ★ [핵심] 미션 번호에 따라 층 결정
         // 미션 4, 6은 B1층 / 나머지는 1F
-        if (missionNum == 4 || missionNum == 6)
+        //if (missionNum == 4 || missionNum == 6)
+        //{
+        //    if (spawnPoints_B1 != null && spawnPoints_B1.Length > 0)
+        //    {
+        //        targetPoint = spawnPoints_B1[Random.Range(0, spawnPoints_B1.Length)];
+        //    }
+        //}
+        if (missionNum == 4) return;
+        else if (missionNum == 6) // 미션 6에서만 b1F에서 소환되도록
         {
             if (spawnPoints_B1 != null && spawnPoints_B1.Length > 0)
             {

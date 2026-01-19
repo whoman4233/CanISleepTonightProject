@@ -10,7 +10,7 @@ public class InspectHiddenItemAction : MonoBehaviour, IInspectAction
     [Tooltip("미션 전략(Strategy)에서 설정한 targetItemTag와 똑같이 적으세요.")]
     public string itemTag;
 
-    public void InspectAction(IInspectable owner)
+    public virtual void InspectAction(IInspectable owner)
     {
         Debug.Log("[InspectHiddenItemAction] called");
 
