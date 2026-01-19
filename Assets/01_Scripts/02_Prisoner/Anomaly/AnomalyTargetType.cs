@@ -17,9 +17,9 @@ public enum VisualAnomalyType
     BikiniModel,
     GoatHead,
     // [4일차]
-    Imposter_Guard,     // 사수 복장
-    Imposter_NoBeard,   // 수염 없음
-    Imposter_Earring,    // 귀걸이 등
+    PSN_FrankeA,
+    PSN_FrankeB,
+    PSN_FrankeR,
     // 6일차
     Suspect1,
     Suspect2,
