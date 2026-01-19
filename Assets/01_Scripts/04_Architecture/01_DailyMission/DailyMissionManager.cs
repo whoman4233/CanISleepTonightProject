@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Linq;
+using System.Linq; 
 
 public class DailyMissionManager : MonoBehaviour
 {
@@ -125,7 +125,7 @@ public class DailyMissionManager : MonoBehaviour
         // 이렇게 하면 UI나 DayDebugConsole이 GetMissionStrategy(day)를 호출해도 
         // 엉뚱한(섞인) 미션이 아니라, 지금 실행한 고정 미션을 반환하게 됩니다.
         if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
-
+        
         if (targetIndex < _randomizedMissionOrder.Count)
         {
             _randomizedMissionOrder[targetIndex] = fixedMission;
@@ -133,7 +133,7 @@ public class DailyMissionManager : MonoBehaviour
         }
 
         Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 고정 미션 강제 시작: {CurrentMission.title}");
-
+        
         StartMissionSetup(dayIndex);
     }
 
@@ -225,5 +225,36 @@ public class DailyMissionManager : MonoBehaviour
         bool success = false;
         EvaluateDayResult(out string failReason);
         EventBus.Publish(new ResultUIShowRequestedEvent(success, failReason));
+    }
+
+    // [추가] 현재 섞인 미션들의 인덱스 리스트 추출 (저장용)
+    public List<int> GetMissionOrderIndices()
+    {
+        List<int> indices = new List<int>();
+        if (_randomizedMissionOrder == null) return indices;
+
+        foreach (var mission in _randomizedMissionOrder)
+        {
+            // 원본 시나리오 리스트에서 이 미션이 몇 번째였는지 찾아서 저장
+            int index = missionScenario.IndexOf(mission);
+            indices.Add(index);
+        }
+        return indices;
+    }
+
+    // [추가] 저장된 인덱스 리스트를 받아 미션 순서 복원 (로드용)
+    public void RestoreMissionOrder(List<int> savedIndices)
+    {
+        if (savedIndices == null || savedIndices.Count == 0) return;
+
+        _randomizedMissionOrder.Clear();
+        foreach (int index in savedIndices)
+        {
+            if (index >= 0 && index < missionScenario.Count)
+            {
+                _randomizedMissionOrder.Add(missionScenario[index]);
+            }
+        }
+        Debug.Log("[Mission] 저장된 데이터 기반으로 미션 순서를 복원했습니다.");
     }
 }
