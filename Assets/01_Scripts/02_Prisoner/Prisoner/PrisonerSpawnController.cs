@@ -151,119 +151,119 @@ public class PrisonerSpawnController : MonoBehaviour
     }
 
     // =========================================================================
-    // ★ [최종 수정] 장식용 플래그 + 죄수 타입 일치 로직
+    // ★ [최종] Decorative 집중 디버깅 (왜 안 나오는지 사유 출력)
     // =========================================================================
     private void SpawnAnomaliesLogic(string cellId, CellAnchor anchor, bool isSuspicious, CellContentRegistry.CellContent content)
     {
         if (anomalyDatabase == null) return;
 
-        // 1. 사용할 슬롯과 기존 배치된 구조물 리스트업
         List<AnomalySpawnSlot> availableSlots = new List<AnomalySpawnSlot>(anchor.anomalySlots);
         HashSet<AnomalyTargetType> processedReplacements = new HashSet<AnomalyTargetType>();
-
-        // 2. 현재 방 주인 타입 (Nervous, Muscular...)
         PrisonerType residentType = GetPrisonerType(cellId);
 
-        // 3. 오늘의 범인(Culprit) 확인
-        // (AnomalyDistributor가 anchor.currentDailyAnomalies에 넣어둔 것 중 하나)
         List<AnomalyDefinitionSO> dailyList = anchor.currentDailyAnomalies ?? new List<AnomalyDefinitionSO>();
         AnomalyDefinitionSO culpritDef = (isSuspicious && dailyList.Count > 0) ? dailyList[0] : null;
 
-        // 4. 우선순위 정렬 (범인이 1순위 -> 그래야 자리를 먼저 차지함)
-        var sortedDefs = anomalyDatabase.defs.OrderByDescending(def => {
-            if (def == culpritDef) return 100; // 1순위: 범인
-            return 0;
-        }).ToList();
-
-        // 5. 전체 DB 순회하며 배치 결정
-        foreach (var def in sortedDefs)
+        foreach (var def in anomalyDatabase.defs)
         {
             if (def == null) continue;
 
-            GameObject prefabToSpawn = null;
             bool isCulprit = (def == culpritDef);
+            GameObject prefabToSpawn = null;
 
-            // [판단 로직 A] 이 아이템이 '오늘의 범인'인가?
+            // 1. 범인 처리 (최우선)
             if (isCulprit)
             {
-                prefabToSpawn = def.suspiciousPrefab; // 무조건 의심스러운 버전
+                prefabToSpawn = def.suspiciousPrefab;
             }
-            // [판단 로직 B] 범인은 아니지만, Normal로 배치해야 하는가?
-            else
+            // 2. AlwaysSpawnNormal 처리 (조용히 처리, 로그 X)
+            else if (def.alwaysSpawnNormal)
             {
-                // 조건 1: "장식용"이거나 "AlwaysSpawnNormal"이어야 함
-                bool isProp = (def.isDecorative || def.alwaysSpawnNormal);
+                bool typeMatch = true;
+                if (def.category == AnomalyCategory.Individual && def.targetPrisoner != residentType)
+                    typeMatch = false;
 
-                if (isProp)
+                if (typeMatch) prefabToSpawn = def.normalPrefab;
+            }
+            // 3. IsDecorative 처리 (여기가 핵심!)
+            else if (def.isDecorative)
+            {
+                // [검사 1] 죄수 타입 일치 여부
+                bool typeMatch = true;
+                if (def.category == AnomalyCategory.Individual && def.targetPrisoner != residentType)
                 {
-                    // ★ 조건 2: [핵심] 죄수 타입이 맞아야 함!
-                    if (def.category == AnomalyCategory.Individual)
+                    // 실패: 타입 불일치 -> 로그 찍고 스킵
+                    if (verboseLog) Debug.Log($"<color=grey>[Decorative 실패] {def.name} -> 죄수타입 불일치 (Item:{def.targetPrisoner} != Room:{residentType})</color>");
+                    continue;
+                }
+
+                // [검사 2] 자리(Replacement) 선점 여부
+                if (def.targetType != AnomalyTargetType.Slot && processedReplacements.Contains(def.targetType))
+                {
+                    // 실패: 이미 다른 아이템(범인/Always/앞선 장식품)이 자리를 먹음
+                    if (verboseLog) Debug.LogWarning($"<color=orange>[Decorative 실패] {def.name} -> 자리 꽉 참 ({def.targetType}에 이미 배치됨)</color>");
+                    continue;
+                }
+
+                // [검사 3] 슬롯(Slot) 여유 확인
+                if (def.targetType == AnomalyTargetType.Slot)
+                {
+                    bool hasSlot = availableSlots.Any(s => s.kind == def.kind);
+                    if (!hasSlot)
                     {
-                        // 개별 타입: 방 주인과 내 타겟이 일치해야만 생성
-                        if (def.targetPrisoner == residentType)
-                        {
-                            prefabToSpawn = def.normalPrefab;
-                        }
-                    }
-                    else
-                    {
-                        // 공통/특수 타입: 죄수 상관없이 생성
-                        prefabToSpawn = def.normalPrefab;
+                        // 실패: 해당 종류의 슬롯이 동남
+                        if (verboseLog) Debug.LogWarning($"<color=orange>[Decorative 실패] {def.name} -> 슬롯 부족 (Available {def.kind} Slot: 0)</color>");
+                        continue;
                     }
                 }
+
+                // 모든 검사 통과 -> 생성 준비 완료
+                prefabToSpawn = def.normalPrefab;
+
+                // 생성 성공 로그 (하늘색)
+                if (verboseLog) Debug.Log($"<color=cyan>[Decorative 성공!] {def.name} -> {cellId} ({residentType}) 소환 확정</color>");
             }
 
-            // 스폰 대상이 아니면(null) 패스
+            // 생성할 게 없으면 다음 아이템으로
             if (prefabToSpawn == null) continue;
 
-            // 이미 처리된 Replacement 위치(바닥, 벽 등)면 패스
+            // 중복 체크 (위에서 했지만 안전장치)
             if (def.targetType != AnomalyTargetType.Slot && processedReplacements.Contains(def.targetType))
                 continue;
 
-            // --- 실제 생성 로직 (기존과 동일) ---
+            // --- 실제 생성 (Instantiate) ---
             GameObject spawnedGO = null;
 
             if (def.targetType != AnomalyTargetType.Slot)
             {
-                // [Replacement] 바닥, 벽, 변기 등
+                // [Replacement]
                 if (anchor.structure != null)
                 {
                     GameObject defaultObj = anchor.structure.GetDefaultObject(def.targetType);
                     if (defaultObj != null)
                     {
-                        defaultObj.SetActive(false); // 기존 것 끄고
+                        defaultObj.SetActive(false);
                         spawnedGO = Instantiate(prefabToSpawn, defaultObj.transform.position, defaultObj.transform.rotation, defaultObj.transform.parent);
-
-                        processedReplacements.Add(def.targetType); // 처리 완료 마킹
+                        processedReplacements.Add(def.targetType);
                     }
                     else
                     {
-                        if (verboseLog) Debug.LogWarning($"[Spawn] {cellId} - {def.targetType} 교체 실패: CellStructure 미연결");
+                        Debug.LogError($"[치명적 오류] {def.name} -> CellStructure에 '{def.targetType}' 연결 안 됨!");
                     }
                 }
             }
             else
             {
-                // [Slot] 소품류
+                // [Slot]
                 var candidateSlots = availableSlots.Where(s => s.kind == def.kind).ToList();
                 if (candidateSlots.Count > 0)
                 {
                     var targetSlot = candidateSlots[UnityEngine.Random.Range(0, candidateSlots.Count)];
-                    availableSlots.Remove(targetSlot); // 슬롯 소비
-
+                    availableSlots.Remove(targetSlot);
                     spawnedGO = Instantiate(prefabToSpawn, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
-                }
-                else
-                {
-                    // 슬롯 부족 로그 (Individual이 안 나오는 원인 파악용)
-                    if (def.category == AnomalyCategory.Individual && verboseLog)
-                    {
-                        // Debug.LogWarning($"[Spawn] {cellId} ({residentType}) 슬롯 부족: {def.kind}");
-                    }
                 }
             }
 
-            // Actor 초기화
             if (spawnedGO != null)
             {
                 var actor = spawnedGO.GetComponent<AnomalyActor>();
