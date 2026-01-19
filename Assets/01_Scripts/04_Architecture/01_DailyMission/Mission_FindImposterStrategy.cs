@@ -18,6 +18,9 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     // 런타임 상태 변수
     private bool _killedRealFrank = false;
 
+    //실패 분기 처리용 bool 값
+    private bool _immediateFailTriggered;
+    public bool ImmediateFailTriggered => _immediateFailTriggered;
     public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
     {
         base.SetupDay(ad, sm);
@@ -77,6 +80,14 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     private void HandleRealFrankSuppressed()
     {
         _killedRealFrank = true;
+
+        _immediateFailTriggered = true;
+
+        // 1. 현장 대사 시작 요청
+
+
+        // 2. 플레이 흐름 잠금
+        EventBus.Publish(new GlobalInputLockRequestedEvent());
 
         // 1. 대사 출력 (추후 구현 예정이라 하셨지만, 일단 로그나 팝업 이벤트 발생)
         // "너 지금 누굴 때리는 거야 멍청아!"
