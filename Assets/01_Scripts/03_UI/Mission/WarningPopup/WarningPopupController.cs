@@ -9,6 +9,9 @@ public class WarningPopupController : MonoBehaviour
     [SerializeField] private GameObject root;
     [SerializeField] private TextMeshProUGUI text;
 
+    [Header("UISound")]
+    [SerializeField] private AudioClip warningClip;
+
     private Coroutine _routine;
     private Action<ShowTimedTextPopupEvent> _onShow;
 
@@ -41,6 +44,11 @@ public class WarningPopupController : MonoBehaviour
 
         if (text != null)
             text.text = e.Message;
+
+        if (warningClip != null)
+        {
+            AudioManager.Instance.PlaySFX(warningClip);
+        }
 
         _routine = StartCoroutine(ShowRoutineRealtime(e.Duration));
     }
