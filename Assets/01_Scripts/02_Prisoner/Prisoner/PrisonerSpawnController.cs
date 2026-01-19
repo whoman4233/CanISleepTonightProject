@@ -187,7 +187,7 @@ public class PrisonerSpawnController : MonoBehaviour
                 if (def.alwaysSpawnNormal) spawnAsNormal = true;
 
                 // B. Individual (죄수 맞춤형 소품)
-                // ★ PrisonerType 비교 (RiotGauge 조건은 삭제됨)
+                // ★ PrisonerType 비교 (미션 리스트에 없어도 죄수 타입이 맞으면 스폰)
                 if (def.category == AnomalyCategory.Individual && def.targetPrisoner == residentType)
                 {
                     spawnAsNormal = true;
@@ -217,11 +217,21 @@ public class PrisonerSpawnController : MonoBehaviour
             }
             else
             {
-                int slotIndex = availableSlots.FindIndex(s => s.kind == def.kind);
-                if (slotIndex != -1)
+                // =========================================================
+                // [수정] 랜덤 슬롯 선택 로직
+                // 1. 해당 종류(Kind)에 맞는 모든 슬롯 후보를 찾습니다.
+                // =========================================================
+                var candidateSlots = availableSlots.Where(s => s.kind == def.kind).ToList();
+
+                if (candidateSlots.Count > 0)
                 {
-                    var targetSlot = availableSlots[slotIndex];
-                    availableSlots.RemoveAt(slotIndex);
+                    // 2. 후보들 중 랜덤으로 하나 선택
+                    var targetSlot = candidateSlots[UnityEngine.Random.Range(0, candidateSlots.Count)];
+
+                    // 3. 선택된 슬롯은 목록에서 제거 (중복 스폰 방지)
+                    availableSlots.Remove(targetSlot);
+
+                    // 4. 생성
                     var go = Instantiate(prefabToSpawn, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
                     var actor = go.GetComponent<AnomalyActor>();
                     if (actor != null) actor.Init(cellId, def, isCulprit);

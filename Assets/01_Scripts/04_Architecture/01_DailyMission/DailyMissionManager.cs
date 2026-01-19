@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Linq; // 리스트 섞기(Shuffle) 위해 추가
+using System.Linq;
 
 public class DailyMissionManager : MonoBehaviour
 {
@@ -28,57 +28,43 @@ public class DailyMissionManager : MonoBehaviour
         Instance = this;
         _onForceMissionFailRequested = OnForceMissionFailRequested;
 
-        // ★ [추가] 게임 시작 시 미션 순서 미리 섞기
+        // 게임 시작 시 미션 순서 미리 섞기
         InitializeMissionOrder();
     }
 
-    private void OnEnable()
-    {
-        EventBus.Subscribe(_onForceMissionFailRequested);
-    }
+    private void OnEnable() => EventBus.Subscribe(_onForceMissionFailRequested);
+    private void OnDisable() => EventBus.Unsubscribe(_onForceMissionFailRequested);
 
-    private void OnDisable()
-    {
-        EventBus.Unsubscribe(_onForceMissionFailRequested);
-    }
-
-    // ★ [추가] 1~6일차 미션을 섞어서 리스트에 저장
+    // ★ 1~6일차 미션을 섞어서 리스트에 저장
     private void InitializeMissionOrder()
     {
         _randomizedMissionOrder.Clear();
 
         if (missionScenario == null || missionScenario.Count == 0) return;
 
-        // 1. 7일차(마지막 미션)를 제외한 나머지 미션들을 가져옴
-        // (가정: missionScenario의 마지막 요소가 7일차 엔딩 미션이라고 가정)
-        // 만약 7일차가 고정이 아니라면 로직 조정 필요. 여기서는 마지막 하나를 7일차로 뺌.
-
-        // 시나리오 개수가 충분한지 확인
+        // 방어 코드: 미션이 7개 미만이면 있는대로 다 섞어서 넣음
         if (missionScenario.Count < 7)
         {
-            Debug.LogError("[Mission] 미션 시나리오 개수가 7개 미만입니다! 리스트를 채워주세요.");
-            // 임시로 있는 것만이라도 섞음
+            Debug.LogError("[Mission] 미션 시나리오 개수가 7개 미만입니다! (7일차 고정 불가)");
             _randomizedMissionOrder.AddRange(missionScenario);
             ShuffleList(_randomizedMissionOrder);
             return;
         }
 
-        // 1~6일차 후보군 추출 (인덱스 0 ~ 5)
+        // 1. 1~6일차 (인덱스 0~5) 추출 후 섞기
         var normalDays = missionScenario.GetRange(0, 6);
-
-        // 2. 섞기 (Shuffle)
         ShuffleList(normalDays);
 
-        // 3. 섞인 리스트 저장
+        // 2. 섞인 1~6일차 추가
         _randomizedMissionOrder.AddRange(normalDays);
 
-        // 4. 마지막에 7일차(고정) 추가
-        _randomizedMissionOrder.Add(missionScenario[6]); // 7번째 미션 (인덱스 6)
+        // 3. 7일차 (인덱스 6) 고정 추가
+        _randomizedMissionOrder.Add(missionScenario[6]);
 
-        Debug.Log("[Mission] 미션 순서가 재설정되었습니다 (1~6일차 랜덤, 7일차 고정).");
+        Debug.Log("[Mission] 미션 순서 재설정 완료: [Day 1~6 Random] + [Day 7 Fixed]");
     }
 
-    // 피셔-예이츠 셔플 (리스트 섞기 유틸)
+    // 피셔-예이츠 셔플
     private void ShuffleList<T>(List<T> list)
     {
         int n = list.Count;
@@ -92,13 +78,12 @@ public class DailyMissionManager : MonoBehaviour
         }
     }
 
-    // 하루 시작 시 호출
+    // [정상 플레이] 하루 시작 시 호출
     public void StartDay(int dayIndex)
     {
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
-        // 방어 코드
         if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
 
         // 인덱스 조정 (dayIndex는 1부터 시작하므로 -1)
@@ -110,31 +95,19 @@ public class DailyMissionManager : MonoBehaviour
             return;
         }
 
-        // ★ [수정] 미리 섞어둔 리스트에서 꺼내옴
+        // 미리 섞어둔 리스트에서 꺼내옴
         CurrentMission = _randomizedMissionOrder[listIndex];
 
-        Debug.Log($"[GameFlow] Day {dayIndex} 미션 시작: {CurrentMission.title}");
-
-        // 2. 전략 실행
-        CurrentMission.SetupDay(AnomalyDistributor.Instance, PrisonerScheduleManager.Instance);
-
-        // 3. 이상현상 배정 실행
-        if (AnomalyDistributor.Instance != null)
-        {
-            AnomalyDistributor.Instance.DistributeAnomalies();
-        }
-
-        EventBus.Publish(new MissionStartedEvent { mission = CurrentMission });
-        EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
+        StartMissionSetup(dayIndex);
     }
 
-    // (테스트용) 특정 미션 강제 실행
+    // [테스트용] 특정 미션 강제 실행 (FixDay)
     public void StartFixDay(int dayIndex)
     {
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
-        int targetIndex = dayIndex - 1;
+        int targetIndex = dayIndex - 1; // 1-based -> 0-based
 
         if (missionScenario == null || targetIndex < 0 || targetIndex >= missionScenario.Count)
         {
@@ -142,13 +115,37 @@ public class DailyMissionManager : MonoBehaviour
             return;
         }
 
-        // FixDay는 랜덤 리스트 무시하고 원본 리스트에서 가져옴
-        CurrentMission = missionScenario[targetIndex];
+        // 1. 원본 리스트에서 고정 미션을 가져옵니다.
+        var fixedMission = missionScenario[targetIndex];
+        CurrentMission = fixedMission;
 
-        Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 고정 미션 시작: {CurrentMission.title}");
+        // ★★★ [핵심 수정] 매칭 문제 해결 ★★★
+        // 테스트 모드이므로, 섞여있는 리스트(RandomizedOrder)의 해당 날짜 슬롯도 
+        // 강제로 이 고정 미션으로 덮어씌웁니다.
+        // 이렇게 하면 UI나 DayDebugConsole이 GetMissionStrategy(day)를 호출해도 
+        // 엉뚱한(섞인) 미션이 아니라, 지금 실행한 고정 미션을 반환하게 됩니다.
+        if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
 
+        if (targetIndex < _randomizedMissionOrder.Count)
+        {
+            _randomizedMissionOrder[targetIndex] = fixedMission;
+            Debug.Log($"<color=yellow>[Debug] Day {dayIndex} 슬롯을 고정 미션 [{fixedMission.title}]으로 덮어썼습니다.</color>");
+        }
+
+        Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 고정 미션 강제 시작: {CurrentMission.title}");
+
+        StartMissionSetup(dayIndex);
+    }
+
+    // 공통 미션 설정 로직 (중복 제거)
+    private void StartMissionSetup(int dayIndex)
+    {
+        Debug.Log($"[GameFlow] Day {dayIndex} 미션 설정 중...");
+
+        // 전략 실행
         CurrentMission.SetupDay(AnomalyDistributor.Instance, PrisonerScheduleManager.Instance);
 
+        // 이상현상 배정 실행
         if (AnomalyDistributor.Instance != null)
         {
             AnomalyDistributor.Instance.DistributeAnomalies();
@@ -158,28 +155,18 @@ public class DailyMissionManager : MonoBehaviour
         EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
     }
 
-    // ... (나머지 NotifyItemFound, NotifyPrisonerResolved 등 기존 코드 그대로 유지) ...
     public void NotifyItemFound(string itemTag)
     {
-        if (CurrentMission != null)
+        if (CurrentMission != null && CurrentMission.IsValidItem(itemTag))
         {
-            if (CurrentMission.IsValidItem(itemTag))
-            {
-                CurrentScore++;
-                CurrentMission.OnEventTriggered(itemTag);
-
-                EventBus.Publish(new MissionProgressChangedEvent
-                {
-                    current = CurrentScore,
-                    target = CurrentMission.targetScore
-                });
-
-                Debug.Log($"[Mission] 목표 아이템 발견! 점수 증가: {CurrentScore}/{CurrentMission.targetScore}");
-            }
-            else
-            {
-                Debug.Log($"[Mission] 아이템 발견({itemTag})했으나 목표 아님.");
-            }
+            CurrentScore++;
+            CurrentMission.OnEventTriggered(itemTag);
+            EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
+            Debug.Log($"[Mission] 목표 아이템 발견! 점수: {CurrentScore}/{CurrentMission.targetScore}");
+        }
+        else
+        {
+            Debug.Log($"[Mission] 아이템 발견({itemTag})했으나 목표 아님.");
         }
     }
 
@@ -188,25 +175,16 @@ public class DailyMissionManager : MonoBehaviour
         dailyResolvedCount++;
         Debug.Log($"[GameFlow] 죄수 해결 확인! (금일 누적: {dailyResolvedCount})");
 
-        if (CurrentMission != null)
+        if (CurrentMission != null && CurrentMission.IsValidPrisoner(cellId))
         {
-            if (CurrentMission.IsValidPrisoner(cellId))
-            {
-                CurrentMission.OnEventTriggered("PrisonerResolved");
-                CurrentScore++;
-
-                EventBus.Publish(new MissionProgressChangedEvent
-                {
-                    current = CurrentScore,
-                    target = CurrentMission.targetScore
-                });
-
-                Debug.Log($"[Mission] 타겟 죄수 제압 성공! 점수 증가.");
-            }
-            else
-            {
-                Debug.Log($"[Mission] 죄수 제압({cellId})했으나 타겟 아님.");
-            }
+            CurrentScore++;
+            CurrentMission.OnEventTriggered("PrisonerResolved");
+            EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
+            Debug.Log($"[Mission] 타겟 죄수 제압 성공! 점수 증가.");
+        }
+        else
+        {
+            Debug.Log($"[Mission] 죄수 제압({cellId})했으나 타겟 아님.");
         }
     }
 
@@ -222,7 +200,6 @@ public class DailyMissionManager : MonoBehaviour
 
     public DailyMissionStrategy GetMissionStrategy(int dayIndex)
     {
-        // ★ [수정] 외부에서 미션 정보를 요청할 때도 섞인 리스트를 기준으로 반환해야 함
         if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
 
         int listIndex = dayIndex - 1;
@@ -246,8 +223,7 @@ public class DailyMissionManager : MonoBehaviour
     private void OnForceMissionFailRequested(ForceMissionFailRequestedEvent e)
     {
         bool success = false;
-        string failReason;
-        EvaluateDayResult(out failReason);
+        EvaluateDayResult(out string failReason);
         EventBus.Publish(new ResultUIShowRequestedEvent(success, failReason));
     }
 }
