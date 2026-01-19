@@ -11,6 +11,9 @@ public class TutorialNPC : MonoBehaviour , IInteractable
     [Header("Current Progress")]
     public DialogueKeys.DialogueType currentSubStep = DialogueKeys.DialogueType.Dialogue;
 
+    [Header("Book")]
+    [SerializeField] private GameObject book;
+
     //[Header("Current Progress")]
     //public TutorialSubStep currentSubStep = TutorialSubStep.Basic;
 
@@ -27,6 +30,7 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         {
             UpdateStep(e.NewStep);
         };
+        book.SetActive(false);
     }
 
     private void OnEnable()
@@ -68,6 +72,7 @@ public class TutorialNPC : MonoBehaviour , IInteractable
             Debug.Log("이벤트 발행: NPCHit");
             StartCoroutine(DelayedDialogue());
             finishedDialogue = true;
+            book.SetActive(true);
         }
     }
 
