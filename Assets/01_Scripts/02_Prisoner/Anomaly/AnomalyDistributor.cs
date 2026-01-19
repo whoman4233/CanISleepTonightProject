@@ -34,6 +34,9 @@ public class AnomalyDistributor : MonoBehaviour
 
         foreach (var anomaly in masterDatabase.defs)
         {
+            // ★ [수정] 리스트 중간에 비어있는 항목(Null)이 있으면 건너뛰기
+            if (anomaly == null) continue;
+
             if ((anomaly.validThemes & dayTheme) != 0)
             {
                 currentDayPool.Add(anomaly);
