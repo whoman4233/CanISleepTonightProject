@@ -16,6 +16,7 @@ public static class DialogueKeys
     {
         public const string Frank = "Frank";
         public const string Victor = "Victor";
+        public const string Mimi = "Mimi";
         public const string Player = "Player";
         public const string Suspect1 = "Suspect1";
         public const string Suspect2 = "Suspect2";
@@ -24,13 +25,16 @@ public static class DialogueKeys
     public static class Types
     {
         public const string Dialogue = "Dialogue";
+        public const string BoardSee = "BoardSee";
         public const string BoxOpened = "BoxOpened";
         public const string BatonEquipped = "BatonEquipped";
         public const string NPCHit = "NPCHit";
         public const string BookRead = "BookRead";
+        public const string BookClose = "BookClose";
         public const string Fin = "Fin";
         public const string Complete = "Complete";
         public const string Fail = "Fail";
+        public const string FrankArgue = "FrankArgue";
         public const string Choice = "Choice";
     }
     public enum MissionType
@@ -48,6 +52,7 @@ public static class DialogueKeys
     {
         Frank,
         Victor,
+        Mimi,
         Player,
         Suspect1,
         Suspect2,
@@ -56,13 +61,16 @@ public static class DialogueKeys
     public enum DialogueType
     {
         Dialogue,
+        BoardSee,
         BoxOpened,
         BatonEquipped,
         NPCHit,
         BookRead,
+        BookClose,
         Fin,
         Complete,
         Fail,
+        FrankArgue,
         Choice,
     }
 }
