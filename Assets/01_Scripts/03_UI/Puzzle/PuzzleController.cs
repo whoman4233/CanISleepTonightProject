@@ -12,11 +12,13 @@ public class PuzzleController : MonoBehaviour
     [SerializeField] private Button antonyButton;
     [SerializeField] private Button richardButton;
     [SerializeField] private Button leoButton;
+    [SerializeField] private Button backButton;
 
     [Header("Texts")]
     [SerializeField] private TextMeshProUGUI antonyText;
     [SerializeField] private TextMeshProUGUI richardText;
     [SerializeField] private TextMeshProUGUI leoText;
+    //[SerializeField] private TextMeshProUGUI back;
 
     private Action<Mission06PuzzleShowRequestedEvent> _onShow;
 
@@ -27,6 +29,7 @@ public class PuzzleController : MonoBehaviour
         antonyButton.onClick.AddListener(() => OnSuspectClicked(0));
         richardButton.onClick.AddListener(() => OnSuspectClicked(1));
         leoButton.onClick.AddListener(() => OnSuspectClicked(2));
+        backButton.onClick.AddListener(() => OnBackClick());
 
         puzzleRoot.SetActive(false);
     }
@@ -72,6 +75,14 @@ public class PuzzleController : MonoBehaviour
         EventBus.Publish(new GlobalInputLockReleasedEvent());
         EventBus.Publish(new ResumeGameRequestedEvent());
 
+        InputManager.Instance?.SetDialogueActive(false);
+    }
+
+    private void OnBackClick()
+    {
+        puzzleRoot.SetActive(false);
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
         InputManager.Instance?.SetDialogueActive(false);
     }
 }
