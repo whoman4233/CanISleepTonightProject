@@ -9,9 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 165447897852706909}
-  - component: {fileID: -6853440510374018660}
-  - component: {fileID: 3433208342685864721}
-  - component: {fileID: 632139263847459464}
   - component: {fileID: 1081942509741446084}
   m_Layer: 10
   m_Name: FrankA
@@ -36,49 +33,6 @@ Transform:
   - {fileID: 9196639566364152875}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-6853440510374018660
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5788057086556402941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d98e2c4584387b40aaeb84065089b4b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speakerKey: Frank
---- !u!114 &3433208342685864721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5788057086556402941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultPromptId: Ptxt_KR_Object_01
-  ruleTable: {fileID: 0}
-  objectType: 
---- !u!114 &632139263847459464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5788057086556402941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32069b4988f02c04685304fc8ea157be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spawnPoints_B1: []
-  spawnPoints_1F: []
-  frankPrefab: {fileID: 0}
 --- !u!136 &1081942509741446084
 CapsuleCollider:
   m_ObjectHideFlags: 0
