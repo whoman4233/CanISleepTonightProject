@@ -1,6 +1,8 @@
 ﻿//==========================================
 //Mission 관련 이벤트 목록
 //==========================================
+using System.Collections.Generic;
+
 public struct MissionStartedEvent
 {
     public DailyMissionStrategy mission;
@@ -39,6 +41,10 @@ public struct HiddenItemFoundEvent
     {
         ItemDefinition = itemDefinition;
     }
+}
+public struct Mission4DialogueTriggerSpawnEvent // 미션 04 대화 트리거스폰용 이벤트
+{
+    public List<Mission4DialogueTrigger> Triggers; 
 }
 
 //==========================================

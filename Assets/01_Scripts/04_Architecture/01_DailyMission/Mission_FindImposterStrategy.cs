@@ -2,6 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 
+
+/// <summary>
+/// Mission 4에서만 사용하는 다이얼로그 트리거 정의 데이터
+/// - SO(Mission_FindImposterStrategy)에 포함됨
+/// - 실제 Instantiate는 MonoBehaviour가 담당
+/// </summary>
+[System.Serializable]
+public class Mission4DialogueTrigger
+{
+    [Tooltip("미션 내에서 유니크한 트리거 ID")]
+    public string triggerId;
+
+    [Tooltip("재생할 다이얼로그 SO")]
+    public TriggerDialogueSO dialogue;
+
+    [Tooltip("DialogueTrigger가 붙어있는 프리팹")]
+    public GameObject triggerPrefab;
+
+    [Tooltip("월드 좌표 기준 생성 위치")]
+    public Vector3 spawnPosition;
+
+    [Tooltip("월드 좌표 기준 회전값")]
+    public Vector3 spawnRotation;
+}
+
 [CreateAssetMenu(menuName = "Missions/Type: Find Imposter (Day 4)")]
 public class Mission_FindImposterStrategy : DailyMissionStrategy
 {
@@ -14,6 +39,16 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
 
     [Tooltip("진짜를 잡았을 때 실패 사유 텍스트")]
     public string failReasonText = "진짜 프랭크를 공격하여 제압 실패";
+
+    // =========================
+    // Mission 4 Dialogue Triggers
+    // =========================
+
+    [Header("Mission 4 Dialogue Triggers")]
+    [SerializeField] private List<Mission4DialogueTrigger> dialogueTriggers;
+    
+    // Mission 4 전용 트리거 사용 상태
+    private HashSet<string> _usedTriggerIds = new();
 
     [Header("Sequence Options")]
     [SerializeField] private SequenceOptionSO failSequence;
@@ -58,7 +93,27 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
         }
 
         Debug.Log($"[ImposterMission] 배정 완료. Real: {realFrankType}, Fakes: {fakeFrankTypes.Count}");
+
+        // ===== Mission 4 전용 트리거 소환 요청 =====
+        EventBus.Publish(new Mission4DialogueTriggerSpawnEvent
+        {
+            Triggers = dialogueTriggers
+        });
     }
+
+    // =========================
+    // Dialogue Trigger Control
+    // =========================
+    public bool CanUseTrigger(string triggerId)
+    {
+        return !_usedTriggerIds.Contains(triggerId);
+    }
+
+    public void MarkTriggerUsed(string triggerId)
+    {
+        _usedTriggerIds.Add(triggerId);
+    }
+
 
     // 플레이어가 죄수를 제압했을 때 DailyMissionManager가 호출하는 함수
     public override bool IsValidPrisoner(string cellId)
