@@ -263,10 +263,23 @@ public class DailyMissionManager : MonoBehaviour
         Debug.Log("[Mission] 저장된 데이터 기반으로 미션 순서를 복원했습니다.");
     }
 
-    private void OnMissionEndRequested(MissionEndRequestedEvent e) //미션 종료 이벤트 - SequenceExecutor 연계
+    private void OnMissionEndRequested(MissionEndRequestedEvent e)
     {
-        // 기존 EvaluateDayResult 흐름 재사용
+        if (CurrentMission is Mission_FindImposterStrategy imposter)
+        {
+            if (e.IsSuccess && imposter.SuccessSequence != null)
+            {
+                EventBus.Publish(new SequencePlayRequestedEvent
+                {
+                    Sequence = imposter.SuccessSequence
+                });
+                return;
+            }
+        }
+
+        // Fail
         EvaluateDayResult(out string failReason);
         EventBus.Publish(new ResultUIShowRequestedEvent(e.IsSuccess, failReason));
     }
+
 }

@@ -18,12 +18,8 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     [Header("Sequence Options")]
     [SerializeField] private SequenceOptionSO failSequence;
     [SerializeField] private SequenceOptionSO successSequence;
-
-    [Header("Special Dialogue Keys")]
-    [SerializeField] private string immediateFailDialogueKey;   // DTxt_KR_M04_09 실패 다이얼로그
-    [SerializeField] private string immediateSuccessDialogueKey; // DTxt_KR_M04_08 성공 다이얼로그
-    public string ImmediateFailDialogueKey => immediateFailDialogueKey;
-    public string ImmediateSuccessDialogueKey => immediateSuccessDialogueKey;
+    public SequenceOptionSO FailSequence => failSequence;
+    public SequenceOptionSO SuccessSequence => successSequence;
     // 런타임 상태 변수
     private bool _killedRealFrank = false;
 
@@ -69,17 +65,27 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     {
         var role = PrisonerScheduleManager.Instance.GetDailyRole(cellId);
 
-        // 1. 진짜 프랭크를 잡았을 경우 -> 즉시 실패 처리
+        // 1. 진짜 프랭크 → 즉시 실패
         if (role.visualType == realFrankType)
         {
-            Debug.Log("<color=red>[Mission Failed] 진짜 프랭크를 제압했습니다!</color>");
             HandleRealFrankSuppressed();
-            return false; // 점수 안 오름
+            return false;
         }
 
-        // 2. 가짜 프랭크를 잡았을 경우 -> 점수 인정
+        // 2. 가짜 프랭크
         if (fakeFrankTypes.Contains(role.visualType))
         {
+            // 점수는 DailyMissionManager에서 증가됨
+            int nextScore = DailyMissionManager.Instance.CurrentScore + 1;
+
+            if (nextScore >= targetScore && successSequence != null)
+            {
+                EventBus.Publish(new SequencePlayRequestedEvent
+                {
+                    Sequence = successSequence
+                });
+            }
+
             return true;
         }
 
