@@ -15,8 +15,14 @@ public class DailyMissionManager : MonoBehaviour
     private List<DailyMissionStrategy> _randomizedMissionOrder = new List<DailyMissionStrategy>();
 
     private Action<MissionEndRequestedEvent> _onMissionEndRequested;
+    private Action<GameContextReadyEvent> _onGameContextReady;
     public DailyMissionStrategy CurrentMission { get; private set; }
+
+    // =========================
+    // Day 단위 플래그들
+    // =========================
     public bool IsBriefingCompleted { get; private set; }
+    public bool IsBriefingDialogueViewed { get; private set; } //  NPC 대화 강제 가이드용
     public bool IsReported { get; private set; }
 
     private int dailyResolvedCount = 0;
@@ -26,6 +32,7 @@ public class DailyMissionManager : MonoBehaviour
     {
         Instance = this;
         _onMissionEndRequested = OnMissionEndRequested;
+        _onGameContextReady = OnGameContextReady;
 
         // 게임 시작 시 미션 순서 미리 섞기
         // (세이브 파일 로드 시에는 이 순서가 덮어씌워져야 함)
@@ -34,11 +41,30 @@ public class DailyMissionManager : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Subscribe(_onMissionEndRequested);
+        EventBus.Subscribe(_onGameContextReady);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onMissionEndRequested);
+        EventBus.Unsubscribe(_onGameContextReady);
+    }
+
+    // =========================================================
+    // GameContextReadyEvent 수신
+    // - Day 시작 / 이어하기 / 새로하기 / 씬 재진입 공통 진입점
+    // =========================================================
+    private void OnGameContextReady(GameContextReadyEvent e)
+    {
+        Debug.Log($"[DailyMissionManager] GameContextReady (Day {e.CurrentDay})");
+
+        // Day 단위 상태 전부 리셋
+        IsBriefingCompleted = false;
+        IsBriefingDialogueViewed = false;
+        IsReported = false;
+
+        dailyResolvedCount = 0;
+        CurrentScore = 0;
     }
 
     // ★ 1~6일차 미션을 섞어서 리스트에 저장
@@ -222,9 +248,6 @@ public class DailyMissionManager : MonoBehaviour
         Debug.LogWarning($"[DailyMissionManager] {dayIndex}일차 미션 데이터가 없습니다.");
         return null;
     }
-
-    public void MarkBriefingCompleted() => IsBriefingCompleted = true;
-    public void MarkReported() => IsReported = true;
     public void ResetDailyFlags()
     {
         IsBriefingCompleted = false;
@@ -292,6 +315,7 @@ public class DailyMissionManager : MonoBehaviour
 
         // 진행 상태 리셋
         IsBriefingCompleted = false;
+        IsBriefingDialogueViewed = false;
         IsReported = false;
 
         dailyResolvedCount = 0;
@@ -299,5 +323,22 @@ public class DailyMissionManager : MonoBehaviour
 
         // 미션 순서 완전 재셔플
         InitializeMissionOrder();
+    }
+    // =========================================================
+    // 플래그 제어 API
+    // =========================================================
+    public void MarkBriefingCompleted()
+    {
+        IsBriefingCompleted = true;
+    }
+
+    public void MarkBriefingDialogueViewed() // NPC 대화 완료
+    {
+        IsBriefingDialogueViewed = true;
+    }
+
+    public void MarkReported()
+    {
+        IsReported = true;
     }
 }

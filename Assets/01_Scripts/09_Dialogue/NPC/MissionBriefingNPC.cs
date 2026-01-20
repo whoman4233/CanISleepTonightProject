@@ -80,6 +80,7 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
         EventBus.Publish(new MissionBriefingDialogueEndedEvent(DailyMissionManager.Instance.CurrentMission));
 
         _busy = false;
+        DailyMissionManager.Instance.MarkBriefingDialogueViewed();
     }
 
     // Confirm 이후 호출되는 엔트리

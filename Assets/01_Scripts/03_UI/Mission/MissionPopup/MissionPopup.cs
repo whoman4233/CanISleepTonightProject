@@ -15,6 +15,7 @@ public class MissionPopup : MonoBehaviour
 
     private Action<MissionPopupShowRequestedEvent> _onShow;
     private Action<UIHardResetEvent> _onUIHardReset;
+    private Action<GameContextReadyEvent> _onGameContextReady;
 
     // =========================
     // UIHardReset 이후에는 Show 요청을 무시하기 위한 플래그
@@ -26,6 +27,7 @@ public class MissionPopup : MonoBehaviour
     {
         _onShow = OnShowRequested;
         _onUIHardReset = OnUIHardReset;
+        _onGameContextReady = OnGameContextReady;
 
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmClicked);
@@ -33,12 +35,14 @@ public class MissionPopup : MonoBehaviour
 
     private void OnEnable()
     {
+        EventBus.Subscribe(_onGameContextReady);
         EventBus.Subscribe(_onShow);
         EventBus.Subscribe(_onUIHardReset);
     }
 
     private void OnDisable()
     {
+        EventBus.Unsubscribe(_onGameContextReady);
         EventBus.Unsubscribe(_onShow);
         EventBus.Unsubscribe(_onUIHardReset);
     }
@@ -103,6 +107,10 @@ public class MissionPopup : MonoBehaviour
     {
         contentRoot.SetActive(false);
         InputManager.Instance?.SetDialogueActive(false);
+    }
+    private void OnGameContextReady(GameContextReadyEvent e)
+    {
+        _isGloballyDisabled = false;
     }
 }
 
