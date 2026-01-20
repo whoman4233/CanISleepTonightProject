@@ -22,6 +22,7 @@ public class FlowController : MonoBehaviour
     private Action<RequestGameRestartEvent> _restartHandler;
     private Action<LoadGameEvent> _loadGameHandler; // 이어하기 이벤트
     private Action<IntoPlaySceneEvent> _intoPlay;
+    private Action<RequestRestartFromFailureEvent> _restartFromFailureHandler; //재시작 이벤트(튜토리얼 스킵)
 
     private void Awake()
     {
@@ -35,6 +36,8 @@ public class FlowController : MonoBehaviour
             _restartHandler = e => StartCoroutine(ReloadPlaySceneRoutine());
             _loadGameHandler = e => StartCoroutine(LoadGameSequence());
             _intoPlay = e => StartCoroutine(LoadActualPlaySceneRoutine());
+            _restartFromFailureHandler = e => StartCoroutine(RestartFromFailureSequence());
+
         }
         else
         {
@@ -55,6 +58,7 @@ public class FlowController : MonoBehaviour
         EventBus.Subscribe(_restartHandler);
         EventBus.Subscribe(_loadGameHandler);
         EventBus.Subscribe(_intoPlay);
+        EventBus.Subscribe(_restartFromFailureHandler);
     }
     private void OnDisable()
     {
@@ -65,6 +69,7 @@ public class FlowController : MonoBehaviour
         EventBus.Unsubscribe(_restartHandler);
         EventBus.Unsubscribe(_loadGameHandler);
         EventBus.Unsubscribe(_intoPlay);
+        EventBus.Unsubscribe(_restartFromFailureHandler);
     }
 
     private IEnumerator LoadGameSequence()
@@ -259,7 +264,45 @@ public class FlowController : MonoBehaviour
         if (!isBusy) StartCoroutine(LoadActualPlaySceneRoutine());
     }
 
+    // =========================================================
+    // 근무 실패 → 새 게임(튜토리얼 스킵) 시퀀스
+    // =========================================================
+    private IEnumerator RestartFromFailureSequence()
+    {
+        if (isBusy) yield break;
+        isBusy = true;
 
+        Time.timeScale = 1f;
+
+        EventBus.Publish(new UIHardResetEvent());
+        EventBus.Publish(new InputHardResetEvent());
+
+        // ★ GameManager 완전 초기화
+        GameManager.Instance.ResetForNewGameSkipTutorial();
+
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+
+        UnloadIfLoaded(playSceneName);
+        UnloadIfLoaded(tutorialSceneName);
+        UnloadIfLoaded(introSceneName);
+
+        yield return SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName));
+
+        GameManager.Instance.ChangePhase(GamePhase.Standby);
+
+        yield return SceneManager.UnloadSceneAsync(loadingSceneName);
+
+        isBusy = false;
+        Debug.Log("근무 실패 → 새 게임(튜토리얼 스킵) 완료");
+    }
+
+    private void UnloadIfLoaded(string sceneName)
+    {
+        var scene = SceneManager.GetSceneByName(sceneName);
+        if (scene.isLoaded)
+            SceneManager.UnloadSceneAsync(scene);
+    }
 
     //LoadSceneAsync = 씬이 로딩되는 동안에도 백그라운드에서 다른 연산(로딩 바 갱신, 팁 출력 등)가능, yield return null을 통해 로딩이 완전히 완료될 때까지 안전하게 기다린 후 다음 코드를 실행.
     //isBusy = 로딩이 진행 중일 때는 추가적인 로딩 요청을 무시

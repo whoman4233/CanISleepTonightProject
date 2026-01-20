@@ -4,41 +4,34 @@ using System.Collections.Generic;
 [CreateAssetMenu(menuName = "Audio/BGM Database")]
 public class BGMDatabase : ScriptableObject
 {
-    [SerializeField] private List<BGMData> bgmList;
+    [SerializeField] private List<BGMData> bgms;
 
-    private Dictionary<GamePhase, BGMData> _lookup;
+    private Dictionary<string, BGMData> _lookup;
 
-    // 모든 BGM 열거용 (읽기 전용) *비동기 로딩을 통한 렉유발 해결
-    public IReadOnlyList<BGMData> All => bgmList;
-
-    public BGMData Get(GamePhase phase)
+    private void Build()
     {
-        if (_lookup == null)
-            BuildLookup();
-
-        _lookup.TryGetValue(phase, out var data);
-        return data;
-    }
-
-    private void BuildLookup()
-    {
-        _lookup = new Dictionary<GamePhase, BGMData>();
-
-        foreach (var bgm in bgmList)
+        _lookup = new Dictionary<string, BGMData>();
+        foreach (var bgm in bgms)
         {
-            if (bgm == null)
+            if (bgm == null || string.IsNullOrEmpty(bgm.sceneName))
                 continue;
 
-            if (_lookup.ContainsKey(bgm.phase))
+            if (_lookup.ContainsKey(bgm.sceneName))
             {
-                Debug.LogWarning(
-                    $"[BGMDatabase] Duplicate BGM for phase: {bgm.phase}",
-                    this
-                );
                 continue;
             }
 
-            _lookup.Add(bgm.phase, bgm);
+            _lookup.Add(bgm.sceneName, bgm);
         }
     }
+
+    public BGMData GetByScene(string sceneName)
+    {
+        if (_lookup == null)
+            Build();
+
+        _lookup.TryGetValue(sceneName, out var data);
+        return data;
+    }
 }
+

@@ -3,8 +3,8 @@
 [CreateAssetMenu(menuName = "Audio/BGM Data")]
 public class BGMData : ScriptableObject
 {
-    [Header("Phase")]
-    public GamePhase phase;
+    [Header("Scene")]
+    public string sceneName;   // Scene 이름과 1:1 매핑
 
     [Header("Audio")]
     public AudioClip clip;

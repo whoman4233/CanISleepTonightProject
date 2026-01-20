@@ -18,9 +18,9 @@ public class PopupCanvasRootController : MonoBehaviour
     private Action<ShowSettlementConfirmPopupEvent> _onShowSettlementConfirm;
     private Action<GameOverEvent> _onGameOver;
     public bool HasAnyPopupOpen =>
-     (exitConfirmPopup != null && exitConfirmPopup.gameObject.activeInHierarchy) ||
-     (settingsPopup != null && settingsPopup.gameObject.activeInHierarchy) ||
-     (gameOverPopup != null && gameOverPopup.gameObject.activeInHierarchy);
+   (exitConfirmPopup != null && exitConfirmPopup.gameObject.activeInHierarchy) ||
+   (settingsPopup != null && settingsPopup.gameObject.activeInHierarchy) ||
+   (gameOverPopup != null && gameOverPopup.gameObject.activeInHierarchy);
 
     private void Awake()
     {
@@ -117,7 +117,10 @@ public class PopupCanvasRootController : MonoBehaviour
     public void CloseAllPopups()
     {
         if (exitConfirmPopup != null) exitConfirmPopup.Hide();
+
         if (settingsPopup != null) settingsPopup.Hide();
+
+        if (gameOverPopup != null) gameOverPopup.Hide();
     }
 }
 
