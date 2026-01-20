@@ -108,6 +108,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 3789008494185039628}
   triggerName: Inspect
+  inspectObjectType: 0
+  inspectSfxTable: {fileID: 0}
   outerCollider: {fileID: 2777249255319757990}
   innerColliders:
   - {fileID: 7253430161414399093}
@@ -457,7 +459,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDefinition: {fileID: 11400000, guid: 7b8767f37b6886149a01a14b351a6b18, type: 2}
   itemTag: Weapon
-  stepToPublish: 4
+  stepToPublish: 5
 --- !u!65 &7253430161414399093 stripped
 BoxCollider:
   m_CorrespondingSourceObject: {fileID: 8946153746463455306, guid: b27e232d325bec24699bf03dd0895372,

@@ -3,15 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TutorialNPC : MonoBehaviour , IInteractable
-{   
+public class TutorialNPC : MonoBehaviour, IInteractable
+{
     [Header("NPC 설정")]
     public DialogueKeys.SpeakerType speakerRole = DialogueKeys.SpeakerType.Frank;
 
     [Header("Current Progress")]
     public DialogueKeys.DialogueType currentSubStep = DialogueKeys.DialogueType.Dialogue;
 
-    [Header("Book")]
+    [Header("Step Object")]
     [SerializeField] private GameObject book;
 
     //[Header("Current Progress")]
@@ -22,7 +22,7 @@ public class TutorialNPC : MonoBehaviour , IInteractable
     //[Header("대화 데이터")]
     //[SerializeField] private DialogueManager dialogueManager;
 
-    private bool finishedDialogue = false; // 대사 다 봄?
+    public bool finishedDialogue = false; // 대사 다 봄?
 
     private void Awake()
     {
@@ -47,21 +47,23 @@ public class TutorialNPC : MonoBehaviour , IInteractable
         if (finishedDialogue) return;
 
         var dialogueManager = DialogueManager.Instance; //DialogueManager 전역접근
-        if (dialogueManager == null) 
+        if (dialogueManager == null)
             return;
 
         string speakerKey = speakerRole.ToString();
         string textType = currentSubStep.ToString();
         System.Action onComplete = null;
-        if (currentSubStep == DialogueKeys.DialogueType.BookRead)
+        if (currentSubStep == DialogueKeys.DialogueType.BookClose)
         {
-            onComplete = () => {
+            onComplete = () =>
+            {
                 Debug.Log("최종 튜토리얼 대화 종료. 플레이 씬으로 이동합니다.");
                 EventBus.Publish(new IntoPlaySceneEvent());
             };
         }
         dialogueManager.StartDialogueByKeys(speakerKey, textType, onComplete);
         finishedDialogue = true;
+        EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.BoardSee));
     }
 
     public void OnAttacked()

@@ -18,15 +18,8 @@ public class AwlInteract : InspectHiddenItemAction
         {
             EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
-            System.Action onComplete = null;
-            if (npc.currentSubStep == DialogueKeys.DialogueType.BookRead)
-            {
-                onComplete = () => {
-                    Debug.Log("최종 튜토리얼 대화 종료. 플레이 씬으로 이동합니다.");
-                    EventBus.Publish(new IntoPlaySceneEvent());
-                };
-            }
-            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString(), onComplete);
+            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
+            EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.BookClose));
             Debug.Log("튜토리얼 이벤트 발행 완료");
         }
     }

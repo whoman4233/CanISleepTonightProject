@@ -3307,6 +3307,9 @@ MonoBehaviour:
   speakerRole: 0
   currentSubStep: 0
   book: {fileID: 858824239}
+  box: {fileID: 0}
+  cabinet: {fileID: 0}
+  finishedDialogue: 0
 --- !u!1001 &409297275
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4559,6 +4562,9 @@ MonoBehaviour:
   speakerRole: 0
   currentSubStep: 0
   book: {fileID: 858824239}
+  box: {fileID: 2142017651}
+  cabinet: {fileID: 1391041783}
+  finishedDialogue: 0
 --- !u!1001 &583112652
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8435,6 +8441,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1376055673}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1391041783 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5837890101524807277, guid: 52f452d5fa8818740a25e1569d106633,
+    type: 3}
+  m_PrefabInstance: {fileID: 309095501}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1404860192
 GameObject:
   m_ObjectHideFlags: 0
@@ -11098,7 +11110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f49c5f67d28a6614d93f4886e9872cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stepToPublish: 2
+  stepToPublish: 3
 --- !u!1 &1832860552
 GameObject:
   m_ObjectHideFlags: 0
@@ -14840,7 +14852,7 @@ MonoBehaviour:
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 0
-  stepToPublish: 1
+  stepToPublish: 2
 --- !u!54 &2142017653
 Rigidbody:
   m_ObjectHideFlags: 0

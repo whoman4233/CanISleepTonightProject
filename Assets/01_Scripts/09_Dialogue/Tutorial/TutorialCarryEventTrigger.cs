@@ -36,6 +36,7 @@ public class TutorialCarryEventTrigger : CarryableBox
             EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
             DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
+            npc.finishedDialogue = true;
             Debug.Log("튜토리얼 이벤트 발행 완료");
         }
     }
