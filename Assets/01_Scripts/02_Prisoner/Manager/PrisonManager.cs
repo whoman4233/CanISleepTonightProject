@@ -144,6 +144,11 @@ public class PrisonManager : MonoBehaviour
 
         var missionMgr = DailyMissionManager.Instance;
 
+        if (missionMgr == null || !missionMgr.HasValidMissionTable)
+        {
+            Debug.LogError("[PrisonManager] MissionTable 준비 안 됨 → StartDay 중단");
+            return;
+        }
         if (missionMgr != null)
         {
             missionMgr.StartDay(day);

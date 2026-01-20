@@ -26,10 +26,17 @@ public class DailyMissionManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         _onMissionEndRequested = OnMissionEndRequested;
         _onGameContextReady = OnGameContextReady;
-        InitializeMissionOrder();
     }
     private void OnEnable()
     {
@@ -46,13 +53,37 @@ public class DailyMissionManager : MonoBehaviour
     private void OnGameContextReady(GameContextReadyEvent e)
     {
         Debug.Log($"[DailyMissionManager] GameContextReady (Day {e.CurrentDay})");
+        // =====================================================
+        // Day 단위 상태만 리셋
+        // =====================================================
         IsBriefingCompleted = false;
         IsBriefingDialogueViewed = false;
         IsReported = false;
         dailyResolvedCount = 0;
         CurrentScore = 0;
     }
+    // =====================================================
+    // 새 게임 전용 미션 테이블 생성 API
+    // - 새 게임
+    // - 실패 재시작
+    // - 튜토리얼 스킵 시작
+    // =====================================================
+    public void CreateNewMissionTableForNewRun()
+    {
+        Debug.Log("[Mission] 새 게임 -> 미션 테이블 생성");
 
+        _randomizedMissionOrder.Clear();
+        CurrentMission = null;
+
+        IsBriefingCompleted = false;
+        IsBriefingDialogueViewed = false;
+        IsReported = false;
+
+        dailyResolvedCount = 0;
+        CurrentScore = 0;
+
+        InitializeMissionOrder();
+    }
     public void InitializeMissionOrder()
     {
         _randomizedMissionOrder.Clear();
@@ -93,7 +124,11 @@ public class DailyMissionManager : MonoBehaviour
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
-        if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
+        if (_randomizedMissionOrder.Count == 0)
+        {
+            Debug.LogError("[Mission] 미션 테이블 비었음. (새 런 초기화 누락 가능성)");
+            return;
+        }
 
         int listIndex = dayIndex - 1;
 
@@ -229,22 +264,27 @@ public class DailyMissionManager : MonoBehaviour
 
     public List<int> GetMissionOrderIndices()
     {
-        List<int> indices = new List<int>();
-        if (_randomizedMissionOrder == null) return indices;
-
-        foreach (var mission in _randomizedMissionOrder)
-        {
-            int index = missionScenario.IndexOf(mission);
-            indices.Add(index);
-        }
-        return indices;
+        return _randomizedMissionOrder
+            .Select(m => missionScenario.IndexOf(m))
+            .ToList();
     }
+    public bool HasValidMissionTable =>
+    _randomizedMissionOrder != null && _randomizedMissionOrder.Count > 0; //PrisonManager 로드 시 보호를 위한 장치
 
     public void RestoreMissionOrder(List<int> savedIndices)
     {
-        if (savedIndices == null || savedIndices.Count == 0) return;
+        if (savedIndices == null || savedIndices.Count == 0)
+            return;
+
+        // 테이블이 비어있다면 초기화 후 복원
+        if (_randomizedMissionOrder.Count == 0)
+        {
+            Debug.Log("[Mission] Restore 이전 테이블 비어있음 → 컨테이너 초기화");
+            _randomizedMissionOrder = new List<DailyMissionStrategy>();
+        }
 
         _randomizedMissionOrder.Clear();
+
         foreach (int index in savedIndices)
         {
             if (index >= 0 && index < missionScenario.Count)
@@ -252,6 +292,7 @@ public class DailyMissionManager : MonoBehaviour
                 _randomizedMissionOrder.Add(missionScenario[index]);
             }
         }
+
         Debug.Log("[Mission] 저장된 데이터 기반으로 미션 순서를 복원했습니다.");
     }
 

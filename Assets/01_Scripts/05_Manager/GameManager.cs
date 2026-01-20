@@ -42,6 +42,7 @@ public class GameManager : MonoBehaviour
 
     public float CurrentInGameSeconds { get; private set; }
     public event Action<float> OnInGameTimeUpdated;
+    public List<int> PendingMissionOrder { get; private set; } //MissionTable
 
     // ScheduleManager 참조
     public PrisonerScheduleManager ScheduleManager;
@@ -237,10 +238,16 @@ public class GameManager : MonoBehaviour
             // 같은 날 재시작이면 무사고일은 증가하지 않음 (유지 or 초기화 정책에 따름)
         }
         // =================================================
-        // Stanby진입 시 자동 저장 (세이브 기준점)
+        // Stanby진입 시 자동 저장 (세이브 기준점) MissionTable이 없으면 저장 금지
         // =================================================
-        SaveManager saveManager = new SaveManager();
-        saveManager.SaveGame(GetCurrentSaveData());
+        if (DailyMissionManager.Instance == null ||
+            DailyMissionManager.Instance.GetMissionOrderIndices().Count == 0)
+        {
+            Debug.LogError("[Save] MissionTable 없음 → 저장 중단");
+            return;
+        }
+
+        _saveManager.SaveGame(GetCurrentSaveData());
 
         Debug.Log($"[Save] Stanby 진입 시 자동 저장 (Day {currentDay})");
         standbyEnterReason = StandbyEnterReason.None;
@@ -381,17 +388,19 @@ public class GameManager : MonoBehaviour
                 ScheduleManager.OverrideScheduleFromSave(data.prisonerRoster, data.dailyRoles);
             }
 
-            if (DailyMissionManager.Instance != null && data.randomizedMissionIndices != null)
-            {
-                DailyMissionManager.Instance.RestoreMissionOrder(data.randomizedMissionIndices);
-            }
+            PendingMissionOrder = data.randomizedMissionIndices;
 
             Debug.Log("세이브 로드 완료 (미션 순서 포함)");
             return true;
         }
         return false;
     }
-
+    public List<int> ConsumePendingMissionOrder() //미션테이블 불러오기 용
+    {
+        var temp = PendingMissionOrder;
+        PendingMissionOrder = null;
+        return temp;
+    }
     // ★ [추가] 미션 실패 시 호출될 재시작 메서드
     public void RetryGameFromFailure()
     {
@@ -470,8 +479,5 @@ public class GameManager : MonoBehaviour
 
         if (ScheduleManager != null)
             ScheduleManager.ResetAllSimulationData();
-
-        if (DailyMissionManager.Instance != null)
-            DailyMissionManager.Instance.ResetAll();
     }
 }

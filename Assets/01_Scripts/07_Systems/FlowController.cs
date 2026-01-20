@@ -101,6 +101,14 @@ public class FlowController : MonoBehaviour
         Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.IsValid())
             SceneManager.SetActiveScene(playScene);
+        if (DailyMissionManager.Instance != null)
+        {
+            var order = GameManager.Instance.ConsumePendingMissionOrder();
+            if (order != null)
+            {
+                DailyMissionManager.Instance.RestoreMissionOrder(order);
+            }
+        }
 
         // 4. 저장된 Phase로 재진입
         var phase = GameManager.Instance.CurrentPhase;
@@ -203,13 +211,28 @@ public class FlowController : MonoBehaviour
 
         GameManager.Instance.ResetTimer();
 
-        GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 변경
+        // =====================================================
+        // 새 런일 때만 미션 테이블 생성
+        // =====================================================
+        if (GameManager.Instance.CurrentDay == 0)
+        {
+            if (DailyMissionManager.Instance != null)
+            {
+                DailyMissionManager.Instance.CreateNewMissionTableForNewRun();
+            }
+            else
+            {
+                Debug.LogError("[FlowController] DailyMissionManager.Instance 없음");
+            }
+        }
+
+        GameManager.Instance.ChangePhase(GamePhase.Standby);
 
         Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
         if (loadingScene.isLoaded)
         {
-            yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
-            EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
+            yield return SceneManager.UnloadSceneAsync(loadingScene);
+            EventBus.Publish(new LoadingOverlayHiddenEvent());
         }
 
         isBusy = false;
@@ -286,23 +309,39 @@ public class FlowController : MonoBehaviour
         EventBus.Publish(new UIHardResetEvent());
         EventBus.Publish(new InputHardResetEvent());
 
-        // ★ GameManager 완전 초기화
+        //GameManager만 먼저 리셋
         GameManager.Instance.ResetForNewGameSkipTutorial();
 
+        // 로딩 씬
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
-        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
+        EventBus.Publish(new LoadingOverlayShownEvent());
 
         UnloadIfLoaded(playSceneName);
         UnloadIfLoaded(tutorialSceneName);
         UnloadIfLoaded(introSceneName);
 
+        // PlayScene 로드
         yield return SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName));
 
+        // 여기서부터 DailyMissionManager가 존재함
+        yield return null; // 한 프레임 대기 (Awake 보장)
+
+        if (DailyMissionManager.Instance != null)
+        {
+            DailyMissionManager.Instance.CreateNewMissionTableForNewRun();
+        }
+        else
+        {
+            Debug.LogError("[RestartFromFailure] DailyMissionManager 생성 실패");
+        }
+
+        // 미션 테이블 생성 이후에 Standby 진입
         GameManager.Instance.ChangePhase(GamePhase.Standby);
 
         yield return SceneManager.UnloadSceneAsync(loadingSceneName);
-        EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
+        EventBus.Publish(new LoadingOverlayHiddenEvent());
+
         isBusy = false;
         Debug.Log("근무 실패 → 새 게임(튜토리얼 스킵) 완료");
     }
