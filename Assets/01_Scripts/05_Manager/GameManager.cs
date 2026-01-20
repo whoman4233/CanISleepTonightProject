@@ -236,8 +236,15 @@ public class GameManager : MonoBehaviour
             playerHP = 100;
             // 같은 날 재시작이면 무사고일은 증가하지 않음 (유지 or 초기화 정책에 따름)
         }
+        // =================================================
+        // Stanby진입 시 자동 저장 (세이브 기준점)
+        // =================================================
+        SaveManager saveManager = new SaveManager();
+        saveManager.SaveGame(GetCurrentSaveData());
 
+        Debug.Log($"[Save] Stanby 진입 시 자동 저장 (Day {currentDay})");
         standbyEnterReason = StandbyEnterReason.None;
+
     }
 
     // [수정] 브리핑 진입 시 프랭크 위치 배정 추가
