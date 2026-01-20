@@ -14,7 +14,7 @@ AnimatorStateMachine:
     m_Position: {x: 600, y: 210, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8537415409588606180}
-    m_Position: {x: 520, y: 120, z: 0}
+    m_Position: {x: 520, y: 140, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -5448526187010939360}
     m_Position: {x: 280, y: 120, z: 0}
@@ -42,7 +42,7 @@ AnimatorState:
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_PatrolWalk01
   m_Speed: 1
-  m_CycleOffset: 0
+  m_CycleOffset: 1
   m_Transitions: []
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
@@ -57,7 +57,7 @@ AnimatorState:
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
-  m_CycleOffsetParameter: 
+  m_CycleOffsetParameter: VisualIdleType
   m_TimeParameter: 
 --- !u!1101 &-6582887182497106425
 AnimatorStateTransition:
@@ -255,7 +255,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: bdcb4c69507f7bf4f960adc61d2c7e35, type: 2}
+  m_Motion: {fileID: 7400000, guid: 13c5ccf68e8b71541b210425551c8e2e, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
