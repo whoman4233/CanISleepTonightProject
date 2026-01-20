@@ -86,7 +86,8 @@ public class FlowController : MonoBehaviour
             isBusy = false;
             yield break;
         }
-        SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
+        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
 
         // 3. IntroScene 언로드
         Scene introScene = SceneManager.GetSceneByName(introSceneName);
@@ -110,7 +111,8 @@ public class FlowController : MonoBehaviour
         }
 
         GameManager.Instance.ChangePhase(phase);
-        SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
+        yield return SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
+        EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
 
         isBusy = false;
         Debug.Log("이어하기 완료");
@@ -131,6 +133,7 @@ public class FlowController : MonoBehaviour
         if (playScene.isLoaded)
         {
             yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩씬 로드
+            EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
             yield return SceneManager.UnloadSceneAsync(playScene); // 현재 씬 언로드
         }
         yield return Resources.UnloadUnusedAssets(); // 메모리 정리
@@ -143,7 +146,8 @@ public class FlowController : MonoBehaviour
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
         isBusy = false;
         //yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
-        SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
+        yield return SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
+        EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
         Debug.Log("씬 재로딩 완료");
     }
 
@@ -157,6 +161,7 @@ public class FlowController : MonoBehaviour
     {
         isBusy = true;
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
+        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
         // 튜토리얼 씬 로드
         yield return SceneManager.LoadSceneAsync(tutorialSceneName, LoadSceneMode.Additive);
         Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
@@ -170,6 +175,7 @@ public class FlowController : MonoBehaviour
         if (loadingScene.isLoaded)
         {
             yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
+            EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
         }
 
         isBusy = false;
@@ -179,7 +185,7 @@ public class FlowController : MonoBehaviour
     {
         isBusy = true;
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
-
+        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
         Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
         if (tutorialScene.isLoaded)
         {
@@ -203,6 +209,7 @@ public class FlowController : MonoBehaviour
         if (loadingScene.isLoaded)
         {
             yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
+            EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
         }
 
         isBusy = false;
@@ -225,6 +232,7 @@ public class FlowController : MonoBehaviour
         EventBus.Publish(new InputHardResetEvent());
 
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
+        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
         // 1. 현재 로드된 'PlayScene'만 비동기로 언로드합니다.
         Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.isLoaded)
@@ -248,6 +256,7 @@ public class FlowController : MonoBehaviour
         if (loadingScene.isLoaded)
         {
             yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
+            EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
         }
 
         // 3. 인트로 씬을 메인으로 설정
@@ -281,6 +290,7 @@ public class FlowController : MonoBehaviour
         GameManager.Instance.ResetForNewGameSkipTutorial();
 
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
 
         UnloadIfLoaded(playSceneName);
         UnloadIfLoaded(tutorialSceneName);
@@ -292,7 +302,7 @@ public class FlowController : MonoBehaviour
         GameManager.Instance.ChangePhase(GamePhase.Standby);
 
         yield return SceneManager.UnloadSceneAsync(loadingSceneName);
-
+        EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
         isBusy = false;
         Debug.Log("근무 실패 → 새 게임(튜토리얼 스킵) 완료");
     }
