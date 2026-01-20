@@ -141,22 +141,23 @@ public class DailyMissionManager : MonoBehaviour
     }
 
     // ========================================================================
-    // ★ [수정됨] 실행 순서 변경: Distribute(기본배정) -> SetupDay(미션덮어쓰기)
+    // ★ [수정됨] 실행 순서 변경: SetupDay(역할배정) -> Distribute(아이템배포)
     // ========================================================================
     private void StartMissionSetup(int dayIndex)
     {
         Debug.Log($"[GameFlow] Day {dayIndex} 미션 설정 중...");
 
-        // 1. [순서 변경] 먼저 기본 이상현상(랜덤)을 맵에 깝니다. (이때 리스트가 초기화됨)
-        if (AnomalyDistributor.Instance != null)
-        {
-            AnomalyDistributor.Instance.DistributeAnomalies();
-        }
-
-        // 2. [순서 변경] 그 다음 미션 전략을 실행하여, 필요한 아이템을 '추가'하거나 '덮어씁니다'.
+        // 1. [순서 변경됨] 먼저 미션 전략을 실행하여 '테마'를 설정하고 '역할(Suspicious)'을 배정합니다.
+        //    (SetupDay 내부에서 PrisonerScheduleManager.AssignRolesForNewDay가 호출됨)
         if (CurrentMission != null)
         {
             CurrentMission.SetupDay(AnomalyDistributor.Instance, PrisonerScheduleManager.Instance);
+        }
+
+        // 2. [순서 변경됨] 배정된 역할(Suspicious)과 테마 정보를 바탕으로 아이템을 맵에 깝니다.
+        if (AnomalyDistributor.Instance != null)
+        {
+            AnomalyDistributor.Instance.DistributeAnomalies();
         }
 
         EventBus.Publish(new MissionStartedEvent { mission = CurrentMission });
