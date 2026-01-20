@@ -240,11 +240,12 @@ public class GameManager : MonoBehaviour
         // =================================================
         // Stanby진입 시 자동 저장 (세이브 기준점) MissionTable이 없으면 저장 금지
         // =================================================
-        if (DailyMissionManager.Instance == null ||
+
+        if (DailyMissionManager.Instance != null &&
             DailyMissionManager.Instance.GetMissionOrderIndices().Count == 0)
         {
-            Debug.LogError("[Save] MissionTable 없음 → 저장 중단");
-            return;
+            Debug.LogWarning("[GameManager] MissionTable 비어있음 → 재생성");
+            DailyMissionManager.Instance.InitializeMissionOrder();
         }
 
         _saveManager.SaveGame(GetCurrentSaveData());

@@ -127,7 +127,7 @@ public class DailyMissionManager : MonoBehaviour
         if (_randomizedMissionOrder.Count == 0)
         {
             Debug.LogError("[Mission] 미션 테이블 비었음. (새 런 초기화 누락 가능성)");
-            return;
+            InitializeMissionOrder();
         }
 
         int listIndex = dayIndex - 1;

@@ -63,6 +63,8 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     public bool ImmediateFailTriggered => _immediateFailTriggered;
     public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
     {
+        ResetRuntimeState();
+
         base.SetupDay(ad, sm);
         _killedRealFrank = false; // 상태 초기화
 
@@ -184,5 +186,11 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
 
         failReason = "";
         return true;
+    }
+    public void ResetRuntimeState()
+    {
+        _usedTriggerIds.Clear();
+        _killedRealFrank = false;
+        _immediateFailTriggered = false;
     }
 }
