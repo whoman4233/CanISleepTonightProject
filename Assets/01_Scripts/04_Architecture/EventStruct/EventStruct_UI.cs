@@ -21,6 +21,16 @@ public struct MissionRevealedEvent //미션팝업 노출 후 미션 HUD/화이�
         this.mission = mission;
     }
 }
+//==========================================
+// UI 로딩신에서 숨기기/노출 이벤트
+//==========================================
+
+public struct LoadingOverlayShownEvent { }
+public struct LoadingOverlayHiddenEvent { }
+
+//==========================================
+//미션 브리핑 이벤트
+//==========================================
 
 public struct MissionBriefingConfirmedEvent
 {

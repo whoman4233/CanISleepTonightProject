@@ -22,22 +22,25 @@ public abstract class ResultPanelBase : MonoBehaviour
     // EventHandler
     // =========================
     private Action<UIProceedRequestedEvent> _onUIProceedRequested;
-
+    private Action<UIHardResetEvent> _onUIHardReset;
     protected virtual void Awake()
     {
         DisableButtons();
 
         _onUIProceedRequested = OnUIProceedRequested;
+        _onUIHardReset = OnUIHardReset;
     }
 
     protected virtual void OnEnable()
     {
         EventBus.Subscribe(_onUIProceedRequested);
+        EventBus.Subscribe(_onUIHardReset);
     }
 
     protected virtual void OnDisable()
     {
         EventBus.Unsubscribe(_onUIProceedRequested);
+        EventBus.Unsubscribe(_onUIHardReset);
     }
 
     public virtual void Show()
@@ -98,6 +101,16 @@ public abstract class ResultPanelBase : MonoBehaviour
         buttonsGroup.alpha = 1f;
         buttonsGroup.blocksRaycasts = true;
         buttonsGroup.interactable = true;
+    }
+    // =========================
+    // UI Hard Reset 처리
+    // =========================
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        _waitingForStampClick = false;
+        _stampPlayed = false;
+
+        Hide();
     }
 }
 

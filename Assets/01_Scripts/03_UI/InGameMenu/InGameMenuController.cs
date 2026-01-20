@@ -24,8 +24,8 @@ public class InGameMenuController : MonoBehaviour
         if (btnReturnToTitle != null) btnReturnToTitle.onClick.AddListener(OnClickReturnToTitle);
         if (btnOptions != null) btnOptions.onClick.AddListener(OnClickOptions);
 
-        _onOpenRequested = _ => SetOpen(true);
-        _onCloseRequested = _ => SetOpen(false);
+        _onOpenRequested = OnPauseMenuOpenRequested;
+        _onCloseRequested = OnPauseMenuCloseRequested;
     }
 
     private void OnEnable()
@@ -40,7 +40,15 @@ public class InGameMenuController : MonoBehaviour
         EventBus.Unsubscribe(_onOpenRequested);
         EventBus.Unsubscribe(_onCloseRequested);
     }
+    private void OnPauseMenuOpenRequested(PauseMenuOpenRequestedEvent e)
+    {
+        SetOpen(true);
+    }
 
+    private void OnPauseMenuCloseRequested(PauseMenuCloseRequestedEvent e)
+    {
+        SetOpen(false);
+    }
     private void OnClickResume()
     {
         SetOpen(false);
@@ -76,17 +84,33 @@ public class InGameMenuController : MonoBehaviour
         {
             AudioManager.Instance?.PlayUISound(openClip);
             EventBus.Publish(new PauseGameRequestedEvent());
+            // =========================
+            // Dialogue가 걸어둔 Cursor Override 해제
+            // =========================
+            EventBus.Publish(new CursorOverrideReleasedEvent());
 
-            // 반드시 UI Lock 요청
+            // Dialogue Raycast 차단
+            if (DialogueManager.Instance != null &&
+                DialogueManager.Instance.IsDialogueOpen)
+            {
+                DialogueManager.Instance.SetRaycastBlocked(true);
+            }
+
             EventBus.Publish(new GlobalInputLockRequestedEvent());
-
             EventBus.Publish(new PauseMenuOpenedEvent());
         }
         else
         {
             AudioManager.Instance?.PlayUISound(closeClip);
             EventBus.Publish(new ResumeGameRequestedEvent());
-
+            // =========================
+            // Dialogue Raycast 복구
+            // =========================
+            if (DialogueManager.Instance != null &&
+                DialogueManager.Instance.IsDialogueOpen)
+            {
+                DialogueManager.Instance.SetRaycastBlocked(false);
+            }
             // 반드시 UI Lock 해제
             EventBus.Publish(new GlobalInputLockReleasedEvent());
 
