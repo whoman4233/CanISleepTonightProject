@@ -9557,6 +9557,7 @@ MonoBehaviour:
   speakerNameText: {fileID: 112992688}
   dialogueContentText: {fileID: 1114979394}
   typingSpeed: 0.05
+  dialogueCanvasGroup: {fileID: 2007078894}
 --- !u!4 &876308923
 Transform:
   m_ObjectHideFlags: 0
@@ -10300,6 +10301,8 @@ MonoBehaviour:
   lowHpColor: {r: 1, g: 0, b: 0, a: 1}
   hpDangerClip: {fileID: 8300000, guid: c7db3bda5a1b02148a81eb93db17e0fd, type: 3}
   hpZeroClip: {fileID: 8300000, guid: 3286159b618a5424aa6b54ad02d321ef, type: 3}
+  maxHp: 100
+  dangerThreshold: 30
 --- !u!225 &950082405
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -19828,6 +19831,7 @@ GameObject:
   - component: {fileID: 2007078891}
   - component: {fileID: 2007078893}
   - component: {fileID: 2007078892}
+  - component: {fileID: 2007078894}
   m_Layer: 0
   m_Name: Dialogue_Panel
   m_TagString: Untagged
@@ -19896,6 +19900,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2007078890}
   m_CullTransparentMesh: 1
+--- !u!225 &2007078894
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007078890}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2017329322
 GameObject:
   m_ObjectHideFlags: 0
