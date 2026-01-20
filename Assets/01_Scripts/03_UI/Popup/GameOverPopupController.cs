@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class GameOverPopupController : MonoBehaviour
@@ -7,6 +8,8 @@ public class GameOverPopupController : MonoBehaviour
     [SerializeField] private Button restartButton;
     [SerializeField] private Button titleButton;
 
+    private Action<UIHardResetEvent> _onUIHardReset;
+
     private void Awake()
     {
         if (restartButton != null)
@@ -14,12 +17,24 @@ public class GameOverPopupController : MonoBehaviour
 
         if (titleButton != null)
             titleButton.onClick.AddListener(OnTitleClicked);
+
+        _onUIHardReset = e => Hide();
+    }
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onUIHardReset);
     }
 
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onUIHardReset);
+    }
     public void Show()
     {
         if (root != null)
             root.SetActive(true);
+
+        Time.timeScale = 0f;
 
         EventBus.Publish(new GlobalInputLockRequestedEvent());
         EventBus.Publish(new PauseGameRequestedEvent());
@@ -33,12 +48,26 @@ public class GameOverPopupController : MonoBehaviour
 
     private void OnRestartClicked()
     {
-        GameManager.Instance.SetStandbyEnterReason(StandbyEnterReason.RestartSameDay);
-        EventBus.Publish(new RequestGameRestartEvent());
+        Hide();
+
+        Time.timeScale = 1f;
+
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
+
+        // 새 게임(튜토리얼 스킵) 재시작
+        EventBus.Publish(new RequestRestartFromFailureEvent());
     }
 
     private void OnTitleClicked()
     {
+        Hide();
+
+        Time.timeScale = 1f;
+
+        EventBus.Publish(new GlobalInputLockReleasedEvent());
+        EventBus.Publish(new ResumeGameRequestedEvent());
+
         EventBus.Publish(new ReturnToTitleRequestedEvent());
     }
 }

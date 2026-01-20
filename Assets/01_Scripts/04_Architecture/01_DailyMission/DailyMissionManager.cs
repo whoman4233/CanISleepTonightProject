@@ -280,5 +280,24 @@ public class DailyMissionManager : MonoBehaviour
         EvaluateDayResult(out string failReason);
         EventBus.Publish(new ResultUIShowRequestedEvent(e.IsSuccess, failReason));
     }
+    // =========================================================
+    // 새 게임(튜토리얼 스킵 포함)용 완전 초기화
+    // =========================================================
+    public void ResetAll()
+    {
+        Debug.Log("[DailyMissionManager] ResetAll (New Game)");
 
+        // 현재 미션 제거
+        CurrentMission = null;
+
+        // 진행 상태 리셋
+        IsBriefingCompleted = false;
+        IsReported = false;
+
+        dailyResolvedCount = 0;
+        CurrentScore = 0;
+
+        // 미션 순서 완전 재셔플
+        InitializeMissionOrder();
+    }
 }

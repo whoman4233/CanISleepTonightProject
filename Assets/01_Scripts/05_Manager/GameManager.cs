@@ -452,4 +452,19 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new PatrolTimerResetEvent(seconds));
         Debug.Log($"[GameManager] 오늘 제한시간 설정됨: {seconds}초");
     }
+    public void ResetForNewGameSkipTutorial()
+    {
+        Debug.Log("[GameManager] ResetForNewGameSkipTutorial");
+
+        currentDay = 0;
+        playerHP = 100;
+        CurrentAccidentFreeDay = 0;
+        standbyEnterReason = StandbyEnterReason.None;
+
+        if (ScheduleManager != null)
+            ScheduleManager.ResetAllSimulationData();
+
+        if (DailyMissionManager.Instance != null)
+            DailyMissionManager.Instance.ResetAll();
+    }
 }
