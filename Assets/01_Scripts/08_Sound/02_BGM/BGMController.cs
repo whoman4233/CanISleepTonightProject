@@ -1,43 +1,36 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BGMController : MonoBehaviour
 {
     [SerializeField] private BGMDatabase database;
 
     private BGMData _current;
-    private Action<GamePhaseChangedEvent> _onPhaseChanged;
 
     private void Awake()
     {
-        _onPhaseChanged = OnPhaseChanged;
+        DontDestroyOnLoad(gameObject);
     }
-    private void Start()
-    {
-        PreloadAllBGM();
-    }
+
     private void OnEnable()
     {
-        EventBus.Subscribe(_onPhaseChanged);
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe(_onPhaseChanged);
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-    private void PreloadAllBGM() // * 비동기 로딩을 통한 렉유발 해결
+
+    private void Start()
     {
-        foreach (var bgm in database.All)
-        {
-            if (bgm.clip != null)
-            {
-                bgm.clip.LoadAudioData();
-            }
-        }
+        // 첫 씬 진입 대응
+        OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
     }
-    private void OnPhaseChanged(GamePhaseChangedEvent e)
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        var next = database.Get(e.Phase);
+        var next = database.GetByScene(scene.name);
         if (next == null)
             return;
 
@@ -51,7 +44,6 @@ public class BGMController : MonoBehaviour
     private void Play(BGMData data)
     {
         AudioManager.Instance.PlayBGM(data.clip, data.loop);
-
-        Debug.Log($"[BGM] 변경 페이즈-> {data.phase}");
     }
 }
+
