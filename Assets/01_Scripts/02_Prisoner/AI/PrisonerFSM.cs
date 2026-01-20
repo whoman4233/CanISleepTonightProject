@@ -42,7 +42,7 @@ public class PrisonerFSM : MonoBehaviour
         // 상태 객체 생성
         ActionState = new PrisonerActionIdleState(this);
         AmbushState = new PrisonerAmbushState(this);
-        VisualIdleState = new PrisonerVisualIdleState(this); // 추가됨
+        VisualIdleState = new PrisonerVisualIdleState(this);
 
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
@@ -70,14 +70,36 @@ public class PrisonerFSM : MonoBehaviour
 
     public void InitializeBehavior(PrisonerAIType aiType)
     {
+        // ============================================================
+        // ★ [수정] 달리기 스타일 결정 (AIType 기반)
+        // ============================================================
+        float runStyleValue = 0f; // 기본값 (0: 일반 달리기)
+
+        // ★ 특수 달리기를 사용하는 AI 타입을 여기서 검사합니다.
+        // (예: Escaper 등 특정 행동 타입일 때 1번 모션 사용)
+        // [원하는 타입으로 if문 조건을 수정하세요]
+        if (aiType == PrisonerAIType.Escaper)
+        {
+            runStyleValue = 1f; // 특수 달리기 (1: 이상한 런)
+            Debug.Log($"[FSM Init] {name} ({aiType}) -> 특수 달리기 모션 적용");
+        }
+
+        // 애니메이터에 RunStyle 전달
+        Anim.SetFloat("RunStyle", runStyleValue);
+
+
+        // ============================================================
         // 1. 특수 외형(VisualAnomalyType) 체크 및 상태 전환
+        // ============================================================
         if (CheckAndEnterVisualState())
         {
             Debug.Log($"[FSM Init] {name} initialized behavior: VisualIdleState");
             return;
         }
 
-        // 2. 매복자(Ambusher) 타입 처리
+        // ============================================================
+        // 2. 매복자(Ambusher) 및 일반 타입 처리
+        // ============================================================
         if (aiType == PrisonerAIType.Ambusher)
         {
             Debug.Log($"[FSM Init] {name} is Ambusher -> Enter AmbushState");
@@ -115,6 +137,12 @@ public class PrisonerFSM : MonoBehaviour
 
     public void OnDamaged(int dmg, Vector3 hitPoint, Vector3 hitDir)
     {
+        if (Anim != null)
+        {
+            int randomHit = Random.Range(0, 4);
+            Anim.SetInteger("HitVariant", randomHit);
+        }
+
         _currentState?.OnDamaged(dmg, hitPoint, hitDir);
     }
 
@@ -125,7 +153,8 @@ public class PrisonerFSM : MonoBehaviour
         // 현재 상태가 VisualIdleState라면 해당 상태의 로직 위임
         if (_currentState == VisualIdleState)
         {
-            VisualIdleState.OnStartInspection();
+            // VisualIdleState 내부에 OnStartInspection 구현이 필요함 (형변환 호출)
+            ((PrisonerVisualIdleState)VisualIdleState).OnStartInspection();
             return;
         }
 
