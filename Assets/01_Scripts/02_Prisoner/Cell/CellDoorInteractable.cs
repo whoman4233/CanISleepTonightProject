@@ -121,6 +121,18 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void HandleSimpleDoor()
     {
+        var missionManager = DailyMissionManager.Instance;
+
+        // Patrol 진입용 문 가드
+        if (missionManager != null &&
+            missionManager.CurrentMission != null &&
+            !missionManager.IsBriefingDialogueViewed)
+        {
+            EventBus.Publish(new ShowTimedTextPopupEvent("교도소장에게 오늘 미션에 대해 묻기", 2.0f, true));
+
+            PlayLocked();
+            return;
+        }
         if (!_isSimpleDoorOpen)
         {
             // [열기]
@@ -191,6 +203,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             // ... (기존 닫기 로직 유지)
             if (cellInsideTrigger != null && _isPlayerInside)
             {
+                EventBus.Publish(new ShowTimedTextPopupEvent("내부에선 문을 닫을 수 없습니다.", 2.0f, true));
                 Debug.LogWarning($"[Door] {cellId} 내부에 플레이어가 있어 문을 닫을 수 없습니다.");
                 return;
             }

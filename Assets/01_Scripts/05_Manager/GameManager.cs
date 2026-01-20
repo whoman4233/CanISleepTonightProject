@@ -228,7 +228,7 @@ public class GameManager : MonoBehaviour
         if (standbyEnterReason == StandbyEnterReason.NextDay)
         {
             currentDay++;
-            playerHP += 10;
+            playerHP = Mathf.Min(playerHP + 10, 100);
             CurrentAccidentFreeDay++; // ★ 다음날로 넘어가면 무사고 +1
         }
         else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
