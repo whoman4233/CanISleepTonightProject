@@ -134,7 +134,7 @@ public class SequenceExecutor : MonoBehaviour
         if (option.endMissionAfterSequence)
         {
             Debug.Log("[SequenceExecutor] AutoReport will be published in 1s");
-            yield return new WaitForSecondsRealtime(1.0f);
+            yield return new WaitForSecondsRealtime(0.2f);
 
             Debug.Log("[SequenceExecutor] Publish MissionAutoReportRequestedEvent");
             EventBus.Publish(new MissionAutoReportRequestedEvent());

@@ -30,14 +30,16 @@ public class DialogueTrigger : MonoBehaviour
             return;
 
         // 이미 사용된 트리거면 무시
-        if (!mission.CanUseTrigger(triggerId))
-            return;
+        mission.MarkTriggerUsed(triggerId);
 
         // 트리거 사용 처리 (미션 쪽에서 상태 관리)
         mission.MarkTriggerUsed(triggerId);
 
         // 다이얼로그 강제 재생
         DialogueManager.Instance.StartDialogue(dialogue.Lines);
+
+        // 사용 후 파괴
+        Destroy(gameObject);
     }
 }
 
