@@ -244,12 +244,12 @@ public class GameManager : MonoBehaviour
     private void OnEnterBriefing()
     {
         // ★ [핵심] 현재 미션에 맞춰 프랭크 위치 배정 (셔플 대응)
-        var frankManager = FindObjectOfType<FrankSpawnManager>();
-        if (frankManager != null && DailyMissionManager.Instance != null)
-        {
-            // 섞인 미션 정보(CurrentMission)를 전달
-            frankManager.SpawnFrankForMission(DailyMissionManager.Instance.CurrentMission);
-        }
+        //var frankManager = FindObjectOfType<FrankSpawnManager>();
+        //if (frankManager != null && DailyMissionManager.Instance != null)
+        //{
+        //    // 섞인 미션 정보(CurrentMission)를 전달
+        //    frankManager.SpawnFrankForMission(DailyMissionManager.Instance.CurrentMission);
+        //}
 
         StandbyEndTrigger();
     }
