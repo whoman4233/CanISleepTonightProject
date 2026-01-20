@@ -14,7 +14,7 @@ public class GameSaveData
     // (저장 시점의 '누가 범인인가' 상태를 저장)
     public List<DailyRoleSaveData> dailyRoles = new List<DailyRoleSaveData>();
 
-    // ★ [추가] 섞인 미션 순서 저장용 (로드 시 복구하기 위함)
+    // 섞인 미션 순서 저장용 (로드 시 복구하기 위함)
     public List<int> randomizedMissionIndices = new List<int>();
 }
 [System.Serializable]
