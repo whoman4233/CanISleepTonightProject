@@ -90,6 +90,11 @@ public struct IntoPlaySceneEvent
 {
 
 }
+//근무 실패 후 "새 게임(튜토리얼 스킵)" 재시작 요청 이벤트
+public struct RequestRestartFromFailureEvent
+{
+
+}
 
 //==========================================
 // UI 신 관련 통합관리용 이벤트

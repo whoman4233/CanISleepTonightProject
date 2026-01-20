@@ -42,7 +42,7 @@ public class ResultFailPanel : ResultPanelBase
     private void OnRestartClicked()
     {
         GameManager.Instance.SetStandbyEnterReason(StandbyEnterReason.RestartSameDay);
-        EventBus.Publish(new RequestGameRestartEvent());
+        EventBus.Publish(new RequestRestartFromFailureEvent());
     }
 
     private void OnTitleClicked()
