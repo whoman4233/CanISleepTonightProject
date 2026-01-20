@@ -17,6 +17,12 @@ public class DialogueManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float typingSpeed = 0.05f; // 타이핑 속도 (추후 조절 가능)
 
+    // =========================
+    // Raycast 제어용 CanvasGroup
+    // =========================
+    [Header("Raycast Control")]
+    [SerializeField] private CanvasGroup dialogueCanvasGroup;
+
     private Queue<DialogueLine> dialogueQueue;
     private Coroutine dialogueRoutine;
     private bool isTyping = false;
@@ -25,7 +31,7 @@ public class DialogueManager : MonoBehaviour
     private PlayerInputs.DialogueActions _dialogueActions; //Dialogue용 액션맵 추가
     private bool _allowContinueInput; // 입력 허용 여부
 
-    private System.Action _onDialogueComplete;
+    private Action _onDialogueComplete;
 
     // =========================
     // WaitForSecondsRealtime 캐싱
@@ -56,8 +62,27 @@ public class DialogueManager : MonoBehaviour
 
         dialogueQueue = new Queue<DialogueLine>();
         dialoguePanel.SetActive(false);
+        // =========================
+        // 기본 Raycast 허용
+        // =========================
+        if (dialogueCanvasGroup != null)
+        {
+            dialogueCanvasGroup.blocksRaycasts = true;
+            dialogueCanvasGroup.interactable = true;
+        }
     }
+    // =========================
+    // PauseMenu 연동용 API
+    // =========================
+    public void SetRaycastBlocked(bool blocked)
+    {
+        if (dialogueCanvasGroup == null)
+            return;
 
+        // PauseMenu가 열리면 Dialogue는 입력만 차단
+        dialogueCanvasGroup.blocksRaycasts = !blocked;
+        dialogueCanvasGroup.interactable = !blocked;
+    }
     private void OnEnable()
     {
         //  Dialogue ActionMap 입력 구독
@@ -336,6 +361,15 @@ public class DialogueManager : MonoBehaviour
         dialogueContentText.maxVisibleCharacters = 0; // 텍스트 숫자 0으로만들어주기
 
         Debug.Log("End Dialogue");
+
+        // =========================
+        // 종료 시 Raycast 복구
+        // =========================
+        SetRaycastBlocked(false);
+
+        speakerNameText.text = string.Empty;
+        dialogueContentText.text = string.Empty;
+        dialogueContentText.maxVisibleCharacters = 0;
 
         if (_onDialogueComplete != null)
         {
