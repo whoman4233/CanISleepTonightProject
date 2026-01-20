@@ -125,7 +125,6 @@ public class DailyMissionManager : MonoBehaviour
         var fixedMission = missionScenario[targetIndex];
         CurrentMission = fixedMission;
 
-        // ★★★ [핵심 수정] 매칭 문제 해결 ★★★
         // 테스트 모드이므로, 섞여있는 리스트(RandomizedOrder)의 해당 날짜 슬롯도 
         // 강제로 이 고정 미션으로 덮어씌웁니다.
         // 이렇게 하면 UI나 DayDebugConsole이 GetMissionStrategy(day)를 호출해도 
