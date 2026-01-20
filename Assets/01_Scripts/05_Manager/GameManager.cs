@@ -338,7 +338,6 @@ public class GameManager : MonoBehaviour
             currentDay = this.currentDay,
             currentPhase = this.currentPhase,
             currentHp = this.playerHP,
-            // ★ 무사고일 저장 (GameSaveData에 필드가 없다면 추가 필요)
             // accidentFreeDay = this.CurrentAccidentFreeDay 
         };
 
@@ -348,7 +347,7 @@ public class GameManager : MonoBehaviour
             ScheduleManager.ExtractDataForSave(out data.prisonerRoster, out data.dailyRoles);
         }
 
-        // ★ [추가] 미션 순서 저장
+        // 미션 순서 저장
         if (DailyMissionManager.Instance != null)
         {
             data.randomizedMissionIndices = DailyMissionManager.Instance.GetMissionOrderIndices();
