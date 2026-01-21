@@ -197,31 +197,28 @@ public class PrisonerScheduleManager : MonoBehaviour
     }
     // ============================================================
     // "하루 시작" 전용 리셋
-    // - 새 게임 리셋과 구분
-    // - HP 같은 영구 데이터는 건드리지 않음
-    // - 오늘 역할/일일 플래그만 초기화
     // ============================================================
     public void ResetDailyState()
     {
-        // 오늘 역할 테이블은 하루 시작 전에 무조건 비워야 함
+        // 1. 오늘 역할 테이블 비우기
         _todayRoles.Clear();
 
-        // ★ 팀원 코드에 "일일 제압/잠금" 같은 플래그가 PrisonerData에 있다면
-        // 여기서 같이 초기화해야 함.
-        // (아래는 예시이므로, 실제 PrisonerData 필드명에 맞게 최소로 적용)
-        /*
-        foreach (var kvp in _residents)
+        // 2. ★ [여기입니다] 모든 죄수의 일일 상태 초기화 호출
+        if (_residents != null)
         {
-            kvp.Value.IsDailyLocked = false;
-            kvp.Value.WasResolvedToday = false;
+            foreach (var kvp in _residents)
+            {
+                // 각 죄수 데이터(PrisonerData)에게 "오늘치 상태 리셋해!"라고 명령
+                kvp.Value.ResetDailyFlags();
+            }
         }
-        */
 
         if (_cachedResidents != null)
             _cachedResidents = _residents;
 
-        Debug.Log("[Schedule] ResetDailyState 완료 (TodayRoles cleared)");
+        Debug.Log("[Schedule] 모든 죄수의 일일 상태(제압 등)가 초기화되었습니다.");
     }
+
     public void ExtractDataForSave(out List<PrisonerSaveData> outRoster, out List<DailyRoleSaveData> outDailyRoles)
     {
         outRoster = new List<PrisonerSaveData>();

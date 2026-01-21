@@ -225,34 +225,51 @@ public class DailyMissionManager : MonoBehaviour
     }
 
     // =====================================================
-    // 디버그용: 오늘 날짜에 랜덤 미션 강제 배정
+    // 디버그용: 오늘 날짜에 해당하는 미션 강제 배정 (수정됨)
     // =====================================================
     public void StartFixDay(int dayIndex)
     {
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
+        // 혹시 리스트가 비어있으면 채워줌
         if (_randomizedMissionOrder.Count == 0)
         {
             Debug.LogWarning("[Debug] 런 미션 테이블 비어있음 → 재생성");
             InitializeMissionTableForRun();
         }
 
-        // day7 테스트 방지 (선택)
-        var candidates = (dayIndex == 7)
-            ? _randomizedMissionOrder
-            : _randomizedMissionOrder.Take(6).ToList();
+        // =========================================================
+        // [수정 전] 랜덤 목록에서 또 랜덤으로 뽑음 (문제 원인)
+        // var candidates = ... 
+        // var fixedMission = candidates[UnityEngine.Random.Range(...)];
+        // =========================================================
 
-        var fixedMission = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        // =========================================================
+        // [수정 후] 시나리오 원본 리스트에서 정확히 해당 인덱스 미션을 가져옴
+        // =========================================================
+        int targetIndex = dayIndex - 1; // 1번 키 누르면 index 0 (첫 번째 미션)
 
-        CurrentMission = fixedMission;
-        CurrentMissionRuntime = new MissionRuntimeState();
+        if (missionScenario != null && targetIndex >= 0 && targetIndex < missionScenario.Count)
+        {
+            var fixedMission = missionScenario[targetIndex];
 
-        // 중복 방지용 최소 동기화
-        _remainingMissionOrder.Remove(fixedMission);
+            CurrentMission = fixedMission;
+            CurrentMissionRuntime = new MissionRuntimeState();
 
-        Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 랜덤 미션 강제 시작: {CurrentMission.title}");
-        StartMissionSetup(dayIndex);
+            // 중복 방지용 최소 동기화 (진행 중인 미션 목록에서 제거)
+            if (_remainingMissionOrder.Contains(fixedMission))
+            {
+                _remainingMissionOrder.Remove(fixedMission);
+            }
+
+            Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 고정 미션 강제 시작: {CurrentMission.title}");
+            StartMissionSetup(dayIndex);
+        }
+        else
+        {
+            Debug.LogError($"[Debug] 잘못된 미션 번호입니다: {dayIndex}. (MissionScenario 범위 확인 필요)");
+        }
     }
 
     // ========================================================================
