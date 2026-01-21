@@ -102,11 +102,13 @@ public class PrisonerActionIdleState : BasePrisonerState
         if (IsAggressiveType(_currentType))
         {
             Debug.Log($"[{Controller.name}] 공격받음! 반격 시작.");
+            anim.SetTrigger("Hit");
             fsm.ChangeState(fsm.CombatState);
         }
         else
         {
             Debug.Log($"[{Controller.name}] 공격받음! 겁먹음.");
+            anim.SetTrigger("HitCower");
             fsm.ChangeState(fsm.CowerState);
         }
     }
