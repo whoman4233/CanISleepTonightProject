@@ -2658,10 +2658,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 513e592e882f90c4b8eacb72a72462ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackRange: 1.5
+  attackAngle: 45
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 0
   animator: {fileID: 3475742819566657788}
   ragdoll: {fileID: 4730829418296426203}
   sfx: {fileID: 6948067153894314097}
-  actionProps: []
+  actionProps:
+  - type: 5
+    propObject: {fileID: 4118976167796309959, guid: 4b2bb195fd6606e4a932d49691d1ad3d,
+      type: 3}
+  - type: 13
+    propObject: {fileID: 6778953398965070674, guid: c885041c1ba0b744089d76322498c9fe,
+      type: 3}
 --- !u!114 &7826910796316690719
 MonoBehaviour:
   m_ObjectHideFlags: 0
