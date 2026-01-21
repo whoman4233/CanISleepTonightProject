@@ -71,11 +71,11 @@ public class PrisonerFSM : MonoBehaviour
     public void InitializeBehavior(PrisonerAIType aiType)
     {
         // ============================================================
-        // ★ [수정] 달리기 스타일 결정 (AIType 기반)
+        // [수정] 달리기 스타일 결정 (AIType 기반)
         // ============================================================
         float runStyleValue = 0f; // 기본값 (0: 일반 달리기)
 
-        // ★ 특수 달리기를 사용하는 AI 타입을 여기서 검사합니다.
+        // 특수 달리기를 사용하는 AI 타입을 여기서 검사합니다.
         if (aiType == PrisonerAIType.Escaper)
         {
             runStyleValue = 1f; // 특수 달리기 (1: 이상한 런)
@@ -134,7 +134,7 @@ public class PrisonerFSM : MonoBehaviour
     }
 
     // ================================================================
-    // ★ [수정됨] HitVariant 파라미터 타입 불일치 해결 (Int -> Float)
+    // [수정됨] HitVariant 파라미터 타입 불일치 해결 (Int -> Float)
     // ================================================================
     public void OnDamaged(int dmg, Vector3 hitPoint, Vector3 hitDir)
     {
@@ -151,6 +151,13 @@ public class PrisonerFSM : MonoBehaviour
     public void OnStartInspection()
     {
         if (Controller == null) return;
+
+        // [추가] 사망한 상태라면 점호 명령을 무시하도록 예외 처리
+        if (_currentState == DeadState)
+        {
+            Debug.Log($"[FSM] {name}는 이미 사망했으므로 점호에 참여하지 않습니다.");
+            return;
+        }
 
         // 현재 상태가 VisualIdleState라면 해당 상태의 로직 위임
         if (_currentState == VisualIdleState)
