@@ -46,56 +46,94 @@ public class AnomalyDistributor : MonoBehaviour
 
         var allCellIds = anchorRegistry.GetAllCellIds();
 
+        // 1. [덱 생성] 이번 테마의 '공용 아이템(Common)'을 모두 모아 리스트로 만듭니다.
+        List<AnomalyDefinitionSO> commonDeck = new List<AnomalyDefinitionSO>();
+        if (currentDayPool.Count > 0)
+        {
+            var commons = currentDayPool.Where(d => d.category == AnomalyCategory.Common).ToList();
+            commonDeck.AddRange(commons);
+
+            // 2. [셔플] 리스트를 무작위로 섞습니다. (중복 방지의 핵심)
+            ShuffleList(commonDeck);
+        }
+
+        // 3. 용의자 방들을 순회하며 아이템을 하나씩 나눠줍니다.
         foreach (var cellId in allCellIds)
         {
             if (!anchorRegistry.TryGet(cellId, out var anchor)) continue;
 
             anchor.ClearDailyAnomalies();
 
-            PrisonerData pData = scheduleManager.GetPrisonerData(cellId);
             var dailyRole = scheduleManager.GetDailyRole(cellId);
+
+            // 용의자가 아니면 스킵
+            if (!dailyRole.isSuspicious) continue;
+
+            PrisonerData pData = scheduleManager.GetPrisonerData(cellId);
             PrisonerType pType = (pData != null && pData.definition != null) ? pData.definition.traitType : PrisonerType.None;
 
+            AnomalyDefinitionSO selectedItem = null;
+
             // =============================================================
-            // ★ [수정] 미션 아이템(Common) 누락 방지 로직
+            // ★ [수정] 덱에서 하나씩 꺼내주기 (Pop)
             // =============================================================
-            if (dailyRole.isSuspicious && currentDayPool.Count > 0)
+
+            // 전략 A: 공용 아이템(미션템)이 덱에 남아있다면 우선 배정 (1순위)
+            if (commonDeck.Count > 0)
             {
-                // 1. 죄수 전용 아이템
+                selectedItem = commonDeck[0];
+                commonDeck.RemoveAt(0); // 준 건 덱에서 뺌 (중복 방지)
+            }
+            // 전략 B: 공용 아이템이 동났다면? -> 죄수 전용 아이템 배정 (2순위)
+            else
+            {
                 var individualItems = currentDayPool
                     .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
                     .ToList();
 
-                // 2. 공용 아이템 (미션 아이템 포함)
-                var commonItems = currentDayPool
-                    .Where(d => d.category == AnomalyCategory.Common)
-                    .ToList();
-
-                // 3. [핵심] 두 리스트 합치기
-                var finalCandidates = new List<AnomalyDefinitionSO>();
-                finalCandidates.AddRange(individualItems);
-                finalCandidates.AddRange(commonItems);
-
-                if (finalCandidates.Count > 0)
+                if (individualItems.Count > 0)
                 {
-                    var culprit = finalCandidates[Random.Range(0, finalCandidates.Count)];
-                    anchor.currentDailyAnomalies.Add(culprit);
-                    Debug.Log($"🔴 {cellId} ({pType}) -> 범인 확정: {culprit.name}");
+                    selectedItem = individualItems[Random.Range(0, individualItems.Count)];
                 }
+                // 전략 C: 그것도 없다면? -> 어쩔 수 없이 공용 풀에서 랜덤 (중복 허용)
                 else
                 {
-                    Debug.LogWarning($"⚠️ {cellId} ({pType}) -> 용의자지만 배정 가능한 이상현상이 없음.");
+                    var commonBackup = currentDayPool.Where(d => d.category == AnomalyCategory.Common).ToList();
+                    if (commonBackup.Count > 0)
+                        selectedItem = commonBackup[Random.Range(0, commonBackup.Count)];
                 }
+            }
+
+            // 최종 적용
+            if (selectedItem != null)
+            {
+                anchor.currentDailyAnomalies.Add(selectedItem);
+                Debug.Log($"🔴 {cellId} ({pType}) -> 범인 확정: {selectedItem.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️ {cellId} ({pType}) -> 용의자지만 배정 가능한 아이템이 없음.");
             }
         }
     }
 
-    // [추가] 미션 스크립트에서 호출: 특정 아이템 강제 배정
+    // 리스트 섞기 함수 (Fisher-Yates Shuffle)
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            T temp = list[i];
+            int rnd = Random.Range(i, list.Count);
+            list[i] = list[rnd];
+            list[rnd] = temp;
+        }
+    }
+
     public void ForceAddAnomaly(string cellId, AnomalyDefinitionSO itemDef)
     {
         if (anchorRegistry.TryGet(cellId, out var anchor))
         {
-            anchor.ClearDailyAnomalies(); // 기존 랜덤 배정 삭제 (미션 우선)
+            anchor.ClearDailyAnomalies();
             anchor.currentDailyAnomalies.Add(itemDef);
             Debug.Log($"[Mission] {cellId}에 미션 아이템 강제 배정: {itemDef.name}");
         }

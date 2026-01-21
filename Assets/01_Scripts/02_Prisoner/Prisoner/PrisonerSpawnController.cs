@@ -32,9 +32,7 @@ public class PrisonerSpawnController : MonoBehaviour
     {
         _currentCenterSpawnIndex = 0;
 
-        // =========================================================================
-        // 1단계: 장부(Registry) 기반의 정석적인 삭제
-        // =========================================================================
+        // 1단계: 레지스트리 기반 정리
         if (contentRegistry != null)
         {
             if (anchorRegistry != null)
@@ -82,9 +80,7 @@ public class PrisonerSpawnController : MonoBehaviour
             }
         }
 
-        // =========================================================================
-        // 2단계: 씬(Scene) 전수 조사
-        // =========================================================================
+        // 2단계: 씬 전수 조사 (잔여물 제거)
         PrisonerController[] allPrisoners = UnityEngine.Object.FindObjectsOfType<PrisonerController>();
         foreach (var prisoner in allPrisoners)
         {
@@ -112,7 +108,6 @@ public class PrisonerSpawnController : MonoBehaviour
         if (!ValidateRefs() || contentRegistry.TryGet(cellId, out _)) return;
         if (!anchorRegistry.TryGet(cellId, out var anchor)) return;
 
-        // 1. 데이터 가져오기
         PrisonerData existingData = scheduleManager.GetPrisonerData(cellId);
         DailyRoleData dailyRole = scheduleManager.GetDailyRole(cellId);
 
@@ -121,20 +116,18 @@ public class PrisonerSpawnController : MonoBehaviour
         var content = new CellContentRegistry.CellContent();
         content.prisonerInstanceId = existingData.ID;
 
-        // ================================================================
-        // 🕵️‍♂️ [현황판] 프리팹 선정 과정 추적
-        // ================================================================
+        // ------------------------------------------------------------
+        // 프리팹 선정
+        // ------------------------------------------------------------
         GameObject prefabToUse = null;
         string prefabSource = "";
 
-        // [1단계] 죄수 고유 데이터(SO) 확인
         if (existingData.definition != null && existingData.definition.prisonerPrefab != null)
         {
             prefabToUse = existingData.definition.prisonerPrefab;
             prefabSource = "Original_SO";
         }
 
-        // [2단계] 역할(VisualType)에 따른 오버라이드
         if (dailyRole.visualType != VisualAnomalyType.None)
         {
             string targetID = dailyRole.visualType.ToString();
@@ -148,7 +141,6 @@ public class PrisonerSpawnController : MonoBehaviour
             }
         }
 
-        // [3단계] 기본값
         if (prefabToUse == null)
         {
             prefabToUse = defaultPrisonerPrefab;
@@ -156,12 +148,30 @@ public class PrisonerSpawnController : MonoBehaviour
         }
 
         // ================================================================
-        // 📍 [위치] 위치 선정 로직
+        // 📍 [위치] 위치 선정 로직 (수정됨)
         // ================================================================
+
+        // 1. 기본값 (CellAnchor의 메인 Spawn)
         Vector3 spawnPos = anchor.prisonerSpawn.position;
         Quaternion spawnRot = anchor.prisonerSpawn.rotation;
+        string locationLog = "MainSpawn";
+
+        // 2. ★ [추가] 랜덤 스폰 포인트가 설정되어 있다면 그중 하나 선택
+        if (anchor.randomSpawnPoints != null && anchor.randomSpawnPoints.Count > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, anchor.randomSpawnPoints.Count);
+            Transform randomPoint = anchor.randomSpawnPoints[randomIndex];
+
+            if (randomPoint != null)
+            {
+                spawnPos = randomPoint.position;
+                spawnRot = randomPoint.rotation;
+                locationLog = $"Random[{randomIndex}]";
+            }
+        }
+
+        // 3. 특수 캐릭터(Frank 등)의 중앙 스폰 오버라이드 (랜덤보다 우선순위 높음)
         bool isCenterTarget = IsCenterSpawnTarget(dailyRole.visualType);
-        string locationLog = "Room";
 
         if (isCenterTarget)
         {
@@ -194,16 +204,13 @@ public class PrisonerSpawnController : MonoBehaviour
             content.prop = propGo;
         }
 
-        // 6. 이상현상 스폰 (수정된 로직)
+        // 6. 이상현상 스폰
         SpawnAnomaliesLogic(cellId, anchor, isSuspicious, content);
 
         contentRegistry.Set(cellId, content);
         anchor.IsOccupied = true;
     }
 
-    // =========================================================================
-    // ★ [수정됨] 스폰 순서 보장: 범인(미션) 아이템 -> 일반 아이템
-    // =========================================================================
     private void SpawnAnomaliesLogic(string cellId, CellAnchor anchor, bool isSuspicious, CellContentRegistry.CellContent content)
     {
         if (anomalyDatabase == null) return;
@@ -211,42 +218,32 @@ public class PrisonerSpawnController : MonoBehaviour
         List<AnomalySpawnSlot> availableSlots = new List<AnomalySpawnSlot>(anchor.anomalySlots);
         HashSet<AnomalyTargetType> processedReplacements = new HashSet<AnomalyTargetType>();
 
-        // 현재 방에 배정된 "범인 아이템" 찾기 (미션 아이템이 여기 들어있음)
         List<AnomalyDefinitionSO> dailyList = anchor.currentDailyAnomalies ?? new List<AnomalyDefinitionSO>();
         AnomalyDefinitionSO culpritDef = (dailyList.Count > 0) ? dailyList[0] : null;
 
-        // ====================================================================
-        // PHASE 1: 범인 아이템(Culprit) 최우선 스폰 (슬롯 선점)
-        // ====================================================================
+        // PHASE 1: 범인 아이템
         if (culpritDef != null && isSuspicious)
         {
             TrySpawnSingleAnomaly(cellId, culpritDef, anchor, availableSlots, processedReplacements, content, true);
         }
 
-        // ====================================================================
-        // PHASE 2: 나머지 아이템 (AlwaysSpawnNormal, Decorative) 스폰
-        // ====================================================================
+        // PHASE 2: 일반 아이템
         PrisonerType residentType = GetPrisonerType(cellId);
 
         foreach (var def in anomalyDatabase.defs)
         {
             if (def == null) continue;
-            if (def == culpritDef) continue; // 이미 처리했으므로 패스
+            if (def == culpritDef) continue;
 
             bool shouldSpawn = false;
 
-            // 조건 체크 (AlwaysSpawn or Decorative)
             if (def.alwaysSpawnNormal || def.isDecorative)
             {
-                // 타입 매칭 체크
                 bool typeMatch = true;
                 if (def.category == AnomalyCategory.Individual && def.targetPrisoner != residentType)
                     typeMatch = false;
 
-                if (typeMatch)
-                {
-                    shouldSpawn = true;
-                }
+                if (typeMatch) shouldSpawn = true;
             }
 
             if (shouldSpawn)
@@ -256,7 +253,6 @@ public class PrisonerSpawnController : MonoBehaviour
         }
     }
 
-    // [추가] 스폰 로직 분리 (코드 중복 제거 및 가독성 향상)
     private void TrySpawnSingleAnomaly(string cellId, AnomalyDefinitionSO def, CellAnchor anchor,
         List<AnomalySpawnSlot> availableSlots, HashSet<AnomalyTargetType> processedReplacements,
         CellContentRegistry.CellContent content, bool isCulprit)
@@ -264,15 +260,12 @@ public class PrisonerSpawnController : MonoBehaviour
         GameObject prefabToSpawn = isCulprit ? def.suspiciousPrefab : def.normalPrefab;
         if (prefabToSpawn == null) return;
 
-        // 1. 교체형(Replacement) 중복 체크
         if (def.targetType != AnomalyTargetType.Slot && processedReplacements.Contains(def.targetType)) return;
 
         GameObject spawnedGO = null;
 
-        // 2. 위치 결정 및 스폰
         if (def.targetType != AnomalyTargetType.Slot)
         {
-            // 교체형 (가구 등)
             if (anchor.structure != null)
             {
                 GameObject defaultObj = anchor.structure.GetDefaultObject(def.targetType);
@@ -286,21 +279,17 @@ public class PrisonerSpawnController : MonoBehaviour
         }
         else
         {
-            // 슬롯형 (침대 밑, 쓰레기통 등)
-            // ★ 여기서 중요: 범인 아이템이 먼저 슬롯을 가져갔으면, 나중에 온 데코 아이템은 슬롯이 없어서 스폰 안 됨 (의도된 동작)
             var candidateSlots = availableSlots.Where(s => s.kind == def.kind).ToList();
             if (candidateSlots.Count > 0)
             {
                 var targetSlot = candidateSlots[UnityEngine.Random.Range(0, candidateSlots.Count)];
-                availableSlots.Remove(targetSlot); // 슬롯 사용 처리
+                availableSlots.Remove(targetSlot);
                 spawnedGO = Instantiate(prefabToSpawn, targetSlot.transform.position, targetSlot.transform.rotation, targetSlot.transform);
             }
         }
 
-        // 3. 등록
         if (spawnedGO != null)
         {
-            // 안전장치
             if (spawnedGO.GetComponent<PrisonerController>() != null)
             {
                 Debug.LogError($"[Spawn Error] {def.name}에 Prisoner 컴포넌트가 있습니다! SO 설정을 확인하세요.");
