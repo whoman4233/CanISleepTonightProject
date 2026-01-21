@@ -279,6 +279,11 @@ public class DailyMissionManager : MonoBehaviour
     {
         Debug.Log($"[GameFlow] Day {dayIndex} 미션 설정 중...");
 
+        if (CurrentMissionRuntime == null)
+        {
+            CurrentMissionRuntime = new MissionRuntimeState();
+        }
+
         if (CurrentMission != null)
         {
             CurrentMission.SetupDay(
