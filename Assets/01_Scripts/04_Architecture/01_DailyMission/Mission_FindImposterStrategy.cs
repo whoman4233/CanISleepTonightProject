@@ -152,7 +152,6 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
 
             return true;
         }
-
         return false;
     }
 
