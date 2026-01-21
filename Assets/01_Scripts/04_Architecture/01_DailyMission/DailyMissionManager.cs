@@ -34,7 +34,7 @@ public class DailyMissionManager : MonoBehaviour
     public bool IsBriefingDialogueViewed { get; private set; }
     public bool IsReported { get; private set; }
 
-    private int dailyResolvedCount = 0;
+    private int dailyResolvedCount = 0; 
     public int CurrentScore { get; private set; }
 
     private void Awake()
@@ -467,12 +467,6 @@ public class DailyMissionManager : MonoBehaviour
         {
             Debug.Log($"[Debug] 2-B. 현재 미션은 프랭크 찾기가 아닙니다. ({CurrentMission?.GetType().Name})");
         }
-
-        Debug.Log("[Debug] 6. 결과 평가 및 UI 표시 요청 단계 진입");
-        EvaluateDayResult(out string failReason);
-
-        Debug.Log($"[Debug] 7. ResultUI 표시 이벤트 발행 (실패사유: {failReason})");
-        EventBus.Publish(new ResultUIShowRequestedEvent(e.IsSuccess, failReason));
     }
 
     public void ResetAll()
