@@ -101,12 +101,27 @@ public class FlowController : MonoBehaviour
         Scene playScene = SceneManager.GetSceneByName(playSceneName);
         if (playScene.IsValid())
             SceneManager.SetActiveScene(playScene);
+
         if (DailyMissionManager.Instance != null)
         {
+            var dm = DailyMissionManager.Instance;
+            var save = new SaveManager().LoadGame();
+
+            // ===============================
+            // 런 미션 테이블 복구
+            // ===============================
             var order = GameManager.Instance.ConsumePendingMissionOrder();
-            if (order != null)
+            if (order != null && order.Count > 0)
             {
-                DailyMissionManager.Instance.RestoreMissionOrder(order);
+                dm.RestoreMissionOrder(order);
+            }
+
+            // ===============================
+            // 오늘 미션 복구
+            // ===============================
+            if (save != null && save.isMissionInProgress)
+            {
+                dm.RestoreCurrentMission(save.currentMissionIndex);
             }
         }
 
@@ -151,6 +166,38 @@ public class FlowController : MonoBehaviour
         while (!asyncLoad.isDone) yield return null;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName)); // 씬 활성화
         yield return null; //new WaitForSeconds(1.0f);
+
+        var dm = DailyMissionManager.Instance;
+        if (dm != null)
+        {
+            // =========================================================
+            // 1) 런 테이블이 비어있으면 -> 세이브에서 먼저 복원
+            // =========================================================
+            if (!dm.HasValidRunMissionTable)
+            {
+                // SaveManager는 경량이므로 여기서 직접 로드해도 됨
+                var save = new SaveManager().LoadGame();
+
+                if (save != null && save.randomizedMissionIndices != null && save.randomizedMissionIndices.Count > 0)
+                {
+                    dm.RestoreMissionOrder(save.randomizedMissionIndices);
+                    Debug.Log("[FlowController] 런 미션 테이블을 세이브에서 복원했습니다.");
+                }
+                else
+                {
+                    Debug.LogWarning("[FlowController] 세이브에 런 미션 테이블이 없어 새 런 테이블을 생성합니다.");
+                    dm.CreateNewMissionTableForNewRun(); // 최후 방어(원하면 제거 가능)
+                }
+            }
+
+            // =========================================================
+            // 2) 런 테이블은 있는데 remaining만 비었으면 -> 런 테이블 기반 복구
+            // =========================================================
+            if (!dm.HasRemainingMission)
+            {
+                dm.RestoreRemainingFromRunTable();
+            }
+        }
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
         isBusy = false;
         //yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
@@ -201,6 +248,7 @@ public class FlowController : MonoBehaviour
     {
         isBusy = true;
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+
         EventBus.Publish(new LoadingOverlayShownEvent());
 
         Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
@@ -225,6 +273,11 @@ public class FlowController : MonoBehaviour
         // - CurrentDay 조건 제거
         // - StartNewGame / RestartFromFailure 에서만 호출되도록 책임 이동
         // =====================================================
+
+        if (DailyMissionManager.Instance != null && !DailyMissionManager.Instance.HasValidRunMissionTable)
+        {
+            DailyMissionManager.Instance.CreateNewMissionTableForNewRun();
+        }
 
         GameManager.Instance.ChangePhase(GamePhase.Standby);
 

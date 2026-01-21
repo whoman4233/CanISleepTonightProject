@@ -11,12 +11,24 @@ public class DailyMissionManager : MonoBehaviour
     [Header("Mission Settings")]
     [SerializeField] private List<DailyMissionStrategy> missionScenario;
 
+    // =====================================================
+    // 런 전체에서 고정되는 미션 테이블 (새 게임 / 실패 후 새 게임에서만 생성)
+    // Save / Load 대상
+    // =====================================================
     private List<DailyMissionStrategy> _randomizedMissionOrder = new List<DailyMissionStrategy>();
+
+    // =====================================================
+    // 다음 날마다 줄어드는 풀
+    // 하루 성공 시 미션 하나씩 제거됨
+    // Save / Load 대상
+    // =====================================================
+    private List<DailyMissionStrategy> _remainingMissionOrder = new List<DailyMissionStrategy>();
 
     private Action<MissionEndRequestedEvent> _onMissionEndRequested;
     private Action<GameContextReadyEvent> _onGameContextReady;
+
     public DailyMissionStrategy CurrentMission { get; private set; }
-    public MissionRuntimeState CurrentMissionRuntime { get; private set; } //현재 미션 런타임상태(미션04)
+    public MissionRuntimeState CurrentMissionRuntime { get; private set; } // 현재 미션 런타임상태(미션04)
 
     public bool IsBriefingCompleted { get; private set; }
     public bool IsBriefingDialogueViewed { get; private set; }
@@ -39,6 +51,7 @@ public class DailyMissionManager : MonoBehaviour
         _onMissionEndRequested = OnMissionEndRequested;
         _onGameContextReady = OnGameContextReady;
     }
+
     private void OnEnable()
     {
         EventBus.Subscribe(_onMissionEndRequested);
@@ -50,19 +63,38 @@ public class DailyMissionManager : MonoBehaviour
         EventBus.Unsubscribe(_onMissionEndRequested);
         EventBus.Unsubscribe(_onGameContextReady);
     }
-
+    // =====================================================
+    // 런 전체 기준으로 미션 테이블이 유효한가
+    // (Day 전환 / 씬 재로딩 / 다음날 진입 판단용)
+    // =====================================================
+    public bool HasValidRunMissionTable
+    {
+        get => _randomizedMissionOrder != null && _randomizedMissionOrder.Count > 0;
+    }
+    public bool HasRemainingMission
+    {
+        get => _remainingMissionOrder != null && _remainingMissionOrder.Count > 0;
+    }
+    public int GetMissionIndex(DailyMissionStrategy mission) //미션 번호 조회
+    {
+        return missionScenario.IndexOf(mission);
+    }
     private void OnGameContextReady(GameContextReadyEvent e)
     {
         Debug.Log($"[DailyMissionManager] GameContextReady (Day {e.CurrentDay})");
+
         // =====================================================
         // Day 단위 상태만 리셋
+        // (미션 테이블 / 런타임 상태는 건드리지 않음)
         // =====================================================
         IsBriefingCompleted = false;
         IsBriefingDialogueViewed = false;
         IsReported = false;
+
         dailyResolvedCount = 0;
         CurrentScore = 0;
     }
+
     // =====================================================
     // 새 게임 전용 미션 테이블 생성 API
     // - 새 게임
@@ -71,11 +103,13 @@ public class DailyMissionManager : MonoBehaviour
     // =====================================================
     public void CreateNewMissionTableForNewRun()
     {
-        Debug.Log("[Mission] 새 게임 -> 미션 테이블 생성");
+        Debug.Log("[Mission] 새 런 시작 → 미션 테이블 재생성");
 
         _randomizedMissionOrder.Clear();
+        _remainingMissionOrder.Clear();
+
         CurrentMission = null;
-        CurrentMissionRuntime = null; // 런타임 상태 제거
+        CurrentMissionRuntime = null;
 
         IsBriefingCompleted = false;
         IsBriefingDialogueViewed = false;
@@ -84,28 +118,31 @@ public class DailyMissionManager : MonoBehaviour
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
-        InitializeMissionOrder();
+        InitializeMissionTableForRun();
     }
-    public void InitializeMissionOrder()
+
+    // =====================================================
+    // 런 단위 미션 테이블 생성
+    // - 1~6 랜덤 + 7 고정
+    // =====================================================
+    public void InitializeMissionTableForRun()
     {
-        _randomizedMissionOrder.Clear();
-
-        if (missionScenario == null || missionScenario.Count == 0) return;
-
-        if (missionScenario.Count < 7)
+        if (missionScenario == null || missionScenario.Count < 7)
         {
-            Debug.LogError("[Mission] 미션 시나리오 개수가 7개 미만입니다! (7일차 고정 불가)");
-            _randomizedMissionOrder.AddRange(missionScenario);
-            ShuffleList(_randomizedMissionOrder);
+            Debug.LogError("[Mission] 미션 시나리오 개수가 부족합니다.");
             return;
         }
 
         var normalDays = missionScenario.GetRange(0, 6);
         ShuffleList(normalDays);
-        _randomizedMissionOrder.AddRange(normalDays);
-        _randomizedMissionOrder.Add(missionScenario[6]);
 
-        Debug.Log("[Mission] 미션 순서 재설정 완료: [Day 1~6 Random] + [Day 7 Fixed]");
+        _randomizedMissionOrder.AddRange(normalDays);
+        _randomizedMissionOrder.Add(missionScenario[6]); // Day 7 고정
+
+        // 남은 미션 테이블은 복사본
+        _remainingMissionOrder = new List<DailyMissionStrategy>(_randomizedMissionOrder);
+
+        Debug.Log("[Mission] 런 미션 테이블 생성 완료");
     }
 
     private void ShuffleList<T>(List<T> list)
@@ -123,119 +160,165 @@ public class DailyMissionManager : MonoBehaviour
 
     public void StartDay(int dayIndex)
     {
-        dailyResolvedCount = 0;
-        CurrentScore = 0;
-
-        if (_randomizedMissionOrder.Count == 0)
+        // 이어하기 / 중단 복귀 시
+        if (CurrentMission != null)
         {
-            Debug.LogError("[Mission] 미션 테이블 비었음. (새 런 초기화 누락 가능성)");
-            InitializeMissionOrder();
-        }
-
-        int listIndex = dayIndex - 1;
-
-        if (listIndex < 0 || listIndex >= _randomizedMissionOrder.Count)
-        {
-            Debug.LogError($"[GameFlow] {dayIndex}일차 미션을 찾을 수 없습니다! (범위 초과)");
+            Debug.Log($"[Mission] Day {dayIndex} 기존 미션 유지: {CurrentMission.title}");
+            StartMissionSetup(dayIndex);
             return;
         }
 
-        CurrentMission = _randomizedMissionOrder[listIndex];
+        // ===============================
+        // "신규 Day"
+        // ===============================
+        dailyResolvedCount = 0;
+        CurrentScore = 0;
 
-        //미션 04용 상태 분리
+        if (_remainingMissionOrder.Count == 0)
+        {
+            Debug.LogError("[Mission] 남은 미션이 없습니다!");
+            return;
+        }
+
+        if (dayIndex == 7)
+        {
+            CurrentMission = missionScenario[6];
+        }
+        else
+        {
+            var candidates = _remainingMissionOrder
+                .Where(m => m != missionScenario[6])
+                .ToList();
+
+            int index = UnityEngine.Random.Range(0, candidates.Count);
+            CurrentMission = candidates[index];
+        }
+
         CurrentMissionRuntime = new MissionRuntimeState();
-
         StartMissionSetup(dayIndex);
     }
 
+
+    // =====================================================
+    // 하루 성공 확정 시 호출
+    // - ResultUIConfirmedEvent 이후
+    // =====================================================
+    public void ConsumeCurrentMission()
+    {
+        if (CurrentMission == null)
+            return;
+
+        _remainingMissionOrder.Remove(CurrentMission);
+        CurrentMission = null;         
+        CurrentMissionRuntime = null;
+
+        Debug.Log("[Mission] 오늘 미션 소비 완료");
+    }
+
+    // =====================================================
+    // 디버그용: 오늘 날짜에 랜덤 미션 강제 배정
+    // =====================================================
     public void StartFixDay(int dayIndex)
     {
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
-        int targetIndex = dayIndex - 1;
-
-        if (missionScenario == null || targetIndex < 0 || targetIndex >= missionScenario.Count)
+        if (_randomizedMissionOrder.Count == 0)
         {
-            Debug.LogError($"[GameFlow] {dayIndex}일차에 해당하는 원본 미션 데이터가 없습니다!");
-            return;
+            Debug.LogWarning("[Debug] 런 미션 테이블 비어있음 → 재생성");
+            InitializeMissionTableForRun();
         }
 
-        var fixedMission = missionScenario[targetIndex];
+        // day7 테스트 방지 (선택)
+        var candidates = (dayIndex == 7)
+            ? _randomizedMissionOrder
+            : _randomizedMissionOrder.Take(6).ToList();
+
+        var fixedMission = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+
         CurrentMission = fixedMission;
         CurrentMissionRuntime = new MissionRuntimeState();
 
-        if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
+        // 중복 방지용 최소 동기화
+        _remainingMissionOrder.Remove(fixedMission);
 
-        while (_randomizedMissionOrder.Count <= targetIndex)
-        {
-            _randomizedMissionOrder.Add(null);
-        }
-
-        if (targetIndex < _randomizedMissionOrder.Count)
-        {
-            _randomizedMissionOrder[targetIndex] = fixedMission;
-            Debug.Log($"<color=yellow>[Debug] Day {dayIndex} 슬롯을 고정 미션 [{fixedMission.title}]으로 덮어썼습니다.</color>");
-        }
-
-        Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 고정 미션 강제 시작: {CurrentMission.title}");
+        Debug.Log($"[GameFlow] (Debug) Day {dayIndex} 랜덤 미션 강제 시작: {CurrentMission.title}");
         StartMissionSetup(dayIndex);
     }
 
     // ========================================================================
-    // ★ [수정됨] 실행 순서 변경: SetupDay(역할배정) -> Distribute(아이템배포)
+    // 실행 순서: SetupDay(역할배정) -> Distribute(아이템배포)
     // ========================================================================
     private void StartMissionSetup(int dayIndex)
     {
         Debug.Log($"[GameFlow] Day {dayIndex} 미션 설정 중...");
 
-        // 1. [순서 변경됨] 먼저 미션 전략을 실행하여 '테마'를 설정하고 '역할(Suspicious)'을 배정합니다.
-        //    (SetupDay 내부에서 PrisonerScheduleManager.AssignRolesForNewDay가 호출됨)
         if (CurrentMission != null)
         {
-            CurrentMission.SetupDay(AnomalyDistributor.Instance, PrisonerScheduleManager.Instance);
+            CurrentMission.SetupDay(
+                AnomalyDistributor.Instance,
+                PrisonerScheduleManager.Instance
+            );
         }
 
-        // 2. [순서 변경됨] 배정된 역할(Suspicious)과 테마 정보를 바탕으로 아이템을 맵에 깝니다.
         if (AnomalyDistributor.Instance != null)
         {
             AnomalyDistributor.Instance.DistributeAnomalies();
         }
 
         EventBus.Publish(new MissionStartedEvent { mission = CurrentMission });
-        EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
+        EventBus.Publish(new MissionProgressChangedEvent
+        {
+            current = CurrentScore,
+            target = CurrentMission.targetScore
+        });
+        GameManager.Instance?.SaveNow();
     }
+    // =====================================================
+    // 런 유지 상태에서 남은 미션이 비었을 경우 복구용
+    // (씬 재로딩 보호 장치)
+    // =====================================================
+    public void RestoreRemainingFromRunTable()
+    {
+        if (_remainingMissionOrder.Count > 0)
+            return;
 
+        if (_randomizedMissionOrder.Count == 0)
+        {
+            Debug.LogError("[Mission] 런 테이블도 비어 있음 → 복구 불가");
+            return;
+        }
+
+        _remainingMissionOrder = new List<DailyMissionStrategy>(_randomizedMissionOrder);
+        Debug.Log("[Mission] 씬 재로딩으로 인해 남은 미션 테이블 복구됨");
+    }
     public void NotifyItemFound(string itemTag)
     {
         if (CurrentMission != null && CurrentMission.IsValidItem(itemTag))
         {
             CurrentScore++;
             CurrentMission.OnEventTriggered(itemTag);
-            EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
-            Debug.Log($"[Mission] 목표 아이템 발견! 점수: {CurrentScore}/{CurrentMission.targetScore}");
-        }
-        else
-        {
-            Debug.Log($"[Mission] 아이템 발견({itemTag})했으나 목표 아님.");
+            EventBus.Publish(new MissionProgressChangedEvent
+            {
+                current = CurrentScore,
+                target = CurrentMission.targetScore
+            });
         }
     }
 
     public void NotifyPrisonerResolved(string cellId)
     {
         dailyResolvedCount++;
-        Debug.Log($"[GameFlow] 죄수 해결 확인! (금일 누적: {dailyResolvedCount})");
 
         if (CurrentMission != null && CurrentMission.IsValidPrisoner(cellId))
         {
             CurrentScore++;
             CurrentMission.OnEventTriggered("PrisonerResolved");
-            EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
-            Debug.Log($"[Mission] 타겟 죄수 제압 성공! 점수 증가.");
-        }
-        else
-        {
-            Debug.Log($"[Mission] 죄수 제압({cellId})했으나 타겟 아님.");
+            EventBus.Publish(new MissionProgressChangedEvent
+            {
+                current = CurrentScore,
+                target = CurrentMission.targetScore
+            });
         }
     }
 
@@ -244,22 +327,21 @@ public class DailyMissionManager : MonoBehaviour
         if (CurrentMission == null)
         {
             failReason = "미션 정보 없음";
-            return true;
+            return false;
         }
+
         return CurrentMission.CheckWinCondition(CurrentScore, out failReason);
     }
 
     public DailyMissionStrategy GetMissionStrategy(int dayIndex)
     {
-        if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
+        if (_randomizedMissionOrder.Count == 0)
+            InitializeMissionTableForRun();
 
-        int listIndex = dayIndex - 1;
-        if (listIndex >= 0 && listIndex < _randomizedMissionOrder.Count)
-        {
-            return _randomizedMissionOrder[listIndex];
-        }
+        int index = dayIndex - 1;
+        if (index >= 0 && index < _randomizedMissionOrder.Count)
+            return _randomizedMissionOrder[index];
 
-        Debug.LogWarning($"[DailyMissionManager] {dayIndex}일차 미션 데이터가 없습니다.");
         return null;
     }
 
@@ -275,22 +357,11 @@ public class DailyMissionManager : MonoBehaviour
             .Select(m => missionScenario.IndexOf(m))
             .ToList();
     }
-    public bool HasValidMissionTable =>
-    _randomizedMissionOrder != null && _randomizedMissionOrder.Count > 0; //PrisonManager 로드 시 보호를 위한 장치
 
     public void RestoreMissionOrder(List<int> savedIndices)
     {
-        if (savedIndices == null || savedIndices.Count == 0)
-            return;
-
-        // 테이블이 비어있다면 초기화 후 복원
-        if (_randomizedMissionOrder.Count == 0)
-        {
-            Debug.Log("[Mission] Restore 이전 테이블 비어있음 → 컨테이너 초기화");
-            _randomizedMissionOrder = new List<DailyMissionStrategy>();
-        }
-
         _randomizedMissionOrder.Clear();
+        _remainingMissionOrder.Clear();
 
         foreach (int index in savedIndices)
         {
@@ -300,7 +371,20 @@ public class DailyMissionManager : MonoBehaviour
             }
         }
 
-        Debug.Log("[Mission] 저장된 데이터 기반으로 미션 순서를 복원했습니다.");
+        _remainingMissionOrder = new List<DailyMissionStrategy>(_randomizedMissionOrder);
+    }
+    public void RestoreCurrentMission(int missionIndex)
+    {
+        if (missionIndex < 0 || missionIndex >= missionScenario.Count)
+        {
+            Debug.LogWarning("[Mission] 잘못된 미션 인덱스 → 복원 실패");
+            return;
+        }
+
+        CurrentMission = missionScenario[missionIndex];
+        CurrentMissionRuntime = new MissionRuntimeState();
+
+        Debug.Log($"[Mission] 이어하기 → 미션 복원: {CurrentMission.title}");
     }
 
     private void OnMissionEndRequested(MissionEndRequestedEvent e)
@@ -317,6 +401,10 @@ public class DailyMissionManager : MonoBehaviour
             }
         }
 
+        if (e.IsSuccess)
+        {
+            ConsumeCurrentMission(); // 성공 확정 시에만 소비
+        }
         EvaluateDayResult(out string failReason);
         EventBus.Publish(new ResultUIShowRequestedEvent(e.IsSuccess, failReason));
     }
@@ -324,27 +412,21 @@ public class DailyMissionManager : MonoBehaviour
     public void ResetAll()
     {
         Debug.Log("[DailyMissionManager] ResetAll (New Game)");
+
         CurrentMission = null;
+        CurrentMissionRuntime = null;
+
         IsBriefingCompleted = false;
         IsBriefingDialogueViewed = false;
         IsReported = false;
+
         dailyResolvedCount = 0;
         CurrentScore = 0;
-        InitializeMissionOrder();
+
+        InitializeMissionTableForRun();
     }
 
-    public void MarkBriefingCompleted()
-    {
-        IsBriefingCompleted = true;
-    }
-
-    public void MarkBriefingDialogueViewed()
-    {
-        IsBriefingDialogueViewed = true;
-    }
-
-    public void MarkReported()
-    {
-        IsReported = true;
-    }
+    public void MarkBriefingCompleted() => IsBriefingCompleted = true;
+    public void MarkBriefingDialogueViewed() => IsBriefingDialogueViewed = true;
+    public void MarkReported() => IsReported = true;
 }
