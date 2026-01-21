@@ -230,29 +230,26 @@ public class GameManager : MonoBehaviour
         {
             currentDay++;
             playerHP = Mathf.Min(playerHP + 10, 100);
-            CurrentAccidentFreeDay++; // ★ 다음날로 넘어가면 무사고 +1
+            CurrentAccidentFreeDay++; // 다음날로 넘어가면 무사고 +1
         }
         else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
         {
             playerHP = 100;
-            // 같은 날 재시작이면 무사고일은 증가하지 않음 (유지 or 초기화 정책에 따름)
+            // 같은 날 재시작이면 무사고일은 증가하지 않음
         }
         // =================================================
-        // Stanby진입 시 자동 저장 (세이브 기준점) MissionTable이 없으면 저장 금지
+        // Standby에서는 미션 테이블을 생성/보정하지 않는다
         // =================================================
 
-        if (DailyMissionManager.Instance != null &&
-            DailyMissionManager.Instance.GetMissionOrderIndices().Count == 0)
-        {
-            Debug.LogWarning("[GameManager] MissionTable 비어있음 → 재생성");
-            DailyMissionManager.Instance.InitializeMissionOrder();
-        }
-
+        // =================================================
+        // 자동 저장 (세이브 기준점)
+        // - 현재 Day / HP / 미션 순서만 저장
+        // =================================================
         _saveManager.SaveGame(GetCurrentSaveData());
 
-        Debug.Log($"[Save] Stanby 진입 시 자동 저장 (Day {currentDay})");
-        standbyEnterReason = StandbyEnterReason.None;
+        Debug.Log($"[Save] Standby 진입 시 자동 저장 (Day {currentDay})");
 
+        standbyEnterReason = StandbyEnterReason.None;
     }
 
     // [수정] 브리핑 진입 시 프랭크 위치 배정 추가
@@ -345,7 +342,11 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         ChangePhase(nextPhase);
     }
-
+    public void SaveNow()
+    {
+        _saveManager.SaveGame(GetCurrentSaveData());
+        Debug.Log("[Save] SaveNow 호출됨 (미션 확정 저장)");
+    }
     public GameSaveData GetCurrentSaveData()
     {
         var data = new GameSaveData
@@ -366,6 +367,20 @@ public class GameManager : MonoBehaviour
         if (DailyMissionManager.Instance != null)
         {
             data.randomizedMissionIndices = DailyMissionManager.Instance.GetMissionOrderIndices();
+
+            var dm = DailyMissionManager.Instance;
+            if (dm.CurrentMission != null)
+            {
+                data.currentMissionIndex =
+                    dm.GetMissionIndex(dm.CurrentMission);
+
+                data.isMissionInProgress = true;
+            }
+            else
+            {
+                data.currentMissionIndex = -1;
+                data.isMissionInProgress = false;
+            }
         }
 
         return data;
