@@ -38,8 +38,6 @@ public class DayDebugConsole : MonoBehaviour
         missionManager.StartFixDay(day);
 
         // 3. 전략 가져오기
-        // ★ 핵심 수정: GetMissionStrategy(day)를 쓰면 '섞인 리스트'를 가져오므로, 
-        // 방금 StartFixDay로 설정된 'CurrentMission'을 직접 가져와야 정확합니다.
         var strategy = missionManager.CurrentMission;
 
         if (strategy == null)

@@ -48,4 +48,11 @@ public class PrisonerData
 
         this.IsSuppressed = false;
     }
+
+    // ★ [필수 추가] 매일 아침 매니저가 호출할 초기화 함수
+    public void ResetDailyFlags()
+    {
+        this.IsSuppressed = false;
+        this.CurrentHealth = this.MaxHealth; 
+    }
 }

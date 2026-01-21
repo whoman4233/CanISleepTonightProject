@@ -224,19 +224,30 @@ public class GameManager : MonoBehaviour
     {
         standbyEnterReason = reason;
     }
+
     private void OnEnterStandby()
     {
+        // 1. 정상적으로 다음 날로 넘어가는 경우 (성공)
         if (standbyEnterReason == StandbyEnterReason.NextDay)
         {
             currentDay++;
             playerHP = Mathf.Min(playerHP + 10, 100);
             CurrentAccidentFreeDay++; // 다음날로 넘어가면 무사고 +1
+
+            // ★ [핵심 수정] 성공했으므로 현재 수행한 미션을 남은 미션 목록에서 제거(소비)
+            if (DailyMissionManager.Instance != null)
+            {
+                DailyMissionManager.Instance.ConsumeCurrentMission();
+            }
         }
+        // 2. 같은 날 재시작하는 경우 (실패 후 재도전)
         else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
         {
             playerHP = 100;
             // 같은 날 재시작이면 무사고일은 증가하지 않음
+            // ★ 중요: 여기서는 ConsumeCurrentMission을 호출하지 않음! (미션 유지)
         }
+
         // =================================================
         // Standby에서는 미션 테이블을 생성/보정하지 않는다
         // =================================================
