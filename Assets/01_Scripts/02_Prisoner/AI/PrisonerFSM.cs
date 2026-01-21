@@ -76,8 +76,6 @@ public class PrisonerFSM : MonoBehaviour
         float runStyleValue = 0f; // 기본값 (0: 일반 달리기)
 
         // ★ 특수 달리기를 사용하는 AI 타입을 여기서 검사합니다.
-        // (예: Escaper 등 특정 행동 타입일 때 1번 모션 사용)
-        // [원하는 타입으로 if문 조건을 수정하세요]
         if (aiType == PrisonerAIType.Escaper)
         {
             runStyleValue = 1f; // 특수 달리기 (1: 이상한 런)
@@ -135,12 +133,16 @@ public class PrisonerFSM : MonoBehaviour
         _currentState.Enter();
     }
 
+    // ================================================================
+    // ★ [수정됨] HitVariant 파라미터 타입 불일치 해결 (Int -> Float)
+    // ================================================================
     public void OnDamaged(int dmg, Vector3 hitPoint, Vector3 hitDir)
     {
         if (Anim != null)
         {
             int randomHit = Random.Range(0, 4);
-            Anim.SetInteger("HitVariant", randomHit);
+            // [수정] 애니메이터의 HitVariant는 Float 타입입니다.
+            Anim.SetFloat("HitVariant", (float)randomHit);
         }
 
         _currentState?.OnDamaged(dmg, hitPoint, hitDir);

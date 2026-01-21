@@ -16,11 +16,11 @@ public class PrisonerInspectionState : BasePrisonerState
 
     public override void Update()
     {
+        // ... (기존 Update 로직 유지: StandUp, Moving, WaitAtPoint) ...
         switch (_currentStep)
         {
             case SubStep.StandUp:
                 AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
-                // 일어나는 애니메이션이 끝났거나 일정 시간 지났으면 이동 시작
                 if (stateInfo.IsName("Prisoner_Standing01") && !anim.IsInTransition(0) && stateInfo.normalizedTime >= 0.1f)
                 {
                     StartMoving();
@@ -32,7 +32,7 @@ public class PrisonerInspectionState : BasePrisonerState
                 {
                     _currentStep = SubStep.WaitAtPoint;
                     anim.SetBool("Walk", false);
-                    agent.isStopped = true; // 도착하면 정지
+                    agent.isStopped = true;
                 }
                 break;
 
@@ -42,10 +42,10 @@ public class PrisonerInspectionState : BasePrisonerState
         }
     }
 
+    // ... (StartMoving, LookAtPlayer 유지) ...
     private void StartMoving()
     {
         if (fsm.InspectionPoint == null) return;
-
         _currentStep = SubStep.Moving;
         agent.isStopped = false;
         agent.SetDestination(fsm.InspectionPoint.position);
@@ -61,14 +61,15 @@ public class PrisonerInspectionState : BasePrisonerState
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
     }
 
-    // 피격 시 이동을 즉시 멈추고 상태 전환
+
+    // ================================================================
+    // ★ [수정] 피격 로직 통합 및 간소화
+    // ================================================================
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         if (fsm == null || Controller == null) return;
 
-        anim.SetTrigger("Hit");
-
-        // [수정] 이동 즉시 정지 및 경로 초기화 (가장 중요)
+        // 1. 이동 즉시 정지 (공통)
         if (agent != null)
         {
             agent.isStopped = true;
@@ -76,31 +77,29 @@ public class PrisonerInspectionState : BasePrisonerState
             agent.ResetPath();
         }
 
-        // 상태 전환 로직
-        if (IsAggressiveType(Controller.AIType))
+        // 2. 성향에 따른 분기 (Controller.IsAggressive 사용)
+        if (Controller.IsAggressive)
         {
+            // 공격적: 일반 피격 모션 -> 전투 태세
+            anim.SetTrigger("Hit");
+            Debug.Log($"[{Controller.name}] 점호 중 피격! 반격합니다.");
             fsm.ChangeState(fsm.CombatState);
         }
         else
         {
+            // 소심함: 겁쟁이 피격 모션(HitCower) -> 겁먹음 상태
+            anim.SetTrigger("HitCower");
+            Debug.Log($"[{Controller.name}] 점호 중 피격! 겁을 먹습니다.");
             fsm.ChangeState(fsm.CowerState);
         }
     }
 
     public override void Exit()
     {
-        // 상태를 나갈 때 이동 애니메이션과 네비게이션을 확실히 멈춤
         anim.SetBool("Walk", false);
         if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
         base.Exit();
     }
 
-    private bool IsAggressiveType(PrisonerAIType type)
-    {
-        // 공격적인 성향 리스트
-        return type == PrisonerAIType.Bad ||
-               type == PrisonerAIType.Ambusher ||
-               type == PrisonerAIType.HammeringWall ||
-               type == PrisonerAIType.Escaper;
-    }
+    // ★ 기존에 있던 private bool IsAggressiveType(...) 삭제됨
 }
