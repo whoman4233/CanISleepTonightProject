@@ -186,9 +186,18 @@ public class DailyMissionManager : MonoBehaviour
         }
         else
         {
+            // =================================================
+            // Day 1~6: 7번 미션 제외 + 남은 미션 중 랜덤
+            // =================================================
             var candidates = _remainingMissionOrder
                 .Where(m => m != missionScenario[6])
                 .ToList();
+
+            if (candidates.Count == 0)
+            {
+                Debug.LogError("[Mission] Day 1~6인데 선택 가능한 미션이 없습니다!");
+                return;
+            }
 
             int index = UnityEngine.Random.Range(0, candidates.Count);
             CurrentMission = candidates[index];
