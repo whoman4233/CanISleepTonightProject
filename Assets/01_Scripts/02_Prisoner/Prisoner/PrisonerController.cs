@@ -70,7 +70,7 @@ public class PrisonerController : MonoBehaviour
         switch (type)
         {
             case PrisonerAIType.HammeringWall: // 망치
-            case PrisonerAIType.Ambusher:
+            case PrisonerAIType.Ambusher:      // 매복자
                 return true;
 
             default:
@@ -116,7 +116,7 @@ public class PrisonerController : MonoBehaviour
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
 
-        // ★ [추가 권장] 초기화 시 의심 상태 애니메이터 전달
+        // ★ [권장] 초기화 시 의심 상태 애니메이터 전달
         if (animator != null)
         {
             animator.SetBool("Suspicious", IsSuspicious);
@@ -137,6 +137,7 @@ public class PrisonerController : MonoBehaviour
         Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | Type:{AIType} | HasWeapon:{HasWeapon} | Aggressive:{IsAggressive}");
     }
 
+    // [기존] Enum 기반 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
     {
         if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
@@ -146,6 +147,16 @@ public class PrisonerController : MonoBehaviour
         {
             if (prop != null) prop.SetActive(true);
         }
+    }
+
+    // ★ [추가] 정수형 ID 기반 행동 시작 (VisualIdleState에서 Suspect 12번 강제 실행용)
+    public void StartActionBehavior(int rawAnimID)
+    {
+        if (animator != null)
+        {
+            animator.SetFloat("ActionType", (float)rawAnimID);
+        }
+        // 필요하다면 여기서 rawAnimID에 따른 SFX나 Prop 처리 추가 가능
     }
 
     public void StopActionBehavior()
@@ -174,7 +185,7 @@ public class PrisonerController : MonoBehaviour
             PrisonerAIType.Ambusher => 9,
             PrisonerAIType.Digging => 10,
             PrisonerAIType.Attacking => 11,
-            PrisonerAIType.Suss => 12,
+            PrisonerAIType.Suss => 12, // Suspect 전용
             _ => 0
         };
     }
@@ -213,29 +224,49 @@ public class PrisonerController : MonoBehaviour
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 
+    // ================================================================
+    // ★ [수정] 피격 판정 디버깅 강화
+    // ================================================================
     public void OnAttackHitCheck()
     {
         Collider[] hits = new Collider[20];
+        // 공격 범위와 레이어 설정이 맞는지 확인
         int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
+
+        // [디버그] 감지된 대상이 아예 없으면 레이어 설정이나 거리 문제
+        if (count == 0)
+        {
+            // Debug.Log($"[Combat] {name} 공격 휘두름 - 허공 (TargetLayer 감지 실패)");
+        }
 
         for (int i = 0; i < count; i++)
         {
             var target = hits[i];
             if (target.gameObject == gameObject) continue;
 
+            // 방향 체크
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
             dirToTarget.y = 0;
             Vector3 myForward = transform.forward;
             myForward.y = 0;
 
+            // 각도 내에 있는지 확인
             if (Vector3.Angle(myForward, dirToTarget) < attackAngle)
             {
                 var playerHealth = target.GetComponent<Health>();
+
                 if (playerHealth != null)
                 {
                     int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
                     playerHealth.TakeDamage(finalDamage);
-                    Debug.Log($"[Prisoner] {Data?.Name ?? "Unknown"}가 플레이어를 공격! (피해량: {finalDamage})");
+
+                    // [디버그] 타격 성공 로그
+                    Debug.Log($"[Combat] {name}가 {target.name} 타격! (DMG: {finalDamage})");
+                }
+                else
+                {
+                    // [디버그] 맞긴 했는데 체력 컴포넌트가 없는 경우
+                    Debug.LogWarning($"[Combat] {target.name} 감지했으나 Health 컴포넌트 없음! (레이어: {LayerMask.LayerToName(target.gameObject.layer)})");
                 }
             }
         }
