@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7252227463734400425}
-  m_Layer: 0
+  - component: {fileID: -6134158105517609872}
+  - component: {fileID: 7424837866114095760}
+  - component: {fileID: 4446553934479559096}
+  m_Layer: 10
   m_Name: OfficeProp_DocumentBox01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,6 +39,71 @@ Transform:
   - {fileID: 9044823688798269785}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-6134158105517609872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138464587302256344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  carryPromptObjectType: 
+  sfxRuleTable: {fileID: 0}
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+--- !u!65 &7424837866114095760
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138464587302256344}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.55052316, y: 0.64444995, z: 0.6001426}
+  m_Center: {x: -0.0027125478, y: 0.31587118, z: 0.0065907836}
+--- !u!54 &4446553934479559096
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138464587302256344}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &1433163797521554675
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -103,6 +171,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: OfficeProp_Document01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1fcd1014eb3e3114d90e0141bce59783,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -183,6 +256,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: de36b7439e02a2b4bb6a099a65660156, type: 2}
+    - target: {fileID: -6690375642675576300, guid: c04fd845cf65902479c2ec6fc406b887,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: -5884590451927312303, guid: c04fd845cf65902479c2ec6fc406b887,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -192,6 +270,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: OfficeProp_DocumentBox01
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c04fd845cf65902479c2ec6fc406b887,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3821569450287286899, guid: c04fd845cf65902479c2ec6fc406b887,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8581901779842994904, guid: c04fd845cf65902479c2ec6fc406b887,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -272,6 +365,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: OfficeProp_Document02
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 891f144fac5db3c46a6644ec42fc73f9,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -351,6 +449,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: OfficeProp_Document01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1fcd1014eb3e3114d90e0141bce59783,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -429,6 +532,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: OfficeProp_Document02 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 891f144fac5db3c46a6644ec42fc73f9,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
