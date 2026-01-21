@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     private StandbyEnterReason standbyEnterReason = StandbyEnterReason.None;
 
     [SerializeField] private int currentDay = 0;
-    [SerializeField] public int maxDay = 7;
+    [SerializeField] public int maxDay = 6;
 
     // ★ [추가] 무사고 날짜 추적 변수
     public int CurrentAccidentFreeDay { get; private set; } = 0;
