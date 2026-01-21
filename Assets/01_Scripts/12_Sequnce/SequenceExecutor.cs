@@ -139,7 +139,6 @@ public class SequenceExecutor : MonoBehaviour
             Debug.Log("[SequenceExecutor] Publish MissionAutoReportRequestedEvent");
             EventBus.Publish(new MissionAutoReportRequestedEvent());
         }
-
     }
 }
 

@@ -224,18 +224,29 @@ public class DailyMissionManager : MonoBehaviour
     public void NotifyPrisonerResolved(string cellId)
     {
         dailyResolvedCount++;
-        Debug.Log($"[GameFlow] 죄수 해결 확인! (금일 누적: {dailyResolvedCount})");
+        Debug.Log($"[GameFlow] 죄수 제압됨: {cellId} (누적: {dailyResolvedCount})");
 
         if (CurrentMission != null && CurrentMission.IsValidPrisoner(cellId))
         {
             CurrentScore++;
+
+            // ★ [디버그 추가] 현재 점수와 목표 점수 확인
+            Debug.Log($"<color=cyan>[Check] 점수 증가! 현재: {CurrentScore} / 목표: {CurrentMission.targetScore}</color>");
+
             CurrentMission.OnEventTriggered("PrisonerResolved");
             EventBus.Publish(new MissionProgressChangedEvent { current = CurrentScore, target = CurrentMission.targetScore });
-            Debug.Log($"[Mission] 타겟 죄수 제압 성공! 점수 증가.");
+
+            // ★ [핵심] 여기서 이벤트가 발행되는지 확인
+            if (CurrentScore >= CurrentMission.targetScore)
+            {
+                Debug.Log($"<color=green>[Success] 목표 달성! 성공 이벤트 발행함.</color>");
+                EventBus.Publish(new MissionEndRequestedEvent(true));
+            }
         }
         else
         {
-            Debug.Log($"[Mission] 죄수 제압({cellId})했으나 타겟 아님.");
+            // 타겟이 아니거나 미션이 없을 때
+            Debug.Log($"[Check] 타겟 아님. (CurrentMission: {CurrentMission?.name}, IsValid: {CurrentMission?.IsValidPrisoner(cellId)})");
         }
     }
 
@@ -303,21 +314,47 @@ public class DailyMissionManager : MonoBehaviour
         Debug.Log("[Mission] 저장된 데이터 기반으로 미션 순서를 복원했습니다.");
     }
 
+    // [01_Scripts/04_Architecture/01_DailyMission/DailyMissionManager.cs]
+
     private void OnMissionEndRequested(MissionEndRequestedEvent e)
     {
+        Debug.Log($"[Debug] 1. 미션 종료 요청 수신됨 (성공여부: {e.IsSuccess})");
+
         if (CurrentMission is Mission_FindImposterStrategy imposter)
         {
-            if (e.IsSuccess && imposter.SuccessSequence != null)
+            Debug.Log("[Debug] 2. 현재 미션은 'Mission 4(프랭크 찾기)' 입니다.");
+
+            // 시퀀스 데이터가 있는지 확인
+            bool hasSequence = (imposter.SuccessSequence != null);
+            Debug.Log($"[Debug] 3. 시퀀스 존재 여부: {hasSequence}");
+
+            if (e.IsSuccess && hasSequence)
             {
+                Debug.Log("[Debug] 4. 조건 만족: 성공했고 + 시퀀스가 있음 -> 시퀀스 재생 요청");
+
                 EventBus.Publish(new SequencePlayRequestedEvent
                 {
                     Sequence = imposter.SuccessSequence
                 });
+
+                // 의심 구간 
+                Debug.Log("<color=red>[Debug] 5. 여기서 return이 실행되어 함수가 종료됩니다! (UI 안 뜸)</color>");
                 return;
             }
+            else
+            {
+                Debug.Log("[Debug] 4-B. 조건 불만족: 실패했거나 시퀀스가 없음 -> 다음 단계로 진행");
+            }
+        }
+        else
+        {
+            Debug.Log($"[Debug] 2-B. 현재 미션은 프랭크 찾기가 아닙니다. ({CurrentMission?.GetType().Name})");
         }
 
+        Debug.Log("[Debug] 6. 결과 평가 및 UI 표시 요청 단계 진입");
         EvaluateDayResult(out string failReason);
+
+        Debug.Log($"[Debug] 7. ResultUI 표시 이벤트 발행 (실패사유: {failReason})");
         EventBus.Publish(new ResultUIShowRequestedEvent(e.IsSuccess, failReason));
     }
 
