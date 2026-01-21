@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class SequenceExecutor : MonoBehaviour
@@ -14,6 +15,8 @@ public class SequenceExecutor : MonoBehaviour
     [Header("플레이어 기본 도착 지점")]
     [SerializeField] private Transform defaultArrivalPoint;
 
+    private Action<SequencePlayRequestedEvent> _onPlayRequested;
+
     private void Awake()
     {
         if (Instance != null)
@@ -24,16 +27,18 @@ public class SequenceExecutor : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        _onPlayRequested = OnPlayRequested;
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe<SequencePlayRequestedEvent>(OnPlayRequested);
+        EventBus.Subscribe(_onPlayRequested);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<SequencePlayRequestedEvent>(OnPlayRequested);
+        EventBus.Unsubscribe(_onPlayRequested);
     }
 
     /// <summary>
