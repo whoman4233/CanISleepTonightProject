@@ -102,15 +102,15 @@ public class Mission06Strategy : DailyMissionStrategy
             spawnController.SpawnAllPrisoners();
         }
 
-        //var allPrisoners = GameObject.FindObjectsOfType<PrisonerController>();
-        //foreach (var prisoner in allPrisoners) // 미션 6 셋업 시 죄수 체력 말도안되게 올려서 안죽게 만들기. 꼬우면 다 깎아보셈~
-        //{
-        //    if (prisoner.Data != null)
-        //    {
-        //        prisoner.Data.MaxHealth = 9999f;
-        //        prisoner.Data.CurrentHealth = 9999f;
-        //    }
-        //}
+        var allPrisoners = GameObject.FindObjectsOfType<PrisonerController>();
+        foreach (var prisoner in allPrisoners) // 미션 6 셋업 시 죄수 체력 말도안되게 올려서 안죽게 만들기. 꼬우면 다 깎아보셈~
+        {
+            if (prisoner.Data != null)
+            {
+                //prisoner.Data.MaxHealth = 9999f;
+                prisoner.Data.CurrentHealth = 9999f;
+            }
+        }
         Debug.Log("갱단원3명 소환");
     }
 
