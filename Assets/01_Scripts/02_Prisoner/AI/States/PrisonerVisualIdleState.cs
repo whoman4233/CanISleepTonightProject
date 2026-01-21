@@ -28,7 +28,7 @@ public class PrisonerVisualIdleState : IPrisonerState
 
             // Controller에 추가한 StartActionBehavior(int) 함수를 호출
             // (주의: PrisonerController에 int 오버로딩 함수가 있어야 합니다)
-            _fsm.Controller.StartActionBehavior(12);
+            _fsm.Controller.StartActionBehavior(PrisonerAIType.Suss);
 
             // ★ 여기서 return하여 아래의 일반 VisualIdle 로직(IsVisualIdle 켜기 등)을 실행하지 않음
             return;

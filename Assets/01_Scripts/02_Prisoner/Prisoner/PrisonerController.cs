@@ -174,6 +174,7 @@ public class PrisonerController : MonoBehaviour
             PrisonerAIType.Ambusher => 9,
             PrisonerAIType.Digging => 10,
             PrisonerAIType.Attacking => 11,
+            PrisonerAIType.Suss => 12,
             _ => 0
         };
     }
