@@ -20,6 +20,10 @@ public struct MissionProgressChangedEvent
 public struct MissionEndRequestedEvent
 {
     public bool IsSuccess;
+    public MissionEndRequestedEvent(bool isSuccess)
+    {
+        IsSuccess = isSuccess;
+    }
 }
 
 public struct MissionFailDialogueRequestedEvent // 미션 04 진짜 프랭크 타격 시 다이얼로그 출력용 이벤트

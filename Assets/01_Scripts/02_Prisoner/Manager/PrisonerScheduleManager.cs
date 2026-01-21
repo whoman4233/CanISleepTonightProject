@@ -88,11 +88,6 @@ public class PrisonerScheduleManager : MonoBehaviour
             {
                 def = spawnDeck[i];
             }
-            // 2. 방이 남으면 랜덤으로 채움
-            else
-            {
-                def = GetRandomNormalPrisoner();
-            }
 
             if (def != null)
             {
@@ -333,7 +328,7 @@ public class PrisonerScheduleManager : MonoBehaviour
     }
 
     // =======================================================================
-    // ★ [수정됨] 특정 키워드(Skinny 등)를 가진 죄수를 count만큼 뽑아오는 함수
+    // ★ [수정] 특정 키워드 검색 실패 시 -> 일반 죄수로 대체하여 반환
     // =======================================================================
     private List<PrisonerDefinition> GetRandomDefinitionsByKeyword(string keyword, int count)
     {
@@ -349,14 +344,7 @@ public class PrisonerScheduleManager : MonoBehaviour
             !p.templateId.Contains("Suspect")
         ).ToList();
 
-        // ★ [핵심 수정] 데이터가 없으면 빨간색 에러를 띄워서 알려줌 (이게 문제 해결의 열쇠)
-        if (candidates.Count == 0)
-        {
-            Debug.LogError($"[Schedule] 데이터 누락: '{keyword}' 키워드를 가진 죄수 데이터(SO)가 0개입니다! PrisonerDatabaseSO를 확인하세요.");
-            return result;
-        }
-
-        // 2. 랜덤하게 count만큼 뽑기
+        // 3. 후보가 있다면 정상적으로 랜덤 뽑기
         for (int i = 0; i < count; i++)
         {
             var randomPick = candidates[UnityEngine.Random.Range(0, candidates.Count)];
@@ -365,25 +353,8 @@ public class PrisonerScheduleManager : MonoBehaviour
 
         return result;
     }
-
-    private PrisonerDefinition GetRandomNormalPrisoner()
-    {
-        for (int i = 0; i < 10; i++)
-        {
-            var def = prisonerDatabase.GetRandomDefinition();
-            if (def == null) continue;
-
-            string id = def.templateId;
-            if (id.Contains("Bikini") || id.Contains("Goat") || id.Contains("Frank") ||
-                id.Contains("Suspect") || id.Contains("Victor")) continue;
-
-            return def;
-        }
-        return prisonerDatabase.GetRandomDefinition();
-    }
 }
 
-// ... (DailyRoleData 등 구조체는 기존과 동일하게 유지) ...
 [System.Serializable]
 public struct DailyRoleData
 {
