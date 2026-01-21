@@ -16,6 +16,7 @@ public class DailyMissionManager : MonoBehaviour
     private Action<MissionEndRequestedEvent> _onMissionEndRequested;
     private Action<GameContextReadyEvent> _onGameContextReady;
     public DailyMissionStrategy CurrentMission { get; private set; }
+    public MissionRuntimeState CurrentMissionRuntime { get; private set; } //현재 미션 런타임상태(미션04)
 
     public bool IsBriefingCompleted { get; private set; }
     public bool IsBriefingDialogueViewed { get; private set; }
@@ -74,6 +75,7 @@ public class DailyMissionManager : MonoBehaviour
 
         _randomizedMissionOrder.Clear();
         CurrentMission = null;
+        CurrentMissionRuntime = null; // 런타임 상태 제거
 
         IsBriefingCompleted = false;
         IsBriefingDialogueViewed = false;
@@ -139,6 +141,10 @@ public class DailyMissionManager : MonoBehaviour
         }
 
         CurrentMission = _randomizedMissionOrder[listIndex];
+
+        //미션 04용 상태 분리
+        CurrentMissionRuntime = new MissionRuntimeState();
+
         StartMissionSetup(dayIndex);
     }
 
@@ -157,6 +163,7 @@ public class DailyMissionManager : MonoBehaviour
 
         var fixedMission = missionScenario[targetIndex];
         CurrentMission = fixedMission;
+        CurrentMissionRuntime = new MissionRuntimeState();
 
         if (_randomizedMissionOrder.Count == 0) InitializeMissionOrder();
 
