@@ -162,8 +162,16 @@ public class FlowController : MonoBehaviour
     public void StartNewGame()
     {
         if (isBusy) return;
+
+        // 새 런 시작 명시
+        if (DailyMissionManager.Instance != null)
+        {
+            DailyMissionManager.Instance.CreateNewMissionTableForNewRun();
+        }
+
         StartCoroutine(LoadPlaySceneSequence());
     }
+
 
     private IEnumerator LoadPlaySceneSequence()
     {
@@ -189,42 +197,34 @@ public class FlowController : MonoBehaviour
         isBusy = false;
     }
 
-    private IEnumerator LoadActualPlaySceneRoutine() // 튜토리얼 이후 플레이 진입
+    private IEnumerator LoadActualPlaySceneRoutine()
     {
         isBusy = true;
-        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
-        EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+        EventBus.Publish(new LoadingOverlayShownEvent());
+
         Scene tutorialScene = SceneManager.GetSceneByName(tutorialSceneName);
         if (tutorialScene.isLoaded)
         {
-            yield return SceneManager.UnloadSceneAsync(tutorialScene); // 튜토리얼 씬 언로드
+            yield return SceneManager.UnloadSceneAsync(tutorialScene);
         }
 
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive); // 플레이씬 비동기 로드
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(playSceneName, LoadSceneMode.Additive);
         while (!asyncLoad.isDone) yield return null;
 
         Scene loadedPlayScene = SceneManager.GetSceneByName(playSceneName);
         if (loadedPlayScene.IsValid())
         {
-            SceneManager.SetActiveScene(loadedPlayScene); // 플레이 씬 활성화
+            SceneManager.SetActiveScene(loadedPlayScene);
         }
 
         GameManager.Instance.ResetTimer();
 
         // =====================================================
-        // 새 런일 때만 미션 테이블 생성
+        // "새 게임 루트"에서만 미션 테이블 생성
+        // - CurrentDay 조건 제거
+        // - StartNewGame / RestartFromFailure 에서만 호출되도록 책임 이동
         // =====================================================
-        if (GameManager.Instance.CurrentDay == 0)
-        {
-            if (DailyMissionManager.Instance != null)
-            {
-                DailyMissionManager.Instance.CreateNewMissionTableForNewRun();
-            }
-            else
-            {
-                Debug.LogError("[FlowController] DailyMissionManager.Instance 없음");
-            }
-        }
 
         GameManager.Instance.ChangePhase(GamePhase.Standby);
 
@@ -236,8 +236,8 @@ public class FlowController : MonoBehaviour
         }
 
         isBusy = false;
-        Debug.Log($"{playSceneName} 전환 완료 및 Standby 진입");
     }
+
     public void ReturnToTitle()
     {
         if (isBusy) return;
@@ -329,6 +329,7 @@ public class FlowController : MonoBehaviour
 
         if (DailyMissionManager.Instance != null)
         {
+            // 새 런이므로 무조건 새 테이블
             DailyMissionManager.Instance.CreateNewMissionTableForNewRun();
         }
         else
