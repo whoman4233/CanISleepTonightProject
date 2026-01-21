@@ -47,26 +47,15 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     [Header("Mission 4 Dialogue Triggers")]
     [SerializeField] private List<Mission4DialogueTrigger> dialogueTriggers;
     
-    // Mission 4 전용 트리거 사용 상태
-    private HashSet<string> _usedTriggerIds = new();
-
     [Header("Sequence Options")]
     [SerializeField] private SequenceOptionSO failSequence;
     [SerializeField] private SequenceOptionSO successSequence;
     public SequenceOptionSO FailSequence => failSequence;
     public SequenceOptionSO SuccessSequence => successSequence;
-    // 런타임 상태 변수
-    private bool _killedRealFrank = false;
 
-    //실패 분기 처리용 bool 값
-    private bool _immediateFailTriggered;
-    public bool ImmediateFailTriggered => _immediateFailTriggered;
     public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
     {
-        ResetRuntimeState();
-
         base.SetupDay(ad, sm);
-        _killedRealFrank = false; // 상태 초기화
 
         // 1. 모든 방 초기화 (범인 0명)
         sm.AssignRolesForNewDay(suspiciousCount: 0, defaultAI: PrisonerAIType.Good);
@@ -108,12 +97,20 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     // =========================
     public bool CanUseTrigger(string triggerId)
     {
-        return !_usedTriggerIds.Contains(triggerId);
+        // SO 내부 HashSet 사용 금지
+        return !DailyMissionManager.Instance
+            .CurrentMissionRuntime
+            .usedDialogueTriggerIds
+            .Contains(triggerId);
     }
 
     public void MarkTriggerUsed(string triggerId)
     {
-        _usedTriggerIds.Add(triggerId);
+        // 런타임 컨테이너에만 기록
+        DailyMissionManager.Instance
+            .CurrentMissionRuntime
+            .usedDialogueTriggerIds
+            .Add(triggerId);
     }
 
 
@@ -121,11 +118,21 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
     public override bool IsValidPrisoner(string cellId)
     {
         var role = PrisonerScheduleManager.Instance.GetDailyRole(cellId);
+        var runtime = DailyMissionManager.Instance.CurrentMissionRuntime;
 
         // 1. 진짜 프랭크 → 즉시 실패
         if (role.visualType == realFrankType)
         {
-            HandleRealFrankSuppressed();
+            runtime.killedRealFrank = true;
+            runtime.immediateFailTriggered = true;
+            if (failSequence != null)
+            {
+                EventBus.Publish(new SequencePlayRequestedEvent
+                {
+                    Sequence = failSequence,
+                    TargetPoint = null
+                });
+            }
             return false;
         }
 
@@ -149,35 +156,17 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
         return false;
     }
 
-    private void HandleRealFrankSuppressed()
-    {
-        _killedRealFrank = true;
-
-        _immediateFailTriggered = true;
-
-        // =====================================================
-        // 연출 시퀀스 요청
-        // =====================================================
-        if (failSequence != null)
-        {
-            EventBus.Publish(new SequencePlayRequestedEvent
-            {
-                Sequence = failSequence,
-                TargetPoint = null // NPC ArrivalPoint는 SequenceExecutor 쪽에서 지정
-            });
-        }
-    }
-
     public override bool CheckWinCondition(int currentScore, out string failReason)
     {
-        // 1. 진짜를 잡아서 강제 종료된 경우
-        if (_killedRealFrank)
+        var runtime = DailyMissionManager.Instance.CurrentMissionRuntime;
+
+        // SO 내부 상태 참조 금지
+        if (runtime.killedRealFrank)
         {
             failReason = failReasonText;
             return false;
         }
 
-        // 2. 가짜를 목표치만큼 못 잡은 경우
         if (currentScore < targetScore)
         {
             failReason = $"가짜를 모두 찾지 못했습니다. ({currentScore}/{targetScore})";
@@ -187,10 +176,5 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
         failReason = "";
         return true;
     }
-    public void ResetRuntimeState()
-    {
-        _usedTriggerIds.Clear();
-        _killedRealFrank = false;
-        _immediateFailTriggered = false;
-    }
+
 }
