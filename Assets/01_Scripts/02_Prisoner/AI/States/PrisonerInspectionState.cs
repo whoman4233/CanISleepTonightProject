@@ -12,11 +12,20 @@ public class PrisonerInspectionState : BasePrisonerState
         _currentStep = SubStep.StandUp;
         anim.SetBool("Suspicious", false);
         anim.SetTrigger("EnterCell");
+
+        // [안전장치] 플레이어 참조가 끊겼을 경우 다시 찾기
+        if (player == null)
+        {
+            var pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+        }
     }
 
     public override void Update()
     {
-        // ... (기존 Update 로직 유지: StandUp, Moving, WaitAtPoint) ...
+        // [추가] 항상 플레이어를 쳐다보게 할지 결정 (원하는 대로 주석 해제)
+        // LookAtPlayer(); 
+
         switch (_currentStep)
         {
             case SubStep.StandUp:
@@ -28,21 +37,30 @@ public class PrisonerInspectionState : BasePrisonerState
                 break;
 
             case SubStep.Moving:
-                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+                // [수정] 도착 판정을 좀 더 너그럽게 (pathPending 체크 추가)
+                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
                 {
                     _currentStep = SubStep.WaitAtPoint;
                     anim.SetBool("Walk", false);
                     agent.isStopped = true;
+
+                    // 도착 즉시 플레이어 방향으로 회전 강제
+                    if (player != null)
+                    {
+                        Vector3 dir = (player.position - fsm.transform.position).normalized;
+                        dir.y = 0;
+                        if (dir != Vector3.zero) fsm.transform.rotation = Quaternion.LookRotation(dir);
+                    }
                 }
                 break;
 
             case SubStep.WaitAtPoint:
+                // [핵심] 여기서 플레이어를 계속 쳐다봄
                 LookAtPlayer();
                 break;
         }
     }
 
-    // ... (StartMoving, LookAtPlayer 유지) ...
     private void StartMoving()
     {
         if (fsm.InspectionPoint == null) return;
@@ -61,35 +79,24 @@ public class PrisonerInspectionState : BasePrisonerState
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
     }
 
-
-    // ================================================================
-    // ★ [수정] 피격 로직 통합 및 간소화
-    // ================================================================
+    // ... (OnDamaged 등 나머지 코드는 기존 유지)
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         if (fsm == null || Controller == null) return;
-
-        // 1. 이동 즉시 정지 (공통)
         if (agent != null)
         {
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
             agent.ResetPath();
         }
-
-        // 2. 성향에 따른 분기 (Controller.IsAggressive 사용)
         if (Controller.IsAggressive)
         {
-            // 공격적: 일반 피격 모션 -> 전투 태세
             anim.SetTrigger("Hit");
-            Debug.Log($"[{Controller.name}] 점호 중 피격! 반격합니다.");
             fsm.ChangeState(fsm.CombatState);
         }
         else
         {
-            // 소심함: 겁쟁이 피격 모션(HitCower) -> 겁먹음 상태
             anim.SetTrigger("HitCower");
-            Debug.Log($"[{Controller.name}] 점호 중 피격! 겁을 먹습니다.");
             fsm.ChangeState(fsm.CowerState);
         }
     }
@@ -100,6 +107,4 @@ public class PrisonerInspectionState : BasePrisonerState
         if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
         base.Exit();
     }
-
-    // ★ 기존에 있던 private bool IsAggressiveType(...) 삭제됨
 }

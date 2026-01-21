@@ -29,8 +29,8 @@ public class PrisonerActionIdleState : BasePrisonerState
             anim.SetBool("IsAction", false);
 
             // -> 랜덤 대기 모션 (0 ~ 3번 중 하나) 선택
-            int randomVariant = Random.Range(0, 4);
-            anim.SetInteger("IdleVariant", randomVariant);
+            int randomVariant = Random.Range(0, 3);
+            anim.SetFloat("IdleVariant", randomVariant);
 
             // 이동 정지
             StopMovement();
