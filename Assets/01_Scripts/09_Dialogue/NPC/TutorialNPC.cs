@@ -14,6 +14,8 @@ public class TutorialNPC : MonoBehaviour, IInteractable
     [Header("Step Object")]
     [SerializeField] private GameObject book;
 
+    [SerializeField] private BoardLookAtSequence boardSequence;
+
     //[Header("Current Progress")]
     //public TutorialSubStep currentSubStep = TutorialSubStep.Basic;
 
@@ -50,6 +52,8 @@ public class TutorialNPC : MonoBehaviour, IInteractable
         if (dialogueManager == null)
             return;
 
+        finishedDialogue = true;
+
         string speakerKey = speakerRole.ToString();
         string textType = currentSubStep.ToString();
         System.Action onComplete = null;
@@ -61,9 +65,16 @@ public class TutorialNPC : MonoBehaviour, IInteractable
                 EventBus.Publish(new IntoPlaySceneEvent());
             };
         }
+        else if (currentSubStep == DialogueKeys.DialogueType.Dialogue)
+        {
+            onComplete = () =>
+            {
+                boardSequence.StartSequence();
+                finishedDialogue = true;
+                Debug.Log("자동대화진행 및 finishedDialogue 는 true로 변경됨");
+            };
+        }
         dialogueManager.StartDialogueByKeys(speakerKey, textType, onComplete);
-        finishedDialogue = true;
-        EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.BoardSee));
     }
 
     public void OnAttacked()
