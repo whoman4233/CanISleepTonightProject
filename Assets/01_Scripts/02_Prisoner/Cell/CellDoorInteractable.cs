@@ -195,6 +195,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             else
             {
                 Debug.LogWarning($"[Door] {cellId}: 진입 불가 (TryEnter 실패). 잠김 애니메이션 재생.");
+                EventBus.Publish(new ShowTimedTextPopupEvent("열려 있는 다른 감방 문을 닫아야 열 수 있습니다.", 2.0f, true));
                 PlayLocked();
             }
         }
