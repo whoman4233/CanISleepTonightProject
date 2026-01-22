@@ -82,6 +82,8 @@ public class InGameMenuController : MonoBehaviour
 
         if (open)
         {
+            Time.timeScale = 0f;
+
             AudioManager.Instance?.PlayUISound(openClip);
             EventBus.Publish(new PauseGameRequestedEvent());
             // =========================
@@ -101,6 +103,8 @@ public class InGameMenuController : MonoBehaviour
         }
         else
         {
+            Time.timeScale = 1f;
+
             AudioManager.Instance?.PlayUISound(closeClip);
             EventBus.Publish(new ResumeGameRequestedEvent());
             // =========================
