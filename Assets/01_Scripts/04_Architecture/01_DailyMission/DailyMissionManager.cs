@@ -431,8 +431,6 @@ public class DailyMissionManager : MonoBehaviour
         Debug.Log($"[Mission] 이어하기 → 미션 복원: {CurrentMission.title}");
     }
 
-    // [01_Scripts/04_Architecture/01_DailyMission/DailyMissionManager.cs]
-
     private void OnMissionEndRequested(MissionEndRequestedEvent e)
     {
         Debug.Log($"[Debug] 1. 미션 종료 요청 수신됨 (성공여부: {e.IsSuccess})");
