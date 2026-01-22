@@ -46,7 +46,7 @@ public class CabinetInteract : MonoBehaviour, IInteractable
     {
         if (animator == null)
             return;
-
+        if (isLootTaken) return;
         bool wasOpen = isOpen; // 상태 토글 전 값 보관
 
         isOpen = !isOpen;
