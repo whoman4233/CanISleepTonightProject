@@ -1,23 +1,44 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class SequenceExecutor : MonoBehaviour
 {
+    // =========================
+    // Singleton
+    // =========================
+    public static SequenceExecutor Instance { get; private set; }
+
     [Header("Post Processing / Vignette")]
     [SerializeField] private VignetteFadeController vignetteFade;
 
     [Header("플레이어 기본 도착 지점")]
     [SerializeField] private Transform defaultArrivalPoint;
 
+    private Action<SequencePlayRequestedEvent> _onPlayRequested;
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        _onPlayRequested = OnPlayRequested;
+    }
+
     private void OnEnable()
     {
-        // 연출 실행 요청 이벤트 구독
-        EventBus.Subscribe<SequencePlayRequestedEvent>(OnPlayRequested);
+        EventBus.Subscribe(_onPlayRequested);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<SequencePlayRequestedEvent>(OnPlayRequested);
+        EventBus.Unsubscribe(_onPlayRequested);
     }
 
     /// <summary>
@@ -37,21 +58,30 @@ public class SequenceExecutor : MonoBehaviour
         if (option == null)
             yield break;
 
-        DialogueManager dialogue = DialogueManager.Instance;
-        Player player = FindAnyObjectByType<Player>();
+        // =========================
+        // Scene-safe 참조 확보
+        // =========================
+        DialogueManager dialogue = null;
+        Player player = null;
+
+        // 씬 로드 직후일 수 있으므로 대기
+        while (dialogue == null || player == null)
+        {
+            dialogue = DialogueManager.Instance;
+            player = FindAnyObjectByType<Player>();
+            yield return null;
+        }
 
         Transform targetPoint =
             e.TargetPoint != null ? e.TargetPoint : defaultArrivalPoint;
 
         // =========================
         // 1. 연출 전용 플레이어 Lock
-        // - CharacterController 비활성화
-        // - FSM Tick 차단
         // =========================
         EventBus.Publish(new PlayerCinematicLockRequestedEvent());
 
         // =========================
-        // 2. 입력 잠금 (기존 GlobalInputLock)
+        // 2. 입력 잠금
         // =========================
         if (option.lockInput)
             EventBus.Publish(new GlobalInputLockRequestedEvent());
@@ -61,7 +91,6 @@ public class SequenceExecutor : MonoBehaviour
         // =========================
         if (option.playDialogue &&
             option.playDialogueBeforeMove &&
-            dialogue != null &&
             !string.IsNullOrEmpty(option.dialogueKey))
         {
             dialogue.StartDialogueByKey(option.dialogueKey);
@@ -79,7 +108,7 @@ public class SequenceExecutor : MonoBehaviour
         // =========================
         // 5. 플레이어 이동
         // =========================
-        if (option.movePlayer && player != null && targetPoint != null)
+        if (option.movePlayer && targetPoint != null)
         {
             Vector3 targetPos =
                 targetPoint.position +
@@ -91,8 +120,6 @@ public class SequenceExecutor : MonoBehaviour
                 ? targetPoint.rotation
                 : player.transform.rotation;
 
-            // CharacterController가 비활성 상태이므로
-            // Transform 이동이 안전하게 적용됨
             player.transform.SetPositionAndRotation(targetPos, targetRot);
         }
 
@@ -107,7 +134,6 @@ public class SequenceExecutor : MonoBehaviour
         // =========================
         if (option.playDialogue &&
             !option.playDialogueBeforeMove &&
-            dialogue != null &&
             !string.IsNullOrEmpty(option.dialogueKey))
         {
             dialogue.StartDialogueByKey(option.dialogueKey);
@@ -129,17 +155,13 @@ public class SequenceExecutor : MonoBehaviour
 
         // =========================
         // 10. 미션 자동 보고 요청
-        // - MissionBriefingNPC 쪽 흐름을 그대로 
         // =========================
         if (option.endMissionAfterSequence)
         {
-            Debug.Log("[SequenceExecutor] AutoReport will be published in 1s");
-            yield return new WaitForSecondsRealtime(1.0f);
-
-            Debug.Log("[SequenceExecutor] Publish MissionAutoReportRequestedEvent");
+            yield return new WaitForSecondsRealtime(0.2f);
             EventBus.Publish(new MissionAutoReportRequestedEvent());
         }
-
     }
 }
+
 

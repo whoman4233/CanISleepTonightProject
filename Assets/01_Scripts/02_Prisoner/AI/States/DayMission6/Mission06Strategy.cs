@@ -107,7 +107,7 @@ public class Mission06Strategy : DailyMissionStrategy
         {
             if (prisoner.Data != null)
             {
-                prisoner.Data.MaxHealth = 9999f;
+                //prisoner.Data.MaxHealth = 9999f;
                 prisoner.Data.CurrentHealth = 9999f;
             }
         }

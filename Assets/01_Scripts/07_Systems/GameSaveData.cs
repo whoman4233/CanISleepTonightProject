@@ -8,6 +8,9 @@ public class GameSaveData
     public GamePhase currentPhase;
     public int currentHp;
 
+    public int currentMissionIndex;
+    public bool isMissionInProgress;
+
     // [1] 거주자 명부 (체력, 억압됨 여부 등 영구 데이터)
     public List<PrisonerSaveData> prisonerRoster = new List<PrisonerSaveData>();
 

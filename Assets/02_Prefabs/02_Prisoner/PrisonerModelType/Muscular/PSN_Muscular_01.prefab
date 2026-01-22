@@ -18,6 +18,8 @@ GameObject:
   - component: {fileID: 6948067153894314097}
   - component: {fileID: 2672436844793215148}
   - component: {fileID: 1651365417575173780}
+  - component: {fileID: 3382974597763725389}
+  - component: {fileID: 1452432844160746898}
   m_Layer: 8
   m_Name: PSN_Muscular_01
   m_TagString: Untagged
@@ -54,7 +56,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: c45a043879bfbe147a5f1bfc75457d68, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -242,6 +244,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myVisualType: 0
+--- !u!114 &3382974597763725389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2221b6b69ac314f85dd7163e03ff3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  action: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
+  triggerDistance: 1.8
+  oneShot: 1
+  player: {fileID: 0}
+--- !u!114 &1452432844160746898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d888be46bd177614dbc9d3f457b9d791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 3475742819566657788}
+  attackTriggerName: Attack
+  failTriggerName: Hit
 --- !u!1001 &1943632108880297978
 PrefabInstance:
   m_ObjectHideFlags: 0

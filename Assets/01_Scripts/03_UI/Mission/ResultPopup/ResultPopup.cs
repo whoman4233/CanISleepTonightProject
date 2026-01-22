@@ -46,6 +46,8 @@ public class ResultPopup : MonoBehaviour
             AudioManager.Instance.PlayUISound(successSound);
 
             successPanel.Show();
+
+            DailyMissionManager.Instance.ConsumeCurrentMission();
         }
         else
         {

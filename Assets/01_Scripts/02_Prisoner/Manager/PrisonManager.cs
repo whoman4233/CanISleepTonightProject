@@ -138,12 +138,37 @@ public class PrisonManager : MonoBehaviour
         ActiveCell1f = 0;
         ActiveCell2f = 0;
 
+        // ============================================================
+        // 하루 시작 시점의 "일일 데이터" 초기화
+        // - 역할/일일 플래그가 꼬이면 "안 죽음" 같은 증상이 발생할 수 있음
+        // ============================================================
+        if (GameManager.Instance != null)
+        {
+            var save = new SaveManager().LoadGame();
+
+            // 새 하루 진입인 경우만 일일 상태 초기화
+            if (save == null || save.isMissionInProgress == false)
+            {
+                PrisonerScheduleManager.Instance?.ResetDailyState();
+            }
+            else
+            {
+                if (verboseLog)
+                    Debug.Log("[PrisonManager] 이어하기 → ResetDailyState 스킵");
+            }
+        }
+
         // =================================================================
         // [2] 미션 및 데이터 준비 (Mission Strategy Execution)
         // =================================================================
 
         var missionMgr = DailyMissionManager.Instance;
 
+        if (missionMgr == null || !missionMgr.HasValidRunMissionTable)
+        {
+            Debug.LogError("[PrisonManager] MissionTable 준비 안 됨 → StartDay 중단");
+            return;
+        }
         if (missionMgr != null)
         {
             missionMgr.StartDay(day);

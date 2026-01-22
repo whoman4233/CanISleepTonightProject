@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     private StandbyEnterReason standbyEnterReason = StandbyEnterReason.None;
 
     [SerializeField] private int currentDay = 0;
-    [SerializeField] public int maxDay = 7;
+    [SerializeField] public int maxDay = 6;
 
     // ★ [추가] 무사고 날짜 추적 변수
     public int CurrentAccidentFreeDay { get; private set; } = 0;
@@ -42,6 +42,7 @@ public class GameManager : MonoBehaviour
 
     public float CurrentInGameSeconds { get; private set; }
     public event Action<float> OnInGameTimeUpdated;
+    public List<int> PendingMissionOrder { get; private set; } //MissionTable
 
     // ScheduleManager 참조
     public PrisonerScheduleManager ScheduleManager;
@@ -223,28 +224,23 @@ public class GameManager : MonoBehaviour
     {
         standbyEnterReason = reason;
     }
+
     private void OnEnterStandby()
     {
+        // 1. 정상적으로 다음 날로 넘어가는 경우 (성공)
         if (standbyEnterReason == StandbyEnterReason.NextDay)
         {
             currentDay++;
+            Debug.Log("Day++");
             playerHP = Mathf.Min(playerHP + 10, 100);
-            CurrentAccidentFreeDay++; // ★ 다음날로 넘어가면 무사고 +1
-        }
-        else if (standbyEnterReason == StandbyEnterReason.RestartSameDay)
-        {
-            playerHP = 100;
-            // 같은 날 재시작이면 무사고일은 증가하지 않음 (유지 or 초기화 정책에 따름)
-        }
-        // =================================================
-        // Stanby진입 시 자동 저장 (세이브 기준점)
-        // =================================================
-        SaveManager saveManager = new SaveManager();
-        saveManager.SaveGame(GetCurrentSaveData());
+            CurrentAccidentFreeDay++; // 다음날로 넘어가면 무사고 +1
 
-        Debug.Log($"[Save] Stanby 진입 시 자동 저장 (Day {currentDay})");
+        }
+        _saveManager.SaveGame(GetCurrentSaveData());
+
+        Debug.Log($"[Save] Standby 진입 시 자동 저장 (Day {currentDay})");
+
         standbyEnterReason = StandbyEnterReason.None;
-
     }
 
     // [수정] 브리핑 진입 시 프랭크 위치 배정 추가
@@ -275,6 +271,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterSettlement()
     {
+        Debug.Log("EnterSettlement");
         if (patrolTimerCoroutine != null)
         {
             StopCoroutine(patrolTimerCoroutine);
@@ -337,7 +334,11 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         ChangePhase(nextPhase);
     }
-
+    public void SaveNow()
+    {
+        _saveManager.SaveGame(GetCurrentSaveData());
+        Debug.Log("[Save] SaveNow 호출됨 (미션 확정 저장)");
+    }
     public GameSaveData GetCurrentSaveData()
     {
         var data = new GameSaveData
@@ -358,6 +359,20 @@ public class GameManager : MonoBehaviour
         if (DailyMissionManager.Instance != null)
         {
             data.randomizedMissionIndices = DailyMissionManager.Instance.GetMissionOrderIndices();
+
+            var dm = DailyMissionManager.Instance;
+            if (dm.CurrentMission != null)
+            {
+                data.currentMissionIndex =
+                    dm.GetMissionIndex(dm.CurrentMission);
+
+                data.isMissionInProgress = true;
+            }
+            else
+            {
+                data.currentMissionIndex = -1;
+                data.isMissionInProgress = false;
+            }
         }
 
         return data;
@@ -381,17 +396,19 @@ public class GameManager : MonoBehaviour
                 ScheduleManager.OverrideScheduleFromSave(data.prisonerRoster, data.dailyRoles);
             }
 
-            if (DailyMissionManager.Instance != null && data.randomizedMissionIndices != null)
-            {
-                DailyMissionManager.Instance.RestoreMissionOrder(data.randomizedMissionIndices);
-            }
+            PendingMissionOrder = data.randomizedMissionIndices;
 
             Debug.Log("세이브 로드 완료 (미션 순서 포함)");
             return true;
         }
         return false;
     }
-
+    public List<int> ConsumePendingMissionOrder() //미션테이블 불러오기 용
+    {
+        var temp = PendingMissionOrder;
+        PendingMissionOrder = null;
+        return temp;
+    }
     // ★ [추가] 미션 실패 시 호출될 재시작 메서드
     public void RetryGameFromFailure()
     {
@@ -470,8 +487,5 @@ public class GameManager : MonoBehaviour
 
         if (ScheduleManager != null)
             ScheduleManager.ResetAllSimulationData();
-
-        if (DailyMissionManager.Instance != null)
-            DailyMissionManager.Instance.ResetAll();
     }
 }
