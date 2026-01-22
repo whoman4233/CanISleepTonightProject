@@ -53,6 +53,7 @@ public class WhiteBoardDataBinder : MonoBehaviour
     {
         if (e.Phase == GamePhase.Standby)
         {
+            ResetInternalState();
             RefreshDay();
 
             if (!_missionRevealed && missionDescriptionText != null)
