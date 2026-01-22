@@ -39,6 +39,7 @@ public class AnomalyDistributor : MonoBehaviour
 
     public void DistributeAnomalies()
     {
+        // 1. 거주민 생성 체크 (안전장치)
         if (scheduleManager.GetActiveCellIds().Count == 0)
         {
             scheduleManager.GenerateNewResidents();
@@ -46,73 +47,73 @@ public class AnomalyDistributor : MonoBehaviour
 
         var allCellIds = anchorRegistry.GetAllCellIds();
 
-        // 1. [덱 생성] 이번 테마의 '공용 아이템(Common)'을 모두 모아 리스트로 만듭니다.
+        // 2. [초기 덱 생성] 이번 테마의 '공용 아이템(Common)'을 모두 모아 리스트로 만듭니다.
         List<AnomalyDefinitionSO> commonDeck = new List<AnomalyDefinitionSO>();
-        if (currentDayPool.Count > 0)
-        {
-            var commons = currentDayPool.Where(d => d.category == AnomalyCategory.Common).ToList();
-            commonDeck.AddRange(commons);
 
-            // 2. [셔플] 리스트를 무작위로 섞습니다. (중복 방지의 핵심)
-            ShuffleList(commonDeck);
+        // 헬퍼 함수: 덱이 비었을 때 다시 채워넣고 섞는 로직 (중복 허용을 위한 리필)
+        void RefillDeck()
+        {
+            if (currentDayPool.Count > 0)
+            {
+                // 이번 테마에 맞는 Common(미션) 아이템만 추려서 덱에 추가
+                var commons = currentDayPool.Where(d => d.category == AnomalyCategory.Common).ToList();
+                if (commons.Count > 0)
+                {
+                    commonDeck.AddRange(commons);
+                    ShuffleList(commonDeck);
+                    // Debug.Log("[Anomaly] 덱이 리필되었습니다. (셔플 완료)"); 
+                }
+            }
         }
 
-        // 3. 용의자 방들을 순회하며 아이템을 하나씩 나눠줍니다.
+        // 처음에 한 번 덱 채우기
+        RefillDeck();
+
+        // 3. [방 기준 순회] 모든 방을 돌며 용의자(Sus)를 찾습니다.
         foreach (var cellId in allCellIds)
         {
             if (!anchorRegistry.TryGet(cellId, out var anchor)) continue;
 
+            // 방의 기존 아이템 초기화
             anchor.ClearDailyAnomalies();
 
             var dailyRole = scheduleManager.GetDailyRole(cellId);
 
-            // 용의자가 아니면 스킵
+            // 용의자(Suspicious)가 아니면 아이템을 주지 않고 넘어갑니다.
             if (!dailyRole.isSuspicious) continue;
-
-            PrisonerData pData = scheduleManager.GetPrisonerData(cellId);
-            PrisonerType pType = (pData != null && pData.definition != null) ? pData.definition.traitType : PrisonerType.None;
 
             AnomalyDefinitionSO selectedItem = null;
 
             // =============================================================
-            // ★ [수정] 덱에서 하나씩 꺼내주기 (Pop)
+            // ★ [수정] "방 당 1개 보장" 로직 (부족하면 리필)
             // =============================================================
 
-            // 전략 A: 공용 아이템(미션템)이 덱에 남아있다면 우선 배정 (1순위)
+            // 1. 줄 아이템이 없으면 리필합니다. (아이템 데이터가 적어도 문제 없음)
+            if (commonDeck.Count == 0)
+            {
+                RefillDeck();
+            }
+
+            // 2. 덱에서 하나 꺼내서 방에 배정합니다.
             if (commonDeck.Count > 0)
             {
                 selectedItem = commonDeck[0];
-                commonDeck.RemoveAt(0); // 준 건 덱에서 뺌 (중복 방지)
+                commonDeck.RemoveAt(0); // 중복 방지를 위해 덱에서 제거
             }
-            // 전략 B: 공용 아이템이 동났다면? -> 죄수 전용 아이템 배정 (2순위)
             else
             {
-                var individualItems = currentDayPool
-                    .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
-                    .ToList();
-
-                if (individualItems.Count > 0)
-                {
-                    selectedItem = individualItems[Random.Range(0, individualItems.Count)];
-                }
-                // 전략 C: 그것도 없다면? -> 어쩔 수 없이 공용 풀에서 랜덤 (중복 허용)
-                else
-                {
-                    var commonBackup = currentDayPool.Where(d => d.category == AnomalyCategory.Common).ToList();
-                    if (commonBackup.Count > 0)
-                        selectedItem = commonBackup[Random.Range(0, commonBackup.Count)];
-                }
+                // 리필을 시도했는데도 덱이 비어있다면, SO 데이터가 아예 없는 경우입니다.
+                Debug.Log($"[Anomaly] '{cellId}' 방에 줄 아이템이 없습니다! (테마 아이템 데이터 확인 필요)");
+                continue;
             }
 
-            // 최종 적용
+            // 3. 최종 적용
             if (selectedItem != null)
             {
                 anchor.currentDailyAnomalies.Add(selectedItem);
-                Debug.Log($"🔴 {cellId} ({pType}) -> 범인 확정: {selectedItem.name}");
-            }
-            else
-            {
-                Debug.LogWarning($"⚠️ {cellId} ({pType}) -> 용의자지만 배정 가능한 아이템이 없음.");
+
+                // 로그 확인용 (필요 시 주석 해제)
+                // Debug.Log($"🔴 {cellId} (용의자) -> 아이템 배정 완료: {selectedItem.name}");
             }
         }
     }
