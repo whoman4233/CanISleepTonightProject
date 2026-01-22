@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8513471003699111856}
   - component: {fileID: 5540242595358516461}
   - component: {fileID: 1715764403906408852}
+  - component: {fileID: 8088083140575696630}
   m_Layer: 10
   m_Name: OfficeProp_DocumentBox02
   m_TagString: Untagged
@@ -47,11 +48,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  carryPromptObjectType: 
-  sfxRuleTable: {fileID: 0}
+  carryPromptObjectType: Box02
+  sfxRuleTable: {fileID: 11400000, guid: 71a49ea2082f73841ac17f4944648095, type: 2}
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8192
 --- !u!54 &5540242595358516461
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -100,6 +101,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.55891144, y: 0.4469946, z: 0.5927445}
   m_Center: {x: 0.0000054240227, y: 0.21710882, z: 0.00010213256}
+--- !u!114 &8088083140575696630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138464587302256344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_47
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Box02
 --- !u!1001 &2946118095404188415
 PrefabInstance:
   m_ObjectHideFlags: 0
