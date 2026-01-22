@@ -235,6 +235,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8622536267134492033}
   - component: {fileID: 167468121649456695}
+  - component: {fileID: 5311925698164669588}
+  - component: {fileID: 2232144552779402603}
+  - component: {fileID: 1550924642351708207}
   m_Layer: 10
   m_Name: OfficeProp_TutorialCabinet
   m_TagString: Untagged
@@ -280,6 +283,52 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5311925698164669588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4734328406849729750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f3d0d2f4c23b564bb704909268bf9fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 167468121649456695}
+  triggerName: Open
+  baton: {fileID: 3283772529852591116}
+  openClip: {fileID: 8300000, guid: cc6a963cb50ab5a4998636aa5240d50f, type: 3}
+  closeClip: {fileID: 8300000, guid: 2b8f208f850b29f4d8198891637bd768, type: 3}
+--- !u!114 &2232144552779402603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4734328406849729750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: 
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Cabinet
+--- !u!114 &1550924642351708207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4734328406849729750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 5311925698164669588}
+  methodName: GetPromptStateEnum
 --- !u!1 &5644175296771626368
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,9 +423,7 @@ GameObject:
   - component: {fileID: 5750088486268827406}
   - component: {fileID: 1625754771957068071}
   - component: {fileID: 64659748480040687}
-  - component: {fileID: 714095765612430649}
   - component: {fileID: 4003563091705393645}
-  - component: {fileID: 7147396351568540948}
   m_Layer: 10
   m_Name: OfficeProp_Cabinet01_Door
   m_TagString: Untagged
@@ -449,22 +496,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &714095765612430649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6489858477334114556}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f3d0d2f4c23b564bb704909268bf9fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 167468121649456695}
-  triggerName: Open
-  baton: {fileID: 3283772529852591116}
-  openClip: {fileID: 8300000, guid: cc6a963cb50ab5a4998636aa5240d50f, type: 3}
 --- !u!65 &4003563091705393645
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -486,18 +517,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47735247, y: 0.06652126, z: 1.7458093}
   m_Center: {x: 0.25495434, y: -0.010375584, z: -0.62628615}
---- !u!114 &7147396351568540948
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6489858477334114556}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultPromptId: Ptxt_KR_Object_05
-  ruleTable: {fileID: 0}
-  objectType: 

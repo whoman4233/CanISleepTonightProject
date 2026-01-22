@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CabinetInteract : MonoBehaviour , IInteractable
+public class CabinetInteract : MonoBehaviour, IInteractable
 {
     [Header("Animation Settings")]
     [SerializeField] private Animator animator;
@@ -13,22 +13,70 @@ public class CabinetInteract : MonoBehaviour , IInteractable
 
     [Header("SFX")]
     [SerializeField] private AudioClip openClip;
+    [SerializeField] private AudioClip closeClip;
 
     private bool isOpen = false;
+
+    // =========================
+    // 아이템 획득 여부
+    // =========================
+    private bool isLootTaken = false;
 
     private void Awake()
     {
         baton.SetActive(false);
+
         // 설정 안했을 경우 자동으로 찾기
-        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+    }
+
+    // =========================
+    // 프롬프트 상태 반환
+    // - Cabinet은 Close / Open만 사용
+    // =========================
+    public OpenClosePromptState GetPromptStateEnum()
+    {
+        return isOpen
+            ? OpenClosePromptState.Open
+            : OpenClosePromptState.Close;
     }
 
     public void Interact(Player player)
     {
-        if (animator == null) return;
+        if (animator == null)
+            return;
+
+        bool wasOpen = isOpen; // 상태 토글 전 값 보관
+
         isOpen = !isOpen;
         animator.SetBool("IsOpen", isOpen);
-        AudioManager.Instance.PlaySFX(openClip);
-        baton.SetActive(true);
+
+        // =========================
+        // 최초 오픈 시에만 아이템 활성화
+        // =========================
+        if (!isLootTaken && isOpen)
+        {
+            baton.SetActive(true);
+            isLootTaken = true;
+        }
+    }
+
+    // =====================================================
+    // Animation Event 전용 메서드
+    // - 애니메이션 타이밍에 맞춰 호출됨
+    // =====================================================
+
+    // [추가] 열기 사운드
+    public void PlayOpenSFX()
+    {
+        AudioManager.Instance?.PlaySFX(openClip);
+    }
+
+    // [추가] 닫기 사운드
+    public void PlayCloseSFX()
+    {
+        AudioManager.Instance?.PlaySFX(closeClip);
     }
 }
+
