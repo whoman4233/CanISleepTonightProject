@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class TutorialMission : MonoBehaviour
 {
-    [SerializeField] private Image dialogue, boardSee, boxOpened, batonEquip, npcHit, bookRead;
+    [SerializeField] private Image dialogue, boardSee, boxOpened, batonEquip, npcHit, bookClose;
     private Dictionary<DialogueKeys.DialogueType, Image> _missionMap;
     private Image _currentActivePanel;
 
@@ -36,7 +36,8 @@ public class TutorialMission : MonoBehaviour
             { DialogueKeys.DialogueType.BoxOpened, boxOpened },
             { DialogueKeys.DialogueType.BatonEquipped, batonEquip },
             { DialogueKeys.DialogueType.NPCHit, npcHit },
-            { DialogueKeys.DialogueType.BookRead, bookRead }
+            //{ DialogueKeys.DialogueType.BookRead, npcHit },
+            { DialogueKeys.DialogueType.BookClose, bookClose }
         };
         foreach (var panel in _missionMap.Values) panel.gameObject.SetActive(false);
     }

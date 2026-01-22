@@ -17,6 +17,9 @@ public class DialogueManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float typingSpeed = 0.05f; // 타이핑 속도 (추후 조절 가능)
 
+    private float _lastOpenTime;
+    private bool _isFirstInputGuard = false;
+
     // =========================
     // Raycast 제어용 CanvasGroup
     // =========================
@@ -168,6 +171,8 @@ public class DialogueManager : MonoBehaviour
     // =========================
     private void EnterDialogueMode()
     {
+        _lastOpenTime = Time.unscaledTime; // 시간 저장
+        _isFirstInputGuard = true; // 대화 시작 시 가드 활성화
         EventBus.Publish(new DialogueStartedEvent());
         EventBus.Publish(new CursorOverrideRequestedEvent
         {
@@ -381,6 +386,14 @@ public class DialogueManager : MonoBehaviour
 
     public void OnContinueClicked()
     {
+        if (_isFirstInputGuard)
+        {
+            if (Time.unscaledTime - _lastOpenTime < 0.15f) // 0.15초 이내에 들어온 입력은 싹 다 무시함. 최초 1회
+            {
+                return; // 던지기/상호작용 잔여 입력 무시
+            }
+            _isFirstInputGuard = false; // 가드 해제
+        }
         // 타이핑 중이면 canClick과 무관하게 처리
         if (isTyping)
         {
