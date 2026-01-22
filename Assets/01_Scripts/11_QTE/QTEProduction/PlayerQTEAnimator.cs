@@ -12,8 +12,10 @@ public class PlayerQTEAnimator : MonoBehaviour
 
     private int _struggleHash;
     private int _failHash;
+    private bool _qteActive;
 
     private Action<QTEInputFeedbackEvent> _onInput;
+    private Action<QTEStartedEvent> _onStarted;
     private Action<QTEEndedEvent> _onEnded;
 
     private void Awake()
@@ -25,27 +27,36 @@ public class PlayerQTEAnimator : MonoBehaviour
         _failHash = Animator.StringToHash(failTrigger);
 
         _onInput = OnInput;
+        _onStarted = OnStarted;
         _onEnded = OnEnded;
     }
 
     private void OnEnable()
     {
+        EventBus.Subscribe(_onStarted);
         EventBus.Subscribe(_onInput);
         EventBus.Subscribe(_onEnded);
     }
 
     private void OnDisable()
     {
+        EventBus.Unsubscribe(_onStarted);
         EventBus.Unsubscribe(_onInput);
         EventBus.Unsubscribe(_onEnded);
     }
-
+    private void OnStarted(QTEStartedEvent e)
+    {
+        _qteActive = true;
+    }
     // =========================
     // Input Feedback (연타/버튼)
     // =========================
 
     private void OnInput(QTEInputFeedbackEvent e)
     {
+        if (!_qteActive)
+            return;
+
         if (e.State != QTEInputState.Pressed)
             return;
 
@@ -58,9 +69,19 @@ public class PlayerQTEAnimator : MonoBehaviour
 
     private void OnEnded(QTEEndedEvent e)
     {
-        if (e.Result != QTEResult.Fail)
-            return;
+        _qteActive = false;
 
-        animator.SetTrigger(_failHash);
+        animator.ResetTrigger(_struggleHash);
+        animator.ResetTrigger(_failHash);
+
+        if (e.Result == QTEResult.Fail || e.Result == QTEResult.Timeout)
+        {
+            animator.SetTrigger(_failHash);
+            return;
+        }
+
+        animator.SetTrigger("QTEEnd");
     }
+
+
 }
