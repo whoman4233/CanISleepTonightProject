@@ -382,6 +382,7 @@ public class DialogueManager : MonoBehaviour
             _onDialogueComplete = null; // 중복 실행 방지
             callback.Invoke();
         }
+        _isFirstInputGuard = false;
     }
 
     public void OnContinueClicked()
