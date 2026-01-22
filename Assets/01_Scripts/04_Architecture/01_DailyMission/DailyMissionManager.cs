@@ -160,7 +160,7 @@ public class DailyMissionManager : MonoBehaviour
 
     public void StartDay(int dayIndex)
     {
-        // 이어하기 / 중단 복귀 시
+        // 이어하기 / 중단 복귀 시 처리
         if (CurrentMission != null)
         {
             Debug.Log($"[Mission] Day {dayIndex} 기존 미션 유지: {CurrentMission.title}");
@@ -169,38 +169,53 @@ public class DailyMissionManager : MonoBehaviour
         }
 
         // ===============================
-        // "신규 Day"
+        // "신규 Day" 상태 초기화
         // ===============================
         dailyResolvedCount = 0;
         CurrentScore = 0;
 
+        // [방어 로직] 남은 미션이 아예 없는 경우 런 테이블에서 복구 시도
         if (_remainingMissionOrder.Count == 0)
         {
-            Debug.LogError("[Mission] 남은 미션이 없습니다!");
-            return;
+            Debug.LogWarning("[Mission] 남은 미션이 없습니다! 런 테이블에서 복구를 시도합니다.");
+            RestoreRemainingFromRunTable();
+
+            if (_remainingMissionOrder.Count == 0)
+            {
+                Debug.LogError("[Mission] 복구 실패: 진행할 수 있는 미션이 없습니다.");
+                return;
+            }
         }
 
-        if (dayIndex == 7)
+        // =================================================
+        // 미션 선택 로직 (7일차 고정 vs 1~6일차 랜덤)
+        // =================================================
+
+        // 조건: 날짜가 7이거나, 1~6일차용 미션이 모두 소진되었을 때
+        if (dayIndex >= 7)
         {
-            CurrentMission = missionScenario[6];
+            CurrentMission = missionScenario[6]; // Day 7 고정 미션
+            Debug.Log("[Mission] 7일차 고정 미션(BossRiot) 진입");
         }
         else
         {
-            // =================================================
-            // Day 1~6: 7번 미션 제외 + 남은 미션 중 랜덤
-            // =================================================
+            // Day 1~6: 7번 미션을 제외한 남은 미션 중 랜덤 선택
             var candidates = _remainingMissionOrder
                 .Where(m => m != missionScenario[6])
                 .ToList();
 
             if (candidates.Count == 0)
             {
-                Debug.LogError("[Mission] Day 1~6인데 선택 가능한 미션이 없습니다!");
-                return;
+                // [수정 포인트] 1~6일차 미션이 다 떨어졌는데 날짜가 아직 7이 아닐 경우
+                // 에러를 내는 대신 7일차 미션으로 조기 진입시킵니다.
+                Debug.LogWarning($"[Mission] Day {dayIndex}이지만 랜덤 미션이 소진됨. 7일차 미션을 앞당겨 시작합니다.");
+                CurrentMission = missionScenario[6];
             }
-
-            int index = UnityEngine.Random.Range(0, candidates.Count);
-            CurrentMission = candidates[index];
+            else
+            {
+                int index = UnityEngine.Random.Range(0, candidates.Count);
+                CurrentMission = candidates[index];
+            }
         }
 
         CurrentMissionRuntime = new MissionRuntimeState();
