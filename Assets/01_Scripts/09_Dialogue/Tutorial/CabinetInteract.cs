@@ -49,16 +49,21 @@ public class CabinetInteract : MonoBehaviour, IInteractable
         if (isLootTaken) return;
         bool wasOpen = isOpen; // 상태 토글 전 값 보관
 
-        isOpen = !isOpen;
-        animator.SetBool("IsOpen", isOpen);
-
-        // =========================
-        // 최초 오픈 시에만 아이템 활성화
-        // =========================
-        if (!isLootTaken && isOpen)
+        TutorialNPC npc = FindObjectOfType<TutorialNPC>();
+        if (npc == null) return;
+        if (npc.currentSubStep == DialogueKeys.DialogueType.BoxOpened)
         {
-            baton.SetActive(true);
-            isLootTaken = true;
+            isOpen = !isOpen;
+            animator.SetBool("IsOpen", isOpen);
+
+            // =========================
+            // 최초 오픈 시에만 아이템 활성화
+            // =========================
+            if (!isLootTaken && isOpen)
+            {
+                baton.SetActive(true);
+                isLootTaken = true;
+            }
         }
     }
 
