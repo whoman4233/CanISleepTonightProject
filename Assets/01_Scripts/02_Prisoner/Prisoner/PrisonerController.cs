@@ -139,7 +139,8 @@ public class PrisonerController : MonoBehaviour
 
     // [기존] Enum 기반 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
-    {
+    { 
+        if (animator != null) animator.SetBool("IsAction", true);
         if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
 
