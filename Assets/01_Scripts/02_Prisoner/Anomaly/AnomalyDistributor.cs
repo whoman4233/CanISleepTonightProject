@@ -50,7 +50,7 @@ public class AnomalyDistributor : MonoBehaviour
         // 2. [초기 덱 생성] 이번 테마의 '공용 아이템(Common)'을 모두 모아 리스트로 만듭니다.
         List<AnomalyDefinitionSO> commonDeck = new List<AnomalyDefinitionSO>();
 
-        // 헬퍼 로직: 덱 리필 (중복 허용을 위해 다시 채워넣고 섞음)
+        // 헬퍼 함수: 덱이 비었을 때 다시 채워넣고 섞는 로직 (중복 허용을 위한 리필)
         void RefillDeck()
         {
             if (currentDayPool.Count > 0)
@@ -61,7 +61,7 @@ public class AnomalyDistributor : MonoBehaviour
                 {
                     commonDeck.AddRange(commons);
                     ShuffleList(commonDeck);
-                    // Debug.Log($"[Anomaly] 덱이 리필되었습니다. 현재 잔여량: {commonDeck.Count}");
+                    // Debug.Log("[Anomaly] 덱이 리필되었습니다. (셔플 완료)"); 
                 }
             }
         }
@@ -103,7 +103,7 @@ public class AnomalyDistributor : MonoBehaviour
             else
             {
                 // 리필을 시도했는데도 덱이 비어있다면, SO 데이터가 아예 없는 경우입니다.
-                Debug.LogError($"[Anomaly] '{cellId}' 방에 줄 아이템이 없습니다! (테마 아이템 데이터 확인 필요)");
+                Debug.Log($"[Anomaly] '{cellId}' 방에 줄 아이템이 없습니다! (테마 아이템 데이터 확인 필요)");
                 continue;
             }
 
@@ -111,7 +111,9 @@ public class AnomalyDistributor : MonoBehaviour
             if (selectedItem != null)
             {
                 anchor.currentDailyAnomalies.Add(selectedItem);
-                Debug.Log($"🔴 {cellId} (용의자) -> 아이템 배정 완료: {selectedItem.name}");
+
+                // 로그 확인용 (필요 시 주석 해제)
+                // Debug.Log($"🔴 {cellId} (용의자) -> 아이템 배정 완료: {selectedItem.name}");
             }
         }
     }
