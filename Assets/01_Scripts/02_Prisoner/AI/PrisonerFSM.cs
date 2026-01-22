@@ -33,6 +33,8 @@ public class PrisonerFSM : MonoBehaviour
     public IPrisonerState InspectionState { get; private set; }
     public IPrisonerState ReturnState { get; private set; }
     public IPrisonerState CenterIdleState { get; private set; }
+    public IPrisonerState QTEApproachState { get; private set; } //QTE
+
 
     // 무적 상태 판정
     public bool IsInvulnerable => _currentState == InspectionState || _currentState == DeadState;
@@ -50,6 +52,9 @@ public class PrisonerFSM : MonoBehaviour
         InspectionState = new PrisonerInspectionState(this);
         ReturnState = new PrisonerReturnState(this);
         CenterIdleState = new PrisonerCenterIdleState(this);
+
+        QTEApproachState = new PrisonerQTEApproachState(this); //QTE
+
     }
 
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
