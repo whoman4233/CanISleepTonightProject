@@ -5,7 +5,7 @@ public class QTEFlowDirector : MonoBehaviour
 {
     [Header("Filter")]
     [Tooltip("비어 있으면 모든 QTEStartedEvent를 연출로 처리")]
-    [SerializeField] private string qteIdFilter = "PrisonerAttack";
+    [SerializeField] private QTEActionSO actionFilter;
 
     [Header("Refs")]
     [SerializeField] private CameraDirector cameraDirector;
@@ -46,9 +46,13 @@ public class QTEFlowDirector : MonoBehaviour
         EventBus.Unsubscribe(_onShakeEnd);
     }
 
-    private bool PassFilter(string qteId)
+    // =========================
+    // Filter
+    // =========================
+
+    private bool PassFilter(QTEActionSO action)
     {
-        return string.IsNullOrEmpty(qteIdFilter) || qteId == qteIdFilter;
+        return actionFilter == null || action == actionFilter;
     }
 
     // =========================
@@ -57,7 +61,7 @@ public class QTEFlowDirector : MonoBehaviour
 
     private void OnQTEStarted(QTEStartedEvent e)
     {
-        if (!PassFilter(e.QTEId))
+        if (!PassFilter(e.Action))
             return;
 
         // 상세보기 강제 종료
@@ -72,12 +76,12 @@ public class QTEFlowDirector : MonoBehaviour
         if (PrisonerQTEContext.CurrentAttackerAnimator != null)
             PrisonerQTEContext.CurrentAttackerAnimator.PlayAttack();
 
-        //  BaseShake는 애니메이션 이벤트(AttackShakeStart)에서만 제어
+        // BaseShake는 애니메이션 이벤트에서 제어
     }
 
     private void OnQTEInputFeedback(QTEInputFeedbackEvent e)
     {
-        // 버튼 입력 시: 발버둥
+        // 버튼 입력 시 발버둥 연출
         if (e.State == QTEInputState.Pressed && shakeController != null)
         {
             shakeController.PlayButtonImpulse();
@@ -86,21 +90,21 @@ public class QTEFlowDirector : MonoBehaviour
 
     private void OnQTEEnded(QTEEndedEvent e)
     {
-        if (!PassFilter(e.QTEId))
+        if (!PassFilter(e.Action))
             return;
 
-        // 카메라 원상복귀
+        // 카메라 원상 복귀
         if (cameraDirector != null)
             cameraDirector.ExitQTEMode();
 
-        // 성공했을 때만 죄수가 맞는다
+        // 성공 시 죄수 피격
         if (e.Result == QTEResult.Success)
         {
             if (PrisonerQTEContext.CurrentAttackerAnimator != null)
-                PrisonerQTEContext.CurrentAttackerAnimator.PlayFail(); // = Hit
+                PrisonerQTEContext.CurrentAttackerAnimator.PlayFail();
         }
 
-        // 모든 흔들림 정리
+        // 흔들림 정리
         if (shakeController != null)
             shakeController.ResetAll();
 
@@ -113,16 +117,15 @@ public class QTEFlowDirector : MonoBehaviour
 
     private void OnShakeStart(PrisonerAttackShakeStartEvent e)
     {
-        // 죄수 공격 애니메이션 중 "붙잡힘" 상태 시작
         if (shakeController != null)
             shakeController.StartBaseShake();
     }
 
     private void OnShakeEnd(PrisonerAttackShakeEndEvent e)
     {
-        // 공격 애니메이션 종료
         if (shakeController != null)
             shakeController.StopBaseShake();
     }
 }
+
 

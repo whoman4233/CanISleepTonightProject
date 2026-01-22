@@ -1,66 +1,129 @@
 ﻿using UnityEngine;
+using System;
 
 public class QTEDistanceTrigger : MonoBehaviour
 {
-    [Header("QTE Action")]
+    [Header("QTE")]
     [SerializeField] private QTEActionSO action;
-
-    [Header("Distance Settings")]
-    [SerializeField] private float triggerDistance = 1.8f;
     [SerializeField] private bool oneShot = true;
 
-    [Header("Refs")]
-    [SerializeField] private Transform player;
-
+    private Transform player;
+    private bool _armed;
     private bool _used;
+
+    public bool IsArmed => _armed;
+    public bool HasQTE => action != null;
+
+    private Action<PlayerSpawnedEvent> _onPlayerSpawned;
+    private Action<PlayerPresenceChangedEvent> _onPlayerPresenceChanged;
+    private Action<InspectionStartedEvent> _onInspectionStarted;
+    private Action<InspectionEndedEvent> _onInspectionEnded;
 
     private void Awake()
     {
-        if (player == null)
+        _onPlayerSpawned = OnPlayerSpawned;
+        _onPlayerPresenceChanged = OnPlayerPresenceChanged;
+        _onInspectionStarted = OnInspectionStarted;
+        _onInspectionEnded = OnInspectionEnded;
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe(_onPlayerSpawned);
+        EventBus.Subscribe(_onPlayerPresenceChanged);
+        EventBus.Subscribe(_onInspectionStarted);
+        EventBus.Subscribe(_onInspectionEnded);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe(_onPlayerSpawned);
+        EventBus.Unsubscribe(_onPlayerPresenceChanged);
+        EventBus.Unsubscribe(_onInspectionStarted);
+        EventBus.Unsubscribe(_onInspectionEnded);
+    }
+
+    // =========================
+    // Inspection Events
+    // =========================
+
+    /// <summary>
+    /// 상세보기 진입 시:
+    /// QTE를 가진 죄수라면 무조건 Armed
+    /// </summary>
+    private void OnInspectionStarted(InspectionStartedEvent e)
+    {
+        Arm();
+    }
+
+    private void OnInspectionEnded(InspectionEndedEvent e)
+    {
+        Disarm();
+    }
+
+    // =========================
+    // Player Events
+    // =========================
+
+    private void OnPlayerSpawned(PlayerSpawnedEvent e)
+    {
+        player = e.Player.transform;
+    }
+
+    private void OnPlayerPresenceChanged(PlayerPresenceChangedEvent e)
+    {
+        if (!e.IsPresent)
         {
-            var playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-                player = playerObj.transform;
+            player = null;
+            Disarm();
         }
     }
 
-    private void Update()
+    // =========================
+    // External Control
+    // =========================
+
+    /// <summary>
+    /// QTEApproachController에서 "도착"을 알릴 때 호출됨
+    /// </summary>
+    public void NotifyArrived()
     {
-        if (_used && oneShot)
-            return;
-
-        if (player == null || action == null)
-            return;
-
-        float sqrDist = (player.position - transform.position).sqrMagnitude;
-        if (sqrDist > triggerDistance * triggerDistance)
-            return;
+        if (!_armed) return;
+        if (_used && oneShot) return;
+        if (action == null) return;
 
         TriggerQTE();
+    }
+
+    // =========================
+    // QTE Control
+    // =========================
+
+    private void Arm()
+    {
+        _armed = true;
+        Debug.Log($"[QTE] Armed : {name}", this);
+    }
+
+    private void Disarm()
+    {
+        _armed = false;
     }
 
     private void TriggerQTE()
     {
         _used = true;
+        _armed = false;
 
-        // 공격자 컨텍스트 세팅 (죄수 기준)
         PrisonerQTEContext.SetAttacker(transform);
 
         EventBus.Publish(new QTEStartedEvent
         {
-            QTEId = action.qteId,
-            Config = new QTEConfig
-            {
-                Type = action.type,
-                TimeLimit = action.timeLimit,
-                RequiredValue = action.requiredValue,
-                PerPressValue = action.perPressValue,
-                DecayDelay = action.decayDelay,
-                DecayPerSecond = action.decayPerSecond
-            }
+            Action = action
         });
 
         if (oneShot)
             enabled = false;
     }
 }
+

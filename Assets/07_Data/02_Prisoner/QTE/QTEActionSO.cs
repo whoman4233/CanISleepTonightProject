@@ -3,9 +3,6 @@
 [CreateAssetMenu(menuName = "QTE/QTE Action")]
 public class QTEActionSO : ScriptableObject
 {
-    [Header("ID")]
-    public string qteId;
-
     [Header("QTE Rule")]
     public QTEType type;// Mash(연타) / Hold(지속)
     public float timeLimit; // QTE 제한시간

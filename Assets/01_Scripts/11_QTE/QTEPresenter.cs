@@ -40,44 +40,40 @@ public class QTEPresenter : MonoBehaviour
 
     private void OnQTEStarted(QTEStartedEvent e)
     {
-        // 상세보기 강제 종료 요청
+        // 상세보기 강제 종료
         EventBus.Publish(new ForceExitInspectionEvent());
 
-        // 이미 진행 중이면 무시
+        // 이미 QTE 중이면 무시
         if (_controller != null)
             return;
 
-        Debug.Log("[QTEPresenter] OnQTEStarted");
+        Debug.Log($"[QTEPresenter] Start QTE : {e.Action.name}");
 
-        // UI 표시
         if (qteRoot != null)
             qteRoot.SetActive(true);
 
-        // QTEController 생성 (QTEId 전달)
-        _controller = new QTEController(e.QTEId, e.Config);
+        _controller = new QTEController(e.Action);
 
-        // 입력 리더 생성
-        _inputReader = new QTEInputReader(InputManager.Instance.Inputs, _controller);
+        _inputReader = new QTEInputReader(
+            InputManager.Instance.Inputs,
+            _controller
+        );
     }
 
     private void OnQTEEnded(QTEEndedEvent e)
     {
-        Debug.Log($"[QTEPresenter] OnQTEEnded : {e.QTEId} / {e.Result}");
+        Debug.Log($"[QTEPresenter] End QTE : {e.Action.name} / {e.Result}");
 
-        // 입력 해제
         _inputReader?.Dispose();
         _inputReader = null;
 
-        // 로직 정리
         _controller = null;
 
-        // UI 숨김
         if (qteRoot != null)
             qteRoot.SetActive(false);
-
-        // QTEEndedEvent는 Controller에서 이미 완성된 형태로 발행됨
     }
 }
+
 
 
 
