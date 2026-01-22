@@ -6,12 +6,16 @@ public class PlayerQTEAnimator : MonoBehaviour
     [Header("Animator")]
     [SerializeField] private Animator animator;
 
-    [Header("Triggers")]
-    [SerializeField] private string struggleTrigger = "Struggle";
-    [SerializeField] private string failTrigger = "QTEFail";
+    [Header("QTE Animator Params")]
+    [SerializeField] private string struggleTrigger = "Struggle"; // Guarding 재생용
+    [SerializeField] private string failTrigger = "QTEFail";      // GuardFail 재생용
+
+    [Header("QTELayer Index")]
+    [SerializeField] private int qteLayerIndex = 2; // ← Animator에서 QTELayer 인덱스와 반드시 일치
 
     private int _struggleHash;
     private int _failHash;
+
     private bool _qteActive;
 
     private Action<QTEInputFeedbackEvent> _onInput;
@@ -45,15 +49,24 @@ public class PlayerQTEAnimator : MonoBehaviour
         EventBus.Unsubscribe(_onEnded);
     }
 
+    // ======================================================
+    // QTE 시작
+    // ======================================================
     private void OnStarted(QTEStartedEvent e)
     {
         _qteActive = true;
+
+        // QTE Layer 활성화
+        animator.SetLayerWeight(qteLayerIndex, 1f);
+
+        // 혹시 남아있을 수 있는 트리거 정리
+        animator.ResetTrigger(_struggleHash);
+        animator.ResetTrigger(_failHash);
     }
 
-    // =========================
-    // Input Feedback
-    // =========================
-
+    // ======================================================
+    // QTE 입력 피드백 (버튼 연타)
+    // ======================================================
     private void OnInput(QTEInputFeedbackEvent e)
     {
         if (!_qteActive)
@@ -62,44 +75,56 @@ public class PlayerQTEAnimator : MonoBehaviour
         if (e.State != QTEInputState.Pressed)
             return;
 
+        // 클릭할 때마다 Guarding 재생
         animator.SetTrigger(_struggleHash);
     }
 
-    // =========================
-    // QTE Result
-    // =========================
-
+    // ======================================================
+    // QTE 종료
+    // ======================================================
     private void OnEnded(QTEEndedEvent e)
     {
+        if (!_qteActive)
+            return;
+
         _qteActive = false;
 
+        // 입력 트리거 정리
         animator.ResetTrigger(_struggleHash);
-        animator.ResetTrigger(_failHash);
 
+        // [실패일 때만] GuardFail 1회 재생
         if (e.Result == QTEResult.Fail || e.Result == QTEResult.Timeout)
         {
             animator.SetTrigger(_failHash);
-            return;
         }
 
-        animator.SetTrigger("QTEEnd");
+        // GuardFail 클립 마지막에 Animation Event로 호출
+        // 성공인 경우는 즉시 복귀해도 문제 없음
+        else
+        {
+            DisableQTELayer();
+        }
     }
 
-    // =========================
-    // Animation Events (연출 전용)
-    // =========================
+    // ======================================================
+    // Animation Events
+    // ======================================================
 
-    // 예: 몸을 강하게 버티는 프레임
-    public void OnStrugglePeak()
+    // GuardFail 애니메이션 마지막 프레임에 연결
+    public void OnGuardFailFinished()
     {
-        // 카메라 흔들림, 숨소리, UI 강조 등
-        EventBus.Publish(new PlayerAttackTimingEvent());
+        DisableQTELayer();
     }
 
-    // 예: 실패 시 맞는 순간
-    public void OnPlayerHitFrame()
+    // ======================================================
+    // Internal
+    // ======================================================
+    private void DisableQTELayer()
     {
-        // 피격 이펙트, 사운드
+        // QTE Layer 비활성화 → Base Layer 상태 그대로 노출
+        animator.SetLayerWeight(qteLayerIndex, 0f);
+
+        // 혹시 모를 잔여 트리거 정리
+        animator.ResetTrigger(_failHash);
     }
 }
-
