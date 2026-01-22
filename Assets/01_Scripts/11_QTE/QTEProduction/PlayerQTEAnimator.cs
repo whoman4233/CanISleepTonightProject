@@ -44,12 +44,14 @@ public class PlayerQTEAnimator : MonoBehaviour
         EventBus.Unsubscribe(_onInput);
         EventBus.Unsubscribe(_onEnded);
     }
+
     private void OnStarted(QTEStartedEvent e)
     {
         _qteActive = true;
     }
+
     // =========================
-    // Input Feedback (연타/버튼)
+    // Input Feedback
     // =========================
 
     private void OnInput(QTEInputFeedbackEvent e)
@@ -83,5 +85,21 @@ public class PlayerQTEAnimator : MonoBehaviour
         animator.SetTrigger("QTEEnd");
     }
 
+    // =========================
+    // Animation Events (연출 전용)
+    // =========================
 
+    // 예: 몸을 강하게 버티는 프레임
+    public void OnStrugglePeak()
+    {
+        // 카메라 흔들림, 숨소리, UI 강조 등
+        EventBus.Publish(new PlayerAttackTimingEvent());
+    }
+
+    // 예: 실패 시 맞는 순간
+    public void OnPlayerHitFrame()
+    {
+        // 피격 이펙트, 사운드
+    }
 }
+

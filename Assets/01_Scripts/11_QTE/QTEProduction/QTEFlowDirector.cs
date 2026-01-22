@@ -74,7 +74,7 @@ public class QTEFlowDirector : MonoBehaviour
 
         // 죄수 공격 애니메이션 시작
         if (PrisonerQTEContext.CurrentAttackerAnimator != null)
-            PrisonerQTEContext.CurrentAttackerAnimator.PlayAttack();
+            PrisonerQTEContext.CurrentAttackerAnimator.PlayAttackFail();
 
         // BaseShake는 애니메이션 이벤트에서 제어
     }
@@ -101,7 +101,7 @@ public class QTEFlowDirector : MonoBehaviour
         if (e.Result == QTEResult.Success)
         {
             if (PrisonerQTEContext.CurrentAttackerAnimator != null)
-                PrisonerQTEContext.CurrentAttackerAnimator.PlayFail();
+                PrisonerQTEContext.CurrentAttackerAnimator.PlayHitSuccess();
         }
 
         // 흔들림 정리
