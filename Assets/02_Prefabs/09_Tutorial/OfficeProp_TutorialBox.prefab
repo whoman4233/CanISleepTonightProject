@@ -261,6 +261,7 @@ GameObject:
   - component: {fileID: 1530182190143529878}
   - component: {fileID: 5625338379876873967}
   - component: {fileID: 9011540736127798639}
+  - component: {fileID: 2597902543024845808}
   m_Layer: 10
   m_Name: OfficeProp_TutorialBox
   m_TagString: Untagged
@@ -344,12 +345,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c188fbfbc3f42a44ea1244adcaeb5ad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  carryPromptObjectType: 
+  carryPromptObjectType: Box01
   sfxRuleTable: {fileID: 0}
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 0
   stepToPublish: 2
+--- !u!114 &2597902543024845808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6202030992324327843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPromptId: Ptxt_KR_Object_47
+  ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
+  objectType: Box01
 --- !u!1 &9078543045851396309
 GameObject:
   m_ObjectHideFlags: 0

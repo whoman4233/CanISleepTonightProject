@@ -11,6 +11,9 @@ public class CabinetInteract : MonoBehaviour , IInteractable
     [Header("Baton")]
     [SerializeField] private GameObject baton;
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip openClip;
+
     private bool isOpen = false;
 
     private void Awake()
@@ -25,6 +28,7 @@ public class CabinetInteract : MonoBehaviour , IInteractable
         if (animator == null) return;
         isOpen = !isOpen;
         animator.SetBool("IsOpen", isOpen);
+        AudioManager.Instance.PlaySFX(openClip);
         baton.SetActive(true);
     }
 }
