@@ -36,6 +36,7 @@ public static class DialogueKeys
         public const string Fail = "Fail";
         public const string FrankArgue = "FrankArgue";
         public const string Choice = "Choice";
+        public const string AfterChoice = "AfterChoice";
     }
     public enum MissionType
     {
@@ -72,5 +73,6 @@ public static class DialogueKeys
         Fail,
         FrankArgue,
         Choice,
+        AfterChoice,
     }
 }
