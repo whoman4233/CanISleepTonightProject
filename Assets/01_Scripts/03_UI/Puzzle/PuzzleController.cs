@@ -74,6 +74,7 @@ public class PuzzleController : MonoBehaviour
 
         EventBus.Publish(new GlobalInputLockReleasedEvent());
         EventBus.Publish(new ResumeGameRequestedEvent());
+        DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, DialogueKeys.DialogueType.AfterChoice.ToString()); // 미션6 선택지 선택 후 나오는 대사 강제 출력
 
         InputManager.Instance?.SetDialogueActive(false);
     }
