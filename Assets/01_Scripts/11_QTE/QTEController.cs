@@ -2,20 +2,23 @@
 
 public class QTEController
 {
-    private readonly string _qteId;
-    private readonly QTEConfig _config;
+    // ID + Config 제거
+    private readonly QTEActionSO _action;
 
     private float _currentTime;
     private float _currentValue;
-    private bool _holding;
     private float _timeSinceLastInput;
-    private bool _ended; // 중복 종료 방지
+    private bool _ended;
 
-    public QTEController(string qteId, QTEConfig config)
+    public QTEController(QTEActionSO action)
     {
-        _qteId = qteId;
-        _config = config;
-        _currentTime = config.TimeLimit;
+        _action = action;
+
+        //  초기값 설정
+        _currentTime = action.timeLimit;
+        _currentValue = 0f;
+        _timeSinceLastInput = 0f;
+        _ended = false;
     }
 
     public void Tick(float delta)
@@ -27,31 +30,29 @@ public class QTEController
         _timeSinceLastInput += delta;
 
         // Mash 감소 로직
-        if (_config.Type == QTEType.Mash &&
-            _timeSinceLastInput >= _config.DecayDelay &&
-            _config.DecayPerSecond > 0f)
+        if (_action.type == QTEType.Mash &&
+            _timeSinceLastInput >= _action.decayDelay &&
+            _action.decayPerSecond > 0f)
         {
-            _currentValue -= _config.DecayPerSecond * delta;
+            _currentValue -= _action.decayPerSecond * delta;
             _currentValue = Mathf.Max(0f, _currentValue);
 
             EventBus.Publish(new QTEProgressChangedEvent
             {
                 Current = _currentValue,
-                Required = _config.RequiredValue
+                Required = _action.requiredValue
             });
         }
 
         EventBus.Publish(new QTETimerChangedEvent
         {
             Remaining = _currentTime,
-            Limit = _config.TimeLimit
+            Limit = _action.timeLimit
         });
 
         if (_currentTime <= 0f)
             End(QTEResult.Timeout);
     }
-
-
 
     public void OnPressed()
     {
@@ -60,17 +61,14 @@ public class QTEController
 
         _timeSinceLastInput = 0f;
 
-        if (_config.Type == QTEType.Mash)
-            AddProgress(_config.PerPressValue);
+        if (_action.type == QTEType.Mash)
+            AddProgress(_action.perPressValue);
     }
-
 
     public void OnReleased()
     {
         if (_ended)
             return;
-
-        _holding = false;
     }
 
     private void AddProgress(float value)
@@ -83,10 +81,10 @@ public class QTEController
         EventBus.Publish(new QTEProgressChangedEvent
         {
             Current = _currentValue,
-            Required = _config.RequiredValue
+            Required = _action.requiredValue
         });
 
-        if (_currentValue >= _config.RequiredValue)
+        if (_currentValue >= _action.requiredValue)
             End(QTEResult.Success);
     }
 
@@ -99,7 +97,7 @@ public class QTEController
 
         EventBus.Publish(new QTEEndedEvent
         {
-            QTEId = _qteId,
+            Action = _action,
             Result = result
         });
     }

@@ -39,17 +39,19 @@ public struct QTEConfig
 }
 
 // ================================
-// QTE Lifecycle
+// QTE Lifecycle (SO 기반)
 // ================================
+
 public struct QTEStartedEvent
 {
-    public string QTEId;
-    public QTEConfig Config;
+    // QTEId + Config 제거
+    public QTEActionSO Action;
 }
 
 public struct QTEEndedEvent
 {
-    public string QTEId;
+    // QTEId 제거
+    public QTEActionSO Action;
     public QTEResult Result;
 }
 public struct ForceExitInspectionEvent // 상세보기 강제종료
