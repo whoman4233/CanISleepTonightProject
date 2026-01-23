@@ -227,7 +227,6 @@ public class PrisonerFSM : MonoBehaviour
         return false;
     }
 
-    // ... Helper Methods (기존과 동일) ...
     private bool CheckAndEnterVisualState()
     {
         VisualAnomalyType myVisual = GetMyVisualType();
