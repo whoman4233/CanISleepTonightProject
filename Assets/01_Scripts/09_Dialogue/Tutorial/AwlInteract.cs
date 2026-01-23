@@ -13,12 +13,22 @@ public class AwlInteract : InspectHiddenItemAction
         if (npc == null) return;
         if (!_isTriggered && (int)npc.currentSubStep == (int)stepToPublish - 2) // bookread스텝 건너뛰고 바로 close스텝으로 전환
         {
-            EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
-            //EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.BookClose));
-            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, DialogueKeys.Types.BookRead);
+            StartCoroutine(DelayedSequence(owner));
+
             Debug.Log("튜토리얼 이벤트 발행 완료");
-       }
+        }
+    }
+
+    private IEnumerator DelayedSequence(IInspectable owner)
+    {
+        EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
+
+        yield return null;
+
+        DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, DialogueKeys.Types.BookRead);
+        yield return null;
+
         base.InspectAction(owner);
     }
 }
