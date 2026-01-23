@@ -9,18 +9,16 @@ public class AwlInteract : InspectHiddenItemAction
 
     public override void InspectAction(IInspectable owner)
     {
-        Debug.Log("<color=yellow>1. InspectAction 진입함</color>");
-        base.InspectAction(owner);
-        Debug.Log("<color=cyan>2. 부모 로직 통과함</color>");
         TutorialNPC npc = FindObjectOfType<TutorialNPC>();
         if (npc == null) return;
-        if (!_isTriggered && (int)npc.currentSubStep == (int)stepToPublish - 1)
+        if (!_isTriggered && (int)npc.currentSubStep == (int)stepToPublish - 2) // bookread스텝 건너뛰고 바로 close스텝으로 전환
         {
             EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
-            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
-            EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.BookClose));
+            //EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.BookClose));
+            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, DialogueKeys.Types.BookRead);
             Debug.Log("튜토리얼 이벤트 발행 완료");
-        }
+       }
+        base.InspectAction(owner);
     }
 }
