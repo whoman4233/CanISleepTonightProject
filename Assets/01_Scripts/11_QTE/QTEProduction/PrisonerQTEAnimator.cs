@@ -12,6 +12,9 @@ public class PrisonerQTEAnimator : MonoBehaviour
     [SerializeField] private string hitTrigger = "HitSuccess";
     [SerializeField] private string attackTrigger = "AttackFail";
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip hitSfx;
+
     private int _qteStateHash;
     private int _hitHash;
     private int _attackHash;
@@ -137,7 +140,6 @@ public class PrisonerQTEAnimator : MonoBehaviour
     {
         EventBus.Publish(new PlayerAttackTimingEvent());
     }
-
     // =========================
     // Internal
     // =========================
@@ -150,6 +152,11 @@ public class PrisonerQTEAnimator : MonoBehaviour
 
         animator.ResetTrigger(_hitHash);
         animator.ResetTrigger(_attackHash);
+    }
+    public void OnPrisonerHitSfx()
+    {
+        if (hitSfx != null)
+            AudioManager.Instance?.PlaySFX(hitSfx);
     }
 }
 

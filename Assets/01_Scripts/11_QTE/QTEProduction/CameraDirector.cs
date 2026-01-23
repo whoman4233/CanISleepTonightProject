@@ -58,7 +58,7 @@ public class CameraDirector : MonoBehaviour
         DisablePlayerInput();
 
         // =========================
-        // 1. Yaw (기존 로직 유지)
+        // 1. Yaw 
         // =========================
         Vector3 flatDir = attacker.position - playerRoot.position;
         flatDir.y = 0f;
