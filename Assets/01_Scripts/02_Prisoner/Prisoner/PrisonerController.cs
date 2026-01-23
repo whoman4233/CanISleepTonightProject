@@ -19,7 +19,7 @@ public class PrisonerController : MonoBehaviour
     public struct ActionPropData
     {
         public PrisonerAIType type;
-        public GameObject propObject;
+        public GameObject propObject; // 여기엔 프리팹 원본이 들어갑니다
     }
 
     // ================================================================
@@ -39,6 +39,7 @@ public class PrisonerController : MonoBehaviour
     [Header("Action Props (Tools)")]
     [SerializeField] private List<ActionPropData> actionProps;
 
+    // 실제 게임에서 제어할 '생성된' 오브젝트들을 담는 곳
     private Dictionary<PrisonerAIType, GameObject> _propMap;
 
     public bool IsSuspicious { get; private set; }
@@ -80,26 +81,14 @@ public class PrisonerController : MonoBehaviour
         fsm = GetComponent<PrisonerFSM>();
         if (fsm == null) fsm = gameObject.AddComponent<PrisonerFSM>();
 
-        InitializeDictionaries();
+        // 딕셔너리 초기화 (내용물은 아래 AutoAttach 함수에서 채웁니다)
+        _propMap = new Dictionary<PrisonerAIType, GameObject>();
 
-        // ★ [추가] 시작 시 도구들을 자동으로 손 뼈 하위로 이동시킴
+        // ★ [수정] 프롭을 '생성'하고 손에 붙인 뒤 딕셔너리에 등록
         AutoAttachPropsToHand();
     }
 
-    private void InitializeDictionaries()
-    {
-        _propMap = new Dictionary<PrisonerAIType, GameObject>();
-        if (actionProps != null)
-        {
-            foreach (var data in actionProps)
-            {
-                if (data.propObject != null && !_propMap.ContainsKey(data.type))
-                    _propMap.Add(data.type, data.propObject);
-            }
-        }
-    }
-
-    // ★ [추가] 프롭 자동 장착 로직
+    // ★ [핵심 수정] 프리팹 인스턴스화 및 자동 장착 로직
     private void AutoAttachPropsToHand()
     {
         if (animator == null) return;
@@ -109,26 +98,39 @@ public class PrisonerController : MonoBehaviour
 
         if (rightHand == null)
         {
-            // Humanoid가 아니거나 뼈 세팅이 안된 경우
-            // Debug.LogWarning($"[PrisonerController] {name}: RightHand 뼈를 찾을 수 없습니다. (Generic Rig?)");
+            // Debug.LogWarning($"[PrisonerController] {name}: RightHand 뼈를 찾을 수 없습니다.");
             return;
         }
 
-        // 2. 등록된 모든 프롭을 손 뼈 자식으로 이동
+        // 2. 등록된 프롭 프리팹들을 하나씩 순회
         foreach (var data in actionProps)
         {
             if (data.propObject != null)
             {
-                // 부모를 손으로 변경
-                data.propObject.transform.SetParent(rightHand);
+                // [중요] 프리팹 원본을 바로 자식으로 넣으면 에러가 납니다.
+                // 반드시 Instantiate(복제/생성)를 해야 씬(Scene)에 존재하는 오브젝트가 됩니다.
 
-                // ★ 위치와 회전을 0으로 초기화하여 손에 '착' 달라붙게 함
-                // (모델의 Pivot이 손잡이 위치여야 자연스럽습니다)
-                data.propObject.transform.localPosition = Vector3.zero;
-                data.propObject.transform.localRotation = Quaternion.identity;
+                GameObject propInstance = Instantiate(data.propObject);
 
-                // 필요하다면 스케일 초기화 (상황에 따라 주석 처리 가능)
-                // data.propObject.transform.localScale = Vector3.one;
+                // (Clone) 이름 제거 (선택사항)
+                propInstance.name = data.propObject.name;
+
+                // 부모를 손으로 설정
+                propInstance.transform.SetParent(rightHand);
+
+                // 위치와 회전을 0으로 초기화하여 손에 '착' 달라붙게 함
+                propInstance.transform.localPosition = Vector3.zero;
+                propInstance.transform.localRotation = Quaternion.identity;
+                // 필요 시 스케일 초기화: propInstance.transform.localScale = Vector3.one;
+
+                // 평소엔 안 보이게 끔
+                propInstance.SetActive(false);
+
+                // ★ [중요] '복제된 실체'를 딕셔너리에 등록해야 나중에 켜고 끄기가 가능
+                if (!_propMap.ContainsKey(data.type))
+                {
+                    _propMap.Add(data.type, propInstance);
+                }
             }
         }
     }

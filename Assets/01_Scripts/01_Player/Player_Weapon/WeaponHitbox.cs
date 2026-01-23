@@ -41,7 +41,7 @@ public sealed class WeaponHitbox : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[WeaponHitbox] Collider가 없습니다!");
+            Debug.Log("[WeaponHitbox] Collider가 없습니다!");
         }
     }
 
