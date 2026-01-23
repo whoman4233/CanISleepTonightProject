@@ -2,7 +2,6 @@
 
 public class QTEController
 {
-    // ID + Config 제거
     private readonly QTEActionSO _action;
 
     private float _currentTime;
@@ -14,7 +13,6 @@ public class QTEController
     {
         _action = action;
 
-        //  초기값 설정
         _currentTime = action.timeLimit;
         _currentValue = 0f;
         _timeSinceLastInput = 0f;
@@ -29,7 +27,6 @@ public class QTEController
         _currentTime -= delta;
         _timeSinceLastInput += delta;
 
-        // Mash 감소 로직
         if (_action.type == QTEType.Mash &&
             _timeSinceLastInput >= _action.decayDelay &&
             _action.decayPerSecond > 0f)
@@ -95,11 +92,24 @@ public class QTEController
 
         _ended = true;
 
+        // 1) QTE 종료 알림
         EventBus.Publish(new QTEEndedEvent
         {
             Action = _action,
             Result = result
         });
+
+        // 2) 결과에 따른 "결정 이벤트" (단 1회)
+        if (result == QTEResult.Success)
+        {
+            // 플레이어가 죄수를 때림
+            EventBus.Publish(new PrisonerHitByPlayerEvent());
+        }
+        else
+        {
+            // 죄수가 플레이어를 공격
+            EventBus.Publish(new PlayerDamagedEvent());
+        }
     }
 }
 

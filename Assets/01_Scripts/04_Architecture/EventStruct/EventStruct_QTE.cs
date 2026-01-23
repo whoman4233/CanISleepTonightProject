@@ -14,6 +14,21 @@ public enum QTEResult
     Timeout
 }
 
+public enum QTEInputState
+{
+    Pressed,
+    Released
+}
+// ================================
+// 죄수 QTE 애니메이션 Enum
+// ================================
+public enum PrisonerQTEAnimType
+{
+    Intro,      // QTE 시작 연출 (1회)
+    Loop,       // QTE 진행 중 반복
+    HitSuccess, // 플레이어 QTE 성공 → 죄수 피격
+    AttackFail  // 플레이어 QTE 실패 → 죄수 공격
+}
 // ================================
 // QTE Config
 // ================================
@@ -37,7 +52,6 @@ public struct QTEConfig
     //입력 멈춘 뒤 감소 시작까지 지연
     public float DecayDelay;
 }
-
 // ================================
 // QTE Lifecycle (SO 기반)
 // ================================
@@ -57,6 +71,28 @@ public struct QTEEndedEvent
 public struct ForceExitInspectionEvent // 상세보기 강제종료
 {
 }
+// ================================
+// QTE 결과에 따른 이벤트
+// ================================
+public struct PrisonerHitByPlayerEvent //QTE 실패 시 죄수가 플레이어에게 데미지 받음.
+{
+
+}
+
+public struct PlayerDamagedEvent // QTE 성공 시 플레이어가 죄수에게 데미지 입힘
+{
+
+}
+
+public struct PrisonerHitTimingEvent // 죄수가 플레이어에게 데미지 줌(애니메이션 이벤트용)
+{
+
+}
+
+public struct PlayerAttackTimingEvent // 플레이어의 공격 타이밍 이벤트(애니메이션 이벤트용)
+{
+
+}
 
 // ================================
 // QTE Progress / Timer
@@ -72,17 +108,13 @@ public struct QTETimerChangedEvent
     public float Remaining;
     public float Limit;
 }
-
 // ================================
 // QTE Input Feedback
 // ================================
-public enum QTEInputState
-{
-    Pressed,
-    Released
-}
-
 public struct QTEInputFeedbackEvent
 {
     public QTEInputState State;
 }
+
+
+

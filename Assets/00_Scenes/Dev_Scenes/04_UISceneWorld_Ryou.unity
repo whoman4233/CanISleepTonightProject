@@ -10348,6 +10348,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1452432844160746898, guid: 6666a0f7b9683a943a316f7f74976df9,
+        type: 3}
+      propertyPath: failTriggerName
+      value: HitSuccess
+      objectReference: {fileID: 0}
+    - target: {fileID: 1452432844160746898, guid: 6666a0f7b9683a943a316f7f74976df9,
+        type: 3}
+      propertyPath: attackTriggerName
+      value: AttackFail
+      objectReference: {fileID: 0}
     - target: {fileID: 2528690267292305883, guid: 6666a0f7b9683a943a316f7f74976df9,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -10403,7 +10413,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: PSN_Muscular_01
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6438654421275136844, guid: 6666a0f7b9683a943a316f7f74976df9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -14721,35 +14732,41 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 379761202227191077, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
+        type: 3}
+      propertyPath: actionFilter
+      value: 
+      objectReference: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff,
+        type: 2}
     - target: {fileID: 807823569588144696, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.17267476
+      value: -0.1726933
       objectReference: {fileID: 0}
     - target: {fileID: 807823569588144696, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.2963161
+      value: 1.2963104
       objectReference: {fileID: 0}
     - target: {fileID: 807823569588144696, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.5050495
+      value: 0.50505716
       objectReference: {fileID: 0}
     - target: {fileID: 1725841040233083097, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.17267476
+      value: -0.1726933
       objectReference: {fileID: 0}
     - target: {fileID: 1725841040233083097, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.2963161
+      value: 1.2963104
       objectReference: {fileID: 0}
     - target: {fileID: 1725841040233083097, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.5050495
+      value: 0.50505716
       objectReference: {fileID: 0}
     - target: {fileID: 1725841040233083097, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
@@ -14774,7 +14791,7 @@ PrefabInstance:
     - target: {fileID: 1855797532369449409, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_TrackedObjectOffset.y
-      value: 0
+      value: -1.274257e-10
       objectReference: {fileID: 0}
     - target: {fileID: 2209131490206928600, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
@@ -18428,8 +18445,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 3501209407240460989}
-  attackTriggerName: Attack
-  failTriggerName: Hit
+  qteStateParam: QTEState
+  hitTrigger: HitSuccess
+  attackTrigger: AttackFail
 --- !u!114 &6973512352630991410
 MonoBehaviour:
   m_ObjectHideFlags: 0

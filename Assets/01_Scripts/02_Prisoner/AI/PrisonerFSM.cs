@@ -26,6 +26,9 @@ public class PrisonerFSM : MonoBehaviour
     // 비주얼 아이들 상태 (특수 외형 전용)
     public PrisonerVisualIdleState VisualIdleState { get; private set; }
 
+    // ★ [추가] 비키니(함정) 전용 상태
+    public PrisonerBikiniState BikiniState { get; private set; }
+
     // 특수 로직 상태
     public IPrisonerState CombatState { get; private set; }
     public IPrisonerState CowerState { get; private set; }
@@ -46,6 +49,9 @@ public class PrisonerFSM : MonoBehaviour
         AmbushState = new PrisonerAmbushState(this);
         VisualIdleState = new PrisonerVisualIdleState(this);
 
+        // ★ [추가] 비키니 상태 생성
+        BikiniState = new PrisonerBikiniState(this);
+
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);
@@ -54,7 +60,6 @@ public class PrisonerFSM : MonoBehaviour
         CenterIdleState = new PrisonerCenterIdleState(this);
 
         QTEApproachState = new PrisonerQTEApproachState(this); //QTE
-
     }
 
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
@@ -92,11 +97,11 @@ public class PrisonerFSM : MonoBehaviour
 
 
         // ============================================================
-        // 1. 특수 외형(VisualAnomalyType) 체크 및 상태 전환
+        // 1. 특수 외형(VisualAnomalyType) 체크 및 상태 전환 (Bikini 포함)
         // ============================================================
         if (CheckAndEnterVisualState())
         {
-            Debug.Log($"[FSM Init] {name} initialized behavior: VisualIdleState");
+            // VisualIdleState 혹은 BikiniState로 진입했으므로 리턴
             return;
         }
 
@@ -138,15 +143,11 @@ public class PrisonerFSM : MonoBehaviour
         _currentState.Enter();
     }
 
-    // ================================================================
-    // [수정됨] HitVariant 파라미터 타입 불일치 해결 (Int -> Float)
-    // ================================================================
     public void OnDamaged(int dmg, Vector3 hitPoint, Vector3 hitDir)
     {
         if (Anim != null)
         {
             int randomHit = Random.Range(0, 4);
-            // [수정] 애니메이터의 HitVariant는 Float 타입입니다.
             Anim.SetFloat("HitVariant", (float)randomHit);
         }
 
@@ -164,10 +165,16 @@ public class PrisonerFSM : MonoBehaviour
             return;
         }
 
+        // ★ [추가] 비키니 상태라면 점호 무시 (함정 패턴 유지)
+        if (_currentState == BikiniState)
+        {
+            Debug.Log($"[FSM] {name} (Bikini) : 작업 중이라 점호 무시함.");
+            return;
+        }
+
         // 현재 상태가 VisualIdleState라면 해당 상태의 로직 위임
         if (_currentState == VisualIdleState)
         {
-            // VisualIdleState 내부에 OnStartInspection 구현이 필요함 (형변환 호출)
             ((PrisonerVisualIdleState)VisualIdleState).OnStartInspection();
             return;
         }
@@ -208,7 +215,14 @@ public class PrisonerFSM : MonoBehaviour
             return;
         }
 
-        // 특수 외형(비키니, 프랭크 등)은 다시 VisualIdleState로 복귀
+        // ★ [추가] 비키니 타입이었다면 다시 BikiniState로 복귀 (혹시 다른 상태 갔다왔을 경우)
+        if (GetMyVisualType() == VisualAnomalyType.BikiniModel)
+        {
+            ChangeState(BikiniState);
+            return;
+        }
+
+        // 특수 외형(프랭크 등)은 다시 VisualIdleState로 복귀
         if (_currentState == InspectionState && IsVisualIdleTarget(GetMyVisualType()))
         {
             ChangeState(VisualIdleState);
@@ -233,8 +247,18 @@ public class PrisonerFSM : MonoBehaviour
     private bool CheckAndEnterVisualState()
     {
         VisualAnomalyType myVisual = GetMyVisualType();
+
+        // ★ [추가] 비키니 타입 체크 -> BikiniState 진입
+        if (myVisual == VisualAnomalyType.BikiniModel)
+        {
+            Debug.Log($"[FSM Init] {name} is Bikini Type -> Enter BikiniState");
+            ChangeState(BikiniState);
+            return true;
+        }
+
         if (IsVisualIdleTarget(myVisual))
         {
+            Debug.Log($"[FSM Init] {name} initialized behavior: VisualIdleState ({myVisual})");
             ChangeState(VisualIdleState);
             return true;
         }
@@ -252,8 +276,8 @@ public class PrisonerFSM : MonoBehaviour
 
     private bool IsVisualIdleTarget(VisualAnomalyType type)
     {
-        // None이 아니면 모두 특수 Visual 상태로 간주
-        return type != VisualAnomalyType.None;
+        // None이 아니고 BikiniModel도 아니면 VisualIdleState 대상
+        return type != VisualAnomalyType.None && type != VisualAnomalyType.BikiniModel;
     }
 
     private bool IsIgnoreInspectionType(PrisonerAIType type)

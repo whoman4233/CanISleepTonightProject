@@ -490,6 +490,9 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.SetActive(true);
         DisplayNextLine();
     }
+
+
+
 }
 
 
