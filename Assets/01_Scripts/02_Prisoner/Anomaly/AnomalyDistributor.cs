@@ -82,7 +82,7 @@ public class AnomalyDistributor : MonoBehaviour
             AnomalyDefinitionSO selectedItem = null;
 
             // =============================================================
-            // ★ [수정] 1순위: 죄수 전용 아이템(Individual) 확인
+            // [수정] 1순위: 죄수 전용 아이템(Individual) 확인
             // =============================================================
             var mySpecialItems = currentDayPool
                 .Where(d => d.category == AnomalyCategory.Individual && d.targetPrisoner == pType)
@@ -95,7 +95,7 @@ public class AnomalyDistributor : MonoBehaviour
                 // Debug.Log($"[Anomaly] {cellId}({pType}) -> 전용 아이템 당첨: {selectedItem.name}");
             }
             // =============================================================
-            // ★ [수정] 2순위: 공용 아이템(Common) 배정
+            // [수정] 2순위: 공용 아이템(Common) 배정
             // =============================================================
             else
             {
