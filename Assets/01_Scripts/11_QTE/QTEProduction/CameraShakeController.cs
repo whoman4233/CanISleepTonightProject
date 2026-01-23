@@ -30,7 +30,7 @@ public class CameraShakeController : MonoBehaviour
 
         if (virtualCamera == null)
         {
-            Debug.LogError("[CameraShakeController] CinemachineVirtualCamera not found.");
+            Debug.LogError("[CameraShakeController] CinemachineVirtualCamera 찾을 수 없음.");
             return;
         }
 
@@ -39,7 +39,7 @@ public class CameraShakeController : MonoBehaviour
         if (_perlin == null)
         {
             Debug.LogError(
-                "[CameraShakeController] CinemachineBasicMultiChannelPerlin not found.\n" +
+                "[CameraShakeController] CinemachineBasicMultiChannelPerlin 찾을수 없음.\n" +
                 "Virtual Camera의 Noise 슬롯에 Basic Multi Channel Perlin을 추가하세요."
             );
             return;
