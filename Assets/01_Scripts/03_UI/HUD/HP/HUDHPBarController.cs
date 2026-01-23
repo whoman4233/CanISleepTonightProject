@@ -95,6 +95,13 @@ public class HUDHPBarController : MonoBehaviour
 
     private void RefreshVisibility()
     {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "01_IntroScene")
+        {
+            if (root != null)
+                root.SetActive(false);
+            return;
+        }
+
         bool show =
             _currentPhase == GamePhase.Tutorial ||
             _currentPhase == GamePhase.Standby ||
