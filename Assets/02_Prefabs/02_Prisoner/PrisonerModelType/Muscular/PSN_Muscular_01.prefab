@@ -20,7 +20,6 @@ GameObject:
   - component: {fileID: 1651365417575173780}
   - component: {fileID: 3382974597763725389}
   - component: {fileID: 1452432844160746898}
-  - component: {fileID: 6438654421275136844}
   m_Layer: 8
   m_Name: PSN_Muscular_01
   m_TagString: Untagged
@@ -231,7 +230,16 @@ MonoBehaviour:
   animator: {fileID: 3475742819566657788}
   ragdoll: {fileID: 4730829418296426203}
   sfx: {fileID: 6948067153894314097}
-  actionProps: []
+  actionProps:
+  - type: 13
+    propObject: {fileID: 6778953398965070674, guid: c885041c1ba0b744089d76322498c9fe,
+      type: 3}
+  - type: 5
+    propObject: {fileID: 4118976167796309959, guid: 4b2bb195fd6606e4a932d49691d1ad3d,
+      type: 3}
+  - type: 6
+    propObject: {fileID: 9142167168713660401, guid: 7c8539a71d0f40041a8123c5b2e2c9d3,
+      type: 3}
 --- !u!114 &1651365417575173780
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -258,9 +266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   action: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
-  triggerDistance: 1.8
   oneShot: 1
-  player: {fileID: 0}
 --- !u!114 &1452432844160746898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,21 +280,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 3475742819566657788}
-  attackTriggerName: Attack
-  failTriggerName: Hit
---- !u!114 &6438654421275136844
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6650839560293477269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc49092fb60ee374ca40fbcf62fd2083, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  qteTrigger: {fileID: 3382974597763725389}
+  qteStateParam: QTEState
+  hitTrigger: HitSuccess
+  attackTrigger: AttackFail
 --- !u!1001 &1943632108880297978
 PrefabInstance:
   m_ObjectHideFlags: 0
