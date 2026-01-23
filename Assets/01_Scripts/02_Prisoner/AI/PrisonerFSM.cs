@@ -1,10 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System;
+using System.Collections;
 
 public class PrisonerFSM : MonoBehaviour
 {
     [Header("Points")]
     public Transform InspectionPoint;
+
+    [Header("QTE Settings")]
+    [SerializeField] private QTEActionSO defaultQteAction;
+    // ★ [추가] QTE 접근 시 멈출 거리 (1.0 ~ 1.5 정도 추천)
+    [field: SerializeField] public float QteStopDistance { get; private set; } = 1.2f;
+
+    [Header("Ambush Settings")]
+    [SerializeField] private float ambushDelay = 1.5f;
+    private Coroutine _ambushCoroutine;
 
     // 외부 컴포넌트 참조
     public PrisonerController Controller { get; private set; }
@@ -13,45 +24,28 @@ public class PrisonerFSM : MonoBehaviour
 
     private IPrisonerState _currentState;
 
-    // ================================================================
-    // [상태 정의] 
-    // ================================================================
+    // ... (이벤트 핸들러 및 상태 변수들은 기존과 동일) ...
 
-    // 일반 행동 상태
     public PrisonerActionIdleState ActionState { get; private set; }
-
-    // 기습(매복) 상태
     public IPrisonerState AmbushState { get; private set; }
-
-    // 비주얼 아이들 상태 (특수 외형 전용)
     public PrisonerVisualIdleState VisualIdleState { get; private set; }
-
-    // ★ [추가] 비키니(함정) 전용 상태
     public PrisonerBikiniState BikiniState { get; private set; }
-
-    // 특수 로직 상태
     public IPrisonerState CombatState { get; private set; }
     public IPrisonerState CowerState { get; private set; }
     public IPrisonerState DeadState { get; private set; }
     public IPrisonerState InspectionState { get; private set; }
     public IPrisonerState ReturnState { get; private set; }
     public IPrisonerState CenterIdleState { get; private set; }
-    public IPrisonerState QTEApproachState { get; private set; } //QTE
+    public IPrisonerState QTEApproachState { get; private set; }
 
-
-    // 무적 상태 판정
     public bool IsInvulnerable => _currentState == InspectionState || _currentState == DeadState;
 
     private void Awake()
     {
-        // 상태 객체 생성
         ActionState = new PrisonerActionIdleState(this);
         AmbushState = new PrisonerAmbushState(this);
         VisualIdleState = new PrisonerVisualIdleState(this);
-
-        // ★ [추가] 비키니 상태 생성
         BikiniState = new PrisonerBikiniState(this);
-
         CombatState = new PrisonerCombatState(this);
         CowerState = new PrisonerCowerState(this);
         DeadState = new PrisonerDeadState(this);
@@ -59,7 +53,31 @@ public class PrisonerFSM : MonoBehaviour
         ReturnState = new PrisonerReturnState(this);
         CenterIdleState = new PrisonerCenterIdleState(this);
 
-        QTEApproachState = new PrisonerQTEApproachState(this); //QTE
+        if (defaultQteAction == null)
+            Debug.LogWarning($"[PrisonerFSM] {name} : QTE Action Data is missing in Inspector!");
+
+        QTEApproachState = new PrisonerQTEApproachState(this, defaultQteAction);
+
+        // 이벤트 변수 초기화
+        _onInspectionStarted = OnInspectionStarted;
+        _onInspectionEnded = OnInspectionEnded;
+    }
+
+    // ... (OnEnable, OnDisable, Setup, InitializeBehavior 등 기존 로직 유지) ...
+
+    private Action<InspectionStartedEvent> _onInspectionStarted;
+    private Action<InspectionEndedEvent> _onInspectionEnded;
+
+    private void OnEnable()
+    {
+        if (_onInspectionStarted != null) EventBus.Subscribe(_onInspectionStarted);
+        if (_onInspectionEnded != null) EventBus.Subscribe(_onInspectionEnded);
+    }
+
+    private void OnDisable()
+    {
+        if (_onInspectionStarted != null) EventBus.Unsubscribe(_onInspectionStarted);
+        if (_onInspectionEnded != null) EventBus.Unsubscribe(_onInspectionEnded);
     }
 
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
@@ -69,66 +87,34 @@ public class PrisonerFSM : MonoBehaviour
         this.Anim = anim;
 
         if (controller.AssignedCell != null)
-        {
             this.InspectionPoint = controller.AssignedCell.inspectionPoint;
-        }
 
-        // 초기 상태 설정 (InitializeBehavior에서 재설정됨)
         ActionState.SetActionType(PrisonerAIType.Good);
         ChangeState(ActionState);
     }
 
     public void InitializeBehavior(PrisonerAIType aiType)
     {
-        // ============================================================
-        // [수정] 달리기 스타일 결정 (AIType 기반)
-        // ============================================================
-        float runStyleValue = 0f; // 기본값 (0: 일반 달리기)
-
-        // 특수 달리기를 사용하는 AI 타입을 여기서 검사합니다.
-        if (aiType == PrisonerAIType.Escaper)
-        {
-            runStyleValue = 1f; // 특수 달리기 (1: 이상한 런)
-            Debug.Log($"[FSM Init] {name} ({aiType}) -> 특수 달리기 모션 적용");
-        }
-
-        // 애니메이터에 RunStyle 전달
+        float runStyleValue = (aiType == PrisonerAIType.Escaper) ? 1f : 0f;
         Anim.SetFloat("RunStyle", runStyleValue);
 
+        if (CheckAndEnterVisualState()) return;
 
-        // ============================================================
-        // 1. 특수 외형(VisualAnomalyType) 체크 및 상태 전환 (Bikini 포함)
-        // ============================================================
-        if (CheckAndEnterVisualState())
-        {
-            // VisualIdleState 혹은 BikiniState로 진입했으므로 리턴
-            return;
-        }
-
-        // ============================================================
-        // 2. 매복자(Ambusher) 및 일반 타입 처리
-        // ============================================================
         if (aiType == PrisonerAIType.Ambusher)
         {
-            Debug.Log($"[FSM Init] {name} is Ambusher -> Enter AmbushState");
             ChangeState(AmbushState);
         }
         else
         {
-            // 3. 일반 행동 타입 처리
             ActionState.SetActionType(aiType);
-
-            // 이미 ActionState 상태라면 강제로 재진입하여 로직 갱신
             if (_currentState == ActionState)
             {
                 ActionState.Exit();
                 ActionState.Enter();
-                Debug.Log($"[FSM Init] {name} Refreshed ActionState for {aiType}");
             }
             else
             {
                 ChangeState(ActionState);
-                Debug.Log($"[FSM Init] {name} initialized behavior: {aiType} -> ActionState");
             }
         }
     }
@@ -147,32 +133,17 @@ public class PrisonerFSM : MonoBehaviour
     {
         if (Anim != null)
         {
-            int randomHit = Random.Range(0, 4);
+            int randomHit = UnityEngine.Random.Range(0, 4);
             Anim.SetFloat("HitVariant", (float)randomHit);
         }
-
         _currentState?.OnDamaged(dmg, hitPoint, hitDir);
     }
 
     public void OnStartInspection()
     {
         if (Controller == null) return;
-
-        // [추가] 사망한 상태라면 점호 명령을 무시하도록 예외 처리
-        if (_currentState == DeadState)
-        {
-            Debug.Log($"[FSM] {name}는 이미 사망했으므로 점호에 참여하지 않습니다.");
-            return;
-        }
-
-        // ★ [추가] 비키니 상태라면 점호 무시 (함정 패턴 유지)
-        if (_currentState == BikiniState)
-        {
-            Debug.Log($"[FSM] {name} (Bikini) : 작업 중이라 점호 무시함.");
-            return;
-        }
-
-        // 현재 상태가 VisualIdleState라면 해당 상태의 로직 위임
+        if (_currentState == DeadState) return;
+        if (_currentState == BikiniState) return;
         if (_currentState == VisualIdleState)
         {
             ((PrisonerVisualIdleState)VisualIdleState).OnStartInspection();
@@ -180,13 +151,7 @@ public class PrisonerFSM : MonoBehaviour
         }
 
         PrisonerAIType myType = Controller.AIType;
-
-        // 점호 무시 리스트 확인
-        if (IsIgnoreInspectionType(myType))
-        {
-            Debug.Log($"[FSM] {name} ({myType}) : 점호 무시! 행동 계속함.");
-            return;
-        }
+        if (IsIgnoreInspectionType(myType)) return;
 
         switch (myType)
         {
@@ -194,109 +159,89 @@ public class PrisonerFSM : MonoBehaviour
             case PrisonerAIType.Bad:
                 ChangeState(InspectionState);
                 break;
-
             case PrisonerAIType.Escaper:
                 Debug.Log($"[FSM] {name} 탈주 시작!");
-                // if (EscapeState != null) ChangeState(EscapeState);
-                break;
-
-            default:
-                Debug.Log($"[FSM] {name} ({myType}) 점호 반응 없음 (Default)");
                 break;
         }
     }
 
     public void BackToRoutine()
     {
-        // 사망 상태라면 복귀 루틴 무시
-        if (_currentState == DeadState)
-        {
-            Debug.Log($"[FSM] {name}는 사망 상태이므로 BackToRoutine을 무시합니다.");
-            return;
-        }
-
-        // ★ [추가] 비키니 타입이었다면 다시 BikiniState로 복귀 (혹시 다른 상태 갔다왔을 경우)
+        if (_currentState == DeadState) return;
         if (GetMyVisualType() == VisualAnomalyType.BikiniModel)
         {
             ChangeState(BikiniState);
             return;
         }
-
-        // 특수 외형(프랭크 등)은 다시 VisualIdleState로 복귀
         if (_currentState == InspectionState && IsVisualIdleTarget(GetMyVisualType()))
         {
             ChangeState(VisualIdleState);
             return;
         }
-
-        // 기존 로직 수행 (중앙 스폰 vs 일반 복귀)
-        if (IsCenterSpawnType())
-        {
-            ChangeState(CenterIdleState);
-        }
-        else
-        {
-            ChangeState(ReturnState);
-        }
+        if (IsCenterSpawnType()) ChangeState(CenterIdleState);
+        else ChangeState(ReturnState);
     }
 
     // ================================================================
-    // Helper Methods
+    // 기습 공격 로직
     // ================================================================
 
-    private bool CheckAndEnterVisualState()
+    private void OnInspectionStarted(InspectionStartedEvent evt)
     {
-        VisualAnomalyType myVisual = GetMyVisualType();
+        if (_currentState == DeadState || _currentState == CowerState || _currentState == CombatState)
+            return;
 
-        // ★ [추가] 비키니 타입 체크 -> BikiniState 진입
-        if (myVisual == VisualAnomalyType.BikiniModel)
-        {
-            Debug.Log($"[FSM Init] {name} is Bikini Type -> Enter BikiniState");
-            ChangeState(BikiniState);
-            return true;
-        }
+        if (!IsTargetRelatedToMe(evt.Target))
+            return;
 
-        if (IsVisualIdleTarget(myVisual))
+        if (_ambushCoroutine != null) StopCoroutine(_ambushCoroutine);
+        _ambushCoroutine = StartCoroutine(CoWaitAndAmbush());
+    }
+
+    private void OnInspectionEnded(InspectionEndedEvent evt)
+    {
+        if (_ambushCoroutine != null)
         {
-            Debug.Log($"[FSM Init] {name} initialized behavior: VisualIdleState ({myVisual})");
-            ChangeState(VisualIdleState);
-            return true;
+            StopCoroutine(_ambushCoroutine);
+            _ambushCoroutine = null;
         }
+    }
+
+    private IEnumerator CoWaitAndAmbush()
+    {
+        yield return new WaitForSeconds(ambushDelay);
+        Debug.Log($"[FSM] {name} : 기습 공격 시작!");
+        ChangeState(QTEApproachState);
+        _ambushCoroutine = null;
+    }
+
+    private bool IsTargetRelatedToMe(IInspectable target)
+    {
+        MonoBehaviour targetMono = target as MonoBehaviour;
+        if (targetMono == null) return false;
+        if (targetMono.gameObject == this.gameObject) return true;
+
+        float distance = Vector3.Distance(transform.position, targetMono.transform.position);
+        if (distance < 4.0f) return true;
+
         return false;
     }
 
+    // ... Helper Methods (기존과 동일) ...
+    private bool CheckAndEnterVisualState()
+    {
+        VisualAnomalyType myVisual = GetMyVisualType();
+        if (myVisual == VisualAnomalyType.BikiniModel) { ChangeState(BikiniState); return true; }
+        if (IsVisualIdleTarget(myVisual)) { ChangeState(VisualIdleState); return true; }
+        return false;
+    }
     private VisualAnomalyType GetMyVisualType()
     {
         if (PrisonerScheduleManager.Instance != null && Controller != null && Controller.AssignedCell != null)
-        {
             return PrisonerScheduleManager.Instance.GetDailyRole(Controller.AssignedCell.cellId).visualType;
-        }
         return VisualAnomalyType.None;
     }
-
-    private bool IsVisualIdleTarget(VisualAnomalyType type)
-    {
-        // None이 아니고 BikiniModel도 아니면 VisualIdleState 대상
-        return type != VisualAnomalyType.None && type != VisualAnomalyType.BikiniModel;
-    }
-
-    private bool IsIgnoreInspectionType(PrisonerAIType type)
-    {
-        return type == PrisonerAIType.Ambusher ||
-               type == PrisonerAIType.Singing ||
-               type == PrisonerAIType.Screaming ||
-               type == PrisonerAIType.Crying ||
-               type == PrisonerAIType.Mumbling ||
-               type == PrisonerAIType.HammeringWall ||
-               type == PrisonerAIType.Deadlift;
-    }
-
-    private bool IsCenterSpawnType()
-    {
-        VisualAnomalyType type = GetMyVisualType();
-
-        // 프랭크 및 용의자 그룹 확인
-        string typeStr = type.ToString();
-        return typeStr.StartsWith("PSN_Franke") || typeStr.StartsWith("Suspect");
-    }
+    private bool IsVisualIdleTarget(VisualAnomalyType type) => type != VisualAnomalyType.None && type != VisualAnomalyType.BikiniModel;
+    private bool IsIgnoreInspectionType(PrisonerAIType type) => type == PrisonerAIType.Ambusher || type == PrisonerAIType.Singing || type == PrisonerAIType.Screaming || type == PrisonerAIType.Crying || type == PrisonerAIType.Mumbling || type == PrisonerAIType.HammeringWall || type == PrisonerAIType.Deadlift;
+    private bool IsCenterSpawnType() => GetMyVisualType().ToString().StartsWith("PSN_Franke") || GetMyVisualType().ToString().StartsWith("Suspect");
 }

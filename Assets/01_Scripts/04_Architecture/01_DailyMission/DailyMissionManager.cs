@@ -191,10 +191,9 @@ public class DailyMissionManager : MonoBehaviour
         // 미션 선택 로직 (7일차 고정 vs 1~6일차 랜덤)
         // =================================================
 
-        // 조건: 날짜가 7이거나, 1~6일차용 미션이 모두 소진되었을 때
-        if (dayIndex >= 7)
+        if (dayIndex >= 6)
         {
-            CurrentMission = missionScenario[6]; // Day 7 고정 미션
+            CurrentMission = missionScenario[6]; // Day 7 고정 미션 (리스트의 7번째 요소)
             Debug.Log("[Mission] 7일차 고정 미션(BossRiot) 진입");
         }
         else
