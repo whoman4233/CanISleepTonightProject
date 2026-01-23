@@ -1,95 +1,193 @@
 ﻿using UnityEngine;
+using Cinemachine;
 
 public class CameraDirector : MonoBehaviour
 {
     [Header("Refs")]
-    [Tooltip("플레이어 루트 Transform (CharacterController가 붙어있는 오브젝트)")]
-    [SerializeField] private Transform playerRoot;
+    [SerializeField] private Transform playerRoot;              // Yaw 기준
+    [SerializeField] private CinemachineVirtualCamera vcam;     // Virtual Camera
 
-    [Header("Settings")]
-    [Tooltip("QTE 진입 시 죄수 쪽을 바라보는 회전 속도")]
-    [SerializeField] private float rotateSpeed = 12f;
+    [Header("Rotate Speed")]
+    [SerializeField] private float yawRotateSpeed = 12f;
+    [SerializeField] private float pitchRotateSpeed = 8f;
 
-    private bool _rotating;
-    private Quaternion _targetRotation;
+    [Header("QTE Camera")]
+    [SerializeField] private float qteCameraDistance = 2.0f;    // 앉기 대응용
 
     // =========================
-    // QTE Entry / Exit
+    // Cinemachine Components
     // =========================
+    private CinemachinePOV pov;
+    private Cinemachine3rdPersonFollow follow;
 
-    /// <summary>
-    /// QTE 진입 시 호출.
-    /// 플레이어 몸을 죄수 쪽으로 회전시킨다.
-    /// </summary>
-    public void EnterQTEMode(Transform attacker)
+    // =========================
+    // Runtime State
+    // =========================
+    private bool qteActive;
+
+    private Quaternion targetYaw;
+
+    private float targetPitch;
+    private float originalPitch;
+
+    private float originalCameraDistance;
+
+    // =========================
+    // Lifecycle
+    // =========================
+    private void Awake()
     {
-        if (playerRoot == null || attacker == null)
+        if (vcam == null)
             return;
 
-        // 이동 / Look 입력 차단
-        DisablePlayerInput();
+        pov = vcam.GetCinemachineComponent<CinemachinePOV>();
+        follow = vcam.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
 
-        // 죄수 방향 계산 (Y축만)
-        Vector3 dir = attacker.position - playerRoot.position;
-        dir.y = 0f;
-
-        if (dir.sqrMagnitude < 0.0001f)
-            return;
-
-        _targetRotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
-        _rotating = true;
+        if (follow != null)
+            originalCameraDistance = follow.CameraDistance;
     }
 
-    /// <summary>
-    /// QTE 종료 시 호출.
-    /// 회전은 유지하고 입력만 복구한다.
-    /// </summary>
+    // =========================
+    // QTE Entry
+    // =========================
+    public void EnterQTEMode(Transform attacker)
+    {
+        if (attacker == null || vcam == null)
+            return;
+
+        DisablePlayerInput();
+
+        // =========================
+        // 1. Yaw (기존 로직 유지)
+        // =========================
+        Vector3 flatDir = attacker.position - playerRoot.position;
+        flatDir.y = 0f;
+
+        if (flatDir.sqrMagnitude > 0.0001f)
+        {
+            targetYaw = Quaternion.LookRotation(flatDir.normalized, Vector3.up);
+        }
+
+        // =========================
+        // 2. Pitch (Cinemachine POV)
+        // =========================
+        Transform lookTarget = ResolveAttackerLookTarget(attacker);
+
+        Vector3 camPos = vcam.transform.position;
+        Vector3 dirToTarget = lookTarget.position - camPos;
+
+        Quaternion lookRot = Quaternion.LookRotation(dirToTarget.normalized);
+        targetPitch = NormalizePitch(lookRot.eulerAngles.x);
+
+        if (pov != null)
+        {
+            originalPitch = pov.m_VerticalAxis.Value;
+        }
+
+        // =========================
+        // 3. 앉기 대응: Camera Distance 고정
+        // =========================
+        if (follow != null)
+        {
+            originalCameraDistance = follow.CameraDistance;
+            follow.CameraDistance = qteCameraDistance;
+        }
+
+        qteActive = true;
+    }
+
+    // =========================
+    // QTE Exit
+    // =========================
     public void ExitQTEMode()
     {
-        _rotating = false;
+        if (!qteActive)
+            return;
+
+        qteActive = false;
+
+        // Pitch 복구
+        if (pov != null)
+        {
+            pov.m_VerticalAxis.Value = originalPitch;
+        }
+
+        // Camera Distance 복구
+        if (follow != null)
+        {
+            follow.CameraDistance = originalCameraDistance;
+        }
 
         EnablePlayerInput();
     }
 
+    // =========================
+    // Update
+    // =========================
     private void Update()
     {
-        if (!_rotating || playerRoot == null)
+        if (!qteActive)
             return;
 
-        // 플레이어 몸을 부드럽게 회전
+        // =========================
+        // Yaw (플레이어 루트 회전)
+        // =========================
         playerRoot.rotation = Quaternion.Slerp(
             playerRoot.rotation,
-            _targetRotation,
-            Time.deltaTime * rotateSpeed
+            targetYaw,
+            Time.deltaTime * yawRotateSpeed
         );
+
+        // =========================
+        // Pitch (Cinemachine POV)
+        // =========================
+        if (pov != null)
+        {
+            pov.m_VerticalAxis.Value = Mathf.Lerp(
+                pov.m_VerticalAxis.Value,
+                targetPitch,
+                Time.deltaTime * pitchRotateSpeed
+            );
+        }
     }
 
     // =========================
-    // Input Control
+    // Helpers
     // =========================
+    private float NormalizePitch(float angle)
+    {
+        if (angle > 180f)
+            angle -= 360f;
+        return angle;
+    }
+
+    private Transform ResolveAttackerLookTarget(Transform attacker)
+    {
+        var provider =
+            attacker.GetComponentInChildren<IQTELookTargetProvider>(true);
+
+        if (provider != null)
+            return provider.GetQTELookTarget();
+
+        return attacker;
+    }
 
     private void DisablePlayerInput()
     {
-        if (InputManager.Instance == null)
-            return;
-
-        if (InputManager.Instance.Inputs != null)
-        {
+        if (InputManager.Instance?.Inputs != null)
             InputManager.Instance.Inputs.Player.Disable();
-        }
     }
 
     private void EnablePlayerInput()
     {
-        if (InputManager.Instance == null)
-            return;
-
-        if (InputManager.Instance.Inputs != null)
-        {
+        if (InputManager.Instance?.Inputs != null)
             InputManager.Instance.Inputs.Player.Enable();
-        }
     }
 }
+
+
+
+
 
 
 
