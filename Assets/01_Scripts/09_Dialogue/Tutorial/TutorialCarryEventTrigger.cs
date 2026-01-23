@@ -8,12 +8,13 @@ public class TutorialCarryEventTrigger : CarryableBox
 {
     public DialogueKeys.DialogueType stepToPublish; // 인스펙터에서 설정 (예: BoxOpened)
     private bool _isTriggered = false; // 실행 여부 체크
+    private TutorialNPC _cachedNpc;
 
     public override void Interact(Player player) // 그냥 오브젝트에 상호작용하면 바로 스텝 넘어가게
     {
-        TutorialNPC npc = FindObjectOfType<TutorialNPC>();
-        if (npc == null) return;
-        if (npc.currentSubStep == DialogueKeys.DialogueType.BoardSee)
+        if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
+
+        if (_cachedNpc != null && _cachedNpc.currentSubStep == DialogueKeys.DialogueType.BoardSee)
         {
             base.Interact(player);
         }
@@ -21,16 +22,25 @@ public class TutorialCarryEventTrigger : CarryableBox
 
     public override void Drop(Player player)
     {
-        base.Drop(player);
-        TutorialNPC npc = FindObjectOfType<TutorialNPC>();
-        if (npc == null) return;
-        if (!_isTriggered && (int)npc.currentSubStep == (int)stepToPublish - 1)
+        if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
+
+        if (_cachedNpc != null && !_isTriggered)
         {
-            EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
-            _isTriggered = true;
-            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
-            npc.finishedDialogue = true;
-            Debug.Log("튜토리얼 이벤트 발행 완료");
+            if ((int)_cachedNpc.currentSubStep == (int)stepToPublish - 1)
+            {
+                _isTriggered = true;
+                EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
+                StartCoroutine(DelayedDialogueStart());
+                _cachedNpc.finishedDialogue = true;
+                Debug.Log("[BoxDrop]튜토리얼 미션 UI 갱신 성공!!");
+            }
         }
+        base.Drop(player);
+    }
+    private IEnumerator DelayedDialogueStart()
+    {
+        yield return null;
+        DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
+        Debug.Log("[Box] UI 갱신 완료");
     }
 }

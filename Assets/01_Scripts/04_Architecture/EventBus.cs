@@ -80,4 +80,22 @@ public static class EventBus
             }
         }
     }
+
+    public static void ClearLocalEvents() // 튜토리얼 이벤트 초기화 (임시로 튜토리얼만 초기화함)
+    {
+        // 씬 전환 시 날려버려야 할 지역적 이벤트 타입들 정의
+        List<Type> typesToRemove = new List<Type>
+    {
+        typeof(DialogueStepChangedEvent)
+    };
+
+        foreach (var type in typesToRemove)
+        {
+            if (_subscribers.ContainsKey(type))
+            {
+                _subscribers[type].Clear();
+                Debug.Log($"[EventBus] 지역 이벤트 초기화: {type.Name}");
+            }
+        }
+    }
 }

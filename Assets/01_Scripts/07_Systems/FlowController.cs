@@ -295,6 +295,7 @@ public class FlowController : MonoBehaviour
     public void ReturnToTitle()
     {
         if (isBusy) return;
+        CleanUpSystemBeforeSceneLoad();
         StartCoroutine(ReturnToTitleSequence());
     }
     private IEnumerator ReturnToTitleSequence()
@@ -355,6 +356,7 @@ public class FlowController : MonoBehaviour
     // =========================================================
     private IEnumerator RestartFromFailureSequence()
     {
+        CleanUpSystemBeforeSceneLoad();
         if (isBusy) yield break;
         isBusy = true;
 
@@ -406,6 +408,20 @@ public class FlowController : MonoBehaviour
         var scene = SceneManager.GetSceneByName(sceneName);
         if (scene.isLoaded)
             SceneManager.UnloadSceneAsync(scene);
+    }
+
+    private void CleanUpSystemBeforeSceneLoad()
+    {
+        // 대화 시스템 강제 초기화
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.EndDialogue(); // 열려있는 창 닫기
+        }
+
+        // 이벤트 버스 클리어
+        EventBus.ClearLocalEvents();
+        // 시간 축 초기화
+        Time.timeScale = 1f;
     }
 
     //LoadSceneAsync = 씬이 로딩되는 동안에도 백그라운드에서 다른 연산(로딩 바 갱신, 팁 출력 등)가능, yield return null을 통해 로딩이 완전히 완료될 때까지 안전하게 기다린 후 다음 코드를 실행.

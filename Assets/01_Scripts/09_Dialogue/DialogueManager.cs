@@ -350,7 +350,7 @@ public class DialogueManager : MonoBehaviour
         // 처음에 모든 문장을 text에 넣고 maxVisibleCharacters = i인 i값에 따라 문자 랜더링 개수만 바꿔준다. 메모리 최적화
     }
 
-    private void EndDialogue()
+    public void EndDialogue()
     {
         EventBus.Publish(new DialogueEndedEvent());
         EventBus.Publish(new CursorOverrideReleasedEvent());
@@ -389,7 +389,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (_isFirstInputGuard)
         {
-            if (Time.unscaledTime - _lastOpenTime < 0.15f) // 0.15초 이내에 들어온 입력은 싹 다 무시함. 최초 1회
+            if (Time.unscaledTime - _lastOpenTime < 0.25f) // 0.25초 이내에 들어온 입력은 싹 다 무시함. 최초 1회
             {
                 return; // 던지기/상호작용 잔여 입력 무시
             }

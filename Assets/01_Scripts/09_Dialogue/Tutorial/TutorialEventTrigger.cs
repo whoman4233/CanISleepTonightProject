@@ -20,16 +20,22 @@ public class TutorialEventTrigger : MonoBehaviour , IInteractable
         {
             EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
             _isTriggered = true;
-            Destroy(gameObject);
             AudioManager.Instance.PlaySFX(takeClip);
-            DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, stepToPublish.ToString());
-            npc.finishedDialogue = true;
+            StartCoroutine(DelayedDialogueStart(stepToPublish.ToString(), npc));
+            Destroy(gameObject);
             Debug.Log("튜토리얼 이벤트 발행 완료");
         }
         else
         {
             Debug.Log("현재 스텝이 맞지 않거나 이벤트가 이미 발행되었습니다");
         }
+    }
+    private IEnumerator DelayedDialogueStart(string dialogueKey, TutorialNPC npc)
+    {
+        yield return null;
+
+        DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, dialogueKey);
+        npc.finishedDialogue = true;
     }
 }
 // 튜토리얼씬의 모든 오브젝트의 컴포넌트에 달아 줄 스크립트
