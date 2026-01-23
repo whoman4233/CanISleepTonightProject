@@ -64,17 +64,26 @@ public class QTEFlowDirector : MonoBehaviour
         if (!PassFilter(e.Action))
             return;
 
+        // --------------------------------------------------
+        // ★ QTE 컨텍스트 초기화 (중복 데미지 방지의 시작점)
+        // --------------------------------------------------
+        PrisonerQTEContext.CurrentAction = e.Action;
+        PrisonerQTEContext.CurrentResult = default;
+        PrisonerQTEContext.DamageConsumed = false;
+
         // 상세보기 강제 종료
         EventBus.Publish(new ForceExitInspectionEvent());
 
         // 카메라 QTE 모드 진입
-        Transform attacker = PrisonerQTEContext.CurrentAttacker;
+        GameObject attackerGO = PrisonerQTEContext.CurrentAttacker;
+        Transform attacker = attackerGO != null ? attackerGO.transform : null;
+
         if (cameraDirector != null)
             cameraDirector.EnterQTEMode(attacker);
 
-        // 죄수 공격 애니메이션 시작
-        if (PrisonerQTEContext.CurrentAttackerAnimator != null)
-            PrisonerQTEContext.CurrentAttackerAnimator.PlayAttackFail();
+        // 죄수 공격 애니메이션 시작 (★ Animator가 아니라 PrisonerQTEAnimator에 호출해야 함)
+        if (PrisonerQTEContext.CurrentAttackerQTEAnimator != null)
+            PrisonerQTEContext.CurrentAttackerQTEAnimator.PlayAttackFail();
 
         // BaseShake는 애니메이션 이벤트에서 제어
     }
@@ -93,22 +102,29 @@ public class QTEFlowDirector : MonoBehaviour
         if (!PassFilter(e.Action))
             return;
 
+        // --------------------------------------------------
+        // ★ 결과만 기록 (데미지는 Animation Event 타이밍에 Resolver가 처리)
+        // --------------------------------------------------
+        PrisonerQTEContext.CurrentResult = e.Result;
+
         // 카메라 원상 복귀
         if (cameraDirector != null)
             cameraDirector.ExitQTEMode();
 
-        // 성공 시 죄수 피격
+        // 성공 시 죄수 피격 연출 (★ 이것도 PrisonerQTEAnimator 메서드)
         if (e.Result == QTEResult.Success)
         {
-            if (PrisonerQTEContext.CurrentAttackerAnimator != null)
-                PrisonerQTEContext.CurrentAttackerAnimator.PlayHitSuccess();
+            if (PrisonerQTEContext.CurrentAttackerQTEAnimator != null)
+                PrisonerQTEContext.CurrentAttackerQTEAnimator.PlayHitSuccess();
         }
 
         // 흔들림 정리
         if (shakeController != null)
             shakeController.ResetAll();
 
-        PrisonerQTEContext.Clear();
+        // ★ 주의: 여기서 Clear() 하면 애니메이션 이벤트 타이밍이 뒤늦게 올 때 문제
+        // PrisonerQTEContext.Clear();
+        // -> Clear는 Resolver가 데미지 1회 소비 후 호출하는 편이 안전
     }
 
     // =========================
@@ -127,5 +143,9 @@ public class QTEFlowDirector : MonoBehaviour
             shakeController.StopBaseShake();
     }
 }
+
+
+
+
 
 

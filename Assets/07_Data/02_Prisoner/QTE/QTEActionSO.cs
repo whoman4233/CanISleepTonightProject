@@ -13,6 +13,7 @@ public class QTEActionSO : ScriptableObject
     public float decayDelay; //입력과 입력사이의 지연값
     public float decayPerSecond; // 초당 입력량을 줄이는 값 (힘겨루기 느낌)
 
-    [Header("Fail / Success Meaning(실패/성공 시)")]
-    public int damageOnFail; //임시(데미지처리?)
+    [Header("Success /Fail Damage(성공/실패 시)")]
+    public int damageToPrisonerOnSuccess;
+    public int damageToPlayerOnFail;
 }

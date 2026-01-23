@@ -1,97 +1,128 @@
 ﻿using UnityEngine;
+using Cinemachine;
 
+/// <summary>
+/// Cinemachine Virtual Camera의 Noise(Perlin)를 이용한 카메라 쉐이크 컨트롤러
+/// - Transform 직접 조작 금지
+/// - Animator / Head Follow / QTE 연출과 충돌 없음
+/// </summary>
 public class CameraShakeController : MonoBehaviour
 {
-    [Header("Root")]
-    [SerializeField] private Transform shakeRoot;
+    [Header("Cinemachine")]
+    [SerializeField] private CinemachineVirtualCamera virtualCamera;
 
-    [Header("기본 흔들림 (Continuous)")]
-    [SerializeField] private float baseAmplitude = 0.06f; //지속 흔들림 값
-    [SerializeField] private float baseFrequency = 18f; // 지속 흔들림 속도
+    [Header("Base Shake (QTE 지속 흔들림)")]
+    [SerializeField] private float baseAmplitude = 0.06f;
+    [SerializeField] private float baseFrequency = 18f;
 
-    [Header("입력시 흔들림 (Button)")]
-    [SerializeField] private float impulseStrength = 0.25f; // 버튼 입력 시 순간적으로 흔들림 강도
-    [SerializeField] private float impulseDamping = 20f; // 흔들림에서 원래 위치로 돌아오는 속도
+    [Header("Impulse Shake (버튼 입력)")]
+    [SerializeField] private float impulseAmplitude = 0.15f;
+    [SerializeField] private float impulseDuration = 0.08f;
 
-    private Vector3 _originLocalPos;
-
-    // 상태값
-    private bool _baseShakeActive;
-    private Vector3 _impulseOffset;
-
-    private float _time;
+    private CinemachineBasicMultiChannelPerlin _perlin;
+    private float _defaultAmplitude;
+    private float _defaultFrequency;
 
     private void Awake()
     {
-        if (shakeRoot == null)
-            shakeRoot = transform;
+        if (virtualCamera == null)
+            virtualCamera = GetComponentInChildren<CinemachineVirtualCamera>();
 
-        _originLocalPos = shakeRoot.localPosition;
-    }
-
-    private void Update()
-    {
-        _time += Time.deltaTime;
-
-        Vector3 baseOffset = Vector3.zero;
-
-        // 지속 흔들림 (붙잡힘 상태)
-        if (_baseShakeActive)
+        if (virtualCamera == null)
         {
-            baseOffset.x = Mathf.Sin(_time * baseFrequency) * baseAmplitude;
-            baseOffset.y = Mathf.Cos(_time * baseFrequency * 0.9f) * baseAmplitude;
+            Debug.LogError("[CameraShakeController] CinemachineVirtualCamera 찾을 수 없음.");
+            return;
         }
 
-        // 버튼 임펄스 감쇠 (발버둥)
-        _impulseOffset = Vector3.Lerp(
-            _impulseOffset,
-            Vector3.zero,
-            impulseDamping * Time.deltaTime
-        );
+        _perlin = virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
 
-        shakeRoot.localPosition = _originLocalPos + baseOffset + _impulseOffset;
+        if (_perlin == null)
+        {
+            Debug.LogError(
+                "[CameraShakeController] CinemachineBasicMultiChannelPerlin 찾을수 없음.\n" +
+                "Virtual Camera의 Noise 슬롯에 Basic Multi Channel Perlin을 추가하세요."
+            );
+            return;
+        }
+
+        // 초기값 저장
+        _defaultAmplitude = _perlin.m_AmplitudeGain;
+        _defaultFrequency = _perlin.m_FrequencyGain;
+
+        ResetAll();
     }
 
-    // =========================
-    // Public API
-    // =========================
+    // ======================================================
+    // QTE 지속 흔들림
+    // ======================================================
 
     /// <summary>
-    /// 죄수 공격 애니메이션 중 호출
-    /// 죄수 공격 중 지속 흔들림 시작
+    /// QTE 중 죄수에게 붙잡힌 상태에서의 지속 흔들림
     /// </summary>
     public void StartBaseShake()
     {
-        _baseShakeActive = true;
+        if (_perlin == null)
+            return;
+
+        _perlin.m_AmplitudeGain = baseAmplitude;
+        _perlin.m_FrequencyGain = baseFrequency;
     }
 
     /// <summary>
-    /// 공격 애니메이션 종료 시 호출
-    /// 죄수 공격 종료 시 호출
+    /// 죄수 공격 종료 / QTE 종료 시 호출
     /// </summary>
     public void StopBaseShake()
     {
-        _baseShakeActive = false;
+        if (_perlin == null)
+            return;
+
+        _perlin.m_AmplitudeGain = 0f;
     }
 
+    // ======================================================
+    // 버튼 입력 임펄스 쉐이크
+    // ======================================================
+
     /// <summary>
-    /// QTE 버튼 입력 시 호출
+    /// QTE 버튼 입력 시 순간적으로 튀는 흔들림
     /// </summary>
     public void PlayButtonImpulse()
     {
-        // 랜덤 방향으로 순간 흔들림 누적
-        _impulseOffset += Random.insideUnitSphere * impulseStrength;
+        if (_perlin == null)
+            return;
+
+        // 순간적으로 진폭 증가
+        _perlin.m_AmplitudeGain = impulseAmplitude;
+
+        // 기존 Invoke 제거 후 재설정
+        CancelInvoke(nameof(ResetImpulse));
+        Invoke(nameof(ResetImpulse), impulseDuration);
     }
 
+    private void ResetImpulse()
+    {
+        if (_perlin == null)
+            return;
+
+        // 다시 기본 흔들림 상태로 복귀
+        _perlin.m_AmplitudeGain = baseAmplitude;
+    }
+
+    // ======================================================
+    // 강제 리셋
+    // ======================================================
+
     /// <summary>
-    /// QTE 종료 또는 강제 리셋 시 호출.
-    /// 모든 흔들림 상태 초기화.
+    /// QTE 종료, 씬 전환 등 모든 상황에서 안전하게 초기화
     /// </summary>
     public void ResetAll()
     {
-        _baseShakeActive = false;
-        _impulseOffset = Vector3.zero;
-        shakeRoot.localPosition = _originLocalPos;
+        if (_perlin == null)
+            return;
+
+        _perlin.m_AmplitudeGain = 0f;
+        _perlin.m_FrequencyGain = _defaultFrequency;
     }
 }
+
 

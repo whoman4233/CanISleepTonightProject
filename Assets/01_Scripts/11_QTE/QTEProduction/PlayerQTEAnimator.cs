@@ -9,6 +9,7 @@ public class PlayerQTEAnimator : MonoBehaviour
     [Header("QTE Animator Params")]
     [SerializeField] private string struggleTrigger = "Struggle"; // Guarding 재생용
     [SerializeField] private string failTrigger = "QTEFail";      // GuardFail 재생용
+    [SerializeField] private string guardingBool = "IsGuarding";
 
     [Header("QTELayer Index")]
     [SerializeField] private int qteLayerIndex = 2; // ← Animator에서 QTELayer 인덱스와 반드시 일치
@@ -17,6 +18,7 @@ public class PlayerQTEAnimator : MonoBehaviour
     private int _failHash;
 
     private bool _qteActive;
+    private bool _guardingStarted;
 
     private Action<QTEInputFeedbackEvent> _onInput;
     private Action<QTEStartedEvent> _onStarted;
@@ -33,6 +35,7 @@ public class PlayerQTEAnimator : MonoBehaviour
         _onInput = OnInput;
         _onStarted = OnStarted;
         _onEnded = OnEnded;
+
     }
 
     private void OnEnable()
@@ -55,6 +58,7 @@ public class PlayerQTEAnimator : MonoBehaviour
     private void OnStarted(QTEStartedEvent e)
     {
         _qteActive = true;
+        _guardingStarted = false;
 
         // QTE Layer 활성화
         animator.SetLayerWeight(qteLayerIndex, 1f);
@@ -69,13 +73,14 @@ public class PlayerQTEAnimator : MonoBehaviour
     // ======================================================
     private void OnInput(QTEInputFeedbackEvent e)
     {
-        if (!_qteActive)
+        if (!_qteActive || e.State != QTEInputState.Pressed)
             return;
 
-        if (e.State != QTEInputState.Pressed)
+        // 첫 입력에만 Guarding 진입
+        if (_guardingStarted)
             return;
 
-        // 클릭할 때마다 Guarding 재생
+        _guardingStarted = true;
         animator.SetTrigger(_struggleHash);
     }
 
