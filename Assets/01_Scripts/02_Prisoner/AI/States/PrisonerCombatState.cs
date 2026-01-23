@@ -96,7 +96,6 @@ public class PrisonerCombatState : BasePrisonerState
         base.Exit();
     }
 
-    // ... OnDamaged, RotateTowardsPlayer À¯Áö
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         anim.SetTrigger("Hit");
