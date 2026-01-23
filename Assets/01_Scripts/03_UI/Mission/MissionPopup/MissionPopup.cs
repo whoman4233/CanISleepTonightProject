@@ -17,17 +17,12 @@ public class MissionPopup : MonoBehaviour
     private Action<UIHardResetEvent> _onUIHardReset;
     private Action<GameContextReadyEvent> _onGameContextReady;
 
-    // =========================
-    // UIHardReset 이후에는 Show 요청을 무시하기 위한 플래그
-    // - 타이틀 이동 / 강제 종료 중 깜빡임 방지용
-    // =========================
-    private bool _isGloballyDisabled;
 
     private void Awake()
     {
         _onShow = OnShowRequested;
         _onUIHardReset = OnUIHardReset;
-        _onGameContextReady = OnGameContextReady;
+
 
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmClicked);
@@ -49,13 +44,6 @@ public class MissionPopup : MonoBehaviour
 
     private void OnShowRequested(MissionPopupShowRequestedEvent e)
     {
-        // =========================
-        // 전역 종료 상태(UIHardReset 이후)에서는
-        // Show 요청이 와도 무조건 무시
-        // =========================
-        if (_isGloballyDisabled)
-            return;
-
         Show();
     }
 
@@ -89,12 +77,7 @@ public class MissionPopup : MonoBehaviour
     // =========================
     private void OnUIHardReset(UIHardResetEvent e)
     {
-        // =========================
-        // 전역 비활성 상태로 전환
-        // - 이후 들어오는 Show 이벤트 차단
-        // =========================
-        _isGloballyDisabled = true;
-
+        // UI 즉시 숨김만 처리
         HideImmediate();
     }
 
@@ -108,10 +91,7 @@ public class MissionPopup : MonoBehaviour
         contentRoot.SetActive(false);
         InputManager.Instance?.SetDialogueActive(false);
     }
-    private void OnGameContextReady(GameContextReadyEvent e)
-    {
-        _isGloballyDisabled = false;
-    }
+
 }
 
 

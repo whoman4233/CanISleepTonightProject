@@ -151,6 +151,13 @@ public class Crosshair : MonoBehaviour
     // =========================
     private void RefreshVisibility()
     {
+        // Intro / Menu Scene에서는 무조건 숨김
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "01_IntroScene")
+        {
+            ApplyVisible(false);
+            return;
+        }
+
         bool uiOnly =
             InputManager.Instance != null &&
             InputManager.Instance.CurrentState == InputState.UIOnly;

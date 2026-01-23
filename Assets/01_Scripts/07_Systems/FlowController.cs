@@ -134,6 +134,7 @@ public class FlowController : MonoBehaviour
         }
 
         GameManager.Instance.ChangePhase(phase);
+        EventBus.Publish(new GameContextReadyEvent());
         yield return SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
 

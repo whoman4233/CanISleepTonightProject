@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class UICanvasGroup
@@ -21,7 +23,6 @@ public class UIRoot : MonoBehaviour
     // Scene name constants
     // =========================
     private const string UISceneName = "04_UIScene";
-    private const string LoadingSceneName = "07_LoadingScene_LSG";
     private const string IntroSceneName = "01_IntroScene";
 
     // =========================
@@ -30,10 +31,25 @@ public class UIRoot : MonoBehaviour
     [Header("Test / Editor Settings")]
     [SerializeField] private bool allowTestPhaseInEditor = true;
 
+    // =========================
+    // Runtime State
+    // =========================
     private GamePhase currentPhase = GamePhase.NotStarted;
     private string currentScene = string.Empty;
     private bool isLoading;
 
+    // =========================
+    // Event Handlers (Strong Reference)
+    // =========================
+    private Action<GamePhaseChangedEvent> _onPhaseChanged;
+    private Action<SceneChangedEvent> _onSceneChanged;
+    private Action<UIHardResetEvent> _onUIHardReset;
+    private Action<LoadingOverlayShownEvent> _onLoadingShown;
+    private Action<LoadingOverlayHiddenEvent> _onLoadingHidden;
+
+    // =====================================================
+    // Lifecycle
+    // =====================================================
     private void Awake()
     {
         if (instance != null)
@@ -44,36 +60,54 @@ public class UIRoot : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // 이벤트 핸들러 바인딩 (강한 참조)
+        _onPhaseChanged = OnPhaseChanged;
+        _onSceneChanged = OnSceneChanged;
+        _onUIHardReset = OnUIHardReset;
+        _onLoadingShown = OnLoadingOverlayShown;
+        _onLoadingHidden = OnLoadingOverlayHidden;
     }
 
     private void OnEnable()
     {
-        EventBus.Subscribe<GamePhaseChangedEvent>(OnPhaseChanged);
-        EventBus.Subscribe<SceneChangedEvent>(OnSceneChanged);
+        EventBus.Subscribe(_onPhaseChanged);
+        EventBus.Subscribe(_onSceneChanged);
+        EventBus.Subscribe(_onUIHardReset);
+        EventBus.Subscribe(_onLoadingShown);
+        EventBus.Subscribe(_onLoadingHidden);
 
-        if (GameManager.Instance != null)
-        {
-            currentPhase = GameManager.Instance.CurrentPhase;
-            RefreshUI();
-        }
-        currentScene = UnityEngine.SceneManagement.SceneManager
-        .GetActiveScene().name;
-
+        // 초기 상태 동기화
+        SyncStateFromRuntime();
         RefreshUI();
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<GamePhaseChangedEvent>(OnPhaseChanged);
-        EventBus.Unsubscribe<SceneChangedEvent>(OnSceneChanged);
+        EventBus.Unsubscribe(_onPhaseChanged);
+        EventBus.Unsubscribe(_onSceneChanged);
+        EventBus.Unsubscribe(_onUIHardReset);
+        EventBus.Unsubscribe(_onLoadingShown);
+        EventBus.Unsubscribe(_onLoadingHidden);
     }
 
+    // =====================================================
+    // Event Handlers
+    // =====================================================
+
+    /// <summary>
+    /// GamePhase 변경 시 UI 재계산
+    /// </summary>
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
         currentPhase = e.Phase;
         RefreshUI();
     }
 
+    /// <summary>
+    /// 씬 변경 알림
+    /// 실제 UI 판단은 항상 ActiveScene 기준
+    /// </summary>
     private void OnSceneChanged(SceneChangedEvent e)
     {
         // =========================
@@ -82,29 +116,74 @@ public class UIRoot : MonoBehaviour
         if (currentPhase == GamePhase.Test)
             return;
 
-        // UI 씬은 무시
+        // UI 씬 자체는 무시
         if (e.SceneName == UISceneName)
             return;
 
-        // Loading 진입
-        if (e.SceneName == LoadingSceneName)
-        {
-            isLoading = true;
-            RefreshUI();
-            return;
-        }
-
-        // Loading이 아닌 씬이 들어오면 로딩 종료
-        isLoading = false;
-
-        currentScene = e.SceneName;
+        // =====================================================
+        // SceneChangedEvent는 트리거 용도
+        // 실제 판단은 ActiveScene 기준
+        // =====================================================
+        currentScene = SceneManager.GetActiveScene().name;
         RefreshUI();
     }
 
+    /// <summary>
+    /// UI 강제 리셋
+    /// - "끄기"가 아니라 상태 재동기화
+    /// </summary>
+    private void OnUIHardReset(UIHardResetEvent e)
+    {
+        SyncStateFromRuntime();
+        RefreshUI();
+    }
+
+    /// <summary>
+    /// 로딩 시작
+    /// </summary>
+    private void OnLoadingOverlayShown(LoadingOverlayShownEvent e)
+    {
+        isLoading = true;
+        RefreshUI();
+    }
+
+    /// <summary>
+    /// 로딩 종료
+    /// </summary>
+    private void OnLoadingOverlayHidden(LoadingOverlayHiddenEvent e)
+    {
+        isLoading = false;
+        SyncStateFromRuntime();
+        RefreshUI();
+    }
+
+    // =====================================================
+    // Internal State Sync
+    // =====================================================
+    /// <summary>
+    /// GameManager / ActiveScene 기준으로
+    /// 내부 상태를 강제 동기화
+    /// </summary>
+    private void SyncStateFromRuntime()
+    {
+        if (GameManager.Instance != null)
+            currentPhase = GameManager.Instance.CurrentPhase;
+
+        currentScene = SceneManager.GetActiveScene().name;
+        isLoading = false;
+    }
+
+    // =====================================================
+    // UI Refresh Core
+    // =====================================================
     private void RefreshUI()
     {
+        // UI 씬이 아직 로드되지 않았으면 무시
+        if (!gameObject.scene.isLoaded)
+            return;
+
         // =========================
-        // [추가] Test Phase 처리
+        // Test Phase 처리
         // =========================
         if (currentPhase == GamePhase.Test)
         {
@@ -120,40 +199,51 @@ public class UIRoot : MonoBehaviour
             return;
         }
 
-        bool isMenu = currentScene == IntroSceneName
-                      || currentPhase == GamePhase.NotStarted;
+        bool isMenu =
+            currentScene == IntroSceneName ||
+            currentPhase == GamePhase.NotStarted;
 
-        bool isTutorial = currentPhase == GamePhase.Tutorial;
+        bool isTutorial =
+            currentPhase == GamePhase.Tutorial;
 
         foreach (var group in canvasGroups)
         {
             if (group.canvas == null)
                 continue;
 
+            bool active;
+
+            // =========================
+            // Loading 중 → 전부 비활성
+            // =========================
+            if (isLoading)
+            {
+                active = false;
+            }
             // =========================
             // Menu / Intro
             // =========================
-            if (isMenu)
+            else if (isMenu)
             {
-                group.canvas.SetActive(group.showInMenu);
-                continue;
+                active = group.showInMenu;
             }
-
             // =========================
             // Tutorial
             // =========================
-            if (isTutorial)
+            else if (isTutorial)
             {
-                group.canvas.SetActive(group.showInTutorial);
-                continue;
+                active = group.showInTutorial;
             }
-
             // =========================
             // Gameplay (기본)
             // =========================
-            group.canvas.SetActive(group.showInGameplay);
+            else
+            {
+                active = group.showInGameplay;
+            }
+
+            group.canvas.SetActive(active);
         }
     }
 }
-
 
