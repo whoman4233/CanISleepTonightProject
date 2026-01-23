@@ -438,6 +438,7 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogueByKeys(string speakerKey, string textType = "Dialogue", Action onComplete = null)
     {
+        EnterDialogueMode();
         if (dialoguePanel.activeSelf) return; // 이미 대화 중이면 무시
         _onDialogueComplete = onComplete;
 
