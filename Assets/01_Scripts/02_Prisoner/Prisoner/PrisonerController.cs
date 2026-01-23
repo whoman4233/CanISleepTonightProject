@@ -45,16 +45,12 @@ public class PrisonerController : MonoBehaviour
     public PrisonerAIType AIType => Data != null ? Data.RuntimeAIType : PrisonerAIType.Good;
 
     // ================================================================
-    // ★ [추가] 성향 및 전투 판별 프로퍼티 통합
+    // 성향 및 전투 판별 프로퍼티
     // ================================================================
 
-    // 1. 공격적인 성향인지 판별 (State에서 피격 시 반격 여부 결정 등에 사용)
     public bool IsAggressive => CheckAggressiveType(AIType);
-
-    // 2. 무기 소지 여부 자동 판별 (전투 모션 분기용)
     public bool HasWeapon => IsWeaponUser(AIType);
 
-    // [내부 헬퍼] 공격적인 성향 리스트 정의
     private bool CheckAggressiveType(PrisonerAIType type)
     {
         return type == PrisonerAIType.Bad ||
@@ -64,15 +60,13 @@ public class PrisonerController : MonoBehaviour
                type == PrisonerAIType.Attacking;
     }
 
-    // [내부 헬퍼] 무기를 든 것으로 처리할 AI 타입 목록 정의
     private bool IsWeaponUser(PrisonerAIType type)
     {
         switch (type)
         {
-            case PrisonerAIType.HammeringWall: // 망치
-            case PrisonerAIType.Ambusher:      // 매복자
+            case PrisonerAIType.HammeringWall:
+            case PrisonerAIType.Ambusher:
                 return true;
-
             default:
                 return false;
         }
@@ -87,6 +81,9 @@ public class PrisonerController : MonoBehaviour
         if (fsm == null) fsm = gameObject.AddComponent<PrisonerFSM>();
 
         InitializeDictionaries();
+
+        // ★ [추가] 시작 시 도구들을 자동으로 손 뼈 하위로 이동시킴
+        AutoAttachPropsToHand();
     }
 
     private void InitializeDictionaries()
@@ -98,6 +95,40 @@ public class PrisonerController : MonoBehaviour
             {
                 if (data.propObject != null && !_propMap.ContainsKey(data.type))
                     _propMap.Add(data.type, data.propObject);
+            }
+        }
+    }
+
+    // ★ [추가] 프롭 자동 장착 로직
+    private void AutoAttachPropsToHand()
+    {
+        if (animator == null) return;
+
+        // 1. 애니메이터에서 오른손 뼈를 찾음 (Humanoid Rig 필수)
+        Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+
+        if (rightHand == null)
+        {
+            // Humanoid가 아니거나 뼈 세팅이 안된 경우
+            // Debug.LogWarning($"[PrisonerController] {name}: RightHand 뼈를 찾을 수 없습니다. (Generic Rig?)");
+            return;
+        }
+
+        // 2. 등록된 모든 프롭을 손 뼈 자식으로 이동
+        foreach (var data in actionProps)
+        {
+            if (data.propObject != null)
+            {
+                // 부모를 손으로 변경
+                data.propObject.transform.SetParent(rightHand);
+
+                // ★ 위치와 회전을 0으로 초기화하여 손에 '착' 달라붙게 함
+                // (모델의 Pivot이 손잡이 위치여야 자연스럽습니다)
+                data.propObject.transform.localPosition = Vector3.zero;
+                data.propObject.transform.localRotation = Quaternion.identity;
+
+                // 필요하다면 스케일 초기화 (상황에 따라 주석 처리 가능)
+                // data.propObject.transform.localScale = Vector3.one;
             }
         }
     }
@@ -116,7 +147,6 @@ public class PrisonerController : MonoBehaviour
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
 
-        // ★ [권장] 초기화 시 의심 상태 애니메이터 전달
         if (animator != null)
         {
             animator.SetBool("Suspicious", IsSuspicious);
@@ -139,7 +169,7 @@ public class PrisonerController : MonoBehaviour
 
     // [기존] Enum 기반 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
-    { 
+    {
         if (animator != null) animator.SetBool("IsAction", true);
         if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
@@ -150,14 +180,12 @@ public class PrisonerController : MonoBehaviour
         }
     }
 
-    // ★ [추가] 정수형 ID 기반 행동 시작 (VisualIdleState에서 Suspect 12번 강제 실행용)
     public void StartActionBehavior(int rawAnimID)
     {
         if (animator != null)
         {
             animator.SetFloat("ActionType", (float)rawAnimID);
         }
-        // 필요하다면 여기서 rawAnimID에 따른 SFX나 Prop 처리 추가 가능
     }
 
     public void StopActionBehavior()
@@ -186,7 +214,7 @@ public class PrisonerController : MonoBehaviour
             PrisonerAIType.Ambusher => 9,
             PrisonerAIType.Digging => 10,
             PrisonerAIType.Attacking => 11,
-            PrisonerAIType.Suss => 12, // Suspect 전용
+            PrisonerAIType.Suss => 12,
             _ => 0
         };
     }
@@ -225,16 +253,11 @@ public class PrisonerController : MonoBehaviour
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 
-    // ================================================================
-    // ★ [수정] 피격 판정 디버깅 강화
-    // ================================================================
     public void OnAttackHitCheck()
     {
         Collider[] hits = new Collider[20];
-        // 공격 범위와 레이어 설정이 맞는지 확인
         int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
 
-        // [디버그] 감지된 대상이 아예 없으면 레이어 설정이나 거리 문제
         if (count == 0)
         {
             // Debug.Log($"[Combat] {name} 공격 휘두름 - 허공 (TargetLayer 감지 실패)");
@@ -245,13 +268,11 @@ public class PrisonerController : MonoBehaviour
             var target = hits[i];
             if (target.gameObject == gameObject) continue;
 
-            // 방향 체크
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
             dirToTarget.y = 0;
             Vector3 myForward = transform.forward;
             myForward.y = 0;
 
-            // 각도 내에 있는지 확인
             if (Vector3.Angle(myForward, dirToTarget) < attackAngle)
             {
                 var playerHealth = target.GetComponent<Health>();
@@ -260,14 +281,11 @@ public class PrisonerController : MonoBehaviour
                 {
                     int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
                     playerHealth.TakeDamage(finalDamage);
-
-                    // [디버그] 타격 성공 로그
                     Debug.Log($"[Combat] {name}가 {target.name} 타격! (DMG: {finalDamage})");
                 }
                 else
                 {
-                    // [디버그] 맞긴 했는데 체력 컴포넌트가 없는 경우
-                    Debug.LogWarning($"[Combat] {target.name} 감지했으나 Health 컴포넌트 없음! (레이어: {LayerMask.LayerToName(target.gameObject.layer)})");
+                    Debug.LogWarning($"[Combat] {target.name} 감지했으나 Health 컴포넌트 없음!");
                 }
             }
         }

@@ -84,10 +84,6 @@ public class FrankSpawnManager : MonoBehaviour
         EventBus.Unsubscribe(_onMissionStart);
     }
 
-    private void OnDestroy()
-    {
-        Debug.Log($"<color=red>[FrankSpawn] 오브젝트가 파괴되었습니다!</color> \n {System.Environment.StackTrace}");
-    }
 
     private void OnMissionStarted(MissionStartedEvent e) // 이벤트 발행 후(미션 세팅) 프랭크 소환
     {
