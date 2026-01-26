@@ -131,13 +131,25 @@ public class PrisonerSpawnController : MonoBehaviour
         if (dailyRole.visualType != VisualAnomalyType.None)
         {
             string targetID = dailyRole.visualType.ToString();
-            if (prisonerDatabase.TryGet(targetID, out PrisonerDefinition specialDef))
+            PrisonerDefinition specialDef = null;
+
+            // 1차 시도: Enum 이름 그대로 검색 (예: "Franke")
+            if (!prisonerDatabase.TryGet(targetID, out specialDef))
             {
-                if (specialDef.prisonerPrefab != null)
-                {
-                    prefabToUse = specialDef.prisonerPrefab;
-                    prefabSource = $"Override_({dailyRole.visualType})";
-                }
+                // 2차 시도: 실패했다면 "PSN_" 붙여서 재검색 (예: "PSN_Franke")
+                prisonerDatabase.TryGet("PSN_" + targetID, out specialDef);
+            }
+
+            // 결과 확인
+            if (specialDef != null && specialDef.prisonerPrefab != null)
+            {
+                prefabToUse = specialDef.prisonerPrefab;
+                prefabSource = $"Override_({targetID})";
+            }
+            else
+            {
+                // DB에 데이터가 없는 경우 경고 로그
+                Debug.LogWarning($"[Spawn] '{targetID}' (또는 PSN_{targetID})를 DB에서 찾을 수 없어 기본 죄수를 소환합니다.");
             }
         }
 
