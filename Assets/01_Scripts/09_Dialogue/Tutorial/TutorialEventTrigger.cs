@@ -22,8 +22,7 @@ public class TutorialEventTrigger : MonoBehaviour , IInteractable
             _isTriggered = true;
             AudioManager.Instance.PlaySFX(takeClip);
             StartCoroutine(DelayedDialogueStart(stepToPublish.ToString(), npc));
-            Destroy(gameObject);
-            Debug.Log("튜토리얼 이벤트 발행 완료");
+            Debug.Log("[Baton] 튜토리얼 이벤트 발행 완료");
         }
         else
         {
@@ -36,6 +35,9 @@ public class TutorialEventTrigger : MonoBehaviour , IInteractable
 
         DialogueManager.Instance.StartDialogueByKeys(DialogueKeys.Speakers.Frank, dialogueKey);
         npc.finishedDialogue = true;
+        yield return null;
+        Destroy(gameObject);
+
     }
 }
 // 튜토리얼씬의 모든 오브젝트의 컴포넌트에 달아 줄 스크립트

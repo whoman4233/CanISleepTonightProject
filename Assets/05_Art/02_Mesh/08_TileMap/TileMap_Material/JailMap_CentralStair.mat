@@ -20,13 +20,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: JailMap_CentralHallFloor
+  m_Name: JailMap_CentralStair
   m_Shader: {fileID: 4800000, guid: df695d70c539c3d4c87b79de307ab7bb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _MK_ALBEDO_MAP
-  - _MK_COLOR_GRADING_ALBEDO
+  - _MK_DETAIL_MAP
   - _MK_DETAIL_NORMAL_MAP
   - _MK_ENVIRONMENT_REFLECTIONS_AMBIENT
   - _MK_HEIGHT_MAP
@@ -37,7 +37,6 @@ Material:
   - _MK_PBS_MAP_1
   - _MK_RECEIVE_SHADOWS
   - _MK_SPECULAR_ISOTROPIC
-  - _MK_WORKFLOW_ROUGHNESS
   m_InvalidKeywords:
   - _MK_ARTISTIC_ANIMATION_STUTTER
   - _MK_DETAIL_BLEND_MIX
@@ -61,7 +60,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: 6ae47b74afc10f946a681dc43ac88479, type: 3}
+        m_Texture: {fileID: 2800000, guid: 00b273276a2131c4388198da957f0afa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BASE_COLOR_MAP:
@@ -85,7 +84,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: eeff17a3635924447ada842f509ea13c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailMask:
@@ -93,7 +92,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailNormalMap:
-        m_Texture: {fileID: 2800000, guid: 8bb776b0305e5d44ab71e946d28d1118, type: 3}
+        m_Texture: {fileID: 2800000, guid: 36c311bea88d9a247a6704a51975b238, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DiffuseRamp:
@@ -141,7 +140,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightMap:
-        m_Texture: {fileID: 2800000, guid: 19ed98a38e303e246a576a95bbb63f23, type: 3}
+        m_Texture: {fileID: 2800000, guid: 56843bd780890344c86f3c4ffe30f74f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _IridescenceRamp:
@@ -157,7 +156,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 6ae47b74afc10f946a681dc43ac88479, type: 3}
+        m_Texture: {fileID: 2800000, guid: 00b273276a2131c4388198da957f0afa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -165,7 +164,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicMap:
-        m_Texture: {fileID: 2800000, guid: a697f93b13dc23e4e91988759f0166d9, type: 3}
+        m_Texture: {fileID: 2800000, guid: 78f80915404efb447a4ac075530cc7c9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetalnessMap:
@@ -181,11 +180,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 8bb776b0305e5d44ab71e946d28d1118, type: 3}
+        m_Texture: {fileID: 2800000, guid: 36c311bea88d9a247a6704a51975b238, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
-        m_Texture: {fileID: 2800000, guid: 37f902241d53bc445b4407c07bbf0318, type: 3}
+        m_Texture: {fileID: 2800000, guid: eeff17a3635924447ada842f509ea13c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OutlineMap:
@@ -201,7 +200,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RoughnessMap:
-        m_Texture: {fileID: 2800000, guid: 215da14b211ff1a4f8c4cbdd4a153ac6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4e36c3d711bc33147b58b43d1de6071f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SPECULAR_COLOR_MAP:
@@ -283,7 +282,7 @@ Material:
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _ColorGrading: 1
+    - _ColorGrading: 0
     - _Contrast: 1
     - _Cull: 2
     - _Cutoff: 0.5
@@ -357,7 +356,7 @@ Material:
     - _RenderFace: 2
     - _RenderPriority: 0
     - _Rim: 0
-    - _RimSize: 2.31
+    - _RimSize: 1
     - _RimSmoothness: 0.5
     - _RimThresholdOffset: 0.25
     - _Roughness: 1
@@ -365,7 +364,7 @@ Material:
     - _SPECULAR_ROUGHNESS: 0
     - _Saturation: 0.84
     - _SketchMapScale: 1
-    - _Smoothness: 0.44
+    - _Smoothness: 0.4
     - _SmoothnessTextureChannel: 0
     - _Specular: 1
     - _SpecularHighlights: 1
@@ -395,7 +394,7 @@ Material:
     - _VertexAnimation: 0
     - _VertexAnimationIntensity: 0.05
     - _VertexAnimationStutter: 0
-    - _Workflow: 2
+    - _Workflow: 0
     - _WorkflowMode: 1
     - _WrappedLighting: 1
     - _ZTest: 4
@@ -407,17 +406,17 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color0: {r: 1, g: 0, b: 0, a: 1}
     - _Color1: {r: 0, g: 1, b: 0, a: 1}
-    - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DetailColor: {r: 0.3679245, g: 0.3679245, b: 0.3679245, a: 1}
     - _DissolveBorderColor: {r: 1, g: 1, b: 1, a: 1}
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GoochBrightColor: {r: 1, g: 1, b: 1, a: 0.36862746}
-    - _GoochDarkColor: {r: 0, g: 0, b: 0, a: 1}
-    - _IridescenceColor: {r: 0.64705884, g: 0.88158965, b: 0.8862745, a: 0.07058824}
+    - _GoochDarkColor: {r: 0.3494126, g: 0.49056602, b: 0.4296019, a: 1}
+    - _IridescenceColor: {r: 0.64705884, g: 0.88158965, b: 0.8862745, a: 0.08627451}
     - _LightTransmissionColor: {r: 1, g: 0.65, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _RimBrightColor: {r: 1, g: 1, b: 1, a: 1}
-    - _RimColor: {r: 0, g: 0, b: 0, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimDarkColor: {r: 0, g: 0, b: 0, a: 1}
     - _Rotation: {r: 0, g: 0, b: 0, a: 0}
     - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}
