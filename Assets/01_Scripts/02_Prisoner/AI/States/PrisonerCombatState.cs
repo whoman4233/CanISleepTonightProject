@@ -47,12 +47,15 @@ public class PrisonerCombatState : BasePrisonerState
             agent.velocity = Vector3.zero;
             anim.SetBool("Run", false);
 
-            // 공격/피격 중에도 플레이어를 바라보게 할지 결정 (여기선 바라봄)
-            RotateTowardsPlayer();
+            // ★ [핵심 수정] 피격 중이 아닐 때(즉, 공격 중일 때)는 플레이어를 빠르게 바라봄
+            // 맞을 때 몸이 돌아가면 어색하므로 피격 시엔 회전 금지
+            if (!isPlayingHitAnim)
+            {
+                RotateTowardsPlayer(true); // fastTurn = true
+            }
             return;
         }
 
-        // --- 여기서부터는 자유 행동 가능 ---
 
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
@@ -64,7 +67,9 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
             anim.SetBool("Run", false);
-            RotateTowardsPlayer();
+
+            // ★ [핵심 수정] 공격 직전에도 빠르게 정렬
+            RotateTowardsPlayer(true);
 
             if (_cooldownTimer <= 0f)
             {
@@ -77,6 +82,9 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = false;
             agent.SetDestination(player.position);
             anim.SetBool("Run", true);
+
+            // 이동 중엔 부드럽게 회전
+            RotateTowardsPlayer(false);
         }
     }
 
@@ -117,13 +125,18 @@ public class PrisonerCombatState : BasePrisonerState
         }
     }
 
-    private void RotateTowardsPlayer()
+    // 회전 속도 파라미터(fastTurn) 추가
+    private void RotateTowardsPlayer(bool fastTurn = false)
     {
+        if (player == null) return;
+
         Vector3 dir = (player.position - fsm.transform.position).normalized;
         dir.y = 0;
         if (dir != Vector3.zero)
         {
-            fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
+            // 공격 시(fastTurn)에는 50의 속도로 거의 즉시 회전, 평소엔 10으로 부드럽게 회전
+            float speed = fastTurn ? 50f : 10f;
+            fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * speed);
         }
     }
 }
