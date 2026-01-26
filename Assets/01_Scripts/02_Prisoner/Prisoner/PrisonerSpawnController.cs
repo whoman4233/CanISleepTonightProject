@@ -22,6 +22,11 @@ public class PrisonerSpawnController : MonoBehaviour
     [SerializeField] private Transform[] centerSpawnPoints;
     private int _currentCenterSpawnIndex = 0;
 
+    // ▼ [추가] Mission 3 전용 프리팹 연결 변수
+    [Header("Mission 3 Assets")]
+    [SerializeField] private GameObject graffitiPrefab;
+    [SerializeField] private GameObject goatHeadPrefab;
+
     [Header("Debug")]
     [SerializeField] private bool verboseLog = true;
 
@@ -32,7 +37,6 @@ public class PrisonerSpawnController : MonoBehaviour
     {
         _currentCenterSpawnIndex = 0;
 
-        // 1단계: 레지스트리 기반 정리
         if (contentRegistry != null)
         {
             if (anchorRegistry != null)
@@ -80,7 +84,6 @@ public class PrisonerSpawnController : MonoBehaviour
             }
         }
 
-        // 2단계: 씬 전수 조사 (잔여물 제거)
         PrisonerController[] allPrisoners = UnityEngine.Object.FindObjectsOfType<PrisonerController>();
         foreach (var prisoner in allPrisoners)
         {
@@ -133,14 +136,11 @@ public class PrisonerSpawnController : MonoBehaviour
             string targetID = dailyRole.visualType.ToString();
             PrisonerDefinition specialDef = null;
 
-            // 1차 시도: Enum 이름 그대로 검색 (예: "Franke")
             if (!prisonerDatabase.TryGet(targetID, out specialDef))
             {
-                // 2차 시도: 실패했다면 "PSN_" 붙여서 재검색 (예: "PSN_Franke")
                 prisonerDatabase.TryGet("PSN_" + targetID, out specialDef);
             }
 
-            // 결과 확인
             if (specialDef != null && specialDef.prisonerPrefab != null)
             {
                 prefabToUse = specialDef.prisonerPrefab;
@@ -148,7 +148,6 @@ public class PrisonerSpawnController : MonoBehaviour
             }
             else
             {
-                // DB에 데이터가 없는 경우 경고 로그
                 Debug.LogWarning($"[Spawn] '{targetID}' (또는 PSN_{targetID})를 DB에서 찾을 수 없어 기본 죄수를 소환합니다.");
             }
         }
@@ -160,15 +159,12 @@ public class PrisonerSpawnController : MonoBehaviour
         }
 
         // ================================================================
-        // 📍 [위치] 위치 선정 로직 (수정됨)
+        // 📍 [위치] 위치 선정 로직
         // ================================================================
-
-        // 1. 기본값 (CellAnchor의 메인 Spawn)
         Vector3 spawnPos = anchor.prisonerSpawn.position;
         Quaternion spawnRot = anchor.prisonerSpawn.rotation;
         string locationLog = "MainSpawn";
 
-        // 2. ★ [추가] 랜덤 스폰 포인트가 설정되어 있다면 그중 하나 선택
         if (anchor.randomSpawnPoints != null && anchor.randomSpawnPoints.Count > 0)
         {
             int randomIndex = UnityEngine.Random.Range(0, anchor.randomSpawnPoints.Count);
@@ -182,7 +178,6 @@ public class PrisonerSpawnController : MonoBehaviour
             }
         }
 
-        // 3. 특수 캐릭터(Frank 등)의 중앙 스폰 오버라이드 (랜덤보다 우선순위 높음)
         bool isCenterTarget = IsCenterSpawnTarget(dailyRole.visualType);
 
         if (isCenterTarget)
@@ -209,6 +204,28 @@ public class PrisonerSpawnController : MonoBehaviour
         PrisonerController controller = InstantiatePrisoner(prefabToUse, spawnPos, spawnRot, anchor, existingData, isSuspicious);
         if (controller != null) content.prisoner = controller;
 
+        // ▼ [추가] Mission 3 전용 프랍 소환 로직
+        if (GameManager.Instance != null && GameManager.Instance.CurrentDay == 3)
+        {
+            // Case 1: 낙서범 (Graffiti) -> 방 정중앙 (Cell Anchor 위치)
+            if (existingData.RuntimeAIType == PrisonerAIType.Graffiti)
+            {
+                if (graffitiPrefab != null)
+                {
+                    Instantiate(graffitiPrefab, anchor.transform.position, Quaternion.identity);
+                }
+            }
+            // Case 2: 염소 머리 (GoatHead) -> 죄수 스폰 위치 (점호 위치)
+            if (dailyRole.visualType == VisualAnomalyType.GoatHead)
+            {
+                if (goatHeadPrefab != null)
+                {
+                    // 죄수가 서있는 위치(InspectionPoint)와 겹치게 소환
+                    Instantiate(goatHeadPrefab, anchor.prisonerSpawn.position, anchor.prisonerSpawn.rotation);
+                }
+            }
+        }
+
         // 5. 기본 프롭 생성
         if (cellPropPrefab != null && anchor.propSpawnPoint != null)
         {
@@ -233,13 +250,11 @@ public class PrisonerSpawnController : MonoBehaviour
         List<AnomalyDefinitionSO> dailyList = anchor.currentDailyAnomalies ?? new List<AnomalyDefinitionSO>();
         AnomalyDefinitionSO culpritDef = (dailyList.Count > 0) ? dailyList[0] : null;
 
-        // PHASE 1: 범인 아이템
         if (culpritDef != null && isSuspicious)
         {
             TrySpawnSingleAnomaly(cellId, culpritDef, anchor, availableSlots, processedReplacements, content, true);
         }
 
-        // PHASE 2: 일반 아이템
         PrisonerType residentType = GetPrisonerType(cellId);
 
         foreach (var def in anomalyDatabase.defs)
