@@ -3,6 +3,7 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Playables;
 
 public class FlowController : MonoBehaviour
 {
@@ -16,7 +17,6 @@ public class FlowController : MonoBehaviour
     [SerializeField] private string outroSceneName = "03_OutroScene";
 
     private bool isBusy = false;
-    private bool outroFinished;
 
     private Action<RequestStartNewGameEvent> _startNewGameHandler;
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
@@ -477,17 +477,7 @@ public class FlowController : MonoBehaviour
         yield return SceneManager.UnloadSceneAsync(loadingSceneName);
         EventBus.Publish(new LoadingOverlayHiddenEvent());
 
-        // =========================
-        // Timeline 종료 대기
-        // =========================
-        outroFinished = false;
-        EventBus.Subscribe<OutroFinishedEvent>(OnOutroFinished);
-
-        while (!outroFinished)
-            yield return null;
-
-        EventBus.Unsubscribe<OutroFinishedEvent>(OnOutroFinished);
-
+        yield return WaitForOutroTimeline();
         // =========================
         // Outro 종료 → Intro
         // =========================
@@ -517,20 +507,22 @@ public class FlowController : MonoBehaviour
 
         StartCoroutine(PlayOutroSequence());
     }
-    private IEnumerator WaitForOutroFinished()
+    private IEnumerator WaitForOutroTimeline()
     {
-        outroFinished = false;
+        // Outro 씬 로드 직후 호출되므로 한 프레임 대기
+        yield return null;
 
-        EventBus.Subscribe<OutroFinishedEvent>(OnOutroFinished);
+        var director = FindObjectOfType<PlayableDirector>();
+        if (director == null)
+        {
+            Debug.LogError("[Outro] PlayableDirector not found");
+            yield break;
+        }
 
-        while (!outroFinished)
+        // Timeline이 재생 중인 동안 대기
+        while (director.state == PlayState.Playing)
             yield return null;
 
-        EventBus.Unsubscribe<OutroFinishedEvent>(OnOutroFinished);
-    }
-
-    private void OnOutroFinished(OutroFinishedEvent e)
-    {
-        outroFinished = true;
+        Debug.Log("[Outro] Timeline Finished (Polled)");
     }
 }

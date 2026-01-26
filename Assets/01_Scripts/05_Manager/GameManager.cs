@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     private StandbyEnterReason standbyEnterReason = StandbyEnterReason.None;
 
     [SerializeField] private int currentDay = 0;
-    [SerializeField] public int maxDay = 6;
+    [SerializeField] public int maxDay = 7;
 
     // ★ [추가] 무사고 날짜 추적 변수
     public int CurrentAccidentFreeDay { get; private set; } = 0;
@@ -28,9 +28,10 @@ public class GameManager : MonoBehaviour
     private Coroutine patrolTimerCoroutine;
 
     private Action<RequestPhaseChangeEvent> _requestPhaseChange;
-    private Action<EndingConditionMetEvent> _onEndingConditionMet;
 
     [Header("엔딩 설정")]
+    private bool isEndingTriggered;
+
     private GameEndingType finalEnding = GameEndingType.None;
 
     public event Action<GamePhase> OnPhaseChanged;
@@ -94,11 +95,6 @@ public class GameManager : MonoBehaviour
             Debug.Log($"GameManager: 페이즈 변경 요청 받음 -> {e.TargetPhase}");
             ChangePhase(e.TargetPhase);
         };
-        _onEndingConditionMet = e =>
-        {
-            finalEnding = e.EndingType;
-            ChangePhase(GamePhase.Ending);
-        };
     }
 
     private void Start()
@@ -122,7 +118,6 @@ public class GameManager : MonoBehaviour
     private void RegisterSystemEvents()
     {
         EventBus.Subscribe(_requestPhaseChange);
-        EventBus.Subscribe(_onEndingConditionMet);
         EventBus.Subscribe<PauseGameRequestedEvent>(OnPauseRequested);
         EventBus.Subscribe<ResumeGameRequestedEvent>(OnResumeRequested);
     }
@@ -131,7 +126,6 @@ public class GameManager : MonoBehaviour
     private void UnregisterSystemEvents()
     {
         if (_requestPhaseChange != null) EventBus.Unsubscribe(_requestPhaseChange);
-        if (_onEndingConditionMet != null) EventBus.Unsubscribe(_onEndingConditionMet);
         EventBus.Unsubscribe<PauseGameRequestedEvent>(OnPauseRequested);
         EventBus.Unsubscribe<ResumeGameRequestedEvent>(OnResumeRequested);
     }
@@ -230,6 +224,17 @@ public class GameManager : MonoBehaviour
         // 1. 정상적으로 다음 날로 넘어가는 경우 (성공)
         if (standbyEnterReason == StandbyEnterReason.NextDay)
         {
+            // =========================
+            // 엔딩 판단
+            // =========================
+            if (currentDay + 1 >= maxDay)
+            {
+                Debug.Log("[GameManager] 마지막 날 진입 -> 엔딩 신");
+
+                EnterEnding(GameEndingType.NormalEnding);
+                return;
+            }
+
             currentDay++;
             Debug.Log("Day++");
             playerHP = Mathf.Min(playerHP + 10, 100);
@@ -300,6 +305,22 @@ public class GameManager : MonoBehaviour
             _saveManager.SaveMeta(endingData);
         }
         OnGameEnded?.Invoke(finalEnding);
+    }
+    // =========================
+    // 엔딩 전용 진입 메서드
+    // =========================
+    public void EnterEnding(GameEndingType endingType)
+    {
+        if (isEndingTriggered)
+            return;
+
+        isEndingTriggered = true;
+        finalEnding = endingType;
+
+        EventBus.Publish(new EndingConditionMetEvent
+        {
+            EndingType = endingType
+        });
     }
 
     private IEnumerator UpdateTimer()

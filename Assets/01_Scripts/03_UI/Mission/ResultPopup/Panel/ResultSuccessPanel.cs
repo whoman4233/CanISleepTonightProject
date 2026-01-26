@@ -43,12 +43,20 @@ public class ResultSuccessPanel : ResultPanelBase
     {
         DailyMissionManager.Instance.MarkReported();
         EventBus.Publish(new GlobalInputLockReleasedEvent());
+        Time.timeScale = 1f;
 
-        
-        Time.timeScale = 1.0f;
+        int nextDay = GameManager.Instance.CurrentDay + 1;
+
+        if (nextDay >= GameManager.Instance.MaxDay)
+        {
+            GameManager.Instance.EnterEnding(GameEndingType.NormalEnding);
+            return;
+        }
+
         GameManager.Instance.SetStandbyEnterReason(StandbyEnterReason.NextDay);
         EventBus.Publish(new RequestSceneReloadEvent());
     }
+
 
     private void OnTitleClicked()
     {
