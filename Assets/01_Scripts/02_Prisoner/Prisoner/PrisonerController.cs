@@ -149,11 +149,6 @@ public class PrisonerController : MonoBehaviour
         this.AssignedCell = cell;
         this.IsSuspicious = isSuspicious;
 
-        if (animator != null)
-        {
-            animator.SetBool("Suspicious", IsSuspicious);
-        }
-
         if (agent != null && data != null && data.definition != null)
         {
             agent.speed = data.definition.spd > 0 ? data.definition.spd : 3.5f;
