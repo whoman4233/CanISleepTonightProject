@@ -35,7 +35,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6650839560293477269}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -2.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -144,6 +144,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InspectionPoint: {fileID: 0}
   defaultQteAction: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
+  <QteStopDistance>k__BackingField: 1.2
+  ambushDelay: 1.5
 --- !u!195 &6007444127599511837
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -284,6 +286,7 @@ MonoBehaviour:
   qteStateParam: QTEState
   hitTrigger: HitSuccess
   attackTrigger: AttackFail
+  hitSfx: {fileID: 8300000, guid: 1fbd80de8ecf5454ba5197bafa767020, type: 3}
 --- !u!1001 &1943632108880297978
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -480,6 +483,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 596988190210246247}
+    - targetCorrespondingSourceObject: {fileID: -2486420778618896525, guid: 507cd82cca1df544bbe5f3cc28ce6832,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2788209192852709340}
     - targetCorrespondingSourceObject: {fileID: 8293792417697028184, guid: 507cd82cca1df544bbe5f3cc28ce6832,
         type: 3}
       insertIndex: -1
@@ -607,6 +614,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!4 &1706807696713815755 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 961210195233335601, guid: 507cd82cca1df544bbe5f3cc28ce6832,
+    type: 3}
+  m_PrefabInstance: {fileID: 1943632108880297978}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2122200822940375057 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 507cd82cca1df544bbe5f3cc28ce6832,
@@ -869,6 +882,19 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &2788209192852709340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5154192079313649801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c32e73042d49a8b429a40ff062600f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  headLookTarget: {fileID: 1706807696713815755}
 --- !u!1 &5376674748422695835 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3430368352385215391, guid: 507cd82cca1df544bbe5f3cc28ce6832,

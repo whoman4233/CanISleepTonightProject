@@ -12,16 +12,17 @@ public class CameraShakeController : MonoBehaviour
     [SerializeField] private CinemachineVirtualCamera virtualCamera;
 
     [Header("Base Shake (QTE 지속 흔들림)")]
-    [SerializeField] private float baseAmplitude = 0.06f;
-    [SerializeField] private float baseFrequency = 18f;
+    [SerializeField] private float baseAmplitude = 0.12f;
+    [SerializeField] private float baseFrequency = 10f;
 
     [Header("Impulse Shake (버튼 입력)")]
-    [SerializeField] private float impulseAmplitude = 0.15f;
+    [SerializeField] private float impulseAmplitude = 0.25f;
     [SerializeField] private float impulseDuration = 0.08f;
 
     private CinemachineBasicMultiChannelPerlin _perlin;
     private float _defaultAmplitude;
     private float _defaultFrequency;
+    private bool _qteActive;
 
     private void Awake()
     {
@@ -33,8 +34,10 @@ public class CameraShakeController : MonoBehaviour
             Debug.LogError("[CameraShakeController] CinemachineVirtualCamera 찾을 수 없음.");
             return;
         }
+        Debug.Log(
+$"[CameraShake] Target VCam = {virtualCamera.name}, Priority = {virtualCamera.Priority}");
 
-        _perlin = virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+_perlin = virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
 
         if (_perlin == null)
         {
@@ -51,6 +54,16 @@ public class CameraShakeController : MonoBehaviour
 
         ResetAll();
     }
+    public void OnQTEStarted()
+    {
+        _qteActive = true;
+    }
+
+    public void OnQTEEnded()
+    {
+        _qteActive = false;
+        ResetAll();
+    }
 
     // ======================================================
     // QTE 지속 흔들림
@@ -61,7 +74,7 @@ public class CameraShakeController : MonoBehaviour
     /// </summary>
     public void StartBaseShake()
     {
-        if (_perlin == null)
+        if (_perlin == null || !_qteActive)
             return;
 
         _perlin.m_AmplitudeGain = baseAmplitude;
@@ -76,6 +89,8 @@ public class CameraShakeController : MonoBehaviour
         if (_perlin == null)
             return;
 
+        CancelInvoke(nameof(ResetImpulse));
+
         _perlin.m_AmplitudeGain = 0f;
     }
 
@@ -88,9 +103,10 @@ public class CameraShakeController : MonoBehaviour
     /// </summary>
     public void PlayButtonImpulse()
     {
-        if (_perlin == null)
+        if (_perlin == null || !_qteActive)
             return;
 
+        _perlin.m_FrequencyGain = baseFrequency;
         // 순간적으로 진폭 증가
         _perlin.m_AmplitudeGain = impulseAmplitude;
 
@@ -104,6 +120,10 @@ public class CameraShakeController : MonoBehaviour
         if (_perlin == null)
             return;
 
+        if (!_qteActive)
+            return;
+
+        _perlin.m_FrequencyGain = baseFrequency;
         // 다시 기본 흔들림 상태로 복귀
         _perlin.m_AmplitudeGain = baseAmplitude;
     }
@@ -119,6 +139,9 @@ public class CameraShakeController : MonoBehaviour
     {
         if (_perlin == null)
             return;
+
+        // 예약된 임펄스 취소
+        CancelInvoke(nameof(ResetImpulse));
 
         _perlin.m_AmplitudeGain = 0f;
         _perlin.m_FrequencyGain = _defaultFrequency;

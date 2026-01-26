@@ -80,6 +80,8 @@ public class QTEFlowDirector : MonoBehaviour
 
         if (cameraDirector != null)
             cameraDirector.EnterQTEMode(attacker);
+        if (shakeController != null)
+            shakeController.OnQTEStarted();
 
         // 죄수 공격 애니메이션 시작 (★ Animator가 아니라 PrisonerQTEAnimator에 호출해야 함)
         if (PrisonerQTEContext.CurrentAttackerQTEAnimator != null)
@@ -120,7 +122,7 @@ public class QTEFlowDirector : MonoBehaviour
 
         // 흔들림 정리
         if (shakeController != null)
-            shakeController.ResetAll();
+            shakeController.OnQTEEnded();
 
         // ★ 주의: 여기서 Clear() 하면 애니메이션 이벤트 타이밍이 뒤늦게 올 때 문제
         // PrisonerQTEContext.Clear();

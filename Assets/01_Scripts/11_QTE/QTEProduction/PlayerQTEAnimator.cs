@@ -14,6 +14,9 @@ public class PlayerQTEAnimator : MonoBehaviour
     [Header("QTELayer Index")]
     [SerializeField] private int qteLayerIndex = 2; // ← Animator에서 QTELayer 인덱스와 반드시 일치
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip guardFailSfx;
+
     private int _struggleHash;
     private int _failHash;
 
@@ -120,7 +123,11 @@ public class PlayerQTEAnimator : MonoBehaviour
     {
         DisableQTELayer();
     }
-
+    public void OnGuardFailSfx()
+    {
+        if (guardFailSfx != null)
+            AudioManager.Instance?.PlaySFX(guardFailSfx);
+    }
     // ======================================================
     // Internal
     // ======================================================
