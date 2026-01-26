@@ -12,9 +12,7 @@ public class MimiDialogue : PrisonerDialogue
 
         System.Action onDialogueComplete = () =>
         {
-            // 여기가 미미의 대사가 끝나는 분기.
-            // 이 괄호 안에서 이벤트발행 혹은 매서드 직접 실행.
-            Debug.Log("미미 대사 끝");
+            EventBus.Publish(new Mission03DialogueEnded());
         };
 
         HandleDialogue(onDialogueComplete); // 콜백 전달
