@@ -29,5 +29,6 @@ public enum PrisonerAIType
     Escaper,    // ¶¥ ÆÄ´Â ³ð (Target)
     Ambusher,    // ±â½ÀÇÏ´Â ³ð (Enemy)
 
-    Suss
+    Suss, 
+    QTE_Attacker
 }
