@@ -1,28 +1,25 @@
 using UnityEngine;
 using System;
+using System.Collections;
 
 public class PrisonerBikiniState : BasePrisonerState
 {
-    private enum BikiniStep { WaitForPlayer, Talking, WaitForSoap, Ambush }
+    private enum BikiniStep { WaitForPlayer, Talking, DropSequence, WaitForSoap, AmbushSequence }
 
-    private BikiniStep _currentStep;
-    private GameObject _soapObject;
+    [SerializeField] private BikiniStep _currentStep;
+
+    private GameObject _targetInteractableObject;
+    private GameObject _soapRootObject;
 
     private const string SOAP_OBJ_NAME = "SoapTrap";
     private const string DIALOGUE_KEY = "DIAL_BIKINI_TRAP";
     private const float DETECT_RANGE = 4.0f;
     private const int AMBUSH_DAMAGE = 30;
 
-    // ============================================================
-    // ★ [핵심] GC 방지용 델리게이트 캐싱 변수
-    // ============================================================
     private Action<Mission03DialogueEnded> _onDialogueEndedHandler;
 
     public PrisonerBikiniState(PrisonerFSM fsm) : base(fsm)
     {
-        // ============================================================
-        // 생성자에서 핸들러 연결 (메모리 할당 1회만 발생)
-        // ============================================================
         _onDialogueEndedHandler = OnDialogueEnded;
     }
 
@@ -31,33 +28,54 @@ public class PrisonerBikiniState : BasePrisonerState
         base.Enter();
         _currentStep = BikiniStep.WaitForPlayer;
 
-        // 1. 이동 정지
         if (Agent != null && Agent.isOnNavMesh)
         {
             Agent.isStopped = true;
             Agent.velocity = Vector3.zero;
         }
+        Anim.SetBool("Run", false);
+        Anim.SetInteger("ActionType", 0);
 
-        // 2. 비누 오브젝트 세팅
-        if (_soapObject == null)
+        // 오브젝트 찾기
+        if (_soapRootObject == null)
         {
-            var t = fsm.transform.Find(SOAP_OBJ_NAME);
-            if (t != null) _soapObject = t.gameObject;
+            var allTransforms = fsm.GetComponentsInChildren<Transform>(true);
+            foreach (var t in allTransforms)
+            {
+                if (t.name == SOAP_OBJ_NAME)
+                {
+                    _soapRootObject = t.gameObject;
+                    break;
+                }
+            }
         }
-        if (_soapObject != null) _soapObject.SetActive(false);
 
-        // ============================================================
-        // ★ [핵심] 캐싱된 변수로 이벤트 구독 (GC 발생 X)
-        // ============================================================
+        if (_soapRootObject != null)
+        {
+            var interactable = _soapRootObject.GetComponentInChildren<MissionItemInteractable>(true);
+            if (interactable != null) _targetInteractableObject = interactable.gameObject;
+            else _targetInteractableObject = _soapRootObject;
+
+            _soapRootObject.SetActive(false);
+        }
+
         EventBus.Subscribe(_onDialogueEndedHandler);
-
-        Debug.Log($"[Bikini] {Controller.name}: 유혹 작전 대기 중");
+        Anim.SetBool("IsLuring", true);
     }
 
     public override void Update()
     {
         if (player == null) return;
 
+        // ================================================================
+        // ★ [핵심 수정] 기습 공격 중이 아니라면 무조건 플레이어를 바라봄
+        // ================================================================
+        if (_currentStep != BikiniStep.AmbushSequence)
+        {
+            LookAtPlayer();
+        }
+
+        // 상태별 로직 처리
         switch (_currentStep)
         {
             case BikiniStep.WaitForPlayer:
@@ -65,83 +83,99 @@ public class PrisonerBikiniState : BasePrisonerState
                 {
                     RequestDialogueStart();
                 }
-                else
-                {
-                    LookAtPlayer();
-                }
                 break;
 
             case BikiniStep.Talking:
-                // 이벤트 수신 대기 (시선 처리만 수행)
-                LookAtPlayer();
+                // 대화 중에는 별도 로직 없음 (시선은 위에서 처리됨)
                 break;
 
             case BikiniStep.WaitForSoap:
-                if (_soapObject != null && !_soapObject.activeSelf)
+                // 비누 감지 로직
+                if (_targetInteractableObject != null)
                 {
-                    ExecuteAmbush();
+                    // 실제 상호작용 오브젝트가 꺼졌는지 확인
+                    if (!_targetInteractableObject.activeInHierarchy)
+                    {
+                        Debug.Log("[Bikini] ★ 비누 사라짐 감지 성공! -> 기습 시작");
+                        fsm.StartCoroutine(CoExecuteAmbush());
+                    }
                 }
                 break;
         }
     }
-
-    // ============================================================
-    // 로직 메서드
-    // ============================================================
 
     private void RequestDialogueStart()
     {
         _currentStep = BikiniStep.Talking;
+        Anim.SetBool("IsLuring", false);
+        Anim.SetBool("IsTalking", true);
 
         if (DialogueManager.Instance != null)
         {
             // DialogueManager.Instance.StartDialogue(DIALOGUE_KEY); 
-            Debug.Log($"[Bikini] 대화 시작 요청: {DIALOGUE_KEY}");
+            Debug.Log($"[Bikini] 대화 시작 요청");
         }
     }
 
-    // ============================================================
-    // 이벤트 콜백 함수 (Event Callback)
-    // ============================================================
     private void OnDialogueEnded(Mission03DialogueEnded eventData)
     {
-        // 이미 다른 상태로 넘어갔거나(전투 등), Talking 단계가 아니면 무시
         if (_currentStep != BikiniStep.Talking) return;
-
-        Debug.Log("[Bikini] 대화 종료 이벤트 수신 -> 비누 투척");
-        DropSoap();
+        fsm.StartCoroutine(CoDropSoapSequence());
     }
 
-    private void DropSoap()
+    private IEnumerator CoDropSoapSequence()
     {
+        _currentStep = BikiniStep.DropSequence;
+
+        Anim.SetBool("IsTalking", false);
+        Anim.SetTrigger("DoDrop");
+
+        yield return new WaitForSeconds(0.5f);
+
+        // 비누 활성화 및 Collider 강제 켜기
+        if (_soapRootObject != null)
+        {
+            _soapRootObject.SetActive(true);
+            if (_targetInteractableObject != null) _targetInteractableObject.SetActive(true);
+
+            var colliders = _soapRootObject.GetComponentsInChildren<Collider>(true);
+            foreach (var col in colliders) col.enabled = true;
+
+            Debug.Log($"[Bikini] 비누 활성화 & Collider {colliders.Length}개 켜짐");
+        }
+
         _currentStep = BikiniStep.WaitForSoap;
-
-        if (_soapObject != null)
-        {
-            _soapObject.SetActive(true);
-        }
-        else
-        {
-            fsm.ChangeState(fsm.CombatState);
-        }
+        yield return new WaitForSeconds(0.5f);
     }
 
-    private void ExecuteAmbush()
+    private IEnumerator CoExecuteAmbush()
     {
-        _currentStep = BikiniStep.Ambush;
-
-        Vector3 backPos = player.position - (player.forward * 0.8f);
-        backPos.y = fsm.transform.position.y;
+        _currentStep = BikiniStep.AmbushSequence; // 이제부터 회전 로직(LookAtPlayer) 중단
 
         if (Agent != null) Agent.enabled = false;
+
+        // 플레이어 등 뒤로 이동
+        Vector3 backPos = player.position - (player.forward * 0.8f);
+        backPos.y = fsm.transform.position.y;
         fsm.transform.position = backPos;
+
+        // 공격 방향으로 즉시 정렬
         fsm.transform.LookAt(player.position);
+
         if (Agent != null) Agent.enabled = true;
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.PlayerHP -= AMBUSH_DAMAGE;
+        Anim.SetTrigger("DoAttack");
 
-        Anim.SetTrigger("Attack");
+        yield return new WaitForSeconds(0.3f);
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.PlayerHP -= AMBUSH_DAMAGE;
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        fsm.Controller.StartActionBehavior(0);
         fsm.ChangeState(fsm.CombatState);
     }
 
@@ -153,32 +187,22 @@ public class PrisonerBikiniState : BasePrisonerState
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
     }
 
-    // ============================================================
-    // 종료 및 피격 처리
-    // ============================================================
-
     public override void Exit()
     {
-        // ============================================================
-        // 캐싱된 변수로 구독 해제 (안전함)
-        // ============================================================
         EventBus.Unsubscribe(_onDialogueEndedHandler);
-
         Controller.StopActionBehavior();
 
-        if (_soapObject != null) _soapObject.SetActive(false);
-        Anim.SetBool("IsSuspicious", false);
+        if (_soapRootObject != null) _soapRootObject.SetActive(false);
+
+        Anim.SetBool("IsLuring", false);
+        Anim.SetBool("IsTalking", false);
+        Anim.SetBool("Run", false);
 
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        Controller.StopActionBehavior();
-
-        if (_soapObject != null) _soapObject.SetActive(false);
-
-        // fsm.ChangeState -> Exit() 호출 -> Unsubscribe 자동 수행
         fsm.ChangeState(fsm.CombatState);
     }
 }
