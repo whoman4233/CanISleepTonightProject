@@ -51,6 +51,15 @@ public struct Mission4DialogueTriggerSpawnEvent // 미션 04 대화 트리거스
     public List<Mission4DialogueTrigger> Triggers; 
 }
 
+
+//==========================================
+//Mission03 관련 이벤트 목록
+//==========================================
+public struct Mission03DialogueEnded
+{
+
+}
+
 //==========================================
 //Mission06 관련 이벤트 목록
 //==========================================
