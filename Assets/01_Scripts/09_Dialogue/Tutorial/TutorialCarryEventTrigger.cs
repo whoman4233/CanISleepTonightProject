@@ -22,6 +22,7 @@ public class TutorialCarryEventTrigger : CarryableBox
 
     public override void Drop(Player player)
     {
+        if (_isTriggered) return;
         if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
 
         if (_cachedNpc != null && !_isTriggered)
