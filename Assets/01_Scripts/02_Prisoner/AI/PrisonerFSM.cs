@@ -100,7 +100,6 @@ public class PrisonerFSM : MonoBehaviour
 
     public void InitializeBehavior(PrisonerAIType aiType)
     {
-
         Anim.SetBool("IsntStanding", false);
         float runStyleValue = (aiType == PrisonerAIType.Escaper) ? 1f : 0f;
         Anim.SetFloat("RunStyle", runStyleValue);
@@ -116,9 +115,8 @@ public class PrisonerFSM : MonoBehaviour
         // 매복자 처리
         if (aiType == PrisonerAIType.Ambusher)
         {
-            // ★ [추가] 상태 진입 전, 컨트롤러에게 "암살자 무기(단검) 들어!"라고 명령
+            // 상태 진입 전, 컨트롤러에게 "암살자 무기(단검) 들어!"라고 명령
             Controller.StartActionBehavior(PrisonerAIType.Ambusher);
-
             ChangeState(AmbushState);
         }
         else
@@ -189,6 +187,9 @@ public class PrisonerFSM : MonoBehaviour
     {
         if (_currentState == DeadState) return;
 
+        // ★ [핵심 수정 2] QTE 접근 중이거나 전투 중일 때는 루틴 복귀(점호 종료 등) 명령을 무시
+        if (_currentState == QTEApproachState || _currentState == CombatState) return;
+
         // 비키니 등 특수 비주얼 상태 복귀
         if (GetMyVisualType() == VisualAnomalyType.BikiniModel)
         {
@@ -218,6 +219,10 @@ public class PrisonerFSM : MonoBehaviour
         if (!IsTargetRelatedToMe(evt.Target))
             return;
 
+        // ★ [핵심 수정 1] 내 AI 타입이 "QTE 공격자"가 아니면 기습 로직을 아예 실행하지 않음
+        if (Controller.AIType != PrisonerAIType.QTE_Attacker)
+            return;
+
         if (_ambushCoroutine != null) StopCoroutine(_ambushCoroutine);
         _ambushCoroutine = StartCoroutine(CoWaitAndAmbush());
     }
@@ -229,6 +234,9 @@ public class PrisonerFSM : MonoBehaviour
             StopCoroutine(_ambushCoroutine);
             _ambushCoroutine = null;
         }
+
+        // (추가 안전장치) 만약 이미 QTE를 하러 가는 중이라면 점호 끝났다고 돌아가지 않음
+        if (_currentState == QTEApproachState) return;
     }
 
     private IEnumerator CoWaitAndAmbush()
@@ -280,7 +288,6 @@ public class PrisonerFSM : MonoBehaviour
         return VisualAnomalyType.None;
     }
 
-    // ★ [핵심 수정] 단순 특성(Trait)들은 VisualIdle로 빠지지 않고 일반 AI 행동을 하도록 필터링
     private bool IsVisualIdleTarget(VisualAnomalyType type)
     {
         if (type == VisualAnomalyType.None || type == VisualAnomalyType.BikiniModel)
@@ -295,7 +302,6 @@ public class PrisonerFSM : MonoBehaviour
             return false;
         }
 
-        // 그 외(Franke, Suspect 등)는 VisualIdleState로 처리
         return true;
     }
 

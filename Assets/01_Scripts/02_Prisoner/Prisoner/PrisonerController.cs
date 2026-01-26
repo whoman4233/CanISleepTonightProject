@@ -161,6 +161,8 @@ public class PrisonerController : MonoBehaviour
             fsm.InitializeBehavior(data.RuntimeAIType);
         }
 
+
+
         Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | Type:{AIType} | HasWeapon:{HasWeapon} | Aggressive:{IsAggressive}");
     }
 
