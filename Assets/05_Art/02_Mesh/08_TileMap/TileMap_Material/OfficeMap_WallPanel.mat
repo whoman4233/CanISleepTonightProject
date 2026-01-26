@@ -20,14 +20,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: JailMap_OfficeFloor
+  m_Name: OfficeMap_WallPanel
   m_Shader: {fileID: 4800000, guid: df695d70c539c3d4c87b79de307ab7bb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _MK_ALBEDO_MAP
   - _MK_COLOR_GRADING_ALBEDO
-  - _MK_DETAIL_NORMAL_MAP
   - _MK_ENVIRONMENT_REFLECTIONS_AMBIENT
   - _MK_HEIGHT_MAP
   - _MK_NORMAL_MAP
@@ -61,7 +60,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: ed03c430ba2735a41aea2f0f45501354, type: 3}
+        m_Texture: {fileID: 2800000, guid: 613cee79238c1034b922353a3fabe2be, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BASE_COLOR_MAP:
@@ -93,7 +92,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailNormalMap:
-        m_Texture: {fileID: 2800000, guid: 73d51bc493f518944bfff612e78c051f, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DiffuseRamp:
@@ -141,7 +140,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightMap:
-        m_Texture: {fileID: 2800000, guid: bf3da930172ebaf46b0383f4832a4246, type: 3}
+        m_Texture: {fileID: 2800000, guid: af6615b6b9f6e08428b1ac5af5a3e856, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _IridescenceRamp:
@@ -157,7 +156,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: ed03c430ba2735a41aea2f0f45501354, type: 3}
+        m_Texture: {fileID: 2800000, guid: 613cee79238c1034b922353a3fabe2be, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -181,11 +180,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 73d51bc493f518944bfff612e78c051f, type: 3}
+        m_Texture: {fileID: 2800000, guid: 97647b05e42bae54b947e46dc53bcd71, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
-        m_Texture: {fileID: 2800000, guid: 78af132a8a3cfdc46ab5821ae7a1c087, type: 3}
+        m_Texture: {fileID: 2800000, guid: 344c1ca630073d84288048a836de1e92, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OutlineMap:
@@ -201,7 +200,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RoughnessMap:
-        m_Texture: {fileID: 2800000, guid: c54fa5db4c8a4f0499908e1a6444e914, type: 3}
+        m_Texture: {fileID: 2800000, guid: bb89481c763eda0419d366ff1fce4953, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SPECULAR_COLOR_MAP:
@@ -290,7 +289,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailBlend: 0
     - _DetailMix: 0.24
-    - _DetailNormalMapIntensity: 0.5
+    - _DetailNormalMapIntensity: 1
     - _DetailNormalMapScale: 1
     - _DetailUVSet: 0
     - _Diffuse: 0
