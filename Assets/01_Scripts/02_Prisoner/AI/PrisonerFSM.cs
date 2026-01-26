@@ -100,16 +100,15 @@ public class PrisonerFSM : MonoBehaviour
 
     public void InitializeBehavior(PrisonerAIType aiType)
     {
+
+        Anim.SetBool("IsntStanding", false);
         float runStyleValue = (aiType == PrisonerAIType.Escaper) ? 1f : 0f;
         Anim.SetFloat("RunStyle", runStyleValue);
 
-        // 비주얼 상태(Bikini, VisualIdle) 진입 체크
         if (CheckAndEnterVisualState()) return;
 
-        // ★ [추가] QTE 공격수라면 바로 QTE 접근 상태로 진입
         if (aiType == PrisonerAIType.QTE_Attacker)
         {
-            Debug.Log($"[FSM Init] {name} is QTE_Attacker -> Charging Player!");
             ChangeState(QTEApproachState);
             return;
         }
@@ -117,6 +116,9 @@ public class PrisonerFSM : MonoBehaviour
         // 매복자 처리
         if (aiType == PrisonerAIType.Ambusher)
         {
+            // ★ [추가] 상태 진입 전, 컨트롤러에게 "암살자 무기(단검) 들어!"라고 명령
+            Controller.StartActionBehavior(PrisonerAIType.Ambusher);
+
             ChangeState(AmbushState);
         }
         else
