@@ -205,14 +205,15 @@ public class PrisonerSpawnController : MonoBehaviour
         if (controller != null) content.prisoner = controller;
 
         // ▼ [추가] Mission 3 전용 프랍 소환 로직
-        if (GameManager.Instance != null && GameManager.Instance.CurrentDay == 3)
+        if (DailyMissionManager.Instance.CurrentMission != null && DailyMissionManager.Instance.CurrentMission.missionId == "Mission03")
         {
             // Case 1: 낙서범 (Graffiti) -> 방 정중앙 (Cell Anchor 위치)
             if (existingData.RuntimeAIType == PrisonerAIType.Graffiti)
             {
                 if (graffitiPrefab != null)
                 {
-                    Instantiate(graffitiPrefab, anchor.transform.position, Quaternion.identity);
+                    Instantiate(graffitiPrefab, anchor.transform.position, anchor.transform.rotation);
+                    Debug.Log($"[Mission3] {cellId}에 그래피티 소환됨 (AIType : Graffiti)");
                 }
             }
             // Case 2: 염소 머리 (GoatHead) -> 죄수 스폰 위치 (점호 위치)
@@ -220,8 +221,8 @@ public class PrisonerSpawnController : MonoBehaviour
             {
                 if (goatHeadPrefab != null)
                 {
-                    // 죄수가 서있는 위치(InspectionPoint)와 겹치게 소환
-                    Instantiate(goatHeadPrefab, anchor.prisonerSpawn.position, anchor.prisonerSpawn.rotation);
+                    Instantiate(goatHeadPrefab, spawnPos, spawnRot);
+                    Debug.Log($"[Mission3] {cellId}에 염소 머리 소환됨 (Visual: GoatHead)");
                 }
             }
         }
