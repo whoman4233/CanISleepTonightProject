@@ -24,6 +24,8 @@ public class UIRoot : MonoBehaviour
     // =========================
     private const string UISceneName = "04_UIScene";
     private const string IntroSceneName = "01_IntroScene";
+    private const string OutroSceneName = "03_OutroScene";
+
 
     // =========================
     // [추가] Editor / Test 설정
@@ -178,6 +180,16 @@ public class UIRoot : MonoBehaviour
     // =====================================================
     private void RefreshUI()
     {
+        if (currentScene == OutroSceneName)
+        {
+            foreach (var group in canvasGroups)
+            {
+                if (group.canvas != null)
+                    group.canvas.SetActive(false);
+            }
+            return;
+        }
+
         // UI 씬이 아직 로드되지 않았으면 무시
         if (!gameObject.scene.isLoaded)
             return;
@@ -201,6 +213,7 @@ public class UIRoot : MonoBehaviour
 
         bool isMenu =
             currentScene == IntroSceneName ||
+            currentScene == OutroSceneName ||
             currentPhase == GamePhase.NotStarted;
 
         bool isTutorial =

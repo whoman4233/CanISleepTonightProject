@@ -13,8 +13,10 @@ public class FlowController : MonoBehaviour
     [SerializeField] private string introSceneName = "01_IntroScene"; // 인트로(타이틀) 씬
     [SerializeField] private string loadingSceneName = "07_LoadingScene_LSG"; // 로딩씬
     [SerializeField] private string tutorialSceneName = "08_TutorialScene"; // 튜토리얼 씬
+    [SerializeField] private string outroSceneName = "03_OutroScene";
 
     private bool isBusy = false;
+    private bool outroFinished;
 
     private Action<RequestStartNewGameEvent> _startNewGameHandler;
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
@@ -23,6 +25,7 @@ public class FlowController : MonoBehaviour
     private Action<LoadGameEvent> _loadGameHandler; // 이어하기 이벤트
     private Action<IntoPlaySceneEvent> _intoPlay;
     private Action<RequestRestartFromFailureEvent> _restartFromFailureHandler; //재시작 이벤트(튜토리얼 스킵)
+    private Action<EndingConditionMetEvent> _endingConditionHandler; // 엔딩신
 
     private void Awake()
     {
@@ -37,7 +40,7 @@ public class FlowController : MonoBehaviour
             _loadGameHandler = e => StartCoroutine(LoadGameSequence());
             _intoPlay = e => StartCoroutine(LoadActualPlaySceneRoutine());
             _restartFromFailureHandler = e => StartCoroutine(RestartFromFailureSequence());
-
+            _endingConditionHandler = OnEndingConditionMet;
         }
         else
         {
@@ -49,7 +52,20 @@ public class FlowController : MonoBehaviour
         GameManager.Instance.ChangePhase(GamePhase.NotStarted);
         Debug.Log("notstarted");
     }
-
+#if UNITY_EDITOR
+    private void Update()
+    {
+        //  디버깅용 – 버튼으로 즉시 Outro 진입
+        if (Input.GetKeyDown(KeyCode.F12))
+        {
+            if (!isBusy)
+            {
+                Debug.Log("[Debug] Force Outro Trigger");
+                StartCoroutine(PlayOutroSequence());
+            }
+        }
+    }
+#endif
     private void OnEnable()
     {
         EventBus.Subscribe(_startNewGameHandler);
@@ -59,6 +75,7 @@ public class FlowController : MonoBehaviour
         EventBus.Subscribe(_loadGameHandler);
         EventBus.Subscribe(_intoPlay);
         EventBus.Subscribe(_restartFromFailureHandler);
+        EventBus.Subscribe(_endingConditionHandler);
     }
     private void OnDisable()
     {
@@ -70,6 +87,7 @@ public class FlowController : MonoBehaviour
         EventBus.Unsubscribe(_loadGameHandler);
         EventBus.Unsubscribe(_intoPlay);
         EventBus.Unsubscribe(_restartFromFailureHandler);
+        EventBus.Unsubscribe(_endingConditionHandler);
     }
 
     private IEnumerator LoadGameSequence()
@@ -428,4 +446,91 @@ public class FlowController : MonoBehaviour
     //isBusy = 로딩이 진행 중일 때는 추가적인 로딩 요청을 무시
     //SceneManager.SetActiveScene을 통해 새로 불러온 씬을 메인으로 설정
     //전역화 시켜서 게임 종료 시까지 컨트롤러가 모든 씬 전환을 책임짐
+
+    // =========================
+    // 엔딩 씬 메서드
+    // =========================
+    private IEnumerator PlayOutroSequence()
+    {
+        isBusy = true;
+        Time.timeScale = 1f;
+
+        EventBus.Publish(new UIHardResetEvent());
+        EventBus.Publish(new InputHardResetEvent());
+
+        // =========================
+        // 로딩 씬 ON
+        // =========================
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+        EventBus.Publish(new LoadingOverlayShownEvent());
+
+        UnloadIfLoaded(playSceneName);
+        UnloadIfLoaded(tutorialSceneName);
+
+        // =========================
+        // Outro 로드
+        // =========================
+        yield return SceneManager.LoadSceneAsync(outroSceneName, LoadSceneMode.Additive);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(outroSceneName));
+
+        // 로딩 씬 OFF
+        yield return SceneManager.UnloadSceneAsync(loadingSceneName);
+        EventBus.Publish(new LoadingOverlayHiddenEvent());
+
+        // =========================
+        // Timeline 종료 대기
+        // =========================
+        outroFinished = false;
+        EventBus.Subscribe<OutroFinishedEvent>(OnOutroFinished);
+
+        while (!outroFinished)
+            yield return null;
+
+        EventBus.Unsubscribe<OutroFinishedEvent>(OnOutroFinished);
+
+        // =========================
+        // Outro 종료 → Intro
+        // =========================
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+        EventBus.Publish(new LoadingOverlayShownEvent());
+
+        yield return SceneManager.UnloadSceneAsync(outroSceneName);
+
+        if (!SceneManager.GetSceneByName(introSceneName).isLoaded)
+            yield return SceneManager.LoadSceneAsync(introSceneName, LoadSceneMode.Additive);
+
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(introSceneName));
+
+        yield return SceneManager.UnloadSceneAsync(loadingSceneName);
+        EventBus.Publish(new LoadingOverlayHiddenEvent());
+
+        GameManager.Instance.ChangePhase(GamePhase.NotStarted);
+
+        isBusy = false;
+    }
+
+
+    private void OnEndingConditionMet(EndingConditionMetEvent e)
+    {
+        if (isBusy)
+            return;
+
+        StartCoroutine(PlayOutroSequence());
+    }
+    private IEnumerator WaitForOutroFinished()
+    {
+        outroFinished = false;
+
+        EventBus.Subscribe<OutroFinishedEvent>(OnOutroFinished);
+
+        while (!outroFinished)
+            yield return null;
+
+        EventBus.Unsubscribe<OutroFinishedEvent>(OnOutroFinished);
+    }
+
+    private void OnOutroFinished(OutroFinishedEvent e)
+    {
+        outroFinished = true;
+    }
 }

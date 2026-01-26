@@ -99,3 +99,8 @@ public readonly struct SceneChangedEvent
         Mode = mode;
     }
 }
+
+public struct OutroFinishedEvent //아웃트로 신 종료 (인트로 재진입) 이벤트
+{
+
+}

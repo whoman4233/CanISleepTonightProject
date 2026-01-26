@@ -235,6 +235,16 @@ public class GameManager : MonoBehaviour
             playerHP = Mathf.Min(playerHP + 10, 100);
             CurrentAccidentFreeDay++; // 다음날로 넘어가면 무사고 +1
 
+            // 7일차 도달 시 엔딩 트리거
+            if (currentDay > maxDay)
+            {
+                EventBus.Publish(new EndingConditionMetEvent
+                {
+                    EndingType = GameEndingType.NormalEnding // 필요 시 분기 가능
+                });
+                return;
+            }
+
         }
         _saveManager.SaveGame(GetCurrentSaveData());
 
