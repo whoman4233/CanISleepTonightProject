@@ -24,8 +24,15 @@ public class PrisonerFSM : MonoBehaviour
 
     private IPrisonerState _currentState;
 
-    // ... (이벤트 핸들러 및 상태 변수들은 기존과 동일) ...
+    // ================================================================
+    // [이벤트 핸들러 캐시]
+    // ================================================================
+    private Action<InspectionStartedEvent> _onInspectionStarted;
+    private Action<InspectionEndedEvent> _onInspectionEnded;
 
+    // ================================================================
+    // [상태 정의] 
+    // ================================================================
     public PrisonerActionIdleState ActionState { get; private set; }
     public IPrisonerState AmbushState { get; private set; }
     public PrisonerVisualIdleState VisualIdleState { get; private set; }
@@ -42,6 +49,7 @@ public class PrisonerFSM : MonoBehaviour
 
     private void Awake()
     {
+        // 상태 객체 생성
         ActionState = new PrisonerActionIdleState(this);
         AmbushState = new PrisonerAmbushState(this);
         VisualIdleState = new PrisonerVisualIdleState(this);
@@ -63,11 +71,6 @@ public class PrisonerFSM : MonoBehaviour
         _onInspectionEnded = OnInspectionEnded;
     }
 
-    // ... (OnEnable, OnDisable, Setup, InitializeBehavior 등 기존 로직 유지) ...
-
-    private Action<InspectionStartedEvent> _onInspectionStarted;
-    private Action<InspectionEndedEvent> _onInspectionEnded;
-
     private void OnEnable()
     {
         if (_onInspectionStarted != null) EventBus.Subscribe(_onInspectionStarted);
@@ -87,7 +90,9 @@ public class PrisonerFSM : MonoBehaviour
         this.Anim = anim;
 
         if (controller.AssignedCell != null)
+        {
             this.InspectionPoint = controller.AssignedCell.inspectionPoint;
+        }
 
         ActionState.SetActionType(PrisonerAIType.Good);
         ChangeState(ActionState);
@@ -98,14 +103,25 @@ public class PrisonerFSM : MonoBehaviour
         float runStyleValue = (aiType == PrisonerAIType.Escaper) ? 1f : 0f;
         Anim.SetFloat("RunStyle", runStyleValue);
 
+        // 비주얼 상태(Bikini, VisualIdle) 진입 체크
         if (CheckAndEnterVisualState()) return;
 
+        // ★ [추가] QTE 공격수라면 바로 QTE 접근 상태로 진입
+        if (aiType == PrisonerAIType.QTE_Attacker)
+        {
+            Debug.Log($"[FSM Init] {name} is QTE_Attacker -> Charging Player!");
+            ChangeState(QTEApproachState);
+            return;
+        }
+
+        // 매복자 처리
         if (aiType == PrisonerAIType.Ambusher)
         {
             ChangeState(AmbushState);
         }
         else
         {
+            // 일반 AI 처리
             ActionState.SetActionType(aiType);
             if (_currentState == ActionState)
             {
@@ -151,6 +167,8 @@ public class PrisonerFSM : MonoBehaviour
         }
 
         PrisonerAIType myType = Controller.AIType;
+
+        // 점호 무시 타입인지 확인 (QTE_Attacker 포함)
         if (IsIgnoreInspectionType(myType)) return;
 
         switch (myType)
@@ -168,16 +186,20 @@ public class PrisonerFSM : MonoBehaviour
     public void BackToRoutine()
     {
         if (_currentState == DeadState) return;
+
+        // 비키니 등 특수 비주얼 상태 복귀
         if (GetMyVisualType() == VisualAnomalyType.BikiniModel)
         {
             ChangeState(BikiniState);
             return;
         }
+        // 특수 비주얼(프랭크 등) 복귀
         if (_currentState == InspectionState && IsVisualIdleTarget(GetMyVisualType()))
         {
             ChangeState(VisualIdleState);
             return;
         }
+
         if (IsCenterSpawnType()) ChangeState(CenterIdleState);
         else ChangeState(ReturnState);
     }
@@ -227,20 +249,69 @@ public class PrisonerFSM : MonoBehaviour
         return false;
     }
 
+    // ================================================================
+    // Helper Methods
+    // ================================================================
+
     private bool CheckAndEnterVisualState()
     {
         VisualAnomalyType myVisual = GetMyVisualType();
-        if (myVisual == VisualAnomalyType.BikiniModel) { ChangeState(BikiniState); return true; }
-        if (IsVisualIdleTarget(myVisual)) { ChangeState(VisualIdleState); return true; }
+        if (myVisual == VisualAnomalyType.BikiniModel)
+        {
+            ChangeState(BikiniState);
+            return true;
+        }
+        if (IsVisualIdleTarget(myVisual))
+        {
+            ChangeState(VisualIdleState);
+            return true;
+        }
         return false;
     }
+
     private VisualAnomalyType GetMyVisualType()
     {
         if (PrisonerScheduleManager.Instance != null && Controller != null && Controller.AssignedCell != null)
+        {
             return PrisonerScheduleManager.Instance.GetDailyRole(Controller.AssignedCell.cellId).visualType;
+        }
         return VisualAnomalyType.None;
     }
-    private bool IsVisualIdleTarget(VisualAnomalyType type) => type != VisualAnomalyType.None && type != VisualAnomalyType.BikiniModel;
-    private bool IsIgnoreInspectionType(PrisonerAIType type) => type == PrisonerAIType.Ambusher || type == PrisonerAIType.Singing || type == PrisonerAIType.Screaming || type == PrisonerAIType.Crying || type == PrisonerAIType.Mumbling || type == PrisonerAIType.HammeringWall || type == PrisonerAIType.Deadlift;
-    private bool IsCenterSpawnType() => GetMyVisualType().ToString().StartsWith("PSN_Franke") || GetMyVisualType().ToString().StartsWith("Suspect");
+
+    // ★ [핵심 수정] 단순 특성(Trait)들은 VisualIdle로 빠지지 않고 일반 AI 행동을 하도록 필터링
+    private bool IsVisualIdleTarget(VisualAnomalyType type)
+    {
+        if (type == VisualAnomalyType.None || type == VisualAnomalyType.BikiniModel)
+            return false;
+
+        string typeStr = type.ToString();
+        if (typeStr.Contains("Muscular") ||
+            typeStr.Contains("Nervous") ||
+            typeStr.Contains("Tattooed") ||
+            typeStr.Contains("Intelligent"))
+        {
+            return false;
+        }
+
+        // 그 외(Franke, Suspect 등)는 VisualIdleState로 처리
+        return true;
+    }
+
+    private bool IsIgnoreInspectionType(PrisonerAIType type)
+    {
+        return type == PrisonerAIType.Ambusher ||
+               type == PrisonerAIType.Singing ||
+               type == PrisonerAIType.Screaming ||
+               type == PrisonerAIType.Crying ||
+               type == PrisonerAIType.Mumbling ||
+               type == PrisonerAIType.HammeringWall ||
+               type == PrisonerAIType.Deadlift;
+    }
+
+    private bool IsCenterSpawnType()
+    {
+        VisualAnomalyType type = GetMyVisualType();
+        string typeStr = type.ToString();
+        return typeStr.StartsWith("PSN_Franke") || typeStr.StartsWith("Suspect");
+    }
 }

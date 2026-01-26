@@ -5,8 +5,8 @@ public class PrisonerQTEApproachState : BasePrisonerState
     private QTEActionSO qteAction;
     private QTEDistanceTrigger _trigger;
 
-    // ★ 기존 정지 거리를 저장했다가 복구하기 위한 변수
     private float _originalStoppingDistance;
+    private bool _isChasingStarted = false; // 추격 세팅 완료 여부
 
     public PrisonerQTEApproachState(PrisonerFSM fsm, QTEActionSO action) : base(fsm)
     {
@@ -16,27 +16,53 @@ public class PrisonerQTEApproachState : BasePrisonerState
 
     public override void Enter()
     {
-        agent.isStopped = false;
-        anim.SetBool("Walk", true);
+        _isChasingStarted = false;
 
-        // ★ [수정] FSM에 설정된 QTE 정지 거리 적용
-        _originalStoppingDistance = agent.stoppingDistance;
-        agent.stoppingDistance = fsm.QteStopDistance;
+        // 1. 플레이어 찾기 시도
+        if (player == null)
+        {
+            var pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+        }
 
-        agent.SetDestination(player.position);
+        // 2. 플레이어가 있다면 즉시 추격 시작
+        if (player != null)
+        {
+            StartChasing();
+        }
+        // ★ 플레이어가 없어도 에러 내고 Idle로 돌아가지 않음.
+        //    Update에서 플레이어가 생길 때까지 대기함.
     }
 
     public override void Update()
     {
+        // 1. 플레이어가 아직 없다면 계속 찾기 (생성 대기)
+        if (player == null)
+        {
+            var pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj != null)
+            {
+                player = pObj.transform;
+                StartChasing(); // 찾았으니 추격 세팅 적용
+            }
+            else
+            {
+                // 아직도 플레이어가 없으면 이번 프레임은 대기
+                return;
+            }
+        }
+
+        // 2. 추격 로직 (플레이어가 존재함이 보장됨)
         agent.SetDestination(player.position);
 
         if (agent.pathPending) return;
 
-        //remainingDistance가 stoppingDistance(설정한 거리) 이내가 되면 공격 시작
+        // 설정한 거리(QteStopDistance) 이내에 도달하면 QTE 시작
         if (agent.remainingDistance <= agent.stoppingDistance)
         {
             PrisonerQTEContext.SetAttacker(fsm.transform);
 
+            // 1. QTE 트리거 발동
             if (_trigger != null)
             {
                 _trigger.NotifyArrived();
@@ -47,8 +73,8 @@ public class PrisonerQTEApproachState : BasePrisonerState
                     EventBus.Publish(new QTEStartedEvent { Action = qteAction });
             }
 
-            // 도착했으므로 Idle 상태로 전환 (이후 QTE 애니메이션은 다른 스크립트가 처리)
-            fsm.ChangeState(fsm.CombatState);
+            // 2. InspectionState로 전환
+            fsm.ChangeState(fsm.InspectionState);
         }
     }
 
@@ -56,13 +82,32 @@ public class PrisonerQTEApproachState : BasePrisonerState
     {
         agent.ResetPath();
 
-        // ★ [수정] 정지 거리 원상 복구 (다른 상태에서 문제 없도록)
-        agent.stoppingDistance = _originalStoppingDistance;
+        // 추격 세팅이 되었을 때만 복구 수행
+        if (_isChasingStarted)
+        {
+            agent.stoppingDistance = _originalStoppingDistance;
+        }
 
         anim.SetBool("Walk", false);
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
+    }
+
+    // 내부 헬퍼: 추격 시작 시 한 번만 실행되는 설정
+    private void StartChasing()
+    {
+        if (_isChasingStarted) return;
+        _isChasingStarted = true;
+
+        agent.isStopped = false;
+        anim.SetBool("Walk", true);
+
+        // FSM에 설정된 QTE 정지 거리 적용
+        _originalStoppingDistance = agent.stoppingDistance;
+        agent.stoppingDistance = fsm.QteStopDistance;
+
+        Debug.Log($"[PrisonerQTE] {fsm.name} : 플레이어 발견! 추격 시작.");
     }
 }
