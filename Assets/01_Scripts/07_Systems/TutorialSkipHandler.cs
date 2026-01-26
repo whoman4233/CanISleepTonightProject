@@ -8,19 +8,29 @@ public class TutorialSkipHandler : MonoBehaviour
     [SerializeField] private GameObject skipUIPanel;
 
     private bool _isDecisionMade = false; // 중복 입력 방지용 변수
+    private bool _isInputEnabled = false; // 입력을 받아도 되는 상태인지
 
-    private void Start()
+    private IEnumerator Start()
     {
-        // 시간 정지 및 커서 해제
-        Time.timeScale = 0f;
+        // 1. 초기 상태 설정
+        if (skipUIPanel != null) skipUIPanel.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        if (skipUIPanel != null) skipUIPanel.SetActive(true);
+
+        // 2. [핵심] 0.1~0.2초간 대기하여 로딩 씬의 잔상 입력을 무시
+        // Time.timeScale이 0이어도 돌아가는 WaitForSecondsRealtime 사용
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        // 3. 이제서야 시간 정지 및 입력 허용
+        Time.timeScale = 0f;
+        _isInputEnabled = true;
+        Debug.Log("[Tutorial] Skip Input Enabled");
     }
 
     private void Update()
     {
-        if (_isDecisionMade) return;
+        if (_isDecisionMade || !_isInputEnabled || FlowController.Instance.IsBusy) return;
+
         // Q: 스킵
         if (Input.GetKeyDown(KeyCode.Q))
         {

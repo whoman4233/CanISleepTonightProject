@@ -16,7 +16,7 @@ public class FlowController : MonoBehaviour
     [SerializeField] private string tutorialSceneName = "08_TutorialScene"; // 튜토리얼 씬
     [SerializeField] private string outroSceneName = "03_OutroScene";
 
-    private bool isBusy = false;
+    public bool IsBusy { get; private set; } = false;
 
     private Action<RequestStartNewGameEvent> _startNewGameHandler;
     private Action<ReturnToTitleRequestedEvent> _returnToTitleHandler;
@@ -58,7 +58,7 @@ public class FlowController : MonoBehaviour
         //  디버깅용 – 버튼으로 즉시 Outro 진입
         if (Input.GetKeyDown(KeyCode.F12))
         {
-            if (!isBusy)
+            if (!IsBusy)
             {
                 Debug.Log("[Debug] Force Outro Trigger");
                 StartCoroutine(PlayOutroSequence());
@@ -92,8 +92,8 @@ public class FlowController : MonoBehaviour
 
     private IEnumerator LoadGameSequence()
     {
-        if (isBusy) yield break;
-        isBusy = true;
+        if (IsBusy) yield break;
+        IsBusy = true;
 
         // 1. 세이브 데이터 로드
         bool loaded = GameManager.Instance.LoadPlayerData();
@@ -101,7 +101,7 @@ public class FlowController : MonoBehaviour
         {
             Debug.LogWarning("LoadGame 실패: 세이브 데이터 없음");
             EventBus.Publish(new ShowTimedTextPopupEvent("저장된 데이터가 없습니다.", 1f));
-            isBusy = false;
+            IsBusy = false;
             yield break;
         }
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
@@ -156,13 +156,13 @@ public class FlowController : MonoBehaviour
         yield return SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
 
-        isBusy = false;
+        IsBusy = false;
         Debug.Log("이어하기 완료");
     }
 
     private IEnumerator ReloadPlaySceneRoutine() // 씬 재로딩 코루틴
     {
-        isBusy = true;
+        IsBusy = true;
 
         // =========================
         // [추가] 씬 리로드 전에 UI/Input 강제 리셋
@@ -218,7 +218,7 @@ public class FlowController : MonoBehaviour
             }
         }
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
-        isBusy = false;
+        IsBusy = false;
         //yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
         yield return SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
         EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
@@ -227,7 +227,7 @@ public class FlowController : MonoBehaviour
 
     public void StartNewGame()
     {
-        if (isBusy) return;
+        if (IsBusy) return;
 
         // 새 런 시작 명시
         if (DailyMissionManager.Instance != null)
@@ -241,7 +241,7 @@ public class FlowController : MonoBehaviour
 
     private IEnumerator LoadPlaySceneSequence()
     {
-        isBusy = true;
+        IsBusy = true;
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive); // 로딩 씬 로드
         EventBus.Publish(new LoadingOverlayShownEvent()); //UI 숨기기 이벤트
         // 튜토리얼 씬 로드
@@ -259,13 +259,13 @@ public class FlowController : MonoBehaviour
             yield return SceneManager.UnloadSceneAsync(loadingScene); // 로딩 씬 언로드
             EventBus.Publish(new LoadingOverlayHiddenEvent()); //UI 노출 이벤트
         }
-
-        isBusy = false;
+        yield return new WaitForSecondsRealtime(0.2f);
+        IsBusy = false;
     }
 
     private IEnumerator LoadActualPlaySceneRoutine()
     {
-        isBusy = true;
+        IsBusy = true;
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
 
         EventBus.Publish(new LoadingOverlayShownEvent());
@@ -307,18 +307,18 @@ public class FlowController : MonoBehaviour
             EventBus.Publish(new LoadingOverlayHiddenEvent());
         }
 
-        isBusy = false;
+        IsBusy = false;
     }
 
     public void ReturnToTitle()
     {
-        if (isBusy) return;
+        if (IsBusy) return;
         CleanUpSystemBeforeSceneLoad();
         StartCoroutine(ReturnToTitleSequence());
     }
     private IEnumerator ReturnToTitleSequence()
     {
-        isBusy = true;
+        IsBusy = true;
         Time.timeScale = 1f;
 
         // =========================
@@ -362,11 +362,11 @@ public class FlowController : MonoBehaviour
         // 4. 상태 초기화
         GameManager.Instance.ChangePhase(GamePhase.NotStarted);
 
-        isBusy = false;
+        IsBusy = false;
     }
     public void EnterPlayFromTutorial() // 튜토리얼에서 플레이씬 진입
     {
-        if (!isBusy) StartCoroutine(LoadActualPlaySceneRoutine());
+        if (!IsBusy) StartCoroutine(LoadActualPlaySceneRoutine());
     }
 
     // =========================================================
@@ -375,8 +375,8 @@ public class FlowController : MonoBehaviour
     private IEnumerator RestartFromFailureSequence()
     {
         CleanUpSystemBeforeSceneLoad();
-        if (isBusy) yield break;
-        isBusy = true;
+        if (IsBusy) yield break;
+        IsBusy = true;
 
         Time.timeScale = 1f;
 
@@ -417,7 +417,7 @@ public class FlowController : MonoBehaviour
         yield return SceneManager.UnloadSceneAsync(loadingSceneName);
         EventBus.Publish(new LoadingOverlayHiddenEvent());
 
-        isBusy = false;
+        IsBusy = false;
         Debug.Log("근무 실패 → 새 게임(튜토리얼 스킵) 완료");
     }
 
@@ -452,7 +452,7 @@ public class FlowController : MonoBehaviour
     // =========================
     private IEnumerator PlayOutroSequence()
     {
-        isBusy = true;
+        IsBusy = true;
         Time.timeScale = 1f;
 
         EventBus.Publish(new UIHardResetEvent());
@@ -496,13 +496,13 @@ public class FlowController : MonoBehaviour
 
         GameManager.Instance.ChangePhase(GamePhase.NotStarted);
 
-        isBusy = false;
+        IsBusy = false;
     }
 
 
     private void OnEndingConditionMet(EndingConditionMetEvent e)
     {
-        if (isBusy)
+        if (IsBusy)
             return;
 
         StartCoroutine(PlayOutroSequence());
