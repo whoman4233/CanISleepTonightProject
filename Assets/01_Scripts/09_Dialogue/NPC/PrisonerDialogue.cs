@@ -8,47 +8,56 @@ public class PrisonerDialogue : MonoBehaviour, IInteractable
     //private string _mySpeakerKey = null; // 기본값은 null
     private DialogueManager dialogueManager;
 
+    private static readonly Dictionary<VisualAnomalyType, string> SpeakerMapping = new()
+{
+    { VisualAnomalyType.BikiniModel, DialogueKeys.Speakers.Mimi } // 미미 = 비키니모델로 정의 (비주얼타입과 csv의 스피커 불일치 해결)
+};
+
     private void Start()
     {
         if (dialogueManager == null)
         {
             dialogueManager = GameObject.FindAnyObjectByType<DialogueManager>();
         }
-        //InitializeIdentity();
     }
-    //public void InitializeIdentity()
+
+    //public virtual void Interact(Player player)
     //{
-    //    // 용의자들만 대사 키를 할당받음
-    //    switch (myVisualType)
+    //    if (this == null || !gameObject.activeInHierarchy) return;
+    //    if (dialogueManager == null) return;
+
+    //    if (myVisualType == VisualAnomalyType.None)
     //    {
-    //        case VisualAnomalyType.Suspect1:
-    //            _mySpeakerKey = DialogueKeys.Speakers.Suspect1;
-    //            break;
-    //        case VisualAnomalyType.Suspect2:
-    //            _mySpeakerKey = DialogueKeys.Speakers.Suspect2;
-    //            break;
-    //        case VisualAnomalyType.Suspect3:
-    //            _mySpeakerKey = DialogueKeys.Speakers.Suspect3;
-    //            break;
-    //        default:
-    //            _mySpeakerKey = null; // 그 외 일반 죄수는 키 없음
-    //            break;
+    //        Debug.Log($"{gameObject.name}: 일반 죄수는 대사 데이터가 없습니다.");
+    //        return;
     //    }
+
+    //    // 매핑 테이블에서 CSV 스피커 키를 가져오고 정의되지 않았으면 enum이름을 그대로 사용
+    //    if (!SpeakerMapping.TryGetValue(myVisualType, out string speakerKey))
+    //    {
+    //        speakerKey = myVisualType.ToString();
+    //    }
+
+    //    Debug.Log($"[Dialogue] 시도하는 스피커 키: {speakerKey}");
+    //    dialogueManager.StartDialogueByKeys(speakerKey, DialogueKeys.Types.Dialogue);
     //}
 
+    public virtual void Interact(Player player)
+    {
+        if (this == null || !gameObject.activeInHierarchy) return;
 
-    public void Interact(Player player)
+        // 기본적으로는 아무 콜백 없이 실행
+        HandleDialogue(null);
+    }
+
+    protected void HandleDialogue(System.Action onComplete = null)
     {
         if (dialogueManager == null) return;
 
-        string speakerKey = myVisualType.ToString();
+        if (!SpeakerMapping.TryGetValue(myVisualType, out string speakerKey))
+            speakerKey = myVisualType.ToString();
 
-        if (myVisualType == VisualAnomalyType.None)
-        {
-            Debug.Log($"{gameObject.name}: 일반 죄수는 대사 데이터가 없습니다.");
-            return;
-        }
-        dialogueManager.StartDialogueByKeys(speakerKey, DialogueKeys.Types.Dialogue);
+        dialogueManager.StartDialogueByKeys(speakerKey, DialogueKeys.Types.Dialogue, onComplete);
     }
 }
 

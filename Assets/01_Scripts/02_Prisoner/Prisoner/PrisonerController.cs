@@ -252,37 +252,43 @@ public class PrisonerController : MonoBehaviour
 
     public void OnAttackHitCheck()
     {
+        // 1. 공격 범위 디버깅 (Scene 뷰에서 확인용)
+        // Debug.DrawRay(transform.position + Vector3.up, transform.forward, Color.red, 1.0f);
+
         Collider[] hits = new Collider[20];
         int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
 
-        if (count == 0)
-        {
-            // Debug.Log($"[Combat] {name} 공격 휘두름 - 허공 (TargetLayer 감지 실패)");
-        }
+        if (count == 0) return; // 감지된 게 없으면 종료
 
         for (int i = 0; i < count; i++)
         {
             var target = hits[i];
             if (target.gameObject == gameObject) continue;
 
+            // 방향 벡터 계산
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
             dirToTarget.y = 0;
             Vector3 myForward = transform.forward;
             myForward.y = 0;
 
-            if (Vector3.Angle(myForward, dirToTarget) < attackAngle)
+            // ★ [수정] 각도 완화 (45도 -> 90도)
+            // 너무 정면만 때려야 하면 빗나가는 느낌이 듭니다. 반경 180도(좌우 90)까지 허용 추천
+            if (Vector3.Angle(myForward, dirToTarget) < 90f) // attackAngle 대신 90f 하드코딩 혹은 Inspector값 증가
             {
+                // ★ [수정] Health 컴포넌트 탐색 강화 (부모/자식 모두 검색)
                 var playerHealth = target.GetComponent<Health>();
+                if (playerHealth == null) playerHealth = target.GetComponentInParent<Health>();
+                if (playerHealth == null) playerHealth = target.GetComponentInChildren<Health>();
 
                 if (playerHealth != null)
                 {
                     int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
+
                     playerHealth.TakeDamage(finalDamage);
-                    Debug.Log($"[Combat] {name}가 {target.name} 타격! (DMG: {finalDamage})");
-                }
-                else
-                {
-                    Debug.LogWarning($"[Combat] {target.name} 감지했으나 Health 컴포넌트 없음!");
+
+                    Debug.Log($"✅ [Hit Success] {name} -> Player ({finalDamage} dmg)");
+
+                    // 한 번에 한 명만 때리려면 여기서 return; (광역 공격이면 유지)
                 }
             }
         }
