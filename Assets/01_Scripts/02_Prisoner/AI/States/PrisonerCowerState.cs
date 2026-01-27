@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class PrisonerCowerState : BasePrisonerState
 {
-    private float _recoverTimer = 0f;
-    private const float CowerDuration = 5.0f;
+    // 회전 속도 (높을수록 빨리 쳐다봄)
+    private const float TurnSpeed = 5.0f;
 
     public PrisonerCowerState(PrisonerFSM fsm) : base(fsm) { }
 
@@ -11,63 +11,61 @@ public class PrisonerCowerState : BasePrisonerState
     {
         base.Enter();
 
-        if (agent != null)
+        // 1. 이동 멈춤
+        if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
-            agent.ResetPath();
         }
-        
-        anim.SetTrigger("HitCower");
-        anim.SetBool("Cower", true);
 
-        _recoverTimer = CowerDuration;
-        Debug.Log($"[{Controller.name}] 겁먹음(Cower) 상태 진입.");
+        anim.SetTrigger("HitCower"); 
+
+        // 플레이어 찾기 (부모 클래스 변수 활용)
+        if (player == null)
+        {
+            var pObj = GameObject.FindWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+        }
     }
 
     public override void Update()
     {
-        LookAtPlayer();
-
-        _recoverTimer -= Time.deltaTime;
-
-        // 상태 유지 확인 (혹시 다른 요인으로 꺼지는 것 방지)
-        anim.SetBool("Cower", true);
-
-        if (_recoverTimer <= 0f)
+        // ★ [핵심] 플레이어 쪽 바라보기 로직
+        if (player != null)
         {
-            Recover();
+            LookAtPlayer();
+        }
+    }
+
+    private void LookAtPlayer()
+    {
+        // 1. 방향 벡터 계산
+        Vector3 direction = player.position - fsm.transform.position;
+        direction.y = 0; // 높낮이는 무시하고 수평 회전만
+
+        // 2. 회전 실행
+        if (direction != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            fsm.transform.rotation = Quaternion.Slerp(
+                fsm.transform.rotation,
+                targetRotation,
+                Time.deltaTime * TurnSpeed
+            );
         }
     }
 
     public override void Exit()
     {
-        // 나갈 때 확실하게 끔
-        anim.SetBool("Cower", false);
         base.Exit();
     }
 
+    // 맞고 있는 도중 또 맞았을 때 처리 (선택 사항)
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // 웅크린 상태에서 또 맞으면 시간 초기화 및 움찔
-        _recoverTimer = CowerDuration;
+        // 3. 움찔하는 애니메이션 재생 (있다면)
         anim.SetTrigger("HitCower");
-        Debug.Log($"[{Controller.name}] 으악! 또 때리지 마세요! (시간 연장)");
-    }
 
-    private void Recover()
-    {
-        fsm.ChangeState(fsm.ActionState);
-    }
-
-    private void LookAtPlayer()
-    {
-        if (player == null) return;
-        Vector3 dir = (player.position - fsm.transform.position).normalized;
-        dir.y = 0;
-        if (dir != Vector3.zero)
-        {
-            fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
-        }
+        Debug.Log($"[{Controller.name}] 으악! (맞아서 웅크리기 시간 연장됨)");
     }
 }
