@@ -497,6 +497,24 @@ public class DailyMissionManager : MonoBehaviour
 
         InitializeMissionTableForRun();
     }
+    public void ResetToTitle() // 인트로씬 왔다갔다하면서 중복미션 방지하기 위한 코드
+    {
+        Debug.Log("[Mission] 타이틀 복귀 및 모든 미션 데이터 파기");
+
+        // 리스트 자체를 새로 할당하여 이전 참조를 완전히 끊음
+        _randomizedMissionOrder = new List<DailyMissionStrategy>();
+        _remainingMissionOrder = new List<DailyMissionStrategy>();
+
+        CurrentMission = null;
+        CurrentMissionRuntime = null;
+
+        // 플래그 초기화
+        IsBriefingCompleted = false;
+        IsBriefingDialogueViewed = false;
+        IsReported = false;
+        dailyResolvedCount = 0;
+        CurrentScore = 0;
+    }
 
     public void MarkBriefingCompleted() => IsBriefingCompleted = true;
     public void MarkBriefingDialogueViewed() => IsBriefingDialogueViewed = true;
