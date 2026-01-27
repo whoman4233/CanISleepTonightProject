@@ -473,7 +473,8 @@ public class DialogueManager : MonoBehaviour
 
         if (keys == null || keys.Count == 0)
         {
-            Debug.LogWarning($"[Dialogue] 대사를 찾을 수 없음: Mission={missionId}, Speaker={speakerKey}, Type={textType}");
+            Debug.Log($"[Dialogue] 대사를 찾을 수 없음: Mission={missionId}, Speaker={speakerKey}, Type={textType}");
+            EndDialogue();
             return;
         }
 
