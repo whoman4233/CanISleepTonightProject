@@ -12,7 +12,9 @@ public class PrisonerQTEAnimator : MonoBehaviour
     [SerializeField] private string hitTrigger = "HitSuccess";
     [SerializeField] private string attackTrigger = "AttackFail";
 
-    [Header("SFX")]
+    [Header("QTE SFX")]
+    [SerializeField] private AudioClip qteStartSfx;
+    [SerializeField] private AudioClip qteLoopSfx;
     [SerializeField] private AudioClip hitSfx;
 
     private int _qteStateHash;
@@ -63,6 +65,14 @@ public class PrisonerQTEAnimator : MonoBehaviour
         animator.ResetTrigger(_hitHash);
         animator.ResetTrigger(_attackHash);
 
+        // QTE 시작 SFX (1회)
+        if (qteStartSfx != null)
+            AudioManager.Instance?.PlaySFX(qteStartSfx);
+
+        // QTE 루프 SFX 시작
+        if (qteLoopSfx != null)
+            AudioManager.Instance?.PlaySFXLoop(qteLoopSfx);
+
         // QTE 진입 (Any State → Start)
         PlayIntro();
     }
@@ -74,6 +84,9 @@ public class PrisonerQTEAnimator : MonoBehaviour
             return;
 
         _myAction = null;
+
+        // QTE 루프 SFX 종료
+        AudioManager.Instance?.StopSFXLoop();
 
         // QTE 상태 종료
         StopQTE();

@@ -8,7 +8,7 @@ public class PrisonerController : MonoBehaviour
 
     [Header("Combat Settings")]
     [SerializeField] private float attackRange = 1.5f;
-    [SerializeField] private float attackAngle = 45f;
+    [SerializeField] private float attackAngle = 90f; // 공격 각도 완화 (45 -> 90)
     [SerializeField] private LayerMask targetLayer;
 
     // ================================================================
@@ -19,7 +19,7 @@ public class PrisonerController : MonoBehaviour
     public struct ActionPropData
     {
         public PrisonerAIType type;
-        public GameObject propObject; // 여기엔 프리팹 원본이 들어갑니다
+        public GameObject propObject; // 프리팹 원본
     }
 
     // ================================================================
@@ -39,15 +39,11 @@ public class PrisonerController : MonoBehaviour
     [Header("Action Props (Tools)")]
     [SerializeField] private List<ActionPropData> actionProps;
 
-    // 실제 게임에서 제어할 '생성된' 오브젝트들을 담는 곳
+    // 실제 생성된 오브젝트들을 관리하는 딕셔너리
     private Dictionary<PrisonerAIType, GameObject> _propMap;
 
     public bool IsSuspicious { get; private set; }
     public PrisonerAIType AIType => Data != null ? Data.RuntimeAIType : PrisonerAIType.Good;
-
-    // ================================================================
-    // 성향 및 전투 판별 프로퍼티
-    // ================================================================
 
     public bool IsAggressive => CheckAggressiveType(AIType);
     public bool HasWeapon => IsWeaponUser(AIType);
@@ -81,52 +77,31 @@ public class PrisonerController : MonoBehaviour
         fsm = GetComponent<PrisonerFSM>();
         if (fsm == null) fsm = gameObject.AddComponent<PrisonerFSM>();
 
-        // 딕셔너리 초기화 (내용물은 아래 AutoAttach 함수에서 채웁니다)
         _propMap = new Dictionary<PrisonerAIType, GameObject>();
 
-        // ★ [수정] 프롭을 '생성'하고 손에 붙인 뒤 딕셔너리에 등록
+        // 프롭 생성 및 손에 부착 (초기엔 다 꺼둠)
         AutoAttachPropsToHand();
     }
 
-    // ★ [핵심 수정] 프리팹 인스턴스화 및 자동 장착 로직
     private void AutoAttachPropsToHand()
     {
         if (animator == null) return;
 
-        // 1. 애니메이터에서 오른손 뼈를 찾음 (Humanoid Rig 필수)
         Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        if (rightHand == null) return;
 
-        if (rightHand == null)
-        {
-            // Debug.LogWarning($"[PrisonerController] {name}: RightHand 뼈를 찾을 수 없습니다.");
-            return;
-        }
-
-        // 2. 등록된 프롭 프리팹들을 하나씩 순회
         foreach (var data in actionProps)
         {
             if (data.propObject != null)
             {
-                // [중요] 프리팹 원본을 바로 자식으로 넣으면 에러가 납니다.
-                // 반드시 Instantiate(복제/생성)를 해야 씬(Scene)에 존재하는 오브젝트가 됩니다.
-
                 GameObject propInstance = Instantiate(data.propObject);
-
-                // (Clone) 이름 제거 (선택사항)
                 propInstance.name = data.propObject.name;
-
-                // 부모를 손으로 설정
                 propInstance.transform.SetParent(rightHand);
-
-                // 위치와 회전을 0으로 초기화하여 손에 '착' 달라붙게 함
                 propInstance.transform.localPosition = Vector3.zero;
                 propInstance.transform.localRotation = Quaternion.identity;
-                // 필요 시 스케일 초기화: propInstance.transform.localScale = Vector3.one;
 
-                // 평소엔 안 보이게 끔
                 propInstance.SetActive(false);
 
-                // ★ [중요] '복제된 실체'를 딕셔너리에 등록해야 나중에 켜고 끄기가 가능
                 if (!_propMap.ContainsKey(data.type))
                 {
                     _propMap.Add(data.type, propInstance);
@@ -155,27 +130,50 @@ public class PrisonerController : MonoBehaviour
             agent.enabled = true;
         }
 
+        // 내 역할(AIType)에 맞는 무기가 있다면 생성 즉시 활성화
+        // (InitializeBehavior가 호출되기 전부터 들고 있게 함)
+        PrisonerAIType myType = data.RuntimeAIType;
+        if (_propMap.TryGetValue(myType, out GameObject myWeapon))
+        {
+            if (myWeapon != null)
+            {
+                myWeapon.SetActive(true);
+            }
+        }
+
         if (fsm != null)
         {
             fsm.Setup(this, agent, animator);
             fsm.InitializeBehavior(data.RuntimeAIType);
         }
 
-
-
-        Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | Type:{AIType} | HasWeapon:{HasWeapon} | Aggressive:{IsAggressive}");
+        Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | Type:{AIType} | HasWeapon:{HasWeapon}");
     }
 
-    // [기존] Enum 기반 행동 시작
+    // Enum 기반 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
     {
         if (animator != null) animator.SetBool("IsAction", true);
         if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
 
-        if (_propMap.TryGetValue(type, out GameObject prop))
+        // 요청된 무기는 켜고, 나머지는 끈다. (중복 장착 방지)
+        // StopActionBehavior에서 끄는 로직을 없앴으므로 여기서 정리해줘야 함.
+        foreach (var kvp in _propMap)
         {
-            if (prop != null) prop.SetActive(true);
+            PrisonerAIType key = kvp.Key;
+            GameObject prop = kvp.Value;
+
+            if (prop == null) continue;
+
+            if (key == type)
+            {
+                prop.SetActive(true);
+            }
+            else
+            {
+                prop.SetActive(false);
+            }
         }
     }
 
@@ -192,10 +190,8 @@ public class PrisonerController : MonoBehaviour
         if (animator != null) animator.SetFloat("ActionType", 0);
         if (sfx != null) sfx.StopLoop();
 
-        foreach (var prop in _propMap.Values)
-        {
-            if (prop != null) prop.SetActive(false);
-        }
+        // 무기를 끄는 코드 삭제!
+        // 이제 행동이 멈춰도(이동 중 등) 무기는 손에 계속 들려있습니다.
     }
 
     private int GetActionAnimID(PrisonerAIType type)
@@ -254,30 +250,24 @@ public class PrisonerController : MonoBehaviour
 
     public void OnAttackHitCheck()
     {
-        // 1. 공격 범위 디버깅 (Scene 뷰에서 확인용)
-        // Debug.DrawRay(transform.position + Vector3.up, transform.forward, Color.red, 1.0f);
-
         Collider[] hits = new Collider[20];
         int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
 
-        if (count == 0) return; // 감지된 게 없으면 종료
+        if (count == 0) return;
 
         for (int i = 0; i < count; i++)
         {
             var target = hits[i];
             if (target.gameObject == gameObject) continue;
 
-            // 방향 벡터 계산
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
             dirToTarget.y = 0;
             Vector3 myForward = transform.forward;
             myForward.y = 0;
 
-            // ★ [수정] 각도 완화 (45도 -> 90도)
-            // 너무 정면만 때려야 하면 빗나가는 느낌이 듭니다. 반경 180도(좌우 90)까지 허용 추천
-            if (Vector3.Angle(myForward, dirToTarget) < 90f) // attackAngle 대신 90f 하드코딩 혹은 Inspector값 증가
+            // 각도 체크 (90도)
+            if (Vector3.Angle(myForward, dirToTarget) < 90f)
             {
-                // ★ [수정] Health 컴포넌트 탐색 강화 (부모/자식 모두 검색)
                 var playerHealth = target.GetComponent<Health>();
                 if (playerHealth == null) playerHealth = target.GetComponentInParent<Health>();
                 if (playerHealth == null) playerHealth = target.GetComponentInChildren<Health>();
@@ -285,12 +275,8 @@ public class PrisonerController : MonoBehaviour
                 if (playerHealth != null)
                 {
                     int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
-
                     playerHealth.TakeDamage(finalDamage);
-
                     Debug.Log($"✅ [Hit Success] {name} -> Player ({finalDamage} dmg)");
-
-                    // 한 번에 한 명만 때리려면 여기서 return; (광역 공격이면 유지)
                 }
             }
         }
