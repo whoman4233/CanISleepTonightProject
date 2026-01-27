@@ -16,15 +16,29 @@ public class PrisonerActionIdleState : BasePrisonerState
     {
         base.Enter();
 
+        // ================================================================
+        // ★ [핵심 수정] 상태 진입 시 이동 애니메이션 강제 종료
+        // ================================================================
+        // ReturnState나 다른 상태에서 Walk가 true인 채로 넘어왔을 경우,
+        // 여기서 끄지 않으면 제자리에서 계속 걷는 모션이 나옵니다.
+        anim.SetBool("Walk", false);
+        anim.SetBool("Run", false);
+
+        // 물리적인 이동 정지 (NavMeshAgent 멈춤)
+        StopMovement();
+
+        // 타입 초기화 (Good 타입으로 시작했어도 실제 컨트롤러 설정을 따라감)
         if (_currentType == PrisonerAIType.Good && Controller != null)
             _currentType = Controller.AIType;
 
+        // 타입별 행동 분기
         if (IsNormalIdleType(_currentType))
         {
             anim.SetBool("IsAction", false);
+
+            // 랜덤한 Idle 모션 재생 (0~2)
             int randomVariant = Random.Range(0, 3);
             anim.SetFloat("IdleVariant", randomVariant);
-            StopMovement();
         }
         else
         {
@@ -36,15 +50,18 @@ public class PrisonerActionIdleState : BasePrisonerState
 
     public override void Update()
     {
+        // 1. 소음 유발 타입 (주기적 로그/소리)
         if (IsNoisyType(_currentType))
         {
             _noiseTimer += Time.deltaTime;
             if (_noiseTimer > 3.0f)
             {
                 _noiseTimer = 0f;
+                // 필요 시 여기서 사운드 재생 로직 추가 가능
             }
         }
 
+        // 2. 기습(Ambush) 타입: 플레이어가 가까오면 전투로 전환
         if (_currentType == PrisonerAIType.Ambusher)
         {
             if (player != null && Vector3.Distance(Controller.transform.position, player.position) < 3.5f)
@@ -65,29 +82,28 @@ public class PrisonerActionIdleState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // ★ [수정] 여기서 직접 Trigger를 켜지 않고, 각 상태(Combat/Cower)의 Enter()에 위임
-        // 이렇게 해야 상태 전환과 애니메이션 실행 타이밍이 충돌하지 않습니다.
-
+        // 공격 성향에 따른 피격 반응 분기
         if (IsAggressiveType(_currentType))
         {
             Debug.Log($"[{Controller.name}] 공격받음! 반격 시작.");
             fsm.ChangeState(fsm.CombatState);
 
-            // CombatState 진입 후 즉시 피격 반응 처리를 위해 호출
+            // CombatState로 전환 후, 피격 정보 전달하여 즉각 반응 유도
             fsm.CombatState.OnDamaged(damage, hitPoint, hitDir);
         }
         else
         {
             Debug.Log($"[{Controller.name}] 공격받음! 겁먹음.");
             fsm.ChangeState(fsm.CowerState);
-            // CowerState는 Enter()에서 애니메이션을 자동 실행하므로 추가 호출 불필요
+            // CowerState는 Enter()에서 웅크리기 애니메이션이 자동 실행됨
         }
     }
 
-    // ... (Helper Methods 등 나머지 코드는 기존과 동일) ...
+    // ... (Helper Methods) ...
+
     private void StartActionBehavior()
     {
-        StopMovement();
+        StopMovement(); // 행동 시작 전 확실히 멈춤
         Controller.StartActionBehavior(_currentType);
     }
 
