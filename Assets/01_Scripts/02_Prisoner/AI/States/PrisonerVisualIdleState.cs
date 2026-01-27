@@ -114,8 +114,17 @@ public class PrisonerVisualIdleState : IPrisonerState
 
     public void OnStartInspection()
     {
-        // 문 열리면(점호) 특수 상태 혹은 기본 점호 상태로 전환
-        _fsm.ChangeState(_fsm.InspectionState);
+        var dailyRole = PrisonerScheduleManager.Instance.GetDailyRole(_fsm.Controller.AssignedCell.cellId);
+        VisualAnomalyType myVisual = dailyRole.visualType;
+
+        if(myVisual != VisualAnomalyType.GoatHead)
+        {
+            _fsm.ChangeState(_fsm.InspectionState);
+        }
+        else
+        {
+            return;
+        }
     }
 
     // 헬퍼: Frank 타입인지 확인

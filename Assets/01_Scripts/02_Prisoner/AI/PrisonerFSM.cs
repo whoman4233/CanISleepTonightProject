@@ -166,13 +166,14 @@ public class PrisonerFSM : MonoBehaviour
 
         PrisonerAIType myType = Controller.AIType;
 
-        // 점호 무시 타입인지 확인 (QTE_Attacker 포함)
+        // 점호 무시 타입인지 확인
         if (IsIgnoreInspectionType(myType)) return;
 
         switch (myType)
         {
             case PrisonerAIType.Good:
             case PrisonerAIType.Bad:
+            case PrisonerAIType.QTE_Attacker: // ★ [수정] QTE 공격자도 일단 점호 태세를 취함
                 ChangeState(InspectionState);
                 break;
             case PrisonerAIType.Escaper:
