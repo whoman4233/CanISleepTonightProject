@@ -30,6 +30,7 @@ Material:
   - _MK_DETAIL_NORMAL_MAP
   - _MK_ENVIRONMENT_REFLECTIONS_AMBIENT
   - _MK_HEIGHT_MAP
+  - _MK_IRIDESCENCE_DEFAULT
   - _MK_NORMAL_MAP
   - _MK_OCCLUSION_MAP
   - _MK_PARALLAX
@@ -311,7 +312,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailBlend: 0
     - _DetailMix: 0.24
-    - _DetailNormalMapIntensity: 0
+    - _DetailNormalMapIntensity: 0.5
     - _DetailNormalMapScale: 1
     - _DetailUVSet: 0
     - _Diffuse: 0
@@ -343,7 +344,7 @@ Material:
     - _Initialized: 0
     - _InputTab: 1
     - _Intensity: 1
-    - _Iridescence: 0
+    - _Iridescence: 1
     - _IridescenceSize: 5
     - _IridescenceSmoothness: 0.5
     - _IridescenceThresholdOffset: 0
@@ -359,7 +360,7 @@ Material:
     - _METALNESS: 0
     - _Metallic: 0
     - _MetalnessStrength: 1.1
-    - _NormalMapIntensity: 1
+    - _NormalMapIntensity: 2
     - _NormalStrenght: 0.81
     - _OcclusionMapIntensity: 1
     - _OcclusionStrength: 1
@@ -444,8 +445,8 @@ Material:
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GoochBrightColor: {r: 1, g: 1, b: 1, a: 0.36862746}
-    - _GoochDarkColor: {r: 0, g: 0, b: 0, a: 1}
-    - _IridescenceColor: {r: 0.64705884, g: 0.88158965, b: 0.8862745, a: 0.07058824}
+    - _GoochDarkColor: {r: 0, g: 0.4339623, b: 0.37195644, a: 1}
+    - _IridescenceColor: {r: 0.0018689969, g: 0.18848224, b: 0.3962264, a: 0.07058824}
     - _LightTransmissionColor: {r: 1, g: 0.65, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _REFLECTIONS_COLOR: {r: 1, g: 1, b: 1, a: 1}
