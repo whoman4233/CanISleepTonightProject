@@ -20,22 +20,37 @@ public class PrisonerVisualIdleState : IPrisonerState
         Debug.Log($"[VisualIdle] 진입: {myVisual}");
 
         // ================================================================
-        // ★ [추가] 용의자(Suspect) 그룹 예외 처리 -> Action 12번 실행
+        // ★ [추가] GoatHead 타입 예외 처리 -> Action 13번 실행
+        // ================================================================
+        if (IsGoatHeadType(myVisual))
+        {
+            Debug.Log($"[VisualIdle] GoatHead({myVisual}) 감지 -> Action 13번 실행 (IsAction On)");
+
+            // 1. ActionType 13번 설정 (Controller의 int 오버로딩 활용)
+            _fsm.Controller.StartActionBehavior(13);
+
+            // 2. IsAction True 설정 (Controller 함수는 파라미터만 세팅하고 IsAction을 안 켤 수도 있으므로 수동 설정)
+            _fsm.Anim.SetBool("IsAction", true);
+
+            // ★ 여기서 return하여 아래의 일반 VisualIdle 로직을 실행하지 않음
+            return;
+        }
+
+        // ================================================================
+        // 2. 용의자(Suspect) 그룹 예외 처리 -> Action 12번 실행
         // ================================================================
         if (IsSuspectType(myVisual))
         {
             Debug.Log($"[VisualIdle] 용의자({myVisual}) 감지 -> Action 12번 강제 실행");
 
             // Controller에 추가한 StartActionBehavior(int) 함수를 호출
-            // (주의: PrisonerController에 int 오버로딩 함수가 있어야 합니다)
             _fsm.Controller.StartActionBehavior(PrisonerAIType.Suss);
 
-            // ★ 여기서 return하여 아래의 일반 VisualIdle 로직(IsVisualIdle 켜기 등)을 실행하지 않음
             return;
         }
 
         // ================================================================
-        // 2. 일반 VisualAnomaly (Frank, Bikini 등) 처리
+        // 3. 일반 VisualAnomaly (Frank, Bikini 등) 처리
         // ================================================================
 
         // 기본 파라미터 설정 (메인 분기용)
@@ -66,7 +81,10 @@ public class PrisonerVisualIdleState : IPrisonerState
         // 1. VisualIdle 끄기
         _fsm.Anim.SetBool("IsVisualIdle", false);
 
-        // ★ [추가] Suspect였을 경우 켜진 ActionBehavior 끄기 (안전장치)
+        // ★ [추가] IsAction 끄기 (GoatHead 등에서 켜졌을 수 있으므로)
+        _fsm.Anim.SetBool("IsAction", false);
+
+        // 2. ActionBehavior 끄기
         _fsm.Controller.StopActionBehavior();
     }
 
@@ -75,7 +93,11 @@ public class PrisonerVisualIdleState : IPrisonerState
         // 피격 시 처리
         _fsm.Anim.SetTrigger("Hit");
         _fsm.Anim.SetBool("IsVisualIdle", false);
-        _fsm.Controller.StopActionBehavior(); // ★ [추가] 피격 시 행동 중단
+
+        // ★ [추가] 피격 시 IsAction 해제
+        _fsm.Anim.SetBool("IsAction", false);
+
+        _fsm.Controller.StopActionBehavior(); // 행동 중단
 
         PrisonerAIType aiType = _fsm.Controller.AIType;
 
@@ -104,11 +126,18 @@ public class PrisonerVisualIdleState : IPrisonerState
                type == VisualAnomalyType.PSN_FrankeR;
     }
 
-    // ★ [추가] 헬퍼: Suspect 타입인지 확인
+    // 헬퍼: Suspect 타입인지 확인
     private bool IsSuspectType(VisualAnomalyType type)
     {
         return type == VisualAnomalyType.Suspect1 ||
                type == VisualAnomalyType.Suspect2 ||
                type == VisualAnomalyType.Suspect3;
+    }
+
+    // ★ [추가] 헬퍼: GoatHead 타입인지 확인
+    private bool IsGoatHeadType(VisualAnomalyType type)
+    {
+        // Enum 이름에 GoatHead가 포함되어 있으면 true (예: PSN_GoatHead)
+        return type.ToString().Contains("GoatHead");
     }
 }

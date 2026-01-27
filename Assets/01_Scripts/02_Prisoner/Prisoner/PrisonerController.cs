@@ -88,7 +88,7 @@ public class PrisonerController : MonoBehaviour
         AutoAttachPropsToHand();
     }
 
-    // ★ [핵심 수정] 프리팹 인스턴스화 및 자동 장착 로직
+    // 프리팹 인스턴스화 및 자동 장착 로직
     private void AutoAttachPropsToHand()
     {
         if (animator == null) return;
