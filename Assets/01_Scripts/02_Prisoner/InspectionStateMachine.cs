@@ -31,21 +31,33 @@ public class InspectionStateMachine : MonoBehaviour
     // =======================================================================
     public bool TryEnterCell(string cellId)
     {
-        if (cellManager == null) return false;
+        if (cellManager == null)
+        {
+            Debug.LogError("[ISSM] CellManager 참조가 누락되었습니다.");
+            return false;
+        }
 
         // 1. 중복 진입 방지
         // (다른 방을 점검 중일 때만 진입을 막음)
         if (!string.IsNullOrEmpty(CurrentInspectingCellId) && CurrentInspectingCellId != cellId)
         {
-            Debug.LogWarning($"[ISSM] 진입 거부: 이미 {CurrentInspectingCellId} 점검 중.");
+            Debug.LogWarning($"[ISSM] 진입 거부: 이미 {CurrentInspectingCellId} 점검 중입니다.");
             return false;
         }
 
         var cell = cellManager.GetCell(cellId);
-        if (cell == null) return false;
+        if (cell == null)
+        {
+            Debug.LogError($"[ISSM] 진입 실패: CellManager에서 ID '{cellId}'를 찾을 수 없습니다.");
+            return false;
+        }
 
         // 2. 상태 체크 (오늘 활성 여부)
-        if (!cell.IsActiveToday) return false;
+        if (!cell.IsActiveToday)
+        {
+            Debug.LogWarning($"[ISSM] 진입 실패: {cellId}번 방은 오늘 활성화(IsActiveToday)되지 않았습니다. (죄수 미배정 또는 스케줄 미로드)");
+            return false;
+        }
 
         // 3. 상태 변경 적용
         cell.IsInspectingNow = true;
