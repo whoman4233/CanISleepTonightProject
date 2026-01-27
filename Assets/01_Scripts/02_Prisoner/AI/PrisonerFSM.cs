@@ -22,7 +22,7 @@ public class PrisonerFSM : MonoBehaviour
     public NavMeshAgent Agent { get; private set; }
     public Animator Anim { get; private set; }
 
-    private IPrisonerState _currentState;
+    public IPrisonerState _currentState;
 
     // ================================================================
     // [이벤트 핸들러 캐시]

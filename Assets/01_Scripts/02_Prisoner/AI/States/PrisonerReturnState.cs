@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class PrisonerReturnState : BasePrisonerState
 {
+    // [추가] 끼임 감지를 위한 타이머
+    private float _stuckTimer = 0f;
+
     public PrisonerReturnState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
@@ -28,8 +31,8 @@ public class PrisonerReturnState : BasePrisonerState
         // 점검 상태에서 켜졌을 수 있는 Suspicious나 기타 파라미터 초기화
         anim.SetBool("Suspicious", false);
 
-        // (만약 애니메이터에 'IsInspection' 같은 파라미터가 있다면 여기서 false로 꺼야 합니다)
-        // anim.SetBool("IsInspection", false); 
+        // [추가] Stuck 타이머 초기화
+        _stuckTimer = 0f;
 
         float dist = Vector3.Distance(fsm.transform.position, target.position);
         if (dist > 0.5f)
@@ -39,7 +42,7 @@ public class PrisonerReturnState : BasePrisonerState
                 agent.isStopped = false;
                 agent.SetDestination(target.position);
 
-                // ★ 이동 애니메이션 시작 (이게 켜지면 점검 자세에서 전이되도록 Animator 설정 필요)
+                // ★ 이동 애니메이션 시작
                 anim.SetBool("Walk", true);
             }
             else
@@ -58,10 +61,31 @@ public class PrisonerReturnState : BasePrisonerState
     {
         if (!agent.isOnNavMesh || !agent.isActiveAndEnabled) return;
 
-        // 이동 완료 체크
+        // 1. 정상적인 이동 완료 체크 (기존 로직)
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
             fsm.ChangeState(fsm.ActionState);
+            return;
+        }
+
+        // 2. [추가] 끼임(Stuck) 감지 로직
+        // NavMeshAgent가 이동하려 하는데 속도가 거의 0이라면 (벽이나 다른 죄수에 막힘)
+        if (agent.velocity.sqrMagnitude < 0.1f)
+        {
+            _stuckTimer += Time.deltaTime;
+
+            // 2초 이상 제자리에 멈춰 있다면 도착한 것으로 간주하고 강제 상태 전이
+            if (_stuckTimer > 2.0f)
+            {
+                // 필요하다면 로그 출력 (디버깅용)
+                // Debug.LogWarning($"[ReturnState] {Controller.name} seems stuck. Force transition to Idle.");
+                fsm.ChangeState(fsm.ActionState);
+            }
+        }
+        else
+        {
+            // 움직이고 있다면 타이머 리셋
+            _stuckTimer = 0f;
         }
     }
 
@@ -96,6 +120,4 @@ public class PrisonerReturnState : BasePrisonerState
             fsm.ChangeState(fsm.CowerState);
         }
     }
-
-    // ★ 기존 private IsAggressive() 삭제됨 (Controller.IsAggressive 사용)
 }
