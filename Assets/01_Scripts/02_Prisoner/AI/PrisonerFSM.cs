@@ -106,11 +106,8 @@ public class PrisonerFSM : MonoBehaviour
 
         if (CheckAndEnterVisualState()) return;
 
-        if (aiType == PrisonerAIType.QTE_Attacker)
-        {
-            ChangeState(QTEApproachState);
-            return;
-        }
+        // QTE_Attacker가 시작하자마자 달려들던 if문 삭제됨.
+        // 이제 아래의 else 블록으로 넘어가서 평소(ActionState)에는 얌전히 대기합니다.
 
         // 매복자 처리
         if (aiType == PrisonerAIType.Ambusher)
@@ -121,7 +118,8 @@ public class PrisonerFSM : MonoBehaviour
         }
         else
         {
-            // 일반 AI 처리
+            // 일반 AI 및 QTE_Attacker 처리
+            // QTE_Attacker도 ActionState(기본 대기)로 시작하며, 점호 이벤트가 오면 OnInspectionStarted에서 반응합니다.
             ActionState.SetActionType(aiType);
             if (_currentState == ActionState)
             {
@@ -187,7 +185,7 @@ public class PrisonerFSM : MonoBehaviour
     {
         if (_currentState == DeadState) return;
 
-        // ★ [핵심 수정 2] QTE 접근 중이거나 전투 중일 때는 루틴 복귀(점호 종료 등) 명령을 무시
+        //  QTE 접근 중이거나 전투 중일 때는 루틴 복귀(점호 종료 등) 명령을 무시
         if (_currentState == QTEApproachState || _currentState == CombatState) return;
 
         // 비키니 등 특수 비주얼 상태 복귀
@@ -219,7 +217,7 @@ public class PrisonerFSM : MonoBehaviour
         if (!IsTargetRelatedToMe(evt.Target))
             return;
 
-        // ★ [핵심 수정 1] 내 AI 타입이 "QTE 공격자"가 아니면 기습 로직을 아예 실행하지 않음
+        // ★ [핵심 유지] 내 AI 타입이 "QTE 공격자"가 아니면 기습 로직을 아예 실행하지 않음
         if (Controller.AIType != PrisonerAIType.QTE_Attacker)
             return;
 

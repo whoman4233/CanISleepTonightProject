@@ -14,7 +14,8 @@ public class PlayerQTEAnimator : MonoBehaviour
     [Header("QTELayer Index")]
     [SerializeField] private int qteLayerIndex = 2; // ← Animator에서 QTELayer 인덱스와 반드시 일치
 
-    [Header("SFX")]
+    [Header("QTE SFX")]
+    [SerializeField] private AudioClip inputSfx;
     [SerializeField] private AudioClip guardFailSfx;
 
     private int _struggleHash;
@@ -78,6 +79,10 @@ public class PlayerQTEAnimator : MonoBehaviour
     {
         if (!_qteActive || e.State != QTEInputState.Pressed)
             return;
+
+        // 입력 SFX (매 입력)
+        if (inputSfx != null)
+            AudioManager.Instance?.PlaySFX(inputSfx);
 
         // 첫 입력에만 Guarding 진입
         if (_guardingStarted)
