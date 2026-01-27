@@ -87,8 +87,30 @@ public class PrisonerController : MonoBehaviour
     {
         if (animator == null) return;
 
+        // 1. 오른손 본 찾기
         Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
         if (rightHand == null) return;
+
+        // ★ [수정] "Weapon_R" 찾기 로직 추가
+        // 기본값은 오른손(rightHand)으로 설정하되, Weapon_R을 발견하면 교체합니다.
+        Transform targetParent = rightHand;
+
+        // 직계 자식 중에서 "Weapon_R" 이름을 가진 오브젝트 탐색
+        Transform weaponMount = rightHand.Find("Weapon_R");
+
+        // (선택 사항: 만약 계층구조가 깊어서 Find로 안 찾아진다면 아래 주석을 풀어 깊은 탐색을 사용하세요)
+        /*
+        if (weaponMount == null) {
+            foreach (Transform t in rightHand.GetComponentsInChildren<Transform>()) {
+                if (t.name == "Weapon_R") { weaponMount = t; break; }
+            }
+        }
+        */
+
+        if (weaponMount != null)
+        {
+            targetParent = weaponMount;
+        }
 
         foreach (var data in actionProps)
         {
@@ -96,7 +118,11 @@ public class PrisonerController : MonoBehaviour
             {
                 GameObject propInstance = Instantiate(data.propObject);
                 propInstance.name = data.propObject.name;
-                propInstance.transform.SetParent(rightHand);
+
+                // ★ [수정] 찾은 Weapon_R(혹은 오른손)을 부모로 설정
+                propInstance.transform.SetParent(targetParent);
+
+                // 위치/회전 초기화 (Weapon_R 기준으로 0,0,0 정렬)
                 propInstance.transform.localPosition = Vector3.zero;
                 propInstance.transform.localRotation = Quaternion.identity;
 
