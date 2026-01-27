@@ -6592,6 +6592,8 @@ MonoBehaviour:
   - {fileID: 2005098835}
   - {fileID: 1251218106}
   - {fileID: 287888294}
+  graffitiPrefab: {fileID: 0}
+  goatHeadPrefab: {fileID: 0}
   verboseLog: 1
 --- !u!4 &946960905
 Transform:
@@ -14343,16 +14345,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1725841040233083097, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.783
-      objectReference: {fileID: 0}
-    - target: {fileID: 1725841040233083097, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.32
-      objectReference: {fileID: 0}
     - target: {fileID: 2209131490206928600, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_Name
@@ -14361,12 +14353,17 @@ PrefabInstance:
     - target: {fileID: 4786663755932803105, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
       propertyPath: m_AmplitudeGain
-      value: 0.06
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4786663755932803105, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
+    - target: {fileID: 6513903479437911439, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
-      propertyPath: m_FrequencyGain
-      value: 1
+      propertyPath: m_VerticalAxis.m_MaxValue
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 6513903479437911439, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
+        type: 3}
+      propertyPath: m_VerticalAxis.m_MinValue
+      value: -70
       objectReference: {fileID: 0}
     - target: {fileID: 8095358364415371199, guid: 7a0b70b8cbc88014daf2a901f4d2df5d,
         type: 3}
