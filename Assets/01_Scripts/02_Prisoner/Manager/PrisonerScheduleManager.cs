@@ -185,16 +185,33 @@ public class PrisonerScheduleManager : MonoBehaviour
 
     public void ResetAllSimulationData()
     {
-        if (_residents == null) return;
-        foreach (var kvp in _residents)
+        // [1] 기존 로직 유지: 각 죄수의 상태값 안전하게 초기화
+        // (이 부분은 혹시 모를 참조나 Soft Reset을 위해 남겨두는 것이 좋습니다)
+        if (_residents != null)
         {
-            kvp.Value.CurrentHealth = 100f;
-            kvp.Value.IsSuppressed = false;
+            foreach (var kvp in _residents)
+            {
+                kvp.Value.CurrentHealth = 100f;
+                kvp.Value.IsSuppressed = false;
+                // 필요하다면 일일 플래그도 여기서 확실히 리셋
+                kvp.Value.ResetDailyFlags();
+            }
+
+            // ★ [추가] 인스턴스 데이터 비우기
+            // 루프가 끝난 후 리스트를 비워야, 현재 매니저가 들고 있는 낡은 데이터가 사라집니다.
+            _residents.Clear();
         }
+
         _todayRoles.Clear();
-        _cachedResidents = _residents;
-        Debug.Log("[Schedule] 데이터 리셋 완료 (New Game)");
+
+        // [핵심 수정] 정적(Static) 캐시 삭제
+        // 기존: _cachedResidents = _residents; (이게 문제였습니다. 낡은 데이터를 다시 저장함)
+        // 수정: null로 만들어야 다음 게임 시작(Awake) 시 "어? 데이터 없네? 새로 만들자!"가 발동됨.
+        _cachedResidents = null;
+
+        Debug.Log("[Schedule] 데이터 리셋 완료 (New Game - Cache Cleared)");
     }
+
     // ============================================================
     // "하루 시작" 전용 리셋
     // ============================================================
