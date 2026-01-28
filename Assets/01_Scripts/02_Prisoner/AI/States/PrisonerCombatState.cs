@@ -12,6 +12,23 @@ public class PrisonerCombatState : BasePrisonerState
     public override void Enter()
     {
         base.Enter();
+        if (agent != null)
+        {
+            // 1. 꺼져있으면 켠다
+            if (!agent.enabled)
+                agent.enabled = true;
+
+            // 2. NavMesh 위에 없으면(또는 방금 켜서 위치를 모르면) 현재 위치로 강제 이동(Warp)
+            //    -> 이걸 해줘야 "제자리 달리기" 버그가 사라짐
+            if (!agent.isOnNavMesh)
+            {
+                agent.Warp(fsm.transform.position);
+            }
+
+            agent.isStopped = false;
+            agent.updatePosition = true;
+            agent.updateRotation = true;
+        }
         _cooldownTimer = 0.5f;
 
         // [수정 1] 진입 시 무조건 Run을 켜지 않음. 

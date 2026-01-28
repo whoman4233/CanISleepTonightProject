@@ -109,12 +109,16 @@ public class PrisonerVisualIdleState : IPrisonerState
         var dailyRole = PrisonerScheduleManager.Instance.GetDailyRole(_fsm.Controller.AssignedCell.cellId);
         VisualAnomalyType myVisual = dailyRole.visualType;
 
-        if(myVisual != VisualAnomalyType.GoatHead)
+        // [수정] 단순 비교(!=) 대신 헬퍼 메서드(!IsGoatHeadType) 사용
+        // 염소 머리 타입이 '아닐 때만' 점호 상태로 전환
+        if (!IsGoatHeadType(myVisual))
         {
             _fsm.ChangeState(_fsm.InspectionState);
         }
         else
         {
+            // 염소 머리는 점호 때 아무것도 안 함 (제자리 유지)
+            Debug.Log($"[VisualIdle] {myVisual}: 점호 시작 무시 (GoatHead Logic)");
             return;
         }
     }
