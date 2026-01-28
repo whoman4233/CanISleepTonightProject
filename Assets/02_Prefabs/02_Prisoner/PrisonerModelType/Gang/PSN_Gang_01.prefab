@@ -144,7 +144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InspectionPoint: {fileID: 0}
   defaultQteAction: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
-  <QteStopDistance>k__BackingField: 1.2
+  <QteStopDistance>k__BackingField: 2
   ambushDelay: 1.5
 --- !u!195 &6007444127599511837
 NavMeshAgent:
@@ -484,6 +484,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6297465125585824395}
+    - targetCorrespondingSourceObject: {fileID: -2486420778618896525, guid: 7907f04b023014f43a0c898daa430b99,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5817556952215236663}
     - targetCorrespondingSourceObject: {fileID: 8293792417697028184, guid: 7907f04b023014f43a0c898daa430b99,
         type: 3}
       insertIndex: -1
@@ -512,6 +516,12 @@ PrefabInstance:
 --- !u!4 &1439357217887586047 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7907f04b023014f43a0c898daa430b99,
+    type: 3}
+  m_PrefabInstance: {fileID: 1473564100627325204}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1812066813147940901 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 961210195233335601, guid: 7907f04b023014f43a0c898daa430b99,
     type: 3}
   m_PrefabInstance: {fileID: 1473564100627325204}
   m_PrefabAsset: {fileID: 0}
@@ -921,6 +931,19 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &5817556952215236663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5263955656782503527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c32e73042d49a8b429a40ff062600f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  headLookTarget: {fileID: 1812066813147940901}
 --- !u!1 &5595554321400265176 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2750501195568244532, guid: 7907f04b023014f43a0c898daa430b99,

@@ -143,7 +143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InspectionPoint: {fileID: 0}
   defaultQteAction: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
-  <QteStopDistance>k__BackingField: 1.2
+  <QteStopDistance>k__BackingField: 2
   ambushDelay: 1.5
 --- !u!195 &6007444127599511837
 NavMeshAgent:
@@ -480,6 +480,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5137111057719979526}
+    - targetCorrespondingSourceObject: {fileID: -2486420778618896525, guid: ef966ca8be8b798449f8180b4ded4cad,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8064155578252111860}
     - targetCorrespondingSourceObject: {fileID: 8293792417697028184, guid: ef966ca8be8b798449f8180b4ded4cad,
         type: 3}
       insertIndex: -1
@@ -605,6 +609,19 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &8064155578252111860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 26238438553612429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c32e73042d49a8b429a40ff062600f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  headLookTarget: {fileID: 5797721880880883407}
 --- !u!1 &357758532732966706 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2750501195568244532, guid: ef966ca8be8b798449f8180b4ded4cad,
@@ -1371,6 +1388,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!4 &5797721880880883407 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 961210195233335601, guid: ef966ca8be8b798449f8180b4ded4cad,
+    type: 3}
+  m_PrefabInstance: {fileID: 6711281267234033662}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5818945837452391850 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1000448557295188564, guid: ef966ca8be8b798449f8180b4ded4cad,

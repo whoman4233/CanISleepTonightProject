@@ -92,16 +92,19 @@ public class PrisonerQTEAnimator : MonoBehaviour
 
         AudioManager.Instance?.StopSFXLoop();
 
-        // [1] 결과 트리거 발사
+        // 결과 전이 허용
+        animator.SetBool("IsQTEResult", true);
+
+        // 결과 트리거 (Base Layer용)
         if (e.Result == QTEResult.Success)
             animator.SetTrigger(_hitHash);
         else
             animator.SetTrigger(_attackHash);
 
-        // [2] 트리거 재사용 방지
         StartCoroutine(Co_ResetResultTriggers());
-
     }
+
+
 
     public void PlayIntro()
     {
@@ -176,11 +179,14 @@ public class PrisonerQTEAnimator : MonoBehaviour
             AudioManager.Instance?.PlaySFX(hitSfx);
     }
 
-    // Escaped / Attacked 애니메이션 마지막 프레임
     public void OnQTEResultAnimationFinished()
     {
-        StopQTE(); // QTEState = 0
+        // QTE 연출 완전 종료
         animator.SetLayerWeight(qteLayerIndex, 0f);
+        animator.SetInteger(_qteStateHash, 0);
+
+        // 결과 전이 잠금 해제
+        animator.SetBool("IsQTEResult", false);
     }
 }
 

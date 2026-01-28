@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-using System; // Action 사용을 위해 추가
+using System;
+using System.Collections; // Action 사용을 위해 추가
 
 public class PrisonerQTEApproachState : BasePrisonerState
 {
@@ -84,21 +85,28 @@ public class PrisonerQTEApproachState : BasePrisonerState
 
             PrisonerQTEContext.SetAttacker(fsm.transform);
 
-            // 1. QTE 트리거 발동
-            if (_trigger != null)
-            {
-                _trigger.NotifyArrived();
-            }
-            else
-            {
-                if (qteAction != null)
-                    EventBus.Publish(new QTEStartedEvent { Action = qteAction });
-            }
-
-            // ★ [핵심] 여기서 ChangeState를 호출하지 않습니다!
-            // QTE가 끝날 때까지(OnQteEnded 호출 시까지) 현재 상태를 유지하며 대기합니다.
-            // fsm.ChangeState(fsm.InspectionState); // <-- 삭제됨
+            fsm.StartCoroutine(Co_StartQTE_NextFrame());
         }
+    }
+
+    private IEnumerator Co_StartQTE_NextFrame() 
+    {
+        yield return null; // ★ 한 프레임 딜레이
+
+        // 1. QTE 트리거 발동
+        if (_trigger != null)
+        {
+            _trigger.NotifyArrived();
+        }
+        else
+        {
+            if (qteAction != null)
+                EventBus.Publish(new QTEStartedEvent { Action = qteAction });
+        }
+
+        // ★ [핵심] 여기서 ChangeState를 호출하지 않습니다!
+        // QTE가 끝날 때까지(OnQteEnded 호출 시까지) 현재 상태를 유지하며 대기합니다.
+        // fsm.ChangeState(fsm.InspectionState); // <-- 삭제됨
     }
 
     // ★ [추가] QTE 종료 시 호출되는 콜백
@@ -120,19 +128,25 @@ public class PrisonerQTEApproachState : BasePrisonerState
         // ★ [핵심] 나갈 때 반드시 구독 해제
         EventBus.Unsubscribe(_onQteEndedHandler);
 
-        agent.ResetPath();
-
-        // 추격 세팅이 되었을 때만 복구 수행
-        if (_isChasingStarted)
+        // Agent 안전 체크
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
-            agent.stoppingDistance = _originalStoppingDistance;
-        }
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
 
-        // 상태 종료 시 확실하게 멈춤 처리
-        agent.isStopped = true;
-        agent.velocity = Vector3.zero;
-        anim.SetBool("Walk", false);
-    }
+            // 추격 세팅이 되었을 때만 복구 수행
+            if (_isChasingStarted)
+            {
+            agent.stoppingDistance = _originalStoppingDistance;
+            }
+        }
+        // 애니메이션 정리
+        if (anim != null)
+            {
+                anim.SetBool("Walk", false);
+            }
+        }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
