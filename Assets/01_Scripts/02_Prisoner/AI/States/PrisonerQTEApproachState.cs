@@ -14,24 +14,23 @@ public class PrisonerQTEApproachState : BasePrisonerState
     private bool _isQteTriggered = false;
 
     // ★ [추가] 이벤트 핸들러 캐싱
-    private Action<QTEEndedEvent> _onQteEndedHandler;
+    private Action<QTEResultAnimationFinishedEvent> _onResultAnimFinished; //FSM QTE 종료 애니메이션 전환용
 
     public PrisonerQTEApproachState(PrisonerFSM fsm, QTEActionSO action) : base(fsm)
     {
         this.qteAction = action;
         _trigger = fsm.GetComponent<QTEDistanceTrigger>();
 
-        // 핸들러 연결
-        _onQteEndedHandler = OnQteEnded;
     }
 
     public override void Enter()
     {
+        //FSM 전환용 QTE종료 애니메이션 구독
+        _onResultAnimFinished = OnResultAnimationFinished;
+        EventBus.Subscribe(_onResultAnimFinished);
+
         _isChasingStarted = false;
         _isQteTriggered = false;
-
-        // ★ [핵심] QTE 종료 이벤트 구독
-        EventBus.Subscribe(_onQteEndedHandler);
 
         // 1. 플레이어 찾기 시도
         if (player == null)
@@ -110,23 +109,12 @@ public class PrisonerQTEApproachState : BasePrisonerState
     }
 
     // ★ [추가] QTE 종료 시 호출되는 콜백
-    private void OnQteEnded(QTEEndedEvent evt)
-    {
-        // 내가 실행한 QTE인지 확인
-        if (evt.Action == this.qteAction)
-        {
-            // 전투 준비: 애니메이션 파라미터 초기화 (필요 시)
-            fsm.Controller.StartActionBehavior(0);
-
-            // 전투 상태로 전환 (QTE 끝났으니 싸우자)
-            fsm.ChangeState(fsm.CombatState);
-        }
-    }
 
     public override void Exit()
     {
-        // ★ [핵심] 나갈 때 반드시 구독 해제
-        EventBus.Unsubscribe(_onQteEndedHandler);
+        // 나갈 때 반드시 구독 해제
+        _isQteTriggered = false;
+        EventBus.Unsubscribe(_onResultAnimFinished);
 
         // Agent 안전 체크
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -167,5 +155,14 @@ public class PrisonerQTEApproachState : BasePrisonerState
         agent.stoppingDistance = fsm.QteStopDistance;
 
         Debug.Log($"[PrisonerQTE] {fsm.name} : 플레이어 발견! 추격 시작.");
+    }
+
+    private void OnResultAnimationFinished(QTEResultAnimationFinishedEvent evt)
+    {
+        if (evt.Action != qteAction)
+            return;
+
+        _isQteTriggered = false;
+        fsm.ChangeState(fsm.CombatState);
     }
 }
