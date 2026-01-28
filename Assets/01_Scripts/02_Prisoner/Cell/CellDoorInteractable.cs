@@ -213,7 +213,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             {
                 // 죄수가 전투 상태(CombatState)이거나 이미 공격 모드라면 true
                 // (PrisonerCombatState 타입 체크 방식이 가장 확실함)
-                if (fsm._currentState is PrisonerCombatState)
+                if (fsm._currentState is PrisonerCombatState || fsm._currentState is PrisonerCowerState)
                 {
                     return true;
                 }
