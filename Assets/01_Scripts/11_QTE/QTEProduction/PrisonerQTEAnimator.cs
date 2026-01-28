@@ -17,6 +17,9 @@ public class PrisonerQTEAnimator : MonoBehaviour
     [SerializeField] private AudioClip qteLoopSfx;
     [SerializeField] private AudioClip hitSfx;
 
+    [Header("QTELayer")]
+    [SerializeField] private int qteLayerIndex = 1;
+
     private int _qteStateHash;
     private int _hitHash;
     private int _attackHash;
@@ -73,38 +76,37 @@ public class PrisonerQTEAnimator : MonoBehaviour
         if (qteLoopSfx != null)
             AudioManager.Instance?.PlaySFXLoop(qteLoopSfx);
 
+        // QTE 전용 레이어 활성화
+        animator.SetLayerWeight(qteLayerIndex, 1f);
+
         // QTE 진입 (Any State → Start)
         PlayIntro();
     }
 
     private void OnQTEEnded(QTEEndedEvent e)
     {
-        // 다른 QTE의 종료 이벤트는 무시
         if (e.Action != _myAction)
             return;
 
         _myAction = null;
 
-        // QTE 루프 SFX 종료
         AudioManager.Instance?.StopSFXLoop();
 
-        // QTE 상태 종료
-        StopQTE();
-
-        // [1] 결과 트리거 발사 (단 1회)
+        // [1] 결과 트리거 발사
         if (e.Result == QTEResult.Success)
             animator.SetTrigger(_hitHash);
         else
             animator.SetTrigger(_attackHash);
 
-        // [2] 한 프레임 뒤 트리거 리셋 (재소비 방지)
+        // [2] 트리거 재사용 방지
         StartCoroutine(Co_ResetResultTriggers());
+
     }
 
     public void PlayIntro()
     {
         // Any State → PSN_AA_Pounce_Start 조건 충족
-        animator.SetInteger(_qteStateHash, 1);
+        animator.Play("PSN_AA_Pounce_Start", qteLayerIndex, 0f);
     }
 
     public void PlayLoop()
@@ -115,7 +117,7 @@ public class PrisonerQTEAnimator : MonoBehaviour
 
     public void StopQTE()
     {
-        // QTE 완전 종료
+        // QTE 완전 종료는 "결과 애니메이션 종료 후"에만 수행
         animator.SetInteger(_qteStateHash, 0);
     }
 
@@ -140,8 +142,8 @@ public class PrisonerQTEAnimator : MonoBehaviour
     // PSN_AA_Pounce_Start 클립 끝 프레임에 연결
     public void OnPounceStartFinished()
     {
-        // Start → Progress 전환 시점
-        PlayLoop();
+        // Any State → Start 재진입 차단
+        animator.SetInteger(_qteStateHash, 2);
     }
 
     public void OnPrisonerHitFrame()
@@ -153,6 +155,7 @@ public class PrisonerQTEAnimator : MonoBehaviour
     {
         EventBus.Publish(new PlayerAttackTimingEvent());
     }
+
     // =========================
     // Internal
     // =========================
@@ -166,12 +169,21 @@ public class PrisonerQTEAnimator : MonoBehaviour
         animator.ResetTrigger(_hitHash);
         animator.ResetTrigger(_attackHash);
     }
+
     public void OnPrisonerHitSfx()
     {
         if (hitSfx != null)
             AudioManager.Instance?.PlaySFX(hitSfx);
     }
+
+    // Escaped / Attacked 애니메이션 마지막 프레임
+    public void OnQTEResultAnimationFinished()
+    {
+        StopQTE(); // QTEState = 0
+        animator.SetLayerWeight(qteLayerIndex, 0f);
+    }
 }
+
 
 
 
