@@ -1316,6 +1316,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_1F_06
   prisonerSpawn: {fileID: 8258959493611399239}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 6068839034462814066}
   propSpawnPoint: {fileID: 5392846056117347201}
   anomalyRoot: {fileID: 0}
@@ -1930,6 +1931,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_2F_03
   prisonerSpawn: {fileID: 903838131813070383}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 3039504141140992282}
   propSpawnPoint: {fileID: 3801487723162385897}
   anomalyRoot: {fileID: 0}
@@ -2143,6 +2145,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_2F_05
   prisonerSpawn: {fileID: 193829521276413044}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 2600250408899720001}
   propSpawnPoint: {fileID: 4249733252922453938}
   anomalyRoot: {fileID: 0}
@@ -2626,6 +2629,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_2F_06
   prisonerSpawn: {fileID: 960690594077964633}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 3166136182160584300}
   propSpawnPoint: {fileID: 3827923403132826271}
   anomalyRoot: {fileID: 0}
@@ -2839,6 +2843,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_1F_05
   prisonerSpawn: {fileID: 3754311382816762366}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 1350113811886882507}
   propSpawnPoint: {fileID: 888182482897084984}
   anomalyRoot: {fileID: 0}
@@ -3725,51 +3730,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kind: 23
---- !u!1 &3833803985747567764
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 30216669076874502}
-  - component: {fileID: 1476655232009418051}
-  m_Layer: 0
-  m_Name: Slot_WeightPlate
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &30216669076874502
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3833803985747567764}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.464, y: -0.942, z: 2.301}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4627681067692341767}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1476655232009418051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3833803985747567764}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kind: 13
 --- !u!1 &3852229732495413133
 GameObject:
   m_ObjectHideFlags: 0
@@ -4010,6 +3970,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_1F_04
   prisonerSpawn: {fileID: 8807208577744710973}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 6673229215994558984}
   propSpawnPoint: {fileID: 4788441881577957115}
   anomalyRoot: {fileID: 0}
@@ -4133,6 +4094,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_2F_04
   prisonerSpawn: {fileID: 1273615478657594973}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 3965883000992899432}
   propSpawnPoint: {fileID: 3019172666425916827}
   anomalyRoot: {fileID: 0}
@@ -4301,16 +4263,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_1F_01
   prisonerSpawn: {fileID: 5624736637816852426}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 7541976039368481023}
   propSpawnPoint: {fileID: 8522392861130572812}
   anomalyRoot: {fileID: 4627681067692341767}
   anomalySlots:
-  - {fileID: 6641926738331465169}
-  - {fileID: 3772455483961743629}
-  - {fileID: 3414128188310385319}
-  - {fileID: 1476655232009418051}
-  - {fileID: 8448373191171908433}
-  - {fileID: 1057944876113458251}
   - {fileID: 4491600116061822551}
   - {fileID: 4375535129161560847}
   - {fileID: 8577909389792039696}
@@ -4553,51 +4510,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kind: 7
---- !u!1 &4379544637258381866
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8592818654792316097}
-  - component: {fileID: 3772455483961743629}
-  m_Layer: 0
-  m_Name: Slot_Planter
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8592818654792316097
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4379544637258381866}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.261, y: -0.161, z: 2.078}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4627681067692341767}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3772455483961743629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4379544637258381866}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kind: 20
 --- !u!1 &4667541949911886091
 GameObject:
   m_ObjectHideFlags: 0
@@ -4828,51 +4740,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kind: 13
---- !u!1 &4997442217985741248
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6421915970434728513}
-  - component: {fileID: 8448373191171908433}
-  m_Layer: 0
-  m_Name: Slot_LiquorBottle_1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6421915970434728513
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4997442217985741248}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4627681067692341767}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8448373191171908433
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4997442217985741248}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kind: 23
 --- !u!1 &5026091521886957180
 GameObject:
   m_ObjectHideFlags: 0
@@ -5283,51 +5150,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kind: 9
---- !u!1 &5573115686513870161
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8240072410090474883}
-  - component: {fileID: 1057944876113458251}
-  m_Layer: 0
-  m_Name: Slot_LiquorBottle_2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8240072410090474883
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5573115686513870161}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.544, y: -0.004, z: -1.129}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4627681067692341767}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1057944876113458251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5573115686513870161}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kind: 23
 --- !u!1 &5575629233517075588
 GameObject:
   m_ObjectHideFlags: 0
@@ -5813,7 +5635,7 @@ Transform:
   m_GameObject: {fileID: 6187323253369110161}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.11, y: 1.2413001, z: -3.0390005}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6597,51 +6419,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kind: 9
---- !u!1 &7242883101766360918
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1200002713434904457}
-  - component: {fileID: 6641926738331465169}
-  m_Layer: 0
-  m_Name: Slot_Bread
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1200002713434904457
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7242883101766360918}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.40418866, z: -0, w: 0.91467565}
-  m_LocalPosition: {x: -2.317, y: -0.19099998, z: 1.093}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4627681067692341767}
-  m_LocalEulerAnglesHint: {x: 0, y: -47.681, z: 0}
---- !u!114 &6641926738331465169
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7242883101766360918}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kind: 22
 --- !u!1 &7258472913010088436
 GameObject:
   m_ObjectHideFlags: 0
@@ -7112,6 +6889,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_2F_01
   prisonerSpawn: {fileID: 8764999710370831433}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 6847415199942314876}
   propSpawnPoint: {fileID: 4749331407912802191}
   anomalyRoot: {fileID: 0}
@@ -7214,51 +6992,6 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8384853314400677513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kind: 19
---- !u!1 &8443600678318823564
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6336409097898087041}
-  - component: {fileID: 3414128188310385319}
-  m_Layer: 0
-  m_Name: Slot_WornOutShoe
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6336409097898087041
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8443600678318823564}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.05956616, z: -0, w: 0.9982244}
-  m_LocalPosition: {x: -2.079, y: -0.55, z: 4.385}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4627681067692341767}
-  m_LocalEulerAnglesHint: {x: 0, y: 6.83, z: 0}
---- !u!114 &3414128188310385319
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8443600678318823564}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
@@ -7460,6 +7193,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_1F_03
   prisonerSpawn: {fileID: 7311287627419081004}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 4887397665834782233}
   propSpawnPoint: {fileID: 6718352842739176170}
   anomalyRoot: {fileID: 0}
@@ -8162,6 +7896,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_2F_02
   prisonerSpawn: {fileID: 8596423610066195486}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 5902476034168898347}
   propSpawnPoint: {fileID: 5694285743534858200}
   anomalyRoot: {fileID: 0}
@@ -8285,6 +8020,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellId: C_1F_02
   prisonerSpawn: {fileID: 5183263015588783071}
+  randomSpawnPoints: []
   inspectionPoint: {fileID: 7010918608800117994}
   propSpawnPoint: {fileID: 9197526146485807129}
   anomalyRoot: {fileID: 0}
@@ -12685,31 +12421,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 1849686700822824565, guid: a82d6d876b9bb64478e205ac8178adaf,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1200002713434904457}
-    - targetCorrespondingSourceObject: {fileID: 1849686700822824565, guid: a82d6d876b9bb64478e205ac8178adaf,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8592818654792316097}
-    - targetCorrespondingSourceObject: {fileID: 1849686700822824565, guid: a82d6d876b9bb64478e205ac8178adaf,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6336409097898087041}
-    - targetCorrespondingSourceObject: {fileID: 1849686700822824565, guid: a82d6d876b9bb64478e205ac8178adaf,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 30216669076874502}
-    - targetCorrespondingSourceObject: {fileID: 1849686700822824565, guid: a82d6d876b9bb64478e205ac8178adaf,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6421915970434728513}
-    - targetCorrespondingSourceObject: {fileID: 1849686700822824565, guid: a82d6d876b9bb64478e205ac8178adaf,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8240072410090474883}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a82d6d876b9bb64478e205ac8178adaf, type: 3}
 --- !u!114 &520949713229015343 stripped
