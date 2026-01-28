@@ -85,34 +85,28 @@ public class PrisonerQTEAnimator : MonoBehaviour
 
     private void OnQTEEnded(QTEEndedEvent e)
     {
-        // 다른 QTE의 종료 이벤트는 무시
         if (e.Action != _myAction)
             return;
 
         _myAction = null;
 
-        // QTE 루프 SFX 종료
         AudioManager.Instance?.StopSFXLoop();
 
-        // QTEState를 즉시 0으로 내리지 않음
-
-        // [1] 결과 트리거 발사 (단 1회)
+        // [1] 결과 트리거 발사
         if (e.Result == QTEResult.Success)
             animator.SetTrigger(_hitHash);
         else
             animator.SetTrigger(_attackHash);
 
-        // [2] 한 프레임 뒤 트리거 리셋 (재소비 방지)
+        // [2] 트리거 재사용 방지
         StartCoroutine(Co_ResetResultTriggers());
 
-        // 결과 애니메이션 이후 QTE Layer 종료
-        StartCoroutine(Co_DisableQTELayerAfterResult());
     }
 
     public void PlayIntro()
     {
         // Any State → PSN_AA_Pounce_Start 조건 충족
-        animator.SetInteger(_qteStateHash, 1);
+        animator.Play("PSN_AA_Pounce_Start", qteLayerIndex, 0f);
     }
 
     public void PlayLoop()
@@ -176,20 +170,17 @@ public class PrisonerQTEAnimator : MonoBehaviour
         animator.ResetTrigger(_attackHash);
     }
 
-    // 결과 애니메이션 종료 후 정리
-    private IEnumerator Co_DisableQTELayerAfterResult()
-    {
-        yield return null; // 트리거 소비
-        yield return null; // 상태 진입 안정화
-
-        StopQTE(); // QTEState = 0
-        animator.SetLayerWeight(qteLayerIndex, 0f);
-    }
-
     public void OnPrisonerHitSfx()
     {
         if (hitSfx != null)
             AudioManager.Instance?.PlaySFX(hitSfx);
+    }
+
+    // Escaped / Attacked 애니메이션 마지막 프레임
+    public void OnQTEResultAnimationFinished()
+    {
+        StopQTE(); // QTEState = 0
+        animator.SetLayerWeight(qteLayerIndex, 0f);
     }
 }
 
