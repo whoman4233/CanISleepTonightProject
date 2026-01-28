@@ -18,6 +18,8 @@ GameObject:
   - component: {fileID: 6948067153894314097}
   - component: {fileID: 2672436844793215148}
   - component: {fileID: 5071232918380024477}
+  - component: {fileID: 1037226225455901206}
+  - component: {fileID: -3719033550124860223}
   m_Layer: 8
   m_Name: PSN_Skinny_03
   m_TagString: Untagged
@@ -257,6 +259,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myVisualType: 0
+--- !u!114 &1037226225455901206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d888be46bd177614dbc9d3f457b9d791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  qteStateParam: QTEState
+  hitTrigger: HitSuccess
+  attackTrigger: AttackFail
+  qteStartSfx: {fileID: 0}
+  qteLoopSfx: {fileID: 0}
+  hitSfx: {fileID: 0}
+  qteLayerIndex: 1
+--- !u!114 &-3719033550124860223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2221b6b69ac314f85dd7163e03ff3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  action: {fileID: 0}
+  oneShot: 1
 --- !u!1001 &8198669178024897047
 PrefabInstance:
   m_ObjectHideFlags: 0
