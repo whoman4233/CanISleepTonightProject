@@ -83,9 +83,7 @@ public class QTEFlowDirector : MonoBehaviour
         if (shakeController != null)
             shakeController.OnQTEStarted();
 
-        // 죄수 공격 애니메이션 시작 (★ Animator가 아니라 PrisonerQTEAnimator에 호출해야 함)
-        if (PrisonerQTEContext.CurrentAttackerQTEAnimator != null)
-            PrisonerQTEContext.CurrentAttackerQTEAnimator.PlayAttackFail();
+
 
         // BaseShake는 애니메이션 이벤트에서 제어
     }
