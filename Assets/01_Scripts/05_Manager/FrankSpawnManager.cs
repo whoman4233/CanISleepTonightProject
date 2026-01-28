@@ -11,58 +11,11 @@ public class FrankSpawnManager : MonoBehaviour
 
     [Header("Prefab")]
     [SerializeField] private GameObject frankPrefab;
+    [SerializeField] private GameObject frankSitPrefab;
 
     private GameObject _currentFrankInstance;
 
     private Action<MissionStartedEvent> _onMissionStart;
-
-    // ★ [수정] 인자를 dayIndex가 아닌 missionID로 받도록 변경 (혹은 내부에서 확인)
-    //public void SpawnFrankForMission(DailyMissionStrategy mission)
-    //{
-    //    ClearFrank();
-
-    //    if (mission == null) return;
-
-    //    // 미션 ID 파싱 (예: "Mission_04" -> 4)
-    //    int missionNum = ParseMissionID(mission.missionId);
-
-    //    Transform targetPoint = null;
-
-    //    // ★ [핵심] 미션 번호에 따라 층 결정
-    //    // 미션 4, 6은 B1층 / 나머지는 1F
-    //    //if (missionNum == 4 || missionNum == 6)
-    //    //{
-    //    //    if (spawnPoints_B1 != null && spawnPoints_B1.Length > 0)
-    //    //    {
-    //    //        targetPoint = spawnPoints_B1[Random.Range(0, spawnPoints_B1.Length)];
-    //    //    }
-    //    //}
-    //    if (missionNum == 4) return;
-    //    else if (missionNum == 6) // 미션 6에서만 b1F에서 소환되도록
-    //    {
-    //        if (spawnPoints_B1 != null && spawnPoints_B1.Length > 0)
-    //        {
-    //            targetPoint = spawnPoints_B1[Random.Range(0, spawnPoints_B1.Length)];
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (spawnPoints_1F != null && spawnPoints_1F.Length > 0)
-    //        {
-    //            targetPoint = spawnPoints_1F[Random.Range(0, spawnPoints_1F.Length)];
-    //        }
-    //    }
-
-    //    if (targetPoint != null && frankPrefab != null)
-    //    {
-    //        _currentFrankInstance = Instantiate(frankPrefab, targetPoint.position, targetPoint.rotation);
-    //        Debug.Log($"[Frank] 선임 교도관 생성 완료 (Mission {missionNum}, 위치: {targetPoint.name})");
-    //    }
-    //    else
-    //    {
-    //        Debug.LogWarning("[Frank] 스폰 포인트가 없거나 프리팹이 없습니다.");
-    //    }
-    //}
 
     private void Awake()
     {
@@ -104,17 +57,37 @@ public class FrankSpawnManager : MonoBehaviour
             return;
         }
 
-        if (frankPrefab != null && spawnPoints_B1 != null && spawnPoints_1F != null)
-        {
-            // 미션 6이면 지하, 아니면 1층
-            // (DailyMissionManager에서 전달받은 미션 객체로 판단)
-            bool isMission06 = (mission is Mission06Strategy);
-            Transform targetPoint = isMission06 ? spawnPoints_B1 : spawnPoints_1F;
+        GameObject prefabToSpawn = null;
+        Transform targetPoint = null;
 
-            _currentFrankInstance = Instantiate(frankPrefab, targetPoint.position, targetPoint.rotation);
+        // 미션 6인지 체크
+        bool isMission06 = (mission is Mission06Strategy || mission.missionId == DialogueKeys.Missions.Mission06);
+
+        if (isMission06)
+        {
+            // 미션 6: 지하(B1) + 서 있는 프랭크
+            prefabToSpawn = frankPrefab;
+            targetPoint = spawnPoints_B1;
+        }
+        else
+        {
+            // 나머지 미션: 1층(1F) + 앉아 있는 프랭크
+            prefabToSpawn = frankSitPrefab;
+            targetPoint = spawnPoints_1F;
+        }
+
+        // 최종 생성 절차
+        if (prefabToSpawn != null && targetPoint != null)
+        {
+            _currentFrankInstance = Instantiate(prefabToSpawn, targetPoint.position, targetPoint.rotation);
             _currentFrankInstance.name = DialogueKeys.Speakers.Frank;
 
-            Debug.Log($"[FrankSpawn] 미션 {mission.missionId} 설정에 따라 {targetPoint.name}에 스폰 완료");
+            Debug.Log($"[FrankSpawn] 미션 {mission.missionId} 설정: " +
+                      $"프리팹({prefabToSpawn.name}), 위치({targetPoint.name}) 스폰 완료");
+        }
+        else
+        {
+            Debug.LogWarning($"[FrankSpawn] 스폰 실패: 프리팹({prefabToSpawn}) 또는 포인트({targetPoint})가 없습니다.");
         }
     }
 
@@ -126,15 +99,4 @@ public class FrankSpawnManager : MonoBehaviour
             _currentFrankInstance = null;
         }
     }
-
-    //private int ParseMissionID(string missionID)
-    //{
-    //    // "Mission_04" 같은 문자열에서 숫자 추출
-    //    string numberPart = System.Text.RegularExpressions.Regex.Replace(missionID, @"\D", "");
-    //    if (int.TryParse(numberPart, out int result))
-    //    {
-    //        return result;
-    //    }
-    //    return 1; // 실패 시 기본값
-    //}
 }

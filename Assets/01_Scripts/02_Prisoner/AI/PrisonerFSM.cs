@@ -45,6 +45,9 @@ public class PrisonerFSM : MonoBehaviour
     public IPrisonerState CenterIdleState { get; private set; }
     public IPrisonerState QTEApproachState { get; private set; }
 
+    // ★ [추가] 탈주 상태 프로퍼티
+    public IPrisonerState EscapeState { get; private set; }
+
     public bool IsInvulnerable => _currentState == InspectionState || _currentState == DeadState;
 
     private void Awake()
@@ -60,6 +63,9 @@ public class PrisonerFSM : MonoBehaviour
         InspectionState = new PrisonerInspectionState(this);
         ReturnState = new PrisonerReturnState(this);
         CenterIdleState = new PrisonerCenterIdleState(this);
+
+        // ★ [추가] EscapeState 생성
+        EscapeState = new PrisonerEscapeState(this);
 
         if (defaultQteAction == null)
             Debug.LogWarning($"[PrisonerFSM] {name} : QTE Action Data is missing in Inspector!");
@@ -173,11 +179,13 @@ public class PrisonerFSM : MonoBehaviour
         {
             case PrisonerAIType.Good:
             case PrisonerAIType.Bad:
-            case PrisonerAIType.QTE_Attacker: // ★ [수정] QTE 공격자도 일단 점호 태세를 취함
+            case PrisonerAIType.QTE_Attacker: //  QTE 공격자도 일단 점호 태세를 취함
                 ChangeState(InspectionState);
                 break;
             case PrisonerAIType.Escaper:
                 Debug.Log($"[FSM] {name} 탈주 시작!");
+                //  로그만 찍지 말고 실제로 상태 전환
+                ChangeState(EscapeState);
                 break;
         }
     }
