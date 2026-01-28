@@ -101,15 +101,7 @@ public class PrisonerVisualIdleState : IPrisonerState
 
         PrisonerAIType aiType = _fsm.Controller.AIType;
 
-        if (aiType == PrisonerAIType.Good || aiType == PrisonerAIType.Crying)
-        {
-            if (_fsm.CowerState != null) _fsm.ChangeState(_fsm.CowerState);
-            else _fsm.ChangeState(_fsm.ActionState);
-        }
-        else
-        {
-            if (_fsm.CombatState != null) _fsm.ChangeState(_fsm.CombatState);
-        }
+        if (_fsm.CombatState != null) _fsm.ChangeState(_fsm.CombatState);
     }
 
     public void OnStartInspection()
