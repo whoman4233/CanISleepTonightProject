@@ -266,6 +266,8 @@ public class FlowController : MonoBehaviour
     private IEnumerator LoadActualPlaySceneRoutine()
     {
         IsBusy = true;
+        EventBus.Publish(new UIHardResetEvent());
+        EventBus.Publish(new InputHardResetEvent());
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
 
         EventBus.Publish(new LoadingOverlayShownEvent());
