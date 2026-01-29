@@ -17,7 +17,7 @@ public class PrisonerQTEApproachState : BasePrisonerState
 
     private float _originalSpeed;
     private const float QTE_APPROACH_SPEED = 6.0f;
-
+    private bool _ended;
     // ★ [추가] 안전장치 코루틴
     private Coroutine _safetyCoroutine;
 
@@ -95,6 +95,8 @@ public class PrisonerQTEApproachState : BasePrisonerState
     {
         // (기존 코드와 동일하므로 생략)
         // ...
+        if (_ended) return;
+
         if (_isQteTriggered) return;
 
         if (player == null) { /* 플레이어 찾기 로직... */ }
@@ -110,7 +112,6 @@ public class PrisonerQTEApproachState : BasePrisonerState
                 agent.isStopped = true;
                 agent.velocity = Vector3.zero;
                 anim.SetBool("Walk", false);
-                PrisonerQTEContext.SetAttacker(fsm.transform);
                 fsm.StartCoroutine(Co_StartQTE_NextFrame());
             }
         }
@@ -145,7 +146,7 @@ public class PrisonerQTEApproachState : BasePrisonerState
     private void OnQTEEnded(QTEEndedEvent evt)
     {
         if (evt.Action != qteAction) return;
-        if (PrisonerQTEContext.CurrentAttacker != fsm.transform) return;
+        if (PrisonerQTEContext.CurrentAttacker != fsm.transform.gameObject) return;
 
         // QTE 결과가 나왔으니, 애니메이션이 끝나기를 기다림.
         // 하지만 혹시 이벤트가 안 올 것을 대비해 4초 뒤 강제 전환 예약
@@ -167,7 +168,7 @@ public class PrisonerQTEApproachState : BasePrisonerState
     private void OnResultAnimationFinished(QTEResultAnimationFinishedEvent evt)
     {
         if (evt.Action != qteAction) return;
-        if (PrisonerQTEContext.CurrentAttacker != fsm.transform) return;
+        if (PrisonerQTEContext.CurrentAttacker != fsm.transform.gameObject) return;
 
         // 정상적으로 이벤트가 왔으므로 안전장치 해제
         if (_safetyCoroutine != null)
@@ -181,7 +182,11 @@ public class PrisonerQTEApproachState : BasePrisonerState
 
     private void TransitionToCombat()
     {
-        _isQteTriggered = false;
+        if (_ended) return;
+        _ended = true;
+
+        PrisonerQTEContext.Clear();
+
         fsm.ChangeState(fsm.CombatState);
     }
 }

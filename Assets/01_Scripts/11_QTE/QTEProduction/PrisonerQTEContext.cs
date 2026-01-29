@@ -18,6 +18,8 @@ public static class PrisonerQTEContext
 
     public static void SetAttacker(Transform attacker)
     {
+        Debug.Log($"[QTEContext] SetAttacker called by {attacker?.name} | Frame={Time.frameCount}");
+
         if (attacker == null)
         {
             Clear();

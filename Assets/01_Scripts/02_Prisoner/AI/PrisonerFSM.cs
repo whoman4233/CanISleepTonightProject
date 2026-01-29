@@ -23,6 +23,7 @@ public class PrisonerFSM : MonoBehaviour
     public Animator Anim { get; private set; }
 
     public IPrisonerState _currentState;
+    public IPrisonerState CurrentState => _currentState;
 
     // ================================================================
     // [이벤트 핸들러 캐시]
