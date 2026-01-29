@@ -258,10 +258,33 @@ public class PrisonerFSM : MonoBehaviour
     {
         MonoBehaviour targetMono = target as MonoBehaviour;
         if (targetMono == null) return false;
+
+        // 1. 점호 대상이 '나 자신'이면 무조건 True
         if (targetMono.gameObject == this.gameObject) return true;
 
-        float distance = Vector3.Distance(transform.position, targetMono.transform.position);
-        if (distance < 4.0f) return true;
+        // 2. '내 감방(AssignedCell)'을 기준으로 거리 체크
+        if (Controller != null && Controller.AssignedCell != null)
+        {
+            // 내 감방의 중심 위치 (Prisoner의 현재 위치가 아님)
+            Vector3 cellCenter = Controller.AssignedCell.transform.position;
+            Vector3 targetPos = targetMono.transform.position;
+
+            // 높이 차이는 무시 (선택 사항)
+            targetPos.y = cellCenter.y;
+
+            // 거리 계산
+            float distanceToCell = Vector3.Distance(cellCenter, targetPos);
+
+            // ★ [수정] 4.0f -> 2.5f 로 축소
+            // 보통 감방 한 칸의 반경이 2.5m를 넘지 않으므로, 이 정도면 옆방은 제외되고 '내 방 안'만 체크됩니다.
+            if (distanceToCell < 4f) return true;
+        }
+        else
+        {
+            // (예외) 만약 배정된 방이 없는 상태라면, 기존처럼 내 몸 기준으로 좁게 체크
+            float distToMe = Vector3.Distance(transform.position, targetMono.transform.position);
+            if (distToMe < 2.0f) return true; // 아주 가까운 것만 허용
+        }
 
         return false;
     }
