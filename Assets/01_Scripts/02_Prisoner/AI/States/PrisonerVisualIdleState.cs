@@ -27,7 +27,7 @@ public class PrisonerVisualIdleState : IPrisonerState
             Debug.Log($"[VisualIdle] GoatHead({myVisual}) 감지 -> Action 13번 실행 (IsAction On)");
 
             // 1. ActionType 13번 설정 (Controller의 int 오버로딩 활용)
-            _fsm.Controller.StartActionBehavior(13);
+            _fsm.Controller.StartActionBehavior(12);
 
             // 2. IsAction True 설정 (Controller 함수는 파라미터만 세팅하고 IsAction을 안 켤 수도 있으므로 수동 설정)
             _fsm.Anim.SetBool("IsAction", true);
