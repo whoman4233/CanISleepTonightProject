@@ -9,6 +9,10 @@ public sealed class PrisonerSfxController : MonoBehaviour
     [Header("Hit Clips")]
     [SerializeField] private AudioClip[] hitClips;
 
+    // ★ [추가] 공격 기합/휘두르는 소리 (Inspector에서 할당 필요)
+    [Header("Attack Clips")]
+    [SerializeField] private AudioClip[] attackClips;
+
     [Header("Moan Clips")]
     [SerializeField] private AudioClip[] moanClips;
 
@@ -19,6 +23,10 @@ public sealed class PrisonerSfxController : MonoBehaviour
     private const float HitVolume = 0.9f;
     private const float MoanVolume = 0.9f;
     private const float DieVolume = 1.0f;
+
+    // ★ [추가] 공격 사운드 볼륨
+    private const float AttackVolume = 1.0f;
+
     private const float SpatialBlend3D = 1f;
 
     // Moan이 너무 자주 나오지 않게(원하면 0으로 두면 매 히트마다 시도)
@@ -30,6 +38,10 @@ public sealed class PrisonerSfxController : MonoBehaviour
     // Shuffle bags
     private readonly List<int> _hitBag = new List<int>(16);
     private int _hitBagIndex;
+
+    // ★ [추가] 공격 사운드 셔플 백 & 인덱스
+    private readonly List<int> _attackBag = new List<int>(16);
+    private int _attackBagIndex;
 
     private readonly List<int> _moanBag = new List<int>(16);
     private int _moanBagIndex;
@@ -49,7 +61,7 @@ public sealed class PrisonerSfxController : MonoBehaviour
 
     private void Awake()
     {
-        // Hit 전용 소스
+        // Hit 전용 소스 (공격음도 여기서 재생 가능)
         _hitSource = gameObject.AddComponent<AudioSource>();
         Setup3DOneShot(_hitSource);
 
@@ -63,6 +75,9 @@ public sealed class PrisonerSfxController : MonoBehaviour
         RefillAndShuffleBag(hitClips, _hitBag, ref _hitBagIndex);
         RefillAndShuffleBag(moanClips, _moanBag, ref _moanBagIndex);
         RefillAndShuffleBag(dieClips, _dieBag, ref _dieBagIndex);
+
+        // ★ [추가] 공격 가방 초기화
+        RefillAndShuffleBag(attackClips, _attackBag, ref _attackBagIndex);
 
         // 1. 루프 전용 소스 추가
         _loopSource = gameObject.AddComponent<AudioSource>();
@@ -85,6 +100,15 @@ public sealed class PrisonerSfxController : MonoBehaviour
         src.playOnAwake = false;
         src.loop = false;
         src.spatialBlend = SpatialBlend3D;
+    }
+
+    // ================================================================
+    // ★ [추가] 공격 애니메이션 시작 시 호출 (기합/휘두르는 소리)
+    // ================================================================
+    public void PlayRandomAttack()
+    {
+        // _hitSource를 사용하여 재생 (PlayOneShot이므로 기존 소리와 섞임)
+        PlayFromBag(_hitSource, attackClips, _attackBag, ref _attackBagIndex, AttackVolume);
     }
 
     /// <summary>
@@ -194,11 +218,10 @@ public sealed class PrisonerSfxController : MonoBehaviour
             _loopSource.Play();
 
             // (디버깅용) 소리 재생 확인 로그
-            Debug.Log($"[SFX] Playing Loop: {type} / Clip: {clip.name}");
+            // Debug.Log($"[SFX] Playing Loop: {type} / Clip: {clip.name}");
         }
         else
         {
-            // ★ [문제 확인용 로그 추가]
             // 딕셔너리에 해당 타입의 오디오 클립이 없으면 경고를 띄움
             if (type != PrisonerAIType.Good && type != PrisonerAIType.Bad) // 소리가 없는게 정상인 타입 제외
             {
@@ -220,12 +243,12 @@ public sealed class PrisonerSfxController : MonoBehaviour
             _loopSource.clip = null;
         }
 
-        // 2. [추가] 혹시 모를 코루틴이나 예약된 소리 재생 취소
+        // 2. 혹시 모를 코루틴이나 예약된 소리 재생 취소
         CancelInvoke();
         StopAllCoroutines();
     }
 
-    // ★ [추가] 사망 시 확실하게 모든 소리 끄기
+    // ★ 사망 시 확실하게 모든 소리 끄기
     public void StopAllSounds()
     {
         StopLoop();

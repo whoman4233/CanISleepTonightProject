@@ -9,13 +9,17 @@ public class PrisonerReturnState : BasePrisonerState
 
     public override void Enter()
     {
+        base.Enter(); // BasePrisonerState의 Enter 호출 (필요시)
+
         // 1. 목표 지점 (침대/스폰 위치)
+        // [수정] SpawnPosition 대신 AssignedCell.prisonerSpawn 사용 (코드 요청사항 반영)
         Transform target = null;
         if (Controller.AssignedCell != null)
         {
             target = Controller.AssignedCell.prisonerSpawn;
         }
 
+        // 스폰 위치도 없고, 할당된 방도 없으면 바로 일상 행동으로
         if (target == null)
         {
             fsm.ChangeState(fsm.ActionState);
@@ -53,13 +57,14 @@ public class PrisonerReturnState : BasePrisonerState
         }
         else
         {
+            // 이미 제자리라면 바로 상태 전환
             fsm.ChangeState(fsm.ActionState);
         }
     }
 
     public override void Update()
     {
-        if (!agent.isOnNavMesh || !agent.isActiveAndEnabled) return;
+        if (agent == null || !agent.isOnNavMesh || !agent.isActiveAndEnabled) return;
 
         // 1. 정상적인 이동 완료 체크 (기존 로직)
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -94,9 +99,10 @@ public class PrisonerReturnState : BasePrisonerState
         // 나가면서 이동 애니메이션 끄기
         anim.SetBool("Walk", false);
 
-        if (agent.isOnNavMesh && agent.isActiveAndEnabled)
+        if (agent != null && agent.isOnNavMesh && agent.isActiveAndEnabled)
         {
             agent.isStopped = true;
+            agent.ResetPath();
         }
         base.Exit();
     }
