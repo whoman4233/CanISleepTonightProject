@@ -53,6 +53,9 @@ public class QTEDistanceTrigger : MonoBehaviour
     /// </summary>
     private void OnInspectionStarted(InspectionStartedEvent e)
     {
+        if (_used && oneShot)
+            return;
+
         Arm();
     }
 
@@ -101,9 +104,20 @@ public class QTEDistanceTrigger : MonoBehaviour
 
     private void Arm()
     {
+        var fsm = GetComponentInParent<PrisonerFSM>();
+        if (fsm == null)
+            return;
+
+        // Combat / Dead / QTE 접근 중에는 재무장 금지
+        if (fsm.CurrentState == fsm.CombatState ||
+            fsm.CurrentState == fsm.DeadState ||
+            fsm.CurrentState == fsm.QTEApproachState)
+            return;
+
         _armed = true;
         Debug.Log($"[QTE] Armed : {name}", this);
     }
+
 
     private void Disarm()
     {
@@ -112,6 +126,13 @@ public class QTEDistanceTrigger : MonoBehaviour
 
     private void TriggerQTE()
     {
+        var fsm = GetComponentInParent<PrisonerFSM>();
+        if (fsm != null)
+        {
+            if (fsm.CurrentState != fsm.QTEApproachState)
+                return;
+        }
+
         _used = true;
         _armed = false;
 
