@@ -33,25 +33,28 @@ public class Mission_CollectionStrategy : DailyMissionStrategy
                 }
             }
 
-            // (2) 용의자가 한 명이라도 있다면 그중 랜덤 선택
-            if (suspiciousCells.Count > 0)
+            for(int i = 0; i<3; i++)
             {
-                string targetCell = suspiciousCells[Random.Range(0, suspiciousCells.Count)];
-                DailyRoleData currentRole = sm.GetDailyRole(targetCell);
+                // (2) 용의자가 한 명이라도 있다면 그중 랜덤 선택
+                if (suspiciousCells.Count > 0)
+                {
+                    string targetCell = suspiciousCells[Random.Range(0, suspiciousCells.Count)];
+                    DailyRoleData currentRole = sm.GetDailyRole(targetCell);
 
-                // (3) 해당 용의자의 AI만 'QTE_Attacker'로 변경 (나머지 상태 유지)
-                sm.SetDailyRole(
-                    targetCell,
-                    PrisonerAIType.QTE_Attacker, // ★ AI 교체: 공격 모드
-                    currentRole.visualType,      // 외형 유지
-                    true                         // ★ 용의자 상태(Suspicious) 유지 (중요!)
-                );
+                    // (3) 해당 용의자의 AI만 'QTE_Attacker'로 변경 (나머지 상태 유지)
+                    sm.SetDailyRole(
+                        targetCell,
+                        PrisonerAIType.QTE_Attacker, // ★ AI 교체: 공격 모드
+                        currentRole.visualType,      // 외형 유지
+                        true                         // ★ 용의자 상태(Suspicious) 유지 (중요!)
+                    );
 
-                Debug.Log($"[Mission_CollectionStrategy] Mission02 이벤트: 용의자인 {targetCell}번 방 죄수가 QTE 공격수로 지정되었습니다.");
-            }
-            else
-            {
-                Debug.LogWarning("[Mission] 용의자가 한 명도 없어 QTE 공격수를 배정하지 못했습니다.");
+                    Debug.Log($"[Mission_CollectionStrategy] Mission02 이벤트: 용의자인 {targetCell}번 방 죄수가 QTE 공격수로 지정되었습니다.");
+                }
+                else
+                {
+                    Debug.LogWarning("[Mission] 용의자가 한 명도 없어 QTE 공격수를 배정하지 못했습니다.");
+                }
             }
         }
     }

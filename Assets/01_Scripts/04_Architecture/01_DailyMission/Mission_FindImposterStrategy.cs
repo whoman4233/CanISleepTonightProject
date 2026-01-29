@@ -149,7 +149,7 @@ public class Mission_FindImposterStrategy : DailyMissionStrategy
                     Sequence = successSequence
                 });
             }
-
+    
             return true;
         }
         return false;
