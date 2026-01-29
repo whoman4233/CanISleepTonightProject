@@ -8,57 +8,72 @@ public class PrisonerCombatState : BasePrisonerState
     private const float AttackRange = 1.3f;
     private float _attackTagDelayTimer = 0f;
 
+    // [최적화] 플레이어 찾는 빈도 조절용 타이머
+    private float _playerFindTimer = 0f;
+
     public PrisonerCombatState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
     {
         base.Enter();
 
-        // 1. 플레이어 찾기 (Base에 없거나 놓쳤을 경우 대비)
+        // 1. 플레이어 캐싱 안전장치
         if (player == null)
         {
-            var pObj = GameObject.FindGameObjectWithTag("Player");
-            if (pObj != null) player = pObj.transform;
+            FindPlayer();
         }
 
-        // 2. Agent 초기화 (Enter에서의 시도)
+        // 2. NavMeshAgent 심폐소생술 (위치 보정 및 활성화)
         if (agent != null)
         {
             if (!agent.enabled) agent.enabled = true;
-            if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
+
+            // 위치가 어긋나 있다면 강제 동기화
+            if (!agent.isOnNavMesh)
+            {
+                agent.Warp(fsm.transform.position);
+            }
 
             agent.isStopped = false;
             agent.updatePosition = true;
             agent.updateRotation = true;
+
+            // ★ [추가] 속도 초기화 (이전 상태에서 빨라졌을 수 있으므로)
+            if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
+                agent.speed = fsm.Controller.Data.definition.spd;
+            else
+                agent.speed = 3.5f; // 기본값
+
+            agent.stoppingDistance = 0.1f;
         }
 
         _cooldownTimer = 0.5f;
 
-        // 애니메이션 초기화 (Update에서 거리 재고 Run 켤 것임)
+        // 3. 애니메이션 초기화 (이동 애니메이션은 Update에서 처리)
         anim.SetBool("Walk", false);
         anim.SetBool("IsCombat", true);
 
-        // 무기 장착
+        // 4. 무기 장착
         if (fsm.Controller.HasWeapon)
         {
+            // ★ [수정] 무기 타입만 설정하고, '0'으로 초기화하는 코드는 삭제함 (애니메이션 꼬임 방지)
             fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
-            fsm.Controller.StartActionBehavior(0);
-        }
-
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.stoppingDistance = 0.1f;
         }
     }
 
     public override void Update()
     {
-        // 플레이어가 없으면 다시 찾기 시도 (안 그러면 평생 멈춰있음)
+        // 1. 플레이어 유효성 검사 (없으면 주기적으로 재검색)
         if (player == null)
         {
-            var pObj = GameObject.FindGameObjectWithTag("Player");
-            if (pObj != null) player = pObj.transform;
-            else
+            _playerFindTimer -= Time.deltaTime;
+            if (_playerFindTimer <= 0f)
+            {
+                FindPlayer();
+                _playerFindTimer = 1.0f; // 1초 뒤에 다시 찾기 (성능 보호)
+            }
+
+            if (player == null) // 여전히 없으면 정지
             {
                 StopMovement();
                 return;
@@ -67,6 +82,7 @@ public class PrisonerCombatState : BasePrisonerState
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
+        // 2. 행동 불가 상태 체크 (피격, 공격 중)
         if (stateInfo.IsTag("Hit"))
         {
             StopMovement();
@@ -77,7 +93,7 @@ public class PrisonerCombatState : BasePrisonerState
         {
             _attackTagDelayTimer -= Time.deltaTime;
             StopMovement();
-            RotateTowardsPlayer(true);
+            RotateTowardsPlayer(true); // 공격 직전 유도력 보정
             return;
         }
 
@@ -87,13 +103,14 @@ public class PrisonerCombatState : BasePrisonerState
             return;
         }
 
+        // 3. 전투 로직 수행
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
         if (dist <= AttackRange)
         {
-            // 사거리 안
+            // [사거리 안] 공격 시도
             StopMovement();
             RotateTowardsPlayer(true);
 
@@ -104,7 +121,7 @@ public class PrisonerCombatState : BasePrisonerState
         }
         else
         {
-            // 사거리 밖 -> 추격
+            // [사거리 밖] 추격
             MoveToPlayer();
         }
     }
@@ -113,34 +130,28 @@ public class PrisonerCombatState : BasePrisonerState
     {
         if (agent == null) return;
 
-        // Agent 복구 로직 강화
-        // Agent가 꺼져있거나 NavMesh 위에 없으면 다시 살려내야 함
+        // ★ [안전장치] Agent가 갑자기 꺼지거나 NavMesh에서 이탈했을 경우 복구 시도
         if (!agent.enabled) agent.enabled = true;
+        if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
-        if (!agent.isOnNavMesh)
-        {
-            // Enter에서 실패했을 수 있으므로 여기서 재시도
-            agent.Warp(fsm.transform.position);
-        }
-
-        // 복구 후 다시 체크: 이제 진짜 이동 가능한가?
+        // 정상 상태일 때만 이동 및 Run 애니메이션
         if (agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
             anim.SetBool("Walk", false);
-            anim.SetBool("Run", true); // 이동 성공 시 Run 켜기
+            anim.SetBool("Run", true);
+
             RotateTowardsPlayer(false);
         }
         else
         {
-            // 여전히 복구 불가능하면 멈춤 (이때만 Standing 모션이 나옴)
+            // 복구 실패 시 멈춤 (제자리 걷기 방지)
             StopMovement();
             RotateTowardsPlayer(true);
         }
     }
-
 
     private void Attack()
     {
@@ -157,6 +168,8 @@ public class PrisonerCombatState : BasePrisonerState
         anim.SetTrigger("Attack");
 
         _cooldownTimer = AttackCooldown;
+
+        // 태그가 바뀌기 전까지 이동을 막아주는 버퍼 시간
         _attackTagDelayTimer = 0.2f;
     }
 
@@ -167,6 +180,7 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
         }
+        // ★ 멈출 때는 Run을 확실히 꺼야 함
         anim.SetBool("Run", false);
     }
 
@@ -194,5 +208,12 @@ public class PrisonerCombatState : BasePrisonerState
             float speed = fastTurn ? 50f : 10f;
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * speed);
         }
+    }
+
+    // 헬퍼: 플레이어 찾기
+    private void FindPlayer()
+    {
+        var pObj = GameObject.FindGameObjectWithTag("Player");
+        if (pObj != null) player = pObj.transform;
     }
 }
