@@ -56,7 +56,6 @@ public class PrisonerController : MonoBehaviour
         return type == PrisonerAIType.Bad ||
                type == PrisonerAIType.Ambusher ||
                type == PrisonerAIType.HammeringWall ||
-               type == PrisonerAIType.Escaper ||
                type == PrisonerAIType.Attacking;
     }
 
@@ -245,7 +244,7 @@ public class PrisonerController : MonoBehaviour
             PrisonerAIType.HammeringWall => 4,
             PrisonerAIType.Deadlift => 5,
             PrisonerAIType.Crying => 6,
-            PrisonerAIType.Escaper => 7,
+            PrisonerAIType.Escaping => 7,
             PrisonerAIType.Graffiti => 8,
             PrisonerAIType.Ambusher => 9,
             PrisonerAIType.Digging => 10,

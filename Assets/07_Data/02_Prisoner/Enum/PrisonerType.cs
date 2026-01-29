@@ -26,7 +26,6 @@ public enum PrisonerAIType
     Escaping,   // Å»ÁÖÇÏ´Â ÁË¼ö (°¨¹æ ¹ÛÀ¸·Î ¶Ü)
     Digging,   // ¶¥ ÆÄ´Â ÁË¼ö
 
-    Escaper,    // ¶¥ ÆÄ´Â ³ð (Target)
     Ambusher,    // ±â½ÀÇÏ´Â ³ð (Enemy)
 
     Suss, 

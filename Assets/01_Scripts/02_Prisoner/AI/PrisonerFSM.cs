@@ -115,7 +115,7 @@ public class PrisonerFSM : MonoBehaviour
     public void InitializeBehavior(PrisonerAIType aiType)
     {
         Anim.SetBool("IsntStanding", false);
-        float runStyleValue = (aiType == PrisonerAIType.Escaper) ? 1f : 0f;
+        float runStyleValue = (aiType == PrisonerAIType.Escaping) ? 1f : 0f;
         Anim.SetFloat("RunStyle", runStyleValue);
 
         if (CheckAndEnterVisualState()) return;
@@ -186,7 +186,7 @@ public class PrisonerFSM : MonoBehaviour
             case PrisonerAIType.QTE_Attacker: // QTE 공격자도 일단 점호 태세
                 ChangeState(InspectionState);
                 break;
-            case PrisonerAIType.Escaper:
+            case PrisonerAIType.Escaping:
                 Debug.Log($"[FSM] {name} 탈주 시작!");
                 ChangeState(EscapeState);
                 break;
@@ -401,8 +401,7 @@ public class PrisonerFSM : MonoBehaviour
                type == PrisonerAIType.Crying ||
                type == PrisonerAIType.Mumbling ||
                type == PrisonerAIType.HammeringWall ||
-               type == PrisonerAIType.Deadlift ||
-               type == PrisonerAIType.Escaper;
+               type == PrisonerAIType.Deadlift;
     }
 
     private bool IsCenterSpawnType()

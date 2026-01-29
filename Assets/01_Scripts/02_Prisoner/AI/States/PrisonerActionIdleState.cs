@@ -136,7 +136,7 @@ public class PrisonerActionIdleState : BasePrisonerState
         return type == PrisonerAIType.Bad ||
                type == PrisonerAIType.Ambusher ||
                type == PrisonerAIType.HammeringWall ||
-               type == PrisonerAIType.Escaper ||
+               type == PrisonerAIType.Escaping ||
                type == PrisonerAIType.Attacking;
     }
 
