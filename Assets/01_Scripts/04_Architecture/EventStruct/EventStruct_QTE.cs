@@ -94,6 +94,11 @@ public struct PrisonerHitTimingEvent // 죄수가 플레이어에게 데미지 �
 
 }
 
+public struct PlayerHitTimingEvent // QTE 실패시 플레이어가 죄수에게 데미지 받음.
+{
+    public QTEActionSO Action;
+}
+
 public struct PlayerAttackTimingEvent // 플레이어의 공격 타이밍 이벤트(애니메이션 이벤트용)
 {
 

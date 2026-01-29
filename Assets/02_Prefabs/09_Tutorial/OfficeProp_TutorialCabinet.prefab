@@ -238,7 +238,6 @@ GameObject:
   - component: {fileID: 167468121649456695}
   - component: {fileID: 5311925698164669588}
   - component: {fileID: 2232144552779402603}
-  - component: {fileID: 1550924642351708207}
   - component: {fileID: 2933869256567396514}
   m_Layer: 10
   m_Name: OfficeProp_TutorialCabinet
@@ -314,23 +313,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d614523941c0e04393f46059ee5640d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultPromptId: 
+  defaultPromptId: Ptxt_KR_Object_07
   ruleTable: {fileID: 11400000, guid: 880cf3594fe7d934587677af9015a9c3, type: 2}
   objectType: Cabinet
---- !u!114 &1550924642351708207
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4734328406849729750}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4dd1e156fa08c804ab62e8126b0f3aa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  source: {fileID: 5311925698164669588}
-  methodName: GetPromptStateEnum
 --- !u!114 &2933869256567396514
 MonoBehaviour:
   m_ObjectHideFlags: 0
