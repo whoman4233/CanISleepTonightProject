@@ -33,28 +33,41 @@ public class Mission_CollectionStrategy : DailyMissionStrategy
                 }
             }
 
-            for(int i = 0; i<3; i++)
+            List<string> candidates = new List<string>(suspiciousCells);
+
+            // (2) 3명과 현재 후보 수 중 적은 수만큼만 반복 (후보가 2명이면 2번만 돌도록)
+            int loopCount = Mathf.Min(3, candidates.Count);
+
+            for (int i = 0; i < loopCount; i++)
             {
-                // (2) 용의자가 한 명이라도 있다면 그중 랜덤 선택
-                if (suspiciousCells.Count > 0)
-                {
-                    string targetCell = suspiciousCells[Random.Range(0, suspiciousCells.Count)];
-                    DailyRoleData currentRole = sm.GetDailyRole(targetCell);
+                // 후보가 없으면 중단 (위의 Min으로 걸러지지만 이중 안전장치)
+                if (candidates.Count == 0) break;
 
-                    // (3) 해당 용의자의 AI만 'QTE_Attacker'로 변경 (나머지 상태 유지)
-                    sm.SetDailyRole(
-                        targetCell,
-                        PrisonerAIType.QTE_Attacker, // ★ AI 교체: 공격 모드
-                        currentRole.visualType,      // 외형 유지
-                        true                         // ★ 용의자 상태(Suspicious) 유지 (중요!)
-                    );
+                // (3) 랜덤 인덱스 선택 및 추출
+                int randomIndex = Random.Range(0, candidates.Count);
+                string targetCell = candidates[randomIndex];
 
-                    Debug.Log($"[Mission_CollectionStrategy] Mission02 이벤트: 용의자인 {targetCell}번 방 죄수가 QTE 공격수로 지정되었습니다.");
-                }
-                else
-                {
-                    Debug.LogWarning("[Mission] 용의자가 한 명도 없어 QTE 공격수를 배정하지 못했습니다.");
-                }
+                // ★ [중복 방지 핵심] 뽑힌 녀석은 후보군에서 삭제
+                candidates.RemoveAt(randomIndex);
+
+                // 데이터 조회
+                DailyRoleData currentRole = sm.GetDailyRole(targetCell);
+
+
+                // (5) 해당 용의자의 AI만 'QTE_Attacker'로 변경
+                sm.SetDailyRole(
+                    targetCell,
+                    PrisonerAIType.QTE_Attacker, // ★ AI 교체: 공격 모드
+                    currentRole.visualType,      // 외형 유지
+                    true                         // ★ 용의자 상태(Suspicious) 유지
+                );
+
+                Debug.Log($"[Mission] Mission02 이벤트: {targetCell}번 방 죄수(외형: {currentRole.visualType})가 QTE 공격수로 지정됨.");
+            }
+
+            if (loopCount == 0)
+            {
+                Debug.LogWarning("[Mission] 용의자가 한 명도 없어 QTE 공격수를 배정하지 못했습니다.");
             }
         }
     }
