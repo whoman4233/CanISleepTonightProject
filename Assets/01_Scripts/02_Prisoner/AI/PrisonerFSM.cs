@@ -29,8 +29,11 @@ public class PrisonerFSM : MonoBehaviour
     // ================================================================
     private Action<InspectionStartedEvent> _onInspectionStarted;
     private Action<InspectionEndedEvent> _onInspectionEnded;
-    // [추가] QTE 시작 이벤트 핸들러
     private Action<QTEStartedEvent> _onQTEStarted;
+    private Action<QTEEndedEvent> _onQTEEnded;
+
+    // ★ [추가] 현재 조사받고 있는 대상을 기억하는 변수 (Struct 수정 없이 필터링하기 위함)
+    private IInspectable _cachedTarget;
 
     // ================================================================
     // [상태 정의] 
@@ -77,27 +80,24 @@ public class PrisonerFSM : MonoBehaviour
         // 이벤트 변수 초기화
         _onInspectionStarted = OnInspectionStarted;
         _onInspectionEnded = OnInspectionEnded;
-
-        // [추가] QTE 시작 핸들러 연결
         _onQTEStarted = OnQTEStarted;
+        _onQTEEnded = OnQTEEnded;
     }
 
     private void OnEnable()
     {
         if (_onInspectionStarted != null) EventBus.Subscribe(_onInspectionStarted);
         if (_onInspectionEnded != null) EventBus.Subscribe(_onInspectionEnded);
-
-        // [추가] 구독
         if (_onQTEStarted != null) EventBus.Subscribe(_onQTEStarted);
+        if (_onQTEEnded != null) EventBus.Subscribe(_onQTEEnded);
     }
 
     private void OnDisable()
     {
         if (_onInspectionStarted != null) EventBus.Unsubscribe(_onInspectionStarted);
         if (_onInspectionEnded != null) EventBus.Unsubscribe(_onInspectionEnded);
-
-        // [추가] 구독 해제
         if (_onQTEStarted != null) EventBus.Unsubscribe(_onQTEStarted);
+        if (_onQTEEnded != null) EventBus.Unsubscribe(_onQTEEnded);
     }
 
     public void Setup(PrisonerController controller, NavMeshAgent agent, Animator anim)
@@ -229,10 +229,17 @@ public class PrisonerFSM : MonoBehaviour
         if (_currentState == DeadState || _currentState == CowerState || _currentState == CombatState)
             return;
 
+        // 내꺼 아니면 무시 + 캐시 초기화
         if (!IsTargetRelatedToMe(evt.Target))
+        {
+            _cachedTarget = null;
             return;
+        }
 
-        // [핵심] 내 AI 타입이 "QTE 공격자"가 아니면 기습 로직을 실행하지 않음
+        // ★ [핵심] "지금 내 물건을 조사 중이다"라고 기억해둠 (QTE 때 확인용)
+        _cachedTarget = evt.Target;
+
+        // 내 AI 타입이 "QTE 공격자"가 아니면 기습 로직을 실행하지 않음
         if (Controller.AIType != PrisonerAIType.QTE_Attacker)
             return;
 
@@ -240,25 +247,51 @@ public class PrisonerFSM : MonoBehaviour
         _ambushCoroutine = StartCoroutine(CoWaitAndAmbush());
     }
 
-    // [추가] QTE 이벤트 발생 시 즉시 반응하는 리스너
+    // [수정] Struct 수정 없이 논리로 필터링
     private void OnQTEStarted(QTEStartedEvent evt)
     {
         if (_currentState == DeadState) return;
 
-        // 상세보기 등에서 QTE가 시작되었다는 신호가 오면
-        // 대기 중이던 코루틴을 취소하고 즉시 달려들어야 함
+        // 1. 점호 시작 때 기억해둔 타겟이 없다면? -> 내 구역 조사가 아니므로 QTE도 내 것이 아님 -> 무시
+        if (_cachedTarget == null) return;
+
+        // (안전장치) 기억해둔 타겟이 정말 내 것인지 한 번 더 체크
+        if (!IsTargetRelatedToMe(_cachedTarget)) return;
+
+        // 여기까지 왔으면 "내 물건 조사 중에 QTE가 터진 것"임.
+        // 1.5초 대기 코루틴 취소
         if (_ambushCoroutine != null)
         {
             StopCoroutine(_ambushCoroutine);
             _ambushCoroutine = null;
         }
 
-        // InspectionState(점호 이동) 등을 끊고 즉시 QTE 접근 상태로 전환
+        Debug.Log($"[FSM] {name} : 내 물건({_cachedTarget}) 조사 중 QTE 발생! 덮칩니다.");
+
+        // InspectionState 등을 끊고 즉시 QTE 접근 상태로 전환
         ChangeState(QTEApproachState);
+    }
+
+    // [추가] QTE 종료 핸들러
+    private void OnQTEEnded(QTEEndedEvent evt)
+    {
+        // 내가 QTE 진행 중이 아니었다면 무시
+        if (_currentState != QTEApproachState) return;
+        if (_currentState == DeadState) return;
+
+        // QTE가 끝났으므로(성공/실패 불문) 전투 상태로 전환
+        Debug.Log($"[FSM] {name} : QTE 종료됨 -> 전투 모드 전환");
+        ChangeState(CombatState);
+
+        // 종료되었으니 타겟 기억 지움
+        _cachedTarget = null;
     }
 
     private void OnInspectionEnded(InspectionEndedEvent evt)
     {
+        // 점호가 끝났으니 기억해둔 타겟 정보 초기화
+        _cachedTarget = null;
+
         if (_ambushCoroutine != null)
         {
             StopCoroutine(_ambushCoroutine);
@@ -294,7 +327,7 @@ public class PrisonerFSM : MonoBehaviour
 
             float distanceToCell = Vector3.Distance(cellCenter, targetPos);
 
-            // [수정] 4.0f -> 2.5f 로 축소
+            // [수정] 4.0f -> 2.5f 로 축소 (옆방 침범 방지)
             if (distanceToCell < 4f) return true;
         }
         else
