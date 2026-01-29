@@ -165,11 +165,13 @@ public class PrisonerCombatState : BasePrisonerState
         else if (!hasWeapon) attackIndex = Random.Range(0, 3);
 
         anim.SetFloat("AttackType", (float)attackIndex);
+
+        // 공격 애니메이션 시작과 함께 사운드 재생
+        fsm.Controller.PlayAttackSound();
+
         anim.SetTrigger("Attack");
 
         _cooldownTimer = AttackCooldown;
-
-        // 태그가 바뀌기 전까지 이동을 막아주는 버퍼 시간
         _attackTagDelayTimer = 0.2f;
     }
 
