@@ -290,6 +290,15 @@ public class PrisonerFSM : MonoBehaviour
     private IEnumerator CoWaitAndAmbush()
     {
         yield return new WaitForSeconds(ambushDelay);
+
+        //1.5초 기다리는 동안 타겟(점호 대상)이 사라졌거나 취소되었는지 확인
+        if (_cachedTarget == null)
+        {
+            Debug.Log($"[FSM] {name} : 기습하려 했으나 대상이 사라짐 (취소)");
+            _ambushCoroutine = null;
+            yield break;
+        }
+
         Debug.Log($"[FSM] {name} : 기습 공격 시작!");
         ChangeState(QTEApproachState);
         _ambushCoroutine = null;
