@@ -169,19 +169,21 @@ public class PrisonerQTEAnimator : MonoBehaviour
     /// </summary>
     public void OnQTEResultAnimationFinished()
     {
-        // QTE Layer 종료
+        // [수정 1] 순서 변경: FSM에게 먼저 알림 -> CombatState 진입 & IsCombat = true 설정됨
+        if (_myAction != null)
+        {
+            EventBus.Publish(new QTEResultAnimationFinishedEvent
+            {
+                Action = _myAction
+            });
+        }
+
+        // [수정 2] 그 다음 레이어 끄기: 이미 밑바닥(Base Layer)은 전투 자세를 취하고 있으므로 끊김 없음
         animator.SetLayerWeight(qteLayerIndex, 0f);
         animator.SetInteger(_qteStateHash, 0);
 
-        // FSM에게 QTE 연출 종료 알림
-        EventBus.Publish(new QTEResultAnimationFinishedEvent
-        {
-            Action = _myAction
-        });
-
         _myAction = null;
     }
-
 
     /// <summary>
     /// 죄수의 애니메이션이 플레이어에게 향하도록 회전 값 보정

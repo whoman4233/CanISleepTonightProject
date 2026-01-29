@@ -17,47 +17,57 @@ public class PrisonerCombatState : BasePrisonerState
     {
         base.Enter();
 
-        // 1. 플레이어 캐싱 안전장치
-        if (player == null)
-        {
-            FindPlayer();
-        }
+        // 1. 플레이어 캐싱
+        if (player == null) FindPlayer();
 
-        // 2. NavMeshAgent 심폐소생술 (위치 보정 및 활성화)
+        // 2. Agent 설정 (기존 코드)
         if (agent != null)
         {
             if (!agent.enabled) agent.enabled = true;
-
-            // 위치가 어긋나 있다면 강제 동기화
-            if (!agent.isOnNavMesh)
-            {
-                agent.Warp(fsm.transform.position);
-            }
+            if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
             agent.isStopped = false;
             agent.updatePosition = true;
             agent.updateRotation = true;
 
-            // ★ [추가] 속도 초기화 (이전 상태에서 빨라졌을 수 있으므로)
+            // 속도 복구
             if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
                 agent.speed = fsm.Controller.Data.definition.spd;
             else
-                agent.speed = 3.5f; // 기본값
+                agent.speed = 3.5f;
 
             agent.stoppingDistance = 0.1f;
         }
 
         _cooldownTimer = 0.5f;
 
-        // 3. 애니메이션 초기화 (이동 애니메이션은 Update에서 처리)
+        // 3. 애니메이션 초기화
         anim.SetBool("Walk", false);
         anim.SetBool("IsCombat", true);
 
-        // 4. 무기 장착
+        // 4. 무기 장착 (기존 코드)
         if (fsm.Controller.HasWeapon)
         {
-            // ★ [수정] 무기 타입만 설정하고, '0'으로 초기화하는 코드는 삭제함 (애니메이션 꼬임 방지)
             fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
+        }
+
+        // ================================================================
+        // ★ [핵심 추가] 진입 즉시 거리 체크 후 이동 시작 (멍때림 방지)
+        // ================================================================
+        if (player != null)
+        {
+            float dist = Vector3.Distance(fsm.transform.position, player.position);
+
+            // 사거리 밖이면 바로 추격 시작 (Run 애니메이션 ON)
+            if (dist > AttackRange)
+            {
+                MoveToPlayer();
+            }
+            // 사거리 안이면 공격 준비 자세
+            else
+            {
+                RotateTowardsPlayer(true);
+            }
         }
     }
 

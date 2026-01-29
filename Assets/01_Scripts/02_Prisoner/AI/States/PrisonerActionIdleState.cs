@@ -121,7 +121,7 @@ public class PrisonerActionIdleState : BasePrisonerState
         return type == PrisonerAIType.Good ||
                type == PrisonerAIType.Bad ||
                type == PrisonerAIType.QTE_Attacker ||
-               type == PrisonerAIType.Escaper;
+               type == PrisonerAIType.Escaping;
     }
 
     private bool IsNoisyType(PrisonerAIType type)
