@@ -29,6 +29,9 @@ public class PrisonerController : MonoBehaviour
     public PrisonerData Data { get; private set; }
     public CellAnchor AssignedCell { get; private set; }
 
+    // ★ [추가] 태어난 위치(복귀 지점)를 기억할 변수
+    public Vector3 SpawnPosition { get; private set; }
+
     [Header("Components")]
     [SerializeField] private Animator animator;
     [SerializeField] private RagdollSetting ragdoll;
@@ -71,6 +74,9 @@ public class PrisonerController : MonoBehaviour
 
     private void Awake()
     {
+        // ★ [추가] 현재 위치를 스폰 위치로 저장
+        SpawnPosition = transform.position;
+
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
@@ -81,6 +87,15 @@ public class PrisonerController : MonoBehaviour
 
         // 프롭 생성 및 손에 부착 (초기엔 다 꺼둠)
         AutoAttachPropsToHand();
+    }
+
+    // ★ [추가] 안전장치: Awake 시점에 위치가 0,0,0이었다면 Start에서 다시 갱신
+    private void Start()
+    {
+        if (SpawnPosition == Vector3.zero && transform.position != Vector3.zero)
+        {
+            SpawnPosition = transform.position;
+        }
     }
 
     private void AutoAttachPropsToHand()
@@ -313,6 +328,14 @@ public class PrisonerController : MonoBehaviour
                     Debug.Log($"✅ [Hit Success] {name} -> Player ({finalDamage} dmg)");
                 }
             }
+        }
+    }
+
+    public void PlayAttackSound()
+    {
+        if (sfx != null)
+        {
+            sfx.PlayRandomAttack();
         }
     }
 
