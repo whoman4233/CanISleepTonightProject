@@ -19,6 +19,12 @@ public class CameraShakeController : MonoBehaviour
     [SerializeField] private float impulseAmplitude = 0.25f;
     [SerializeField] private float impulseDuration = 0.08f;
 
+    [Header("Hit Impulse Shake (맞았을 때 흔들림")]
+    [SerializeField] private float hitAmplitude = 0.6f;
+    [SerializeField] private float hitFrequency = 10f;
+    [SerializeField] private float hitDuration = 0.15f;
+
+
     private CinemachineBasicMultiChannelPerlin _perlin;
     private float _defaultAmplitude;
     private float _defaultFrequency;
@@ -145,6 +151,34 @@ _perlin = virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerl
 
         _perlin.m_AmplitudeGain = 0f;
         _perlin.m_FrequencyGain = _defaultFrequency;
+    }
+
+    // ======================================================
+    // 일반 피격 전용 쉐이크 (QTE 무관)
+    // ======================================================
+
+    public void PlayHitImpulse()
+    {
+        if (_perlin == null || _qteActive)
+            return;
+
+        _perlin.m_FrequencyGain = hitFrequency;
+        _perlin.m_AmplitudeGain = hitAmplitude;
+
+        CancelInvoke(nameof(ResetHitImpulse));
+        Invoke(nameof(ResetHitImpulse), hitDuration);
+    }
+
+    private void ResetHitImpulse()
+    {
+        if (_perlin == null)
+            return;
+
+        // QTE 중이면 기본 쉐이크 유지
+        if (_qteActive)
+            return;
+
+        _perlin.m_AmplitudeGain = 0f;
     }
 }
 

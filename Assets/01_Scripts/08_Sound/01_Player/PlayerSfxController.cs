@@ -20,6 +20,9 @@ public sealed class PlayerSfxController : MonoBehaviour
     [Header("Attack Swing")]
     [SerializeField] private AudioClip[] swingClips;
 
+    [Header("Hit (Player Damaged)")]
+    [SerializeField] private AudioClip[] hitClips;
+
     // 내부 설정값
     private const float WalkVolume = 0.5f;
     private const float RunVolume = 0.7f;
@@ -32,12 +35,16 @@ public sealed class PlayerSfxController : MonoBehaviour
 
     private const float SwingVolume = 0.85f;
 
+    private const float HitVolume = 0.9f;
+
     private const float MinMoveInputSqr = 0.01f;
     private const float SpatialBlend3D = 1f;
 
     private const int MaxReselectAttempts = 10; // (기존 safety < 10 매직넘버 제거)
 
-    private int _lastSwingIndex = -1;
+    private int _lastSwingIndex = -1; //타격 사운드 목록
+
+    private int _lastHitIndex = -1; // 데미지 피드백 사운드 목록
 
     private void Awake()
     {
@@ -130,6 +137,31 @@ public sealed class PlayerSfxController : MonoBehaviour
         if (clip == null) return;
 
         oneShotSource.PlayOneShot(clip, SwingVolume);
+    }
+
+    public void PlayHitRandomSfx()
+    {
+        if (oneShotSource == null) return;
+        if (hitClips == null || hitClips.Length == 0) return;
+
+        int index = Random.Range(0, hitClips.Length);
+
+        if (hitClips.Length > 1)
+        {
+            int attempts = 0;
+            while (index == _lastHitIndex && attempts < MaxReselectAttempts)
+            {
+                index = Random.Range(0, hitClips.Length);
+                attempts++;
+            }
+        }
+
+        _lastHitIndex = index;
+
+        AudioClip clip = hitClips[index];
+        if (clip == null) return;
+
+        oneShotSource.PlayOneShot(clip, HitVolume);
     }
 
     private void EnsurePlayingWithClip(AudioClip targetClip)

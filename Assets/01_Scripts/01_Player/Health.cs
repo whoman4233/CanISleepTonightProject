@@ -23,7 +23,13 @@ public class Health : MonoBehaviour
     {
         if (health == 0) return;
 
+        int prev = health;
         health = Mathf.Max(health - damage, 0);
+
+        if (health < prev)
+        {
+            EventBus.Publish(new PlayerDamagedEvent());
+        }
 
         if (health == 0)
         {

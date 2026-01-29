@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 5311546351181491384}
   - component: {fileID: 6407484248361498257}
   - component: {fileID: 5675468532063328661}
+  - component: {fileID: 7424819647815815918}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -339,6 +340,12 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 05782472aaa7bfb449bef70cad2f89d4, type: 3}
   - {fileID: 8300000, guid: d3e884e873896474fbc1a06e7aa9028e, type: 3}
   - {fileID: 8300000, guid: a7d8d6fda26035a4fab48f2a38848742, type: 3}
+  hitClips:
+  - {fileID: 8300000, guid: 1b296647ad3e0724c80776b6975403e1, type: 3}
+  - {fileID: 8300000, guid: ba3a1863f73419049a4c88cd087fed27, type: 3}
+  - {fileID: 8300000, guid: 9ee0c14a4f1c11d4e91864dee0e1b02d, type: 3}
+  - {fileID: 8300000, guid: b2d10c9d179a4a54ab33f2a1b0c99108, type: 3}
+  - {fileID: 8300000, guid: 39a981e869e438645a74c1d702aafecc, type: 3}
 --- !u!82 &2107590832779922666
 AudioSource:
   m_ObjectHideFlags: 0
@@ -566,6 +573,22 @@ MonoBehaviour:
   qteLayerIndex: 2
   inputSfx: {fileID: 8300000, guid: 8ea588a496002254e8f11e9abf5f6f67, type: 3}
   guardFailSfx: {fileID: 8300000, guid: 9ee0c14a4f1c11d4e91864dee0e1b02d, type: 3}
+--- !u!114 &7424819647815815918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2209131490206928600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e3557e932b198149825498c85044ba6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraShake: {fileID: 3266078730474386718}
+  vignetteIntensity: 0.4
+  vignetteDuration: 0.15
+  sfxController: {fileID: 6200906698159616305}
 --- !u!1 &3279532816170649474
 GameObject:
   m_ObjectHideFlags: 0
@@ -789,7 +812,7 @@ MonoBehaviour:
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 2049
+    m_Bits: 18433
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
