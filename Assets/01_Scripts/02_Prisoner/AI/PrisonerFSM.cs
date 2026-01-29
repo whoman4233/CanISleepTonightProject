@@ -206,6 +206,7 @@ public class PrisonerFSM : MonoBehaviour
             return;
         }
 
+
         if (_currentState == InspectionState && IsVisualIdleTarget(GetMyVisualType()))
         {
             ChangeState(VisualIdleState);
@@ -400,7 +401,8 @@ public class PrisonerFSM : MonoBehaviour
                type == PrisonerAIType.Crying ||
                type == PrisonerAIType.Mumbling ||
                type == PrisonerAIType.HammeringWall ||
-               type == PrisonerAIType.Deadlift;
+               type == PrisonerAIType.Deadlift ||
+               type == PrisonerAIType.Escaper;
     }
 
     private bool IsCenterSpawnType()
