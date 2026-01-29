@@ -84,6 +84,9 @@ public class PrisonerQTEAnimator : MonoBehaviour
 
         _myAction = e.Action;
 
+        // QTE 시작 직전, 플레이어를 바라보도록 회전 보정
+        FacePlayerInstant();
+
         // 시작 SFX (1회)
         if (qteStartSfx != null)
             AudioManager.Instance?.PlaySFX(qteStartSfx);
@@ -177,6 +180,26 @@ public class PrisonerQTEAnimator : MonoBehaviour
         });
 
         _myAction = null;
+    }
+
+
+    /// <summary>
+    /// 죄수의 애니메이션이 플레이어에게 향하도록 회전 값 보정
+    /// </summary>
+
+    private void FacePlayerInstant()
+    {
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj == null)
+            return;
+
+        Vector3 dir = playerObj.transform.position - transform.position;
+        dir.y = 0f;
+
+        if (dir.sqrMagnitude < 0.0001f)
+            return;
+
+        transform.rotation = Quaternion.LookRotation(dir.normalized);
     }
 }
 
