@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PrisonerCombatState : BasePrisonerState
 {
@@ -12,29 +13,29 @@ public class PrisonerCombatState : BasePrisonerState
     public override void Enter()
     {
         base.Enter();
+
+        // 1. 플레이어 찾기 (Base에 없거나 놓쳤을 경우 대비)
+        if (player == null)
+        {
+            var pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+        }
+
+        // 2. Agent 초기화 (Enter에서의 시도)
         if (agent != null)
         {
-            // 1. 꺼져있으면 켠다
-            if (!agent.enabled)
-                agent.enabled = true;
-
-            // 2. NavMesh 위에 없으면(또는 방금 켜서 위치를 모르면) 현재 위치로 강제 이동(Warp)
-            //    -> 이걸 해줘야 "제자리 달리기" 버그가 사라짐
-            if (!agent.isOnNavMesh)
-            {
-                agent.Warp(fsm.transform.position);
-            }
+            if (!agent.enabled) agent.enabled = true;
+            if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
             agent.isStopped = false;
             agent.updatePosition = true;
             agent.updateRotation = true;
         }
+
         _cooldownTimer = 0.5f;
 
-        // [수정 1] 진입 시 무조건 Run을 켜지 않음. 
-        // Update의 첫 프레임에서 거리를 재고 결정하도록 변경하여 꼬임 방지
+        // 애니메이션 초기화 (Update에서 거리 재고 Run 켤 것임)
         anim.SetBool("Walk", false);
-        // anim.SetBool("Run", true); // <-- 이거 삭제 (Update에 맡김)
         anim.SetBool("IsCombat", true);
 
         // 무기 장착
@@ -44,21 +45,24 @@ public class PrisonerCombatState : BasePrisonerState
             fsm.Controller.StartActionBehavior(0);
         }
 
-        // Agent 설정 (아직 이동 명령은 내리지 않음)
         if (agent != null && agent.isOnNavMesh)
         {
-            agent.isStopped = false;
             agent.stoppingDistance = 0.1f;
         }
     }
 
     public override void Update()
     {
-        // [수정 2] 플레이어가 없으면 애니메이션 끄고 리턴 (안전장치)
+        // 플레이어가 없으면 다시 찾기 시도 (안 그러면 평생 멈춰있음)
         if (player == null)
         {
-            StopMovement();
-            return;
+            var pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+            else
+            {
+                StopMovement();
+                return;
+            }
         }
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
@@ -90,7 +94,7 @@ public class PrisonerCombatState : BasePrisonerState
         if (dist <= AttackRange)
         {
             // 사거리 안
-            StopMovement(); // 여기서 Run = false가 됨
+            StopMovement();
             RotateTowardsPlayer(true);
 
             if (_cooldownTimer <= 0f)
@@ -107,30 +111,37 @@ public class PrisonerCombatState : BasePrisonerState
 
     private void MoveToPlayer()
     {
-        // [핵심 수정 3] Agent가 실제로 이동 가능한 상태일 때만 Run을 켭니다.
-        // 재시작 직후 NavMesh 위에 없으면(isOnNavMesh == false) 이동 로직을 아예 건너뛰고 멈추게 해야 합니다.
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        if (agent == null) return;
+
+        // Agent 복구 로직 강화
+        // Agent가 꺼져있거나 NavMesh 위에 없으면 다시 살려내야 함
+        if (!agent.enabled) agent.enabled = true;
+
+        if (!agent.isOnNavMesh)
+        {
+            // Enter에서 실패했을 수 있으므로 여기서 재시도
+            agent.Warp(fsm.transform.position);
+        }
+
+        // 복구 후 다시 체크: 이제 진짜 이동 가능한가?
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            // 실제 이동 명령이 내려졌을 때만 애니메이션 실행
             anim.SetBool("Walk", false);
-            anim.SetBool("Run", true);
+            anim.SetBool("Run", true); // 이동 성공 시 Run 켜기
             RotateTowardsPlayer(false);
         }
         else
         {
-            // Agent가 고장났거나 NavMesh를 못 찾은 상태라면 강제로 멈춤
-            // 이렇게 해야 제자리에서 뛰는 좀비 현상을 막을 수 있음
+            // 여전히 복구 불가능하면 멈춤 (이때만 Standing 모션이 나옴)
             StopMovement();
-
-            // (선택) 필요하다면 여기서 바라보기만 시킴
             RotateTowardsPlayer(true);
         }
     }
 
-    // (Attack, StopMovement, Exit, OnDamaged 등 나머지 메서드는 기존 유지)
+
     private void Attack()
     {
         StopMovement();
@@ -156,7 +167,6 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
         }
-        // 멈출 때는 Run 확실히 끄기
         anim.SetBool("Run", false);
     }
 
