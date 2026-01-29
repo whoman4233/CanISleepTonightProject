@@ -269,9 +269,6 @@ public class PrisonerFSM : MonoBehaviour
             Vector3 cellCenter = Controller.AssignedCell.transform.position;
             Vector3 targetPos = targetMono.transform.position;
 
-            // 높이 차이는 무시 (선택 사항)
-            targetPos.y = cellCenter.y;
-
             // 거리 계산
             float distanceToCell = Vector3.Distance(cellCenter, targetPos);
 
