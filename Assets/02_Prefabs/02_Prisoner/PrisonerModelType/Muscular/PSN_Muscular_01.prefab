@@ -144,7 +144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InspectionPoint: {fileID: 0}
   defaultQteAction: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
-  <QteStopDistance>k__BackingField: 0.8
+  <QteStopDistance>k__BackingField: 1.3
   ambushDelay: 1.5
 --- !u!195 &6007444127599511837
 NavMeshAgent:
@@ -206,7 +206,7 @@ MonoBehaviour:
   - type: 5
     clip: {fileID: 8300000, guid: ddd9394a3bcd52a488fa1f87ed09941e, type: 3}
   - type: 8
-    clip: {fileID: 8300000, guid: 516d69b7f00f7ae469bafbd9052abc8f, type: 3}
+    clip: {fileID: 8300000, guid: 3302338f3c1ce7146a3881b714929ee7, type: 3}
   - type: 6
     clip: {fileID: 8300000, guid: 3cfaf78d0ac1b2a4d9d3630e49b1f719, type: 3}
   - type: 3
@@ -245,6 +245,9 @@ MonoBehaviour:
       type: 3}
   - type: 9
     propObject: {fileID: 8839720123927362060, guid: 3e96d19485704da479a7e09188041e4f,
+      type: 3}
+  - type: 11
+    propObject: {fileID: 6637211015309671315, guid: 7b8e1818ff621d54488097afac3ca1f4,
       type: 3}
 --- !u!114 &1651365417575173780
 MonoBehaviour:
@@ -287,11 +290,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 3475742819566657788}
   qteStateParam: QTEState
-  hitTrigger: HitSuccess
-  attackTrigger: AttackFail
   qteStartSfx: {fileID: 8300000, guid: 142d19ba1eedf4b439cedc75a4eebb65, type: 3}
   qteLoopSfx: {fileID: 8300000, guid: 7cc1a7e48fb93eb44bc2146811260940, type: 3}
   hitSfx: {fileID: 8300000, guid: 1fbd80de8ecf5454ba5197bafa767020, type: 3}
+  qteLayerIndex: 1
 --- !u!1001 &1943632108880297978
 PrefabInstance:
   m_ObjectHideFlags: 0

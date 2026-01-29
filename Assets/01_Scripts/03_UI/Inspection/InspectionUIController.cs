@@ -17,6 +17,9 @@ public class InspectionUIController : MonoBehaviour
     private Action<InspectionViewRequestedEvent> _onViewRequested;
     private Action<InspectionViewReleasedEvent> _onViewReleased;
 
+    // ★ [추가] 실행 중인 코루틴을 제어하기 위한 변수
+    private Coroutine _notifyCoroutine;
+
     public RectTransform InspectionViewRect => inspectionRawImage.rectTransform;
 
     private void Awake()
@@ -46,20 +49,30 @@ public class InspectionUIController : MonoBehaviour
         inspectionRoot.SetActive(true);
         inspectionBlurVolume.weight = 1f;
 
-        // 즉시 보내지 말고
-        StartCoroutine(NotifyViewReadyNextFrame());
+        // ★ [수정] 이전 코루틴이 있다면 안전하게 제거
+        if (_notifyCoroutine != null) StopCoroutine(_notifyCoroutine);
+        _notifyCoroutine = StartCoroutine(NotifyViewReadyNextFrame());
     }
 
     private IEnumerator NotifyViewReadyNextFrame()
     {
         yield return null; // 다음 프레임 보장
-    
-        EventBus.Publish(new InspectionViewReadyEvent());
-    }
 
+        EventBus.Publish(new InspectionViewReadyEvent());
+
+        // ★ [추가] 할 일 다 했으면 참조 해제
+        _notifyCoroutine = null;
+    }
 
     private void OnViewReleased(InspectionViewReleasedEvent e)
     {
+        // ★ [핵심 수정] 뷰가 꺼질 때, 아직 이벤트를 안 보냈다면 취소시킴!
+        if (_notifyCoroutine != null)
+        {
+            StopCoroutine(_notifyCoroutine);
+            _notifyCoroutine = null;
+        }
+
         AudioManager.Instance.PlayUISound(offViewClip);
         inspectionRoot.SetActive(false);
         inspectionBlurVolume.weight = 0f;
@@ -71,8 +84,4 @@ public class InspectionUIController : MonoBehaviour
             ? inspectionRawImage.rectTransform
             : null;
     }
-
 }
-
-
-

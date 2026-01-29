@@ -18,6 +18,9 @@ public class PlayerQTEAnimator : MonoBehaviour
     [SerializeField] private AudioClip inputSfx;
     [SerializeField] private AudioClip guardFailSfx;
 
+    // 현재 플레이어에게 걸린 QTE 액션
+    private QTEActionSO _myAction;
+
     private int _struggleHash;
     private int _failHash;
 
@@ -63,6 +66,8 @@ public class PlayerQTEAnimator : MonoBehaviour
     {
         _qteActive = true;
         _guardingStarted = false;
+
+        _myAction = e.Action;
 
         // QTE Layer 활성화
         animator.SetLayerWeight(qteLayerIndex, 1f);
@@ -122,6 +127,16 @@ public class PlayerQTEAnimator : MonoBehaviour
     // ======================================================
     // Animation Events
     // ======================================================
+    public void OnPlayerHitFrame()
+    {
+        if (_myAction == null)
+            return;
+
+        EventBus.Publish(new PlayerHitTimingEvent
+        {
+            Action = _myAction
+        });
+    }
 
     // GuardFail 애니메이션 마지막 프레임에 연결
     public void OnGuardFailFinished()
@@ -143,5 +158,6 @@ public class PlayerQTEAnimator : MonoBehaviour
 
         // 혹시 모를 잔여 트리거 정리
         animator.ResetTrigger(_failHash);
+        _myAction = null;
     }
 }

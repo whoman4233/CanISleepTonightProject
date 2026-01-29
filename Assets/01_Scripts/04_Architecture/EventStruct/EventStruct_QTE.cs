@@ -74,6 +74,11 @@ public struct ForceExitInspectionEvent // 상세보기 강제종료
 // ================================
 // QTE 결과에 따른 이벤트
 // ================================
+public struct QTEResultAnimationFinishedEvent // FSM 전환 용 QTE 애니메이션 종료 이벤트
+{
+    public QTEActionSO Action;
+}
+
 public struct PrisonerHitByPlayerEvent //QTE 실패 시 죄수가 플레이어에게 데미지 받음.
 {
 
@@ -87,6 +92,11 @@ public struct PlayerDamagedEvent // QTE 성공 시 플레이어가 죄수에게 
 public struct PrisonerHitTimingEvent // 죄수가 플레이어에게 데미지 줌(애니메이션 이벤트용)
 {
 
+}
+
+public struct PlayerHitTimingEvent // QTE 실패시 플레이어가 죄수에게 데미지 받음.
+{
+    public QTEActionSO Action;
 }
 
 public struct PlayerAttackTimingEvent // 플레이어의 공격 타이밍 이벤트(애니메이션 이벤트용)

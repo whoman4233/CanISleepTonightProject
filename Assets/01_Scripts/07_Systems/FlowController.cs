@@ -266,6 +266,8 @@ public class FlowController : MonoBehaviour
     private IEnumerator LoadActualPlaySceneRoutine()
     {
         IsBusy = true;
+        EventBus.Publish(new UIHardResetEvent());
+        EventBus.Publish(new InputHardResetEvent());
         yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
 
         EventBus.Publish(new LoadingOverlayShownEvent());
@@ -321,10 +323,17 @@ public class FlowController : MonoBehaviour
         IsBusy = true;
         Time.timeScale = 1f;
 
+        var sm = FindObjectOfType<PrisonerScheduleManager>();
+        if (sm != null)
+        {
+            sm.ResetAllSimulationData();
+        }
+
         if (DailyMissionManager.Instance != null)
         {
             DailyMissionManager.Instance.ResetToTitle(); // 중복미션 방지하기 위한 코드
         }
+
         // =========================
         // 타이틀 복귀 전에 UI/Input 강제 리셋
         // =========================

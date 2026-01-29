@@ -273,8 +273,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         doorAnimator.ResetTrigger(OpenHash);
         doorAnimator.SetTrigger(CloseHash);
 
-        if (useRedOutlineOnCloseOnlySlidingDoor && outliner != null)
-            outliner.SetHighlight(true, Color.red);
         PlayCloseSound();
     }
 

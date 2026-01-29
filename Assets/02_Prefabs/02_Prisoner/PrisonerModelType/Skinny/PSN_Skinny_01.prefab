@@ -144,7 +144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InspectionPoint: {fileID: 0}
   defaultQteAction: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
-  <QteStopDistance>k__BackingField: 1.2
+  <QteStopDistance>k__BackingField: 1.3
   ambushDelay: 1.5
 --- !u!195 &6007444127599511837
 NavMeshAgent:
@@ -206,7 +206,7 @@ MonoBehaviour:
   - type: 5
     clip: {fileID: 8300000, guid: ddd9394a3bcd52a488fa1f87ed09941e, type: 3}
   - type: 8
-    clip: {fileID: 8300000, guid: 516d69b7f00f7ae469bafbd9052abc8f, type: 3}
+    clip: {fileID: 8300000, guid: 3302338f3c1ce7146a3881b714929ee7, type: 3}
   - type: 6
     clip: {fileID: 8300000, guid: 3cfaf78d0ac1b2a4d9d3630e49b1f719, type: 3}
   - type: 3
@@ -246,6 +246,9 @@ MonoBehaviour:
   - type: 9
     propObject: {fileID: 8839720123927362060, guid: 3e96d19485704da479a7e09188041e4f,
       type: 3}
+  - type: 11
+    propObject: {fileID: 6637211015309671315, guid: 7b8e1818ff621d54488097afac3ca1f4,
+      type: 3}
 --- !u!114 &7713603014218832243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -271,13 +274,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d888be46bd177614dbc9d3f457b9d791, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 3475742819566657788}
   qteStateParam: QTEState
-  hitTrigger: HitSuccess
-  attackTrigger: AttackFail
-  qteStartSfx: {fileID: 0}
-  qteLoopSfx: {fileID: 0}
-  hitSfx: {fileID: 0}
+  qteStartSfx: {fileID: 8300000, guid: 142d19ba1eedf4b439cedc75a4eebb65, type: 3}
+  qteLoopSfx: {fileID: 8300000, guid: 7cc1a7e48fb93eb44bc2146811260940, type: 3}
+  hitSfx: {fileID: 8300000, guid: 1fbd80de8ecf5454ba5197bafa767020, type: 3}
   qteLayerIndex: 1
 --- !u!114 &6041566970844166132
 MonoBehaviour:
@@ -291,7 +292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d2221b6b69ac314f85dd7163e03ff3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  action: {fileID: 0}
+  action: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
   oneShot: 1
 --- !u!1001 &7066695823760105342
 PrefabInstance:
@@ -514,6 +515,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1002321491432354368}
+    - targetCorrespondingSourceObject: {fileID: -2486420778618896525, guid: eb34a9cdb036cdf41bd91f374590bcfa,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8335005842125356974}
     - targetCorrespondingSourceObject: {fileID: 8293792417697028184, guid: eb34a9cdb036cdf41bd91f374590bcfa,
         type: 3}
       insertIndex: -1
@@ -1405,6 +1410,19 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &8335005842125356974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4571020652255911949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c32e73042d49a8b429a40ff062600f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  headLookTarget: {fileID: 8018401839398057551}
 --- !u!1 &6912627563343573991 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4755972396125524839, guid: eb34a9cdb036cdf41bd91f374590bcfa,
@@ -1510,6 +1528,12 @@ CharacterJoint:
 --- !u!4 &7321528169973446805 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: eb34a9cdb036cdf41bd91f374590bcfa,
+    type: 3}
+  m_PrefabInstance: {fileID: 7066695823760105342}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8018401839398057551 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 961210195233335601, guid: eb34a9cdb036cdf41bd91f374590bcfa,
     type: 3}
   m_PrefabInstance: {fileID: 7066695823760105342}
   m_PrefabAsset: {fileID: 0}

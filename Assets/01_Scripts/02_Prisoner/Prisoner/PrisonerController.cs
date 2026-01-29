@@ -281,6 +281,9 @@ public class PrisonerController : MonoBehaviour
 
         if (count == 0) return;
 
+        // [수정] 이번 공격 프레임에서 이미 피격된 Health 컴포넌트를 기록할 리스트 생성
+        HashSet<Health> damagedTargets = new HashSet<Health>();
+
         for (int i = 0; i < count; i++)
         {
             var target = hits[i];
@@ -292,16 +295,22 @@ public class PrisonerController : MonoBehaviour
             myForward.y = 0;
 
             // 각도 체크 (90도)
-            if (Vector3.Angle(myForward, dirToTarget) < 90f)
+            if (Vector3.Angle(myForward, dirToTarget) < 90f) // attackAngle 변수 사용 권장 (현재는 90f 하드코딩 되어있음)
             {
                 var playerHealth = target.GetComponent<Health>();
                 if (playerHealth == null) playerHealth = target.GetComponentInParent<Health>();
                 if (playerHealth == null) playerHealth = target.GetComponentInChildren<Health>();
 
-                if (playerHealth != null)
+                // [수정] 유효한 Health가 있고, 아직 이번 공격에 맞지 않았다면 데미지 적용
+                if (playerHealth != null && !damagedTargets.Contains(playerHealth))
                 {
                     int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
+
                     playerHealth.TakeDamage(finalDamage);
+
+                    // [수정] 피격 목록에 추가하여 중복 데미지 방지
+                    damagedTargets.Add(playerHealth);
+
                     Debug.Log($"✅ [Hit Success] {name} -> Player ({finalDamage} dmg)");
                 }
             }

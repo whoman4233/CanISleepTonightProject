@@ -8,7 +8,7 @@ using System;
 public class QTEDamageResolver : MonoBehaviour
 {
     private Action<PrisonerHitTimingEvent> _onPrisonerHit;
-    private Action<PlayerAttackTimingEvent> _onPlayerHit;
+    private Action<PlayerHitTimingEvent> _onPlayerHit;
 
     private void Awake()
     {
@@ -72,9 +72,8 @@ public class QTEDamageResolver : MonoBehaviour
     // =========================
     // QTE 실패 → 플레이어 피해
     // =========================
-    private void OnPlayerHit(PlayerAttackTimingEvent e)
+    private void OnPlayerHit(PlayerHitTimingEvent e)
     {
-        // ★ 이미 데미지 처리했으면 어떤 이벤트가 또 와도 무시
         if (PrisonerQTEContext.DamageConsumed)
             return;
 
@@ -100,10 +99,7 @@ public class QTEDamageResolver : MonoBehaviour
 
         health.TakeDamage(damage);
 
-        // ★ 여기서 "1회 소비" 확정
         PrisonerQTEContext.DamageConsumed = true;
-
-        // 선택: 즉시 클리어
         PrisonerQTEContext.Clear();
     }
 }

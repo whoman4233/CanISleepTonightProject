@@ -11,6 +11,9 @@ public class PrisonerBikiniState : BasePrisonerState
     private GameObject _targetInteractableObject;
     private GameObject _soapRootObject;
 
+    // ★ [추가] 부모 분리 전, 원래 부모를 기억해두기 위한 변수
+    private Transform _soapOriginalParent;
+
     private const string SOAP_OBJ_NAME = "SoapTrap";
     private const string DIALOGUE_KEY = "DIAL_BIKINI_TRAP";
     private const float DETECT_RANGE = 4.0f;
@@ -36,7 +39,7 @@ public class PrisonerBikiniState : BasePrisonerState
         Anim.SetBool("Run", false);
         Anim.SetInteger("ActionType", 0);
 
-        // 오브젝트 찾기
+        // 1. 오브젝트 찾기
         if (_soapRootObject == null)
         {
             var allTransforms = fsm.GetComponentsInChildren<Transform>(true);
@@ -50,8 +53,12 @@ public class PrisonerBikiniState : BasePrisonerState
             }
         }
 
+        // 2. 초기화 및 원래 부모 기억
         if (_soapRootObject != null)
         {
+            // ★ [추가] 나중에 복구하기 위해 원래 부모(아마도 손이나 골반) 캐싱
+            _soapOriginalParent = _soapRootObject.transform.parent;
+
             var interactable = _soapRootObject.GetComponentInChildren<MissionItemInteractable>(true);
             if (interactable != null) _targetInteractableObject = interactable.gameObject;
             else _targetInteractableObject = _soapRootObject;
@@ -68,14 +75,13 @@ public class PrisonerBikiniState : BasePrisonerState
         if (player == null) return;
 
         // ================================================================
-        // ★ [핵심 수정] 기습 공격 중이 아니라면 무조건 플레이어를 바라봄
+        // ★ [핵심] 기습 공격 전까지는 계속 플레이어를 쳐다봄 (비누는 분리되어서 안 돌아감)
         // ================================================================
         if (_currentStep != BikiniStep.AmbushSequence)
         {
             LookAtPlayer();
         }
 
-        // 상태별 로직 처리
         switch (_currentStep)
         {
             case BikiniStep.WaitForPlayer:
@@ -86,14 +92,11 @@ public class PrisonerBikiniState : BasePrisonerState
                 break;
 
             case BikiniStep.Talking:
-                // 대화 중에는 별도 로직 없음 (시선은 위에서 처리됨)
                 break;
 
             case BikiniStep.WaitForSoap:
-                // 비누 감지 로직
                 if (_targetInteractableObject != null)
                 {
-                    // 실제 상호작용 오브젝트가 꺼졌는지 확인
                     if (!_targetInteractableObject.activeInHierarchy)
                     {
                         Debug.Log("[Bikini] ★ 비누 사라짐 감지 성공! -> 기습 시작");
@@ -132,16 +135,21 @@ public class PrisonerBikiniState : BasePrisonerState
 
         yield return new WaitForSeconds(0.5f);
 
-        // 비누 활성화 및 Collider 강제 켜기
+        // 3. 비누 활성화 및 부모 분리 (Detach)
         if (_soapRootObject != null)
         {
             _soapRootObject.SetActive(true);
+
+            // ★ [핵심 수정] 부모를 null로 설정하여 월드 좌표계로 보냄
+            // 이제 죄수가 회전해도 비누는 제자리에 가만히 있습니다.
+            _soapRootObject.transform.SetParent(null);
+
             if (_targetInteractableObject != null) _targetInteractableObject.SetActive(true);
 
             var colliders = _soapRootObject.GetComponentsInChildren<Collider>(true);
             foreach (var col in colliders) col.enabled = true;
 
-            Debug.Log($"[Bikini] 비누 활성화 & Collider {colliders.Length}개 켜짐");
+            Debug.Log($"[Bikini] 비누 활성화 & 부모 분리(Detach) 완료");
         }
 
         _currentStep = BikiniStep.WaitForSoap;
@@ -150,16 +158,14 @@ public class PrisonerBikiniState : BasePrisonerState
 
     private IEnumerator CoExecuteAmbush()
     {
-        _currentStep = BikiniStep.AmbushSequence; // 이제부터 회전 로직(LookAtPlayer) 중단
+        _currentStep = BikiniStep.AmbushSequence; // 회전 로직 중단
 
         if (Agent != null) Agent.enabled = false;
 
-        // 플레이어 등 뒤로 이동
         Vector3 backPos = player.position - (player.forward * 0.8f);
         backPos.y = fsm.transform.position.y;
         fsm.transform.position = backPos;
 
-        // 공격 방향으로 즉시 정렬
         fsm.transform.LookAt(player.position);
 
         if (Agent != null) Agent.enabled = true;
@@ -192,7 +198,25 @@ public class PrisonerBikiniState : BasePrisonerState
         EventBus.Unsubscribe(_onDialogueEndedHandler);
         Controller.StopActionBehavior();
 
-        if (_soapRootObject != null) _soapRootObject.SetActive(false);
+        // 4. [안전장치] 상태 종료 시(사망, 피격 등) 비누를 원래 부모에게 복구
+        if (_soapRootObject != null)
+        {
+            _soapRootObject.SetActive(false);
+
+            // 원래 부모가 기억되어 있다면 복구, 없다면 fsm(죄수 본체)으로라도 복구
+            if (_soapOriginalParent != null)
+            {
+                _soapRootObject.transform.SetParent(_soapOriginalParent);
+            }
+            else
+            {
+                _soapRootObject.transform.SetParent(fsm.transform);
+            }
+
+            // 위치/회전 초기화 (다음 사용을 위해)
+            _soapRootObject.transform.localPosition = Vector3.zero;
+            _soapRootObject.transform.localRotation = Quaternion.identity;
+        }
 
         Anim.SetBool("IsLuring", false);
         Anim.SetBool("IsTalking", false);
@@ -203,6 +227,7 @@ public class PrisonerBikiniState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
+        // 피격 시 Exit()가 호출되면서 비누도 자동으로 회수됨
         fsm.ChangeState(fsm.CombatState);
     }
 }
