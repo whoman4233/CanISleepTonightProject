@@ -279,13 +279,28 @@ public class PrisonerFSM : MonoBehaviour
     {
         _cachedTarget = null;
 
+        // 대기 중이었다면 코루틴 취소 (이건 기존과 동일)
         if (_ambushCoroutine != null)
         {
             StopCoroutine(_ambushCoroutine);
             _ambushCoroutine = null;
         }
 
-        if (_currentState == QTEApproachState) return;
+        // ★ [핵심 수정] 접근 중일 때의 처리 로직 추가
+        if (_currentState == QTEApproachState)
+        {
+            // 1. 만약 내가 현재 '공격자'로 등록되어 있다면?
+            //    -> QTE가 정상적으로 시작되어 시스템이 상세보기를 끈 상황임.
+            //    -> 이때는 멈추면 안 되므로 그냥 리턴(진행).
+            if (PrisonerQTEContext.CurrentAttacker == this.gameObject)
+                return;
+
+            // 2. 공격자가 아닌데 상세보기가 꺼졌다?
+            //    -> 플레이어가 QTE 시작 전에 ESC 등으로 닫고 튄 상황.
+            //    -> 추격을 멈추고 다시 점호 대기 상태(InspectionState)로 복귀.
+            Debug.Log($"[FSM] {name} : 상세보기가 종료되어 기습을 중단하고 원위치합니다.");
+            ChangeState(InspectionState);
+        }
     }
 
     private IEnumerator CoWaitAndAmbush()
