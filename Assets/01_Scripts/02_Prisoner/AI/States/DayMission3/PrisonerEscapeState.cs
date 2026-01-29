@@ -1,69 +1,128 @@
 using UnityEngine;
+using UnityEngine.AI;
+using System.Collections;
 
 public class PrisonerEscapeState : BasePrisonerState
 {
-    // 탈출 목적지 (없으면 임시로 0,0,0)
-    private Vector3 _escapeDestination = Vector3.zero;
+    private Coroutine _escapeCoroutine;
+    private const float FLEE_DISTANCE = 20.0f; // 도망칠 목표 거리
 
     public PrisonerEscapeState(PrisonerFSM fsm) : base(fsm)
     {
-        // 게임 내 "EscapePoint"라는 이름의 오브젝트가 있다면 그 위치를 찾음 (없으면 0,0,0)
-        var exitObj = GameObject.Find("EscapePoint");
-        if (exitObj != null) _escapeDestination = exitObj.transform.position;
+        // 생성자에서 특별히 할 것은 없음
     }
 
     public override void Enter()
     {
         base.Enter();
 
-        Debug.Log($"[AI] {Controller.name}: 자유다!! (탈주 시도)");
+        Debug.Log($"[AI] {Controller.name}: 문이 열렸다! 3초 뒤 탈주한다...");
 
-        // 1. 문 열기 시도 (내 방에 배정된 문이 있다면)
+        // 0. 플레이어 찾기 (도망칠 기준점)
+        if (player == null)
+        {
+            var pObj = GameObject.FindWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+        }
+
+        // 1. 문 열기 (상태 진입과 동시에 문 개방)
         if (Controller.AssignedCell != null)
         {
-            // 강제로 문을 여는 이벤트 발생 (혹은 직접 호출)
-            // 여기서는 간단하게 "문 열어!" 이벤트 발행
             PrisonerEventBus.PublishForceOpenDoor(Controller.AssignedCell.cellId);
         }
 
-        // 2. 애니메이션 설정 (파라미터 이름 수정: IsRun -> Run)
+        // 2. 일단 대기 (3초간 멍때리기 or 눈치보기)
         Anim.SetBool("Walk", false);
-        Anim.SetBool("Run", true); // ★ 수정됨
+        Anim.SetBool("Run", false);
 
-        // 3. 이동 로직
         if (Agent != null && Agent.isOnNavMesh)
         {
-            Agent.isStopped = false;
-            Agent.speed = 4.0f; // 조금 더 빠르게
-            Agent.SetDestination(_escapeDestination); // ★ 수정됨: 실제 탈출구로 이동
+            Agent.isStopped = true; // 이동 정지
+            Agent.velocity = Vector3.zero;
         }
+
+        // 3. 3초 후 도망 로직 시작
+        if (_escapeCoroutine != null) fsm.StopCoroutine(_escapeCoroutine);
+        _escapeCoroutine = fsm.StartCoroutine(CoStartEscape());
+    }
+
+    private IEnumerator CoStartEscape()
+    {
+        // 3초 대기
+        yield return new WaitForSeconds(3.0f);
+
+        Debug.Log($"[AI] {Controller.name}: 으아아! 도망쳐! (플레이어 반대 방향)");
+
+        // 4. 애니메이션 Run 켜기
+        Anim.SetBool("Run", true);
+
+        if (Agent != null && Agent.isOnNavMesh && player != null)
+        {
+            Agent.isStopped = false;
+            Agent.speed = 6.0f; // 평소보다 빠르게 설정 (기본 3.5~4.0 가정)
+
+            // ★ [핵심] 플레이어 반대 방향 벡터 계산
+            Vector3 fleeDirection = (fsm.transform.position - player.position).normalized;
+
+            // 혹시 겹쳐서 방향이 0이면 랜덤 방향
+            if (fleeDirection == Vector3.zero) fleeDirection = Random.insideUnitSphere.normalized;
+            fleeDirection.y = 0; // 높이 무시
+
+            // 현재 위치에서 반대 방향으로 20m 떨어진 지점 계산
+            Vector3 targetPos = fsm.transform.position + fleeDirection * FLEE_DISTANCE;
+
+            // NavMesh 위에서 갈 수 있는 유효한 좌표 찾기 (반경 5m 내 탐색)
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(targetPos, out hit, 10.0f, NavMesh.AllAreas))
+            {
+                Agent.SetDestination(hit.position);
+            }
+            else
+            {
+                // 못 찾으면 그냥 해당 방향으로 직진 명령
+                Agent.SetDestination(targetPos);
+            }
+        }
+
+        _escapeCoroutine = null;
     }
 
     public override void Update()
     {
-        // (선택) 만약 목적지에 도착했다면? -> 게임에서 사라지게 하거나 승리 처리
-        if (Agent != null && Agent.remainingDistance < 1.0f && !Agent.pathPending)
+        // 도망 중일 때 도착 체크
+        if (Agent != null && Agent.isOnNavMesh && !Agent.isStopped)
         {
-            // 탈출 성공 처리 (예: 사라짐)
-            Debug.Log($"[AI] {Controller.name}: 탈출 성공! (Destroy)");
-            // Controller.gameObject.SetActive(false); // 일단 숨김 처리
+            // 경로 계산 중이 아니고, 남은 거리가 1m 미만이면
+            if (!Agent.pathPending && Agent.remainingDistance < 1.0f)
+            {
+                Debug.Log($"[AI] {Controller.name}: 도주 성공 (사라짐)");
+                Controller.gameObject.SetActive(false); // 게임 오브젝트 비활성화 (사라짐)
+            }
         }
     }
 
     public override void Exit()
     {
-        Anim.SetBool("Run", false); // ★ 수정됨
+        // 상태 나갈 때 코루틴 정리
+        if (_escapeCoroutine != null)
+        {
+            fsm.StopCoroutine(_escapeCoroutine);
+            _escapeCoroutine = null;
+        }
+
+        Anim.SetBool("Run", false);
+
         if (Agent != null && Agent.isOnNavMesh)
         {
             Agent.ResetPath();
-            Agent.speed = 2.0f; // 속도 원복
+            Agent.speed = 2.0f; // 속도 원복 (기본 걷기 속도)
         }
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // 맞으면 전투 태세로 전환
+        // 도망가다가 맞으면 전투 태세로 전환
         fsm.ChangeState(fsm.CombatState);
     }
 }

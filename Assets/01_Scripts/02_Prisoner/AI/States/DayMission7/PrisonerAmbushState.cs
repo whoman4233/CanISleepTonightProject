@@ -6,7 +6,6 @@ public class PrisonerAmbushState : BasePrisonerState
     private const float ArrivalDistance = 0.5f;
     private bool _hasArrivedAtSpot = false;
 
-    // 애니메이터 State 이름 상수 (컨트롤러 내 실제 State 이름과 일치해야 함)
     private const string STATE_ACTION = "Action";
     private const string STATE_RUN = "Run";
 
@@ -17,14 +16,12 @@ public class PrisonerAmbushState : BasePrisonerState
         base.Enter();
         _hasArrivedAtSpot = false;
 
-        // [수정 1] 이동 중에는 서있는 상태여야 함 -> IsntStanding = false (안전장치)
-        // (true일 경우 Run 대신 Sit/Sleep 등으로 빠질 위험이 있음)
-        anim.SetBool("IsntStanding", true);
+        // [수정 1] 이동 중에는 "서서" 뛰어야 하므로 false로 설정해야 합니다.
+        // (기존 코드는 주석과 반대로 true로 되어 있어, 뛰지 않고 기어가거나 멈칫거렸을 것입니다.)
+        anim.SetBool("IsntStanding", false);
 
-        // [핵심 1] 이동 시작 시 ActionType 0 (일반 이동)
+        // 이동 시작: ActionType 0, Run 켜기
         anim.SetInteger("ActionType", 0);
-
-        // [핵심 2] Run 켜기
         anim.SetBool("Run", true);
 
         if (player == null)
@@ -39,10 +36,7 @@ public class PrisonerAmbushState : BasePrisonerState
             {
                 agent.isStopped = false;
                 agent.SetDestination(fsm.InspectionPoint.position);
-
-                // [수정 2] "Run" 상태로 안전하게 전환
-                anim.CrossFade(STATE_RUN, 0.1f);
-
+                anim.CrossFade(STATE_RUN, 0.1f); // Run 상태로 진입
                 Debug.Log($"[Ambush] {Controller.name} -> 매복 위치로 이동 시작");
             }
             else
@@ -60,14 +54,13 @@ public class PrisonerAmbushState : BasePrisonerState
     {
         if (player == null) return;
 
-        // 1. 기습 감지
+        // 1. 플레이어 기습 감지
         float distToPlayer = Vector3.Distance(fsm.transform.position, player.position);
         if (distToPlayer <= AmbushDistance)
         {
             Debug.Log($"<color=red>[Ambush] {Controller.Data.ID} : 기습 개시!</color>");
             PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
 
-            // 전투 전환 (Controller에서 다른 무기는 끄고 내 무기는 켬)
             Controller.StartActionBehavior(0);
             fsm.ChangeState(fsm.CombatState);
             return;
@@ -95,28 +88,32 @@ public class PrisonerAmbushState : BasePrisonerState
         }
 
         // ================================================================
-        // [핵심 3] 도착 후 처리: Run 끄고 매복 자세(9번) 전환
+        // [핵심 수정] 도착 시 파라미터 강제 설정
         // ================================================================
 
+        // 1. 뛰기 끄기
         anim.SetBool("Run", false);
 
-        // 1. Controller를 통해 무기 켜기 & 파라미터 세팅
-        // (Controller 수정본을 적용했다면 여기서 다른 무기는 꺼지고 단검만 켜짐)
+        // 2. [누락된 부분] 매복 자세를 위해 IsntStanding을 True로 변경
+        anim.SetBool("IsntStanding", true);
+
+        // 3. 컨트롤러에 매복 행동 요청 (내부적으로 9번 세팅하겠지만 안전하게 확인)
         Controller.StartActionBehavior(PrisonerAIType.Ambusher);
 
-        // 2. [수정 3] "Action" 상태로 전환 ("ActionIdle"이라는 State가 없을 확률 높음)
-        // ActionType이 9로 설정되었으므로 Action State 내부에서 매복 모션이 재생됨
+        // [안전장치] 만약 Controller가 ActionType을 9로 안 바꿔줄 수도 있으니 강제로 세팅
+        anim.SetInteger("ActionType", 9);
+
+        // 4. Action 상태로 전환 (ActionType 9 + IsntStanding True -> 매복 애니메이션 재생)
         anim.CrossFade(STATE_ACTION, 0.1f);
 
-        Debug.Log($"[Ambush] 도착 완료. 매복 대기 (ActionType: 9)");
+        Debug.Log($"[Ambush] 도착 완료. 매복 대기 (Run:False, IsntStanding:True, ActionType:9)");
     }
 
     public override void Exit()
     {
-        // 상태 종료 시 정리
         anim.SetBool("Run", false);
         anim.SetInteger("ActionType", 0);
-        anim.SetBool("IsntStanding", false); // 나갈 때도 리셋
+        anim.SetBool("IsntStanding", false);
 
         if (agent != null && agent.isOnNavMesh)
         {
