@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PrisonerCombatState : BasePrisonerState
 {
@@ -7,19 +8,27 @@ public class PrisonerCombatState : BasePrisonerState
     private const float AttackRange = 1.3f;
     private float _attackTagDelayTimer = 0f;
 
+    // [최적화] 플레이어 찾는 빈도 조절용 타이머
+    private float _playerFindTimer = 0f;
+
     public PrisonerCombatState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
     {
         base.Enter();
+
+        // 1. 플레이어 캐싱 안전장치
+        if (player == null)
+        {
+            FindPlayer();
+        }
+
+        // 2. NavMeshAgent 심폐소생술 (위치 보정 및 활성화)
         if (agent != null)
         {
-            // 1. 꺼져있으면 켠다
-            if (!agent.enabled)
-                agent.enabled = true;
+            if (!agent.enabled) agent.enabled = true;
 
-            // 2. NavMesh 위에 없으면(또는 방금 켜서 위치를 모르면) 현재 위치로 강제 이동(Warp)
-            //    -> 이걸 해줘야 "제자리 달리기" 버그가 사라짐
+            // 위치가 어긋나 있다면 강제 동기화
             if (!agent.isOnNavMesh)
             {
                 agent.Warp(fsm.transform.position);
@@ -28,41 +37,52 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = false;
             agent.updatePosition = true;
             agent.updateRotation = true;
+
+            // ★ [추가] 속도 초기화 (이전 상태에서 빨라졌을 수 있으므로)
+            if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
+                agent.speed = fsm.Controller.Data.definition.spd;
+            else
+                agent.speed = 3.5f; // 기본값
+
+            agent.stoppingDistance = 0.1f;
         }
+
         _cooldownTimer = 0.5f;
 
-        // [수정 1] 진입 시 무조건 Run을 켜지 않음. 
-        // Update의 첫 프레임에서 거리를 재고 결정하도록 변경하여 꼬임 방지
+        // 3. 애니메이션 초기화 (이동 애니메이션은 Update에서 처리)
         anim.SetBool("Walk", false);
-        // anim.SetBool("Run", true); // <-- 이거 삭제 (Update에 맡김)
         anim.SetBool("IsCombat", true);
 
-        // 무기 장착
+        // 4. 무기 장착
         if (fsm.Controller.HasWeapon)
         {
+            // ★ [수정] 무기 타입만 설정하고, '0'으로 초기화하는 코드는 삭제함 (애니메이션 꼬임 방지)
             fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
-            fsm.Controller.StartActionBehavior(0);
-        }
-
-        // Agent 설정 (아직 이동 명령은 내리지 않음)
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-            agent.stoppingDistance = 0.1f;
         }
     }
 
     public override void Update()
     {
-        // [수정 2] 플레이어가 없으면 애니메이션 끄고 리턴 (안전장치)
+        // 1. 플레이어 유효성 검사 (없으면 주기적으로 재검색)
         if (player == null)
         {
-            StopMovement();
-            return;
+            _playerFindTimer -= Time.deltaTime;
+            if (_playerFindTimer <= 0f)
+            {
+                FindPlayer();
+                _playerFindTimer = 1.0f; // 1초 뒤에 다시 찾기 (성능 보호)
+            }
+
+            if (player == null) // 여전히 없으면 정지
+            {
+                StopMovement();
+                return;
+            }
         }
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
+        // 2. 행동 불가 상태 체크 (피격, 공격 중)
         if (stateInfo.IsTag("Hit"))
         {
             StopMovement();
@@ -73,7 +93,7 @@ public class PrisonerCombatState : BasePrisonerState
         {
             _attackTagDelayTimer -= Time.deltaTime;
             StopMovement();
-            RotateTowardsPlayer(true);
+            RotateTowardsPlayer(true); // 공격 직전 유도력 보정
             return;
         }
 
@@ -83,14 +103,15 @@ public class PrisonerCombatState : BasePrisonerState
             return;
         }
 
+        // 3. 전투 로직 수행
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
         if (dist <= AttackRange)
         {
-            // 사거리 안
-            StopMovement(); // 여기서 Run = false가 됨
+            // [사거리 안] 공격 시도
+            StopMovement();
             RotateTowardsPlayer(true);
 
             if (_cooldownTimer <= 0f)
@@ -100,37 +121,38 @@ public class PrisonerCombatState : BasePrisonerState
         }
         else
         {
-            // 사거리 밖 -> 추격
+            // [사거리 밖] 추격
             MoveToPlayer();
         }
     }
 
     private void MoveToPlayer()
     {
-        // [핵심 수정 3] Agent가 실제로 이동 가능한 상태일 때만 Run을 켭니다.
-        // 재시작 직후 NavMesh 위에 없으면(isOnNavMesh == false) 이동 로직을 아예 건너뛰고 멈추게 해야 합니다.
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        if (agent == null) return;
+
+        // ★ [안전장치] Agent가 갑자기 꺼지거나 NavMesh에서 이탈했을 경우 복구 시도
+        if (!agent.enabled) agent.enabled = true;
+        if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
+
+        // 정상 상태일 때만 이동 및 Run 애니메이션
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            // 실제 이동 명령이 내려졌을 때만 애니메이션 실행
             anim.SetBool("Walk", false);
             anim.SetBool("Run", true);
+
             RotateTowardsPlayer(false);
         }
         else
         {
-            // Agent가 고장났거나 NavMesh를 못 찾은 상태라면 강제로 멈춤
-            // 이렇게 해야 제자리에서 뛰는 좀비 현상을 막을 수 있음
+            // 복구 실패 시 멈춤 (제자리 걷기 방지)
             StopMovement();
-
-            // (선택) 필요하다면 여기서 바라보기만 시킴
             RotateTowardsPlayer(true);
         }
     }
 
-    // (Attack, StopMovement, Exit, OnDamaged 등 나머지 메서드는 기존 유지)
     private void Attack()
     {
         StopMovement();
@@ -146,6 +168,8 @@ public class PrisonerCombatState : BasePrisonerState
         anim.SetTrigger("Attack");
 
         _cooldownTimer = AttackCooldown;
+
+        // 태그가 바뀌기 전까지 이동을 막아주는 버퍼 시간
         _attackTagDelayTimer = 0.2f;
     }
 
@@ -156,7 +180,7 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
         }
-        // 멈출 때는 Run 확실히 끄기
+        // ★ 멈출 때는 Run을 확실히 꺼야 함
         anim.SetBool("Run", false);
     }
 
@@ -184,5 +208,12 @@ public class PrisonerCombatState : BasePrisonerState
             float speed = fastTurn ? 50f : 10f;
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * speed);
         }
+    }
+
+    // 헬퍼: 플레이어 찾기
+    private void FindPlayer()
+    {
+        var pObj = GameObject.FindGameObjectWithTag("Player");
+        if (pObj != null) player = pObj.transform;
     }
 }
