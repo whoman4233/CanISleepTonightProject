@@ -84,7 +84,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         {
             if (inspection != null && !string.IsNullOrEmpty(inspection.CurrentInspectingCellId))
             {
-                Debug.LogError($"[Door Blocked] 계단 문을 열 수 없습니다! 현재 열려있는 감방: {inspection.CurrentInspectingCellId}");
+                Debug.Log($"[Door Blocked] 계단 문을 열 수 없습니다! 현재 열려있는 감방: {inspection.CurrentInspectingCellId}");
                 EventBus.Publish(new ShowTimedTextPopupEvent("감방 문이 열려있습니다! 문을 닫고 이동하세요.", 2.0f, true));
                 PlayLocked();
                 return;

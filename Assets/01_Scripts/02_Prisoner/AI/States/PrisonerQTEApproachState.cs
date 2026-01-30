@@ -16,7 +16,7 @@ public class PrisonerQTEApproachState : BasePrisonerState
     private Action<QTEResultAnimationFinishedEvent> _onResultAnimFinished;
 
     private float _originalSpeed;
-    private const float QTE_APPROACH_SPEED = 6.0f;
+    private const float QTE_APPROACH_SPEED = 12.0f;
     private bool _ended;
     // ★ [추가] 안전장치 코루틴
     private Coroutine _safetyCoroutine;
@@ -160,7 +160,7 @@ public class PrisonerQTEApproachState : BasePrisonerState
     private IEnumerator CoSafetyFallback()
     {
         // 애니메이션 길이보다 넉넉하게 대기 (예: 4초)
-        yield return new WaitForSeconds(4.0f);
+        yield return new WaitForSeconds(2.0f);
 
         Debug.LogWarning($"[PrisonerFSM] {fsm.name} QTE 애니메이션 이벤트 누락 감지! 강제로 전투 상태로 전환합니다.");
 
