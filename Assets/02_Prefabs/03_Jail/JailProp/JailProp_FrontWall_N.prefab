@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2901926228928382184}
   - component: {fileID: 4722927860898694870}
+  - component: {fileID: -4563863818226501093}
   m_Layer: 13
   m_Name: JailProp_FrontWall_N
   m_TagString: Untagged
@@ -47,6 +48,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7f97c11ee661c7498a7f548ef8e554a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!208 &-4563863818226501093
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386780786963729385}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 3.6, y: 2.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1, z: 2.8}
+  m_TimeToStationary: 0.5
 --- !u!1001 &4787212562964066058
 PrefabInstance:
   m_ObjectHideFlags: 0

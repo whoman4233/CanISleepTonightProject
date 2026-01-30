@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3170444890915988256}
+  - component: {fileID: 1050956973178439222}
   m_Layer: 13
   m_Name: JailProp_RightWall
   m_TagString: Untagged
@@ -33,6 +34,22 @@ Transform:
   - {fileID: 5125450932684451716}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!208 &1050956973178439222
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2766982232487403626}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.5, y: 2.5, z: 3.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 4, y: 1.2, z: -1.2}
+  m_TimeToStationary: 0.5
 --- !u!1001 &3598972092381919143
 PrefabInstance:
   m_ObjectHideFlags: 0

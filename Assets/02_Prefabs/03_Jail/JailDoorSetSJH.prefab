@@ -509,6 +509,7 @@ GameObject:
   - component: {fileID: 6315616578507924031}
   - component: {fileID: 3629465657165114570}
   - component: {fileID: 7095902288548778474}
+  - component: {fileID: 7737367392100018417}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_01
   m_TagString: Untagged
@@ -572,7 +573,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &7095902288548778474
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -594,6 +595,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &7737367392100018417
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2549556792049863805}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &2899753660276415402
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,6 +783,7 @@ GameObject:
   - component: {fileID: 875844493122576922}
   - component: {fileID: 7049841748880350846}
   - component: {fileID: 5802588197562692922}
+  - component: {fileID: 425870343466156990}
   m_Layer: 10
   m_Name: JailHingedDoor_03
   m_TagString: Untagged
@@ -845,6 +863,22 @@ MonoBehaviour:
   defaultPromptId: Ptxt_KR_Object_07
   ruleTable: {fileID: 0}
   objectType: 
+--- !u!208 &425870343466156990
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3819960937943587194}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.5, y: 1.25, z: 0.75}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1, z: -0.75}
+  m_TimeToStationary: 0.1
 --- !u!1 &4180547934876458290
 GameObject:
   m_ObjectHideFlags: 0
@@ -857,6 +891,7 @@ GameObject:
   - component: {fileID: 1324627747843703018}
   - component: {fileID: 7336452809179217243}
   - component: {fileID: 4465768463810375085}
+  - component: {fileID: 7719658610347059254}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_04
   m_TagString: Untagged
@@ -920,7 +955,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &4465768463810375085
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -942,6 +977,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &7719658610347059254
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180547934876458290}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &4324103394356301228
 GameObject:
   m_ObjectHideFlags: 0
@@ -954,6 +1005,7 @@ GameObject:
   - component: {fileID: 6616628203562011280}
   - component: {fileID: 3289025216737622128}
   - component: {fileID: 243454091055854254}
+  - component: {fileID: 330390541845905834}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_03
   m_TagString: Untagged
@@ -1017,7 +1069,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &243454091055854254
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1039,6 +1091,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &330390541845905834
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4324103394356301228}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &4342754683079791856
 GameObject:
   m_ObjectHideFlags: 0
@@ -1322,6 +1390,7 @@ GameObject:
   - component: {fileID: 6643555149428041562}
   - component: {fileID: 8146488077808509320}
   - component: {fileID: 7103408127145225461}
+  - component: {fileID: 4058969321032883603}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_2F_01
   m_TagString: Untagged
@@ -1385,7 +1454,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &7103408127145225461
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1407,6 +1476,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &4058969321032883603
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4392576093585753209}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &4566155853769847069
 GameObject:
   m_ObjectHideFlags: 0
@@ -1419,6 +1504,7 @@ GameObject:
   - component: {fileID: 7204167925381621470}
   - component: {fileID: 8990024552123688746}
   - component: {fileID: 5544820825203591900}
+  - component: {fileID: 4934041493689709710}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_06
   m_TagString: Untagged
@@ -1482,7 +1568,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &5544820825203591900
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1504,6 +1590,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &4934041493689709710
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4566155853769847069}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &5163916611313211438
 GameObject:
   m_ObjectHideFlags: 0
@@ -1516,6 +1618,7 @@ GameObject:
   - component: {fileID: 2672250622301065297}
   - component: {fileID: 6357564557667565360}
   - component: {fileID: 2512095225000445125}
+  - component: {fileID: 534608163670788540}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_2F_04
   m_TagString: Untagged
@@ -1579,7 +1682,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &2512095225000445125
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1601,6 +1704,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &534608163670788540
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5163916611313211438}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &5166774388268820111
 GameObject:
   m_ObjectHideFlags: 0
@@ -2066,6 +2185,7 @@ GameObject:
   - component: {fileID: 8499940112918027336}
   - component: {fileID: 1038035396991034290}
   - component: {fileID: 2994815402791463973}
+  - component: {fileID: 7119677948092553811}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_2F_02
   m_TagString: Untagged
@@ -2129,7 +2249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &2994815402791463973
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2151,6 +2271,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &7119677948092553811
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5822649462490868589}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &6158021122489372812
 GameObject:
   m_ObjectHideFlags: 0
@@ -2616,6 +2752,7 @@ GameObject:
   - component: {fileID: 3611196940383339514}
   - component: {fileID: 4861054355854064755}
   - component: {fileID: 6664397508315038451}
+  - component: {fileID: 4019915085307852010}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_2F_03
   m_TagString: Untagged
@@ -2679,7 +2816,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &6664397508315038451
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2701,6 +2838,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &4019915085307852010
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6361146079965836658}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &6458635889794834557
 GameObject:
   m_ObjectHideFlags: 0
@@ -2713,6 +2866,7 @@ GameObject:
   - component: {fileID: 8568683927510254661}
   - component: {fileID: 6035406120376901413}
   - component: {fileID: 5310107834174465070}
+  - component: {fileID: 7312843241053499567}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_02
   m_TagString: Untagged
@@ -2776,7 +2930,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &5310107834174465070
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2798,6 +2952,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &7312843241053499567
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6458635889794834557}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &6936637542836713504
 GameObject:
   m_ObjectHideFlags: 0
@@ -2810,6 +2980,7 @@ GameObject:
   - component: {fileID: 363038047645255210}
   - component: {fileID: 7857876110472921575}
   - component: {fileID: 5212802905787026430}
+  - component: {fileID: 6824644236170224257}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_2F_06
   m_TagString: Untagged
@@ -2873,7 +3044,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &5212802905787026430
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2895,6 +3066,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &6824644236170224257
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6936637542836713504}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &7815171693100585173
 GameObject:
   m_ObjectHideFlags: 0
@@ -2908,6 +3095,7 @@ GameObject:
   - component: {fileID: 871870442574031990}
   - component: {fileID: 8159437238063779836}
   - component: {fileID: 8843347168882473307}
+  - component: {fileID: 5056689850749218710}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_1F_05
   m_TagString: Untagged
@@ -2971,7 +3159,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &8159437238063779836
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3008,6 +3196,22 @@ MonoBehaviour:
   defaultPromptId: 
   ruleTable: {fileID: 0}
   objectType: 
+--- !u!208 &5056689850749218710
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7815171693100585173}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &7833741365265252363
 GameObject:
   m_ObjectHideFlags: 0
@@ -3020,6 +3224,7 @@ GameObject:
   - component: {fileID: 3269939783463987757}
   - component: {fileID: 5818697283198068435}
   - component: {fileID: 7417984298796297230}
+  - component: {fileID: 1167583518747641063}
   m_Layer: 10
   m_Name: JailSlidingDoor_C_2F_05
   m_TagString: Untagged
@@ -3083,7 +3288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  defaultOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
+  defaultOutlineColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!65 &7417984298796297230
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3105,6 +3310,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 7, y: 3, z: 7}
   m_Center: {x: 0, y: 0, z: -3.7}
+--- !u!208 &1167583518747641063
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7833741365265252363}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 2, z: 0.05}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.1
 --- !u!1 &9221063299149574444
 GameObject:
   m_ObjectHideFlags: 0
@@ -3966,6 +4187,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: JailProp_SteelBarred_SlidingDoor (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 8049965793530231815, guid: 47968b5193a3f8a4db05b8632c544b64,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 659fdf47d4c873744ad4cf5ca61cca3c, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
