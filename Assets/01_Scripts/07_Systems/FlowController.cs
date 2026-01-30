@@ -185,6 +185,8 @@ public class FlowController : MonoBehaviour
         while (!asyncLoad.isDone) yield return null;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName)); // 씬 활성화
         yield return null; //new WaitForSeconds(1.0f);
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForSecondsRealtime(0.1f);
 
         var dm = DailyMissionManager.Instance;
         if (dm != null)
@@ -218,6 +220,7 @@ public class FlowController : MonoBehaviour
             }
         }
         GameManager.Instance.ChangePhase(GamePhase.Standby); // 페이즈 전환
+        yield return new WaitForSecondsRealtime(0.1f);
         IsBusy = false;
         //yield return new WaitForSeconds(0.5f); // 추가로 0.5초 로딩화면 보여줌 추후 브리핑 페이즈에 로딩씬 끝나게?
         yield return SceneManager.UnloadSceneAsync(loadingSceneName); // 로딩 씬 언로드
