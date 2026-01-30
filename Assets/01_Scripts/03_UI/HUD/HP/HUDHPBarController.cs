@@ -13,8 +13,8 @@ public class HUDHPBarController : MonoBehaviour
     [SerializeField] private HUDHeartAnimator heartAnimator;
 
     [Header("Fill Range")]
-    [SerializeField] private float fillMin = 0.09f;
-    [SerializeField] private float fillMax = 0.9f;
+    [SerializeField] private float fillMin = 0.1f;
+    [SerializeField] private float fillMax = 1.0f;
 
     [Header("HP Text")]
     [SerializeField] private TextMeshProUGUI hpText;
@@ -124,9 +124,9 @@ public class HUDHPBarController : MonoBehaviour
     private void ApplyHp(int hp)
     {
         float normalized = Mathf.Clamp01(hp / maxHp);
-        float fillAmount = Mathf.Lerp(fillMin, fillMax, normalized);
 
-        fillImage.fillAmount = fillAmount;
+        fillImage.fillAmount = normalized;
+
         fillImage.color = Color.Lerp(Color.red, Color.white, normalized);
 
         if (heartAnimator != null)
