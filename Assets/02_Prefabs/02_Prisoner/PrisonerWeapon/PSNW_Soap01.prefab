@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4809760653621156203}
+  - component: {fileID: 6342382583363875804}
+  - component: {fileID: 8711591450036201629}
   m_Layer: 10
   m_Name: PSNW_Soap01
   m_TagString: Untagged
@@ -32,6 +34,41 @@ Transform:
   - {fileID: 3000518065109902458}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6342382583363875804
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3887875280322376621}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 0.1, z: 0.2}
+  m_Center: {x: 0, y: 0.05, z: 0}
+--- !u!114 &8711591450036201629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3887875280322376621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bef79827754e0694f80832d2773dcb45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemDefinition: {fileID: 11400000, guid: 7c1521420f22dd4488702a0d9448f2e2, type: 2}
+  playDiscoverySfx: 1
 --- !u!1001 &3326262595655680913
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -43,17 +80,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 1b55f961375a6da4a9a91d4c020ccbf7,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.5614483
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1b55f961375a6da4a9a91d4c020ccbf7,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.327711
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1b55f961375a6da4a9a91d4c020ccbf7,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.86262625
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1b55f961375a6da4a9a91d4c020ccbf7,
         type: 3}

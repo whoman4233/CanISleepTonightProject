@@ -152,6 +152,9 @@ public class PrisonerController : MonoBehaviour
 
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
     {
+        // ★ [추가] 초기화 시점에 자식 오브젝트들의 불필요한 애니메이터 정리 (메인 Animator 제외)
+        CleanupRedundantAnimators();
+
         this.Data = data;
 
         if (this.Data != null)
@@ -188,6 +191,30 @@ public class PrisonerController : MonoBehaviour
         }
 
         Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | Type:{AIType} | HasWeapon:{HasWeapon}");
+    }
+
+    // ★ [추가] 메인 애니메이터 외의 자식 애니메이터 컨트롤러 해제 메서드
+    private void CleanupRedundantAnimators()
+    {
+        // 메인 애니메이터가 없다면 아무것도 할 수 없으므로 리턴
+        if (animator == null) return;
+
+        // 비활성화된 자식까지 포함해서 모든 Animator 컴포넌트 검색
+        Animator[] allAnimators = GetComponentsInChildren<Animator>(true);
+
+        foreach (var anim in allAnimators)
+        {
+            // 1. 현재 PrisonerController가 사용 중인 '메인 애니메이터'라면 건드리지 않음
+            if (anim == this.animator) continue;
+
+            // 2. 그 외의 애니메이터(모델 원본, 무기 등)에 컨트롤러가 붙어있다면 해제
+            if (anim.runtimeAnimatorController != null)
+            {
+                anim.runtimeAnimatorController = null;
+                // 필요 시 컴포넌트 자체를 꺼버릴 수도 있음
+                // anim.enabled = false; 
+            }
+        }
     }
 
     // Enum 기반 행동 시작
@@ -358,5 +385,4 @@ public class PrisonerController : MonoBehaviour
             sfx.PlayRandomAttack();
         }
     }
-
 }
