@@ -17,10 +17,20 @@ public class PrisonerCombatState : BasePrisonerState
     {
         base.Enter();
 
+        // ================================================================
+        // ★ [요청사항] 진입하자마자 InCombat 파라미터 ON
+        // ================================================================
+        // Animator의 파라미터 이름과 정확히 일치해야 합니다. ("InCombat" vs "IsCombat")
+        anim.SetBool("InCombat", true);
+
+        // 멍때림 방지용 강제 달리기 전환 (이전 수정사항 포함)
+        anim.CrossFade("Run", 0.1f);
+        anim.SetBool("Run", true);
+
         // 1. 플레이어 캐싱
         if (player == null) FindPlayer();
 
-        // 2. Agent 설정 (기존 코드)
+        // 2. Agent 설정
         if (agent != null)
         {
             if (!agent.enabled) agent.enabled = true;
@@ -39,31 +49,23 @@ public class PrisonerCombatState : BasePrisonerState
             agent.stoppingDistance = 0.1f;
         }
 
-        _cooldownTimer = 0.5f;
+        _cooldownTimer = 0.2f;
 
-        // 3. 애니메이션 초기화
-        anim.SetBool("Walk", false);
-        anim.SetBool("IsCombat", true);
-
-        // 4. 무기 장착 (기존 코드)
+        // 3. 무기 장착
         if (fsm.Controller.HasWeapon)
         {
             fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
         }
 
-        // ================================================================
-        // ★ [핵심 추가] 진입 즉시 거리 체크 후 이동 시작 (멍때림 방지)
-        // ================================================================
+        // 4. 즉시 추격 시작
         if (player != null)
         {
             float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-            // 사거리 밖이면 바로 추격 시작 (Run 애니메이션 ON)
             if (dist > AttackRange)
             {
                 MoveToPlayer();
             }
-            // 사거리 안이면 공격 준비 자세
             else
             {
                 RotateTowardsPlayer(true);
