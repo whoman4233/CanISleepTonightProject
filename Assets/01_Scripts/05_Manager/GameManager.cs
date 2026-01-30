@@ -237,7 +237,8 @@ public class GameManager : MonoBehaviour
 
             currentDay++;
             Debug.Log("Day++");
-            playerHP = Mathf.Min(playerHP + 10, 100);
+            //playerHP = Mathf.Min(playerHP + 10, 100);
+            playerHP = 100;
             CurrentAccidentFreeDay++; // 다음날로 넘어가면 무사고 +1
 
             // 7일차 도달 시 엔딩 트리거
