@@ -26,6 +26,8 @@ public class PlayerDamageFeedbackController : MonoBehaviour
     private Action<PlayerDamagedEvent> _onDamaged;
     private bool _volumeBound;
 
+    private Coroutine _bindRoutine;
+
     // =========================
     // Lifecycle
     // =========================
@@ -38,13 +40,22 @@ public class PlayerDamageFeedbackController : MonoBehaviour
     {
         EventBus.Subscribe(_onDamaged);
 
-        // 프리팹이므로 씬 준비를 기다렸다가 바인딩
-        StartCoroutine(Co_BindDamageVolume());
+        // 플레이어는 런타임 스폰이므로 씬 준비 이후 바인딩 시도
+        if (_bindRoutine != null)
+            StopCoroutine(_bindRoutine);
+
+        _bindRoutine = StartCoroutine(Co_BindDamageVolume());
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onDamaged);
+
+        if (_bindRoutine != null)
+        {
+            StopCoroutine(_bindRoutine);
+            _bindRoutine = null;
+        }
     }
 
     // =========================
@@ -52,7 +63,6 @@ public class PlayerDamageFeedbackController : MonoBehaviour
     // =========================
     private IEnumerator Co_BindDamageVolume()
     {
-        // 씬 로딩 / 오브젝트 활성 순서 대비
         const float timeout = 2f;
         float elapsed = 0f;
 
@@ -62,12 +72,12 @@ public class PlayerDamageFeedbackController : MonoBehaviour
             if (marker != null)
             {
                 _volume = marker.GetComponent<Volume>();
-                if (_volume != null && _volume.profile.TryGet(out _vignette))
+                if (_volume != null && _volume.profile != null &&
+                    _volume.profile.TryGet(out _vignette))
                 {
                     _defaultIntensity = _vignette.intensity.value;
                     _volumeBound = true;
 
-                    Debug.Log("[PlayerDamageFeedback] Damage Volume 바인딩 성공");
                     yield break;
                 }
             }
@@ -76,7 +86,10 @@ public class PlayerDamageFeedbackController : MonoBehaviour
             yield return null;
         }
 
-        Debug.LogError("[PlayerDamageFeedback] Damage Volume 바인딩 실패 (타임아웃)");
+        // Marker가 없으면 "이 씬에서는 비네팅 미사용"(튜토리얼 신)
+
+        _volumeBound = false;
+        _vignette = null;
     }
 
     // =========================
@@ -107,4 +120,5 @@ public class PlayerDamageFeedbackController : MonoBehaviour
         _vignette.intensity.value = _defaultIntensity;
     }
 }
+
 
