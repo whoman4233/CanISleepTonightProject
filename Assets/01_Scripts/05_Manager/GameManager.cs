@@ -276,9 +276,9 @@ public class GameManager : MonoBehaviour
     {
         _patrolTimeoutHandled = false;
         EventBus.Publish(new ShowTimedTextPopupEvent("순찰 시작", 1.5f));
-        patrolDurationSeconds = 480;
+        //patrolDurationSeconds = 480;
         CurrentInGameSeconds = patrolDurationSeconds;
-        EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
+        //EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
         EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin));
 
         patrolTimerCoroutine = StartCoroutine(UpdateTimer());
