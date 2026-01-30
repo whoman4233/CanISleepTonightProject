@@ -112,6 +112,12 @@ public class Mission06Strategy : DailyMissionStrategy
             }
         }
         Debug.Log("갱단원3명 소환");
+
+        //float missionTimeLimit = 180f;
+        //if (GameManager.Instance != null)
+        //{
+        //    GameManager.Instance.SetDailyTimeLimit(missionTimeLimit);
+        //}
     }
 
     private void AssignRandomNames()
