@@ -469,12 +469,7 @@ public class InspectionManager : MonoBehaviour
         var view = inspectInstance.GetComponentInChildren<MonoBehaviour>(true) as IInspectionView;
         if (view != null)
         {
-            Debug.Log($"[InspectionManager] IInspectionView found on {(view as MonoBehaviour).name}");
             view.Bind(currentInspectable);
-        }
-        else
-        {
-            Debug.LogWarning($"[InspectionManager] IInspectionView NOT found in inspect prefab: {inspectInstance.name}");
         }
     }
 }

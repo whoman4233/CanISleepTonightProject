@@ -84,7 +84,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         {
             if (inspection != null && !string.IsNullOrEmpty(inspection.CurrentInspectingCellId))
             {
-                Debug.LogError($"[Door Blocked] 계단 문을 열 수 없습니다! 현재 열려있는 감방: {inspection.CurrentInspectingCellId}");
+                Debug.Log($"[Door Blocked] 계단 문을 열 수 없습니다! 현재 열려있는 감방: {inspection.CurrentInspectingCellId}");
                 EventBus.Publish(new ShowTimedTextPopupEvent("감방 문이 열려있습니다! 문을 닫고 이동하세요.", 2.0f, true));
                 PlayLocked();
                 return;
@@ -174,13 +174,22 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             }
 
             // ====================================================
-            // ★ [추가] 전투 중 문 닫기 방지 로직
+            // 전투 중 문 닫기 방지 로직
             // ====================================================
             // 플레이어가 불리하다고 문 닫고 도망가는 꼼수 방지
             if (IsCombatInProgress())
             {
                 EventBus.Publish(new ShowTimedTextPopupEvent("전투 중에는 문을 닫을 수 없습니다!", 2.0f, true));
                 Debug.LogWarning($"[Door] {cellId}: 전투 중이라 문을 닫을 수 없음.");
+
+                // 문 흔들리는 연출(Locked)
+                PlayLocked();
+                return;
+            }
+            else if(IsEscapeInProgress())
+            {
+                EventBus.Publish(new ShowTimedTextPopupEvent("죄수 도주 중에는 문을 닫을 수 없습니다!", 2.0f, true));
+                Debug.LogWarning($"[Door] {cellId}: 죄수 도주 중이라 문을 닫을 수 없음.");
 
                 // 문 흔들리는 연출(Locked)
                 PlayLocked();
@@ -214,6 +223,27 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
                 // 죄수가 전투 상태(CombatState)이거나 이미 공격 모드라면 true
                 // (PrisonerCombatState 타입 체크 방식이 가장 확실함)
                 if (fsm._currentState is PrisonerCombatState || fsm._currentState is PrisonerCowerState)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private bool IsEscapeInProgress()
+    {
+        if (contentRegistry == null) return false;
+
+        // 이 감방의 죄수 데이터를 가져옴
+        if (contentRegistry.TryGet(cellId, out var content) && content.prisoner != null)
+        {
+            var fsm = content.prisoner.GetComponent<PrisonerFSM>();
+            if (fsm != null)
+            {
+                // 죄수가 전투 상태(CombatState)이거나 이미 공격 모드라면 true
+                // (PrisonerCombatState 타입 체크 방식이 가장 확실함)
+                if (fsm._currentState is PrisonerEscapeState)
                 {
                     return true;
                 }

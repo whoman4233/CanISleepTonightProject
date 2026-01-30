@@ -152,6 +152,9 @@ public class PrisonerController : MonoBehaviour
 
     public void Initialize(PrisonerData data, CellAnchor cell, bool isSuspicious)
     {
+        // ★ [추가] 초기화 시점에 자식 오브젝트들의 불필요한 애니메이터 정리 (메인 Animator 제외)
+        CleanupRedundantAnimators();
+
         this.Data = data;
 
         if (this.Data != null)
@@ -188,6 +191,30 @@ public class PrisonerController : MonoBehaviour
         }
 
         Debug.Log($"[Prisoner Spawn] ID:{(Data != null ? Data.Name : "null")} | Type:{AIType} | HasWeapon:{HasWeapon}");
+    }
+
+    // ★ [추가] 메인 애니메이터 외의 자식 애니메이터 컨트롤러 해제 메서드
+    private void CleanupRedundantAnimators()
+    {
+        // 메인 애니메이터가 없다면 아무것도 할 수 없으므로 리턴
+        if (animator == null) return;
+
+        // 비활성화된 자식까지 포함해서 모든 Animator 컴포넌트 검색
+        Animator[] allAnimators = GetComponentsInChildren<Animator>(true);
+
+        foreach (var anim in allAnimators)
+        {
+            // 1. 현재 PrisonerController가 사용 중인 '메인 애니메이터'라면 건드리지 않음
+            if (anim == this.animator) continue;
+
+            // 2. 그 외의 애니메이터(모델 원본, 무기 등)에 컨트롤러가 붙어있다면 해제
+            if (anim.runtimeAnimatorController != null)
+            {
+                anim.runtimeAnimatorController = null;
+                // 필요 시 컴포넌트 자체를 꺼버릴 수도 있음
+                // anim.enabled = false; 
+            }
+        }
     }
 
     // Enum 기반 행동 시작
@@ -290,11 +317,17 @@ public class PrisonerController : MonoBehaviour
     public void OnAttackHitCheck()
     {
         Collider[] hits = new Collider[20];
-        int count = Physics.OverlapSphereNonAlloc(transform.position, attackRange, hits, targetLayer);
+
+        // [수정 1] 판정 원점을 발바닥이 아닌 '가슴 높이 + 앞쪽'으로 보정
+        // Vector3.up * 1.0f : 사람 허리~가슴 높이 (캐릭터 크기에 따라 조절)
+        // transform.forward * 0.5f : 몸 중심보다 살짝 앞쪽에서 검사 시작
+        Vector3 hitCenter = transform.position + (Vector3.up * 1.0f) + (transform.forward * 0.5f);
+
+        // [수정 2] 보정된 위치(hitCenter)를 기준으로 검사
+        int count = Physics.OverlapSphereNonAlloc(hitCenter, attackRange, hits, targetLayer);
 
         if (count == 0) return;
 
-        // [수정] 이번 공격 프레임에서 이미 피격된 Health 컴포넌트를 기록할 리스트 생성
         HashSet<Health> damagedTargets = new HashSet<Health>();
 
         for (int i = 0; i < count; i++)
@@ -302,26 +335,23 @@ public class PrisonerController : MonoBehaviour
             var target = hits[i];
             if (target.gameObject == gameObject) continue;
 
+            // 방향 계산도 보정된 위치 기준 or 기존 발바닥 기준 선택 (보통 발바닥 기준이 회전 계산엔 안정적)
             Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
             dirToTarget.y = 0;
             Vector3 myForward = transform.forward;
             myForward.y = 0;
 
             // 각도 체크 (90도)
-            if (Vector3.Angle(myForward, dirToTarget) < 90f) // attackAngle 변수 사용 권장 (현재는 90f 하드코딩 되어있음)
+            if (Vector3.Angle(myForward, dirToTarget) < 90f)
             {
                 var playerHealth = target.GetComponent<Health>();
                 if (playerHealth == null) playerHealth = target.GetComponentInParent<Health>();
                 if (playerHealth == null) playerHealth = target.GetComponentInChildren<Health>();
 
-                // [수정] 유효한 Health가 있고, 아직 이번 공격에 맞지 않았다면 데미지 적용
                 if (playerHealth != null && !damagedTargets.Contains(playerHealth))
                 {
                     int finalDamage = (Data != null && Data.AttackPower > 0) ? (int)Data.AttackPower : 10;
-
                     playerHealth.TakeDamage(finalDamage);
-
-                    // [수정] 피격 목록에 추가하여 중복 데미지 방지
                     damagedTargets.Add(playerHealth);
 
                     Debug.Log($"✅ [Hit Success] {name} -> Player ({finalDamage} dmg)");
@@ -330,16 +360,15 @@ public class PrisonerController : MonoBehaviour
         }
     }
 
-    public void PlayAttackSound()
-    {
-        if (sfx != null)
-        {
-            sfx.PlayRandomAttack();
-        }
-    }
-
+    // [추가] 눈으로 판정 범위를 확인하기 위한 기즈모 (선택 사항)
     private void OnDrawGizmosSelected()
     {
+        Gizmos.color = Color.red;
+        // 실제 판정과 동일한 위치에 기즈모를 그려서 확인
+        Vector3 hitCenter = transform.position + (Vector3.up * 1.0f) + (transform.forward * 0.5f);
+        Gizmos.DrawWireSphere(hitCenter, attackRange);
+
+
         if (AIType == PrisonerAIType.Ambusher)
         {
             Gizmos.color = Color.red;
@@ -347,5 +376,13 @@ public class PrisonerController : MonoBehaviour
         }
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+
+    public void PlayAttackSound()
+    {
+        if (sfx != null)
+        {
+            sfx.PlayRandomAttack();
+        }
     }
 }

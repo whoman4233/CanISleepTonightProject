@@ -74,16 +74,33 @@ public class Mission06Strategy : DailyMissionStrategy
 
         // 선정된 3명의 데이터를 "갱단원"으로 강제 치환
         // targetTemplateId는 SO에 등록된 갱단원의 templateId와 일치시켜야함
-        foreach (var cellId in targetCells)
+        //foreach (var cellId in targetCells)
+        //{
+        //    scheduleManager.ForceTransformPrisoner(cellId, "PSN_Gang_01");
+        //}
+        for (int i = 0; i < targetCells.Count; i++)
         {
-            scheduleManager.ForceTransformPrisoner(cellId, "PSN_Gang_01");
+            string cellId = targetCells[i];
+
+            // i가 0이면 Gang_01, 1이면 Gang_02, 2이면 Gang_03 할당
+            string targetGangId = $"PSN_Gang_0{i + 1}";
+
+            scheduleManager.ForceTransformPrisoner(cellId, targetGangId);
+
+            // 역할 부여 시각화 타입도 순번에 맞춰 할당
+            VisualAnomalyType visualType = (VisualAnomalyType)((int)VisualAnomalyType.Suspect1 + i);
+            bool isCulprit = (i == 0); // 첫 번째(Gang_01)만 진범
+
+            scheduleManager.SetDailyRole(cellId, PrisonerAIType.Good, visualType, isCulprit);
+
+            Debug.Log($"[Mission06] 방 {cellId}에 {targetGangId} (Visual: {visualType}) 배치 완료.");
         }
 
         // 역할 부여 (중앙 소환을 위한 비주얼 타입 지정)
         // 첫 번째 방(targetCells[0])을 진범(isSuspicious = true)으로 설정
-        scheduleManager.SetDailyRole(targetCells[0], PrisonerAIType.Good, VisualAnomalyType.Suspect1, true);
-        scheduleManager.SetDailyRole(targetCells[1], PrisonerAIType.Good, VisualAnomalyType.Suspect2, false);
-        scheduleManager.SetDailyRole(targetCells[2], PrisonerAIType.Good, VisualAnomalyType.Suspect3, false);
+        //scheduleManager.SetDailyRole(targetCells[0], PrisonerAIType.Good, VisualAnomalyType.Suspect1, true);
+        //scheduleManager.SetDailyRole(targetCells[1], PrisonerAIType.Good, VisualAnomalyType.Suspect2, false);
+        //scheduleManager.SetDailyRole(targetCells[2], PrisonerAIType.Good, VisualAnomalyType.Suspect3, false);
 
         // 나머지 방들은 평범한 죄수들로 채우기 (이미 정해진 3명 제외)
         foreach (var cellId in allCellIds)
@@ -112,6 +129,12 @@ public class Mission06Strategy : DailyMissionStrategy
             }
         }
         Debug.Log("갱단원3명 소환");
+
+        //float missionTimeLimit = 180f;
+        //if (GameManager.Instance != null)
+        //{
+        //    GameManager.Instance.SetDailyTimeLimit(missionTimeLimit);
+        //}
     }
 
     private void AssignRandomNames()

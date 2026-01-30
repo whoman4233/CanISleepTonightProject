@@ -237,7 +237,8 @@ public class GameManager : MonoBehaviour
 
             currentDay++;
             Debug.Log("Day++");
-            playerHP = Mathf.Min(playerHP + 10, 100);
+            //playerHP = Mathf.Min(playerHP + 10, 100);
+            playerHP = 100;
             CurrentAccidentFreeDay++; // 다음날로 넘어가면 무사고 +1
 
             // 7일차 도달 시 엔딩 트리거
@@ -276,9 +277,9 @@ public class GameManager : MonoBehaviour
     {
         _patrolTimeoutHandled = false;
         EventBus.Publish(new ShowTimedTextPopupEvent("순찰 시작", 1.5f));
-        patrolDurationSeconds = 480;
+        //patrolDurationSeconds = 480;
         CurrentInGameSeconds = patrolDurationSeconds;
-        EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
+        //EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
         EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin));
 
         patrolTimerCoroutine = StartCoroutine(UpdateTimer());
