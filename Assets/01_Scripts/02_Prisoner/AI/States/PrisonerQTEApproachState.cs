@@ -150,6 +150,9 @@ public class PrisonerQTEApproachState : BasePrisonerState
 
         // QTE 결과가 나왔으니, 애니메이션이 끝나기를 기다림.
         // 하지만 혹시 이벤트가 안 올 것을 대비해 4초 뒤 강제 전환 예약
+
+        anim.SetBool("InCombat", true);
+
         if (_safetyCoroutine != null) fsm.StopCoroutine(_safetyCoroutine);
         _safetyCoroutine = fsm.StartCoroutine(CoSafetyFallback());
     }
