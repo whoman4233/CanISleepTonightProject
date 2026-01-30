@@ -126,7 +126,7 @@ Transform:
   m_GameObject: {fileID: 1512498099403818202}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.388, y: -0.765, z: 3.557}
+  m_LocalPosition: {x: 3.206, y: -0.765, z: 3.557}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -470,6 +470,7 @@ Transform:
   - {fileID: 3653643239052789630}
   - {fileID: 7625161292988813592}
   - {fileID: 4971305550279202291}
+  - {fileID: 5593133112026090400}
   - {fileID: 1695917279977900545}
   - {fileID: 4364634899664954160}
   m_Father: {fileID: 7745635392133010920}
@@ -716,6 +717,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kind: 8
+--- !u!1 &7374453860134535555
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5593133112026090400}
+  - component: {fileID: 6869251179730986557}
+  m_Layer: 0
+  m_Name: Slot_Dumbbel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5593133112026090400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7374453860134535555}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.2441128, z: -0, w: 0.9697469}
+  m_LocalPosition: {x: 0.977, y: -0.942, z: 0.092}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9027782538927540561}
+  m_LocalEulerAnglesHint: {x: 0, y: 28.259, z: 0}
+--- !u!114 &6869251179730986557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7374453860134535555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 005a8836cf4e32b45a70fd5a4b0d896d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  kind: 14
 --- !u!1 &8922411091985935189
 GameObject:
   m_ObjectHideFlags: 0
