@@ -200,7 +200,7 @@ public class PrisonerCombatState : BasePrisonerState
 
     public override void Exit()
     {
-        anim.SetBool("IsCombat", false);
+        anim.SetBool("InCombat", false);
         anim.SetBool("Run", false);
         anim.SetBool("Walk", false);
         base.Exit();
