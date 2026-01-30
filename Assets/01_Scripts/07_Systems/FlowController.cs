@@ -185,8 +185,6 @@ public class FlowController : MonoBehaviour
         while (!asyncLoad.isDone) yield return null;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(playSceneName)); // 씬 활성화
         yield return null; //new WaitForSeconds(1.0f);
-        yield return new WaitForEndOfFrame();
-        yield return new WaitForSecondsRealtime(0.1f);
 
         var dm = DailyMissionManager.Instance;
         if (dm != null)
