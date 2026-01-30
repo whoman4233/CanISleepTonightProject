@@ -1,7 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System.Collections;
-using System.Threading.Tasks;
+using System.Collections.Generic; // List 사용을 위해 필수
 
 [CreateAssetMenu(menuName = "Missions/Type: Collection (Day 2, 5)")]
 public class Mission_CollectionStrategy : DailyMissionStrategy
@@ -16,44 +14,6 @@ public class Mission_CollectionStrategy : DailyMissionStrategy
         // 1. [기존] 먼저 용의자(Suspicious)들을 배정합니다. (이때 아이템 소지 여부가 결정됨)
         sm.AssignRolesForNewDay(suspiciousCount: targetScore, defaultAI: PrisonerAIType.Good);
 
-        StartMissionSetting(ad, sm);
-
-        
-    }
-
-    // 아이템을 찾았을 때(클릭했을 때) 호출됨
-    public override void OnEventTriggered(string eventCode)
-    {
-        if (eventCode.Contains(targetItemTag))
-        {
-            Debug.Log($"[Mission] 목표 아이템 발견! ({eventCode})");
-        }
-    }
-
-    public override bool CheckWinCondition(int currentScore, out string failReason)
-    {
-        if (currentScore >= targetScore)
-        {
-            failReason = "";
-            return true;
-        }
-        failReason = $"목표 물품을 {targetScore}개 찾아야 합니다. (현재: {currentScore})";
-        return false;
-    }
-
-    // 반환 타입을 void 대신 async void로 변경
-    public async void StartMissionSetting(AnomalyDistributor ad, PrisonerScheduleManager sm)
-    {
-        // 1. 0.5초 대기 (밀리초 단위, 500ms)
-        // 이 동안 유니티 메인 스레드는 멈추지 않고 다른 일을 처리함 (생성 로직 등)
-        await Task.Delay(500);
-
-        // 2. 대기 후 실행할 로직 (죄수 할당)
-        AssignQTEPrisoner(ad, sm);
-    }
-
-    private void AssignQTEPrisoner(AnomalyDistributor ad, PrisonerScheduleManager sm)
-    {
         // ========================================================================
         // 2. [수정] 미션 2번일 때, '용의자' 중 한 명을 골라 QTE 공격수로 변경
         // ========================================================================
@@ -110,6 +70,26 @@ public class Mission_CollectionStrategy : DailyMissionStrategy
                 Debug.LogWarning("[Mission] 용의자가 한 명도 없어 QTE 공격수를 배정하지 못했습니다.");
             }
         }
+    }
+
+    // 아이템을 찾았을 때(클릭했을 때) 호출됨
+    public override void OnEventTriggered(string eventCode)
+    {
+        if (eventCode.Contains(targetItemTag))
+        {
+            Debug.Log($"[Mission] 목표 아이템 발견! ({eventCode})");
+        }
+    }
+
+    public override bool CheckWinCondition(int currentScore, out string failReason)
+    {
+        if (currentScore >= targetScore)
+        {
+            failReason = "";
+            return true;
+        }
+        failReason = $"목표 물품을 {targetScore}개 찾아야 합니다. (현재: {currentScore})";
+        return false;
     }
 
     // 아이템 검증 오버라이드
