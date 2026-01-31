@@ -66,52 +66,52 @@ PrefabInstance:
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.06089019
+      value: -0.195
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.0600004
+      value: 1.23
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.072500795
+      value: -0.264
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9579407
+      value: 0.18487695
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0.22063366
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.2869664
+      value: -0.07622031
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0.95463705
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -3.666
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -26.766
       objectReference: {fileID: 0}
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: -157.207
       objectReference: {fileID: 0}
     - target: {fileID: 3521857663486227058, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stepToPublish: 3
+  takeClip: {fileID: 0}
 --- !u!136 &1618216044768441296
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -324,6 +325,8 @@ MonoBehaviour:
   animator: {fileID: 3581958589440325372}
   triggerName: Open
   baton: {fileID: 2194685350808222919}
+  openClip: {fileID: 0}
+  closeClip: {fileID: 0}
 --- !u!65 &317741744602423590
 BoxCollider:
   m_ObjectHideFlags: 0
