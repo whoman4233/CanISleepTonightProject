@@ -410,4 +410,11 @@ public class PrisonerFSM : MonoBehaviour
         string typeStr = type.ToString();
         return typeStr.StartsWith("PSN_Franke") || typeStr.StartsWith("Suspect");
     }
+
+    public Transform PlayerTransform { get; private set; }
+
+    public void SetPlayerReference(Transform player)
+    {
+        this.PlayerTransform = player;
+    }
 }

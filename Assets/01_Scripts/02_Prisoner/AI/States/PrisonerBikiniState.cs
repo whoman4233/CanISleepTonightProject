@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System;
 using System.Collections;
 
@@ -11,7 +11,7 @@ public class PrisonerBikiniState : BasePrisonerState
     private GameObject _targetInteractableObject;
     private GameObject _soapRootObject;
 
-    // ¡Ú [Ãß°¡] ºÎ¸ğ ºĞ¸® Àü, ¿ø·¡ ºÎ¸ğ¸¦ ±â¾ïÇØµÎ±â À§ÇÑ º¯¼ö
+    // â˜… [ì¶”ê°€] ë¶€ëª¨ ë¶„ë¦¬ ì „, ì›ë˜ ë¶€ëª¨ë¥¼ ê¸°ì–µí•´ë‘ê¸° ìœ„í•œ ë³€ìˆ˜
     private Transform _soapOriginalParent;
 
     private const string SOAP_OBJ_NAME = "SoapTrap";
@@ -29,6 +29,7 @@ public class PrisonerBikiniState : BasePrisonerState
     public override void Enter()
     {
         base.Enter();
+        RefreshPlayerReference();
         _currentStep = BikiniStep.WaitForPlayer;
 
         if (Agent != null && Agent.isOnNavMesh)
@@ -39,7 +40,7 @@ public class PrisonerBikiniState : BasePrisonerState
         Anim.SetBool("Run", false);
         Anim.SetInteger("ActionType", 0);
 
-        // 1. ¿ÀºêÁ§Æ® Ã£±â
+        // 1. ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         if (_soapRootObject == null)
         {
             var allTransforms = fsm.GetComponentsInChildren<Transform>(true);
@@ -53,10 +54,10 @@ public class PrisonerBikiniState : BasePrisonerState
             }
         }
 
-        // 2. ÃÊ±âÈ­ ¹× ¿ø·¡ ºÎ¸ğ ±â¾ï
+        // 2. ì´ˆê¸°í™” ë° ì›ë˜ ë¶€ëª¨ ê¸°ì–µ
         if (_soapRootObject != null)
         {
-            // ¡Ú [Ãß°¡] ³ªÁß¿¡ º¹±¸ÇÏ±â À§ÇØ ¿ø·¡ ºÎ¸ğ(¾Æ¸¶µµ ¼ÕÀÌ³ª °ñ¹İ) Ä³½Ì
+            // â˜… [ì¶”ê°€] ë‚˜ì¤‘ì— ë³µêµ¬í•˜ê¸° ìœ„í•´ ì›ë˜ ë¶€ëª¨(ì•„ë§ˆë„ ì†ì´ë‚˜ ê³¨ë°˜) ìºì‹±
             _soapOriginalParent = _soapRootObject.transform.parent;
 
             var interactable = _soapRootObject.GetComponentInChildren<MissionItemInteractable>(true);
@@ -72,10 +73,10 @@ public class PrisonerBikiniState : BasePrisonerState
 
     public override void Update()
     {
-        if (player == null) return;
+        if (Player == null) return;
 
         // ================================================================
-        // ¡Ú [ÇÙ½É] ±â½À °ø°İ Àü±îÁö´Â °è¼Ó ÇÃ·¹ÀÌ¾î¸¦ ÃÄ´Ùº½ (ºñ´©´Â ºĞ¸®µÇ¾î¼­ ¾È µ¹¾Æ°¨)
+        // â˜… [í•µì‹¬] ê¸°ìŠµ ê³µê²© ì „ê¹Œì§€ëŠ” ê³„ì† í”Œë ˆì´ì–´ë¥¼ ì³ë‹¤ë´„ (ë¹„ëˆ„ëŠ” ë¶„ë¦¬ë˜ì–´ì„œ ì•ˆ ëŒì•„ê°)
         // ================================================================
         if (_currentStep != BikiniStep.AmbushSequence)
         {
@@ -85,7 +86,7 @@ public class PrisonerBikiniState : BasePrisonerState
         switch (_currentStep)
         {
             case BikiniStep.WaitForPlayer:
-                if (Vector3.Distance(fsm.transform.position, player.position) <= DETECT_RANGE)
+                if (Vector3.Distance(fsm.transform.position, Player.position) <= DETECT_RANGE)
                 {
                     RequestDialogueStart();
                 }
@@ -99,7 +100,7 @@ public class PrisonerBikiniState : BasePrisonerState
                 {
                     if (!_targetInteractableObject.activeInHierarchy)
                     {
-                        Debug.Log("[Bikini] ¡Ú ºñ´© »ç¶óÁü °¨Áö ¼º°ø! -> ±â½À ½ÃÀÛ");
+                        Debug.Log("[Bikini] â˜… ë¹„ëˆ„ ì‚¬ë¼ì§ ê°ì§€ ì„±ê³µ! -> ê¸°ìŠµ ì‹œì‘");
                         fsm.StartCoroutine(CoExecuteAmbush());
                     }
                 }
@@ -116,7 +117,7 @@ public class PrisonerBikiniState : BasePrisonerState
         if (DialogueManager.Instance != null)
         {
             // DialogueManager.Instance.StartDialogue(DIALOGUE_KEY); 
-            Debug.Log($"[Bikini] ´ëÈ­ ½ÃÀÛ ¿äÃ»");
+            Debug.Log($"[Bikini] ëŒ€í™” ì‹œì‘ ìš”ì²­");
         }
     }
 
@@ -135,13 +136,13 @@ public class PrisonerBikiniState : BasePrisonerState
 
         yield return new WaitForSeconds(0.5f);
 
-        // 3. ºñ´© È°¼ºÈ­ ¹× ºÎ¸ğ ºĞ¸® (Detach)
+        // 3. ë¹„ëˆ„ í™œì„±í™” ë° ë¶€ëª¨ ë¶„ë¦¬ (Detach)
         if (_soapRootObject != null)
         {
             _soapRootObject.SetActive(true);
 
-            // ¡Ú [ÇÙ½É ¼öÁ¤] ºÎ¸ğ¸¦ null·Î ¼³Á¤ÇÏ¿© ¿ùµå ÁÂÇ¥°è·Î º¸³¿
-            // ÀÌÁ¦ ÁË¼ö°¡ È¸ÀüÇØµµ ºñ´©´Â Á¦ÀÚ¸®¿¡ °¡¸¸È÷ ÀÖ½À´Ï´Ù.
+            // â˜… [í•µì‹¬ ìˆ˜ì •] ë¶€ëª¨ë¥¼ nullë¡œ ì„¤ì •í•˜ì—¬ ì›”ë“œ ì¢Œí‘œê³„ë¡œ ë³´ëƒ„
+            // ì´ì œ ì£„ìˆ˜ê°€ íšŒì „í•´ë„ ë¹„ëˆ„ëŠ” ì œìë¦¬ì— ê°€ë§Œíˆ ìˆìŠµë‹ˆë‹¤.
             _soapRootObject.transform.SetParent(null);
 
             if (_targetInteractableObject != null) _targetInteractableObject.SetActive(true);
@@ -149,7 +150,7 @@ public class PrisonerBikiniState : BasePrisonerState
             var colliders = _soapRootObject.GetComponentsInChildren<Collider>(true);
             foreach (var col in colliders) col.enabled = true;
 
-            Debug.Log($"[Bikini] ºñ´© È°¼ºÈ­ & ºÎ¸ğ ºĞ¸®(Detach) ¿Ï·á");
+            Debug.Log($"[Bikini] ë¹„ëˆ„ í™œì„±í™” & ë¶€ëª¨ ë¶„ë¦¬(Detach) ì™„ë£Œ");
         }
 
         _currentStep = BikiniStep.WaitForSoap;
@@ -158,15 +159,15 @@ public class PrisonerBikiniState : BasePrisonerState
 
     private IEnumerator CoExecuteAmbush()
     {
-        _currentStep = BikiniStep.AmbushSequence; // È¸Àü ·ÎÁ÷ Áß´Ü
+        _currentStep = BikiniStep.AmbushSequence; // íšŒì „ ë¡œì§ ì¤‘ë‹¨
 
         if (Agent != null) Agent.enabled = false;
 
-        Vector3 backPos = player.position - (player.forward * 0.8f);
+        Vector3 backPos = Player.position - (Player.forward * 0.8f);
         backPos.y = fsm.transform.position.y;
         fsm.transform.position = backPos;
 
-        fsm.transform.LookAt(player.position);
+        fsm.transform.LookAt(Player.position);
 
         if (Agent != null) Agent.enabled = true;
 
@@ -187,10 +188,13 @@ public class PrisonerBikiniState : BasePrisonerState
 
     private void LookAtPlayer()
     {
-        Vector3 dir = (player.position - fsm.transform.position).normalized;
+        Vector3 dir = (Player.position - fsm.transform.position).normalized;
         dir.y = 0;
         if (dir != Vector3.zero)
+        {
+            Debug.DrawRay(fsm.transform.position + Vector3.up, dir * 2f, Color.red);
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
+        }
     }
 
     public override void Exit()
@@ -198,12 +202,12 @@ public class PrisonerBikiniState : BasePrisonerState
         EventBus.Unsubscribe(_onDialogueEndedHandler);
         Controller.StopActionBehavior();
 
-        // 4. [¾ÈÀüÀåÄ¡] »óÅÂ Á¾·á ½Ã(»ç¸Á, ÇÇ°İ µî) ºñ´©¸¦ ¿ø·¡ ºÎ¸ğ¿¡°Ô º¹±¸
+        // 4. [ì•ˆì „ì¥ì¹˜] ìƒíƒœ ì¢…ë£Œ ì‹œ(ì‚¬ë§, í”¼ê²© ë“±) ë¹„ëˆ„ë¥¼ ì›ë˜ ë¶€ëª¨ì—ê²Œ ë³µêµ¬
         if (_soapRootObject != null)
         {
             _soapRootObject.SetActive(false);
 
-            // ¿ø·¡ ºÎ¸ğ°¡ ±â¾ïµÇ¾î ÀÖ´Ù¸é º¹±¸, ¾ø´Ù¸é fsm(ÁË¼ö º»Ã¼)À¸·Î¶óµµ º¹±¸
+            // ì›ë˜ ë¶€ëª¨ê°€ ê¸°ì–µë˜ì–´ ìˆë‹¤ë©´ ë³µêµ¬, ì—†ë‹¤ë©´ fsm(ì£„ìˆ˜ ë³¸ì²´)ìœ¼ë¡œë¼ë„ ë³µêµ¬
             if (_soapOriginalParent != null)
             {
                 _soapRootObject.transform.SetParent(_soapOriginalParent);
@@ -213,7 +217,7 @@ public class PrisonerBikiniState : BasePrisonerState
                 _soapRootObject.transform.SetParent(fsm.transform);
             }
 
-            // À§Ä¡/È¸Àü ÃÊ±âÈ­ (´ÙÀ½ »ç¿ëÀ» À§ÇØ)
+            // ìœ„ì¹˜/íšŒì „ ì´ˆê¸°í™” (ë‹¤ìŒ ì‚¬ìš©ì„ ìœ„í•´)
             _soapRootObject.transform.localPosition = Vector3.zero;
             _soapRootObject.transform.localRotation = Quaternion.identity;
         }
@@ -227,7 +231,7 @@ public class PrisonerBikiniState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // ÇÇ°İ ½Ã Exit()°¡ È£ÃâµÇ¸é¼­ ºñ´©µµ ÀÚµ¿À¸·Î È¸¼öµÊ
+        // í”¼ê²© ì‹œ Exit()ê°€ í˜¸ì¶œë˜ë©´ì„œ ë¹„ëˆ„ë„ ìë™ìœ¼ë¡œ íšŒìˆ˜ë¨
         fsm.ChangeState(fsm.CombatState);
     }
 }

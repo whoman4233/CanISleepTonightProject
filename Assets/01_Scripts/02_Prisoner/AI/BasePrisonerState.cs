@@ -1,10 +1,10 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 public abstract class BasePrisonerState : IPrisonerState
 {
     protected PrisonerFSM fsm;
-    protected PrisonerController controller; // [º¯°æ] Actor -> Controller
+    protected PrisonerController controller; // [ë³€ê²½] Actor -> Controller
     protected Animator anim;
     protected NavMeshAgent agent;
     protected Transform player;
@@ -12,16 +12,18 @@ public abstract class BasePrisonerState : IPrisonerState
     public BasePrisonerState(PrisonerFSM fsm)
     {
         this.fsm = fsm;
-        // »ı¼ºÀÚ ½ÃÁ¡¿¡´Â ¾ÆÁ÷ Controller°¡ ¿¬°á ¾È µÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î
-        // fsm.Controller ÇÁ·ÎÆÛÆ¼¸¦ ÅëÇØ ·±Å¸ÀÓ¿¡ Á¢±ÙÇÏµµ·Ï ¼³°èÇÏ°Å³ª,
-        // Setup ÀÌÈÄ¿¡ Á¢±ÙÇÑ´Ù°í °¡Á¤ÇÕ´Ï´Ù.
+        // ìƒì„±ì ì‹œì ì—ëŠ” ì•„ì§ Controllerê°€ ì—°ê²° ì•ˆ ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // fsm.Controller í”„ë¡œí¼í‹°ë¥¼ í†µí•´ ëŸ°íƒ€ì„ì— ì ‘ê·¼í•˜ë„ë¡ ì„¤ê³„í•˜ê±°ë‚˜,
+        // Setup ì´í›„ì— ì ‘ê·¼í•œë‹¤ê³  ê°€ì •í•©ë‹ˆë‹¤.
 
         this.player = GameObject.FindGameObjectWithTag("Player")?.transform; 
         this.anim = fsm.GetComponentInChildren<Animator>();
         this.agent = fsm.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        RefreshPlayerReference();
     }
+    protected Transform Player => fsm.PlayerTransform;
 
-    // ÆíÀÇ¸¦ À§ÇÑ ÇÁ·ÎÆÛÆ¼ (¸Å¹ø fsm.Controller ¾²±â ±ÍÂúÀ¸¹Ç·Î)
+    // í¸ì˜ë¥¼ ìœ„í•œ í”„ë¡œí¼í‹° (ë§¤ë²ˆ fsm.Controller ì“°ê¸° ê·€ì°®ìœ¼ë¯€ë¡œ)
     protected PrisonerController Controller => fsm.Controller;
     protected Animator Anim => fsm.Anim;
     protected NavMeshAgent Agent => fsm.Agent;
@@ -30,4 +32,9 @@ public abstract class BasePrisonerState : IPrisonerState
     public virtual void Update() { }
     public virtual void Exit() { }
     public abstract void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir);
+    protected void RefreshPlayerReference()
+    {
+        if (player == null)
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+    }
 }

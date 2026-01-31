@@ -22,14 +22,21 @@ public class MimiTrigger : MonoBehaviour
             {
                 _triggered = true;
                 Debug.Log($"플레이어 감지 및 대사 시작");
-                ExecuteDialogue();
+                ExecuteDialogue(hit);
                 break;
             }
         }
     }
 
-    private void ExecuteDialogue()
+    private void ExecuteDialogue(Collider playerCollider)
     {
+        var fsm = GetComponentInParent<PrisonerFSM>();
+        if (fsm != null)
+        {
+            fsm.SetPlayerReference(playerCollider.transform);
+            fsm.ChangeState(fsm.BikiniState);
+            Debug.Log("비키니상태로 전환");
+        }
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogueByKeys(
