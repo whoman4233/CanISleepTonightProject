@@ -355,7 +355,7 @@ public class PrisonerScheduleManager : MonoBehaviour
             !p.templateId.Contains("Victor") &&
             !p.templateId.Contains("Bikini") &&
             !p.templateId.Contains("Goat") &&
-            !p.templateId.Contains("Suspect")
+            !p.templateId.Trim().Contains("Suspect")
         ).ToList();
 
         // 3. 후보가 있다면 정상적으로 랜덤 뽑기
