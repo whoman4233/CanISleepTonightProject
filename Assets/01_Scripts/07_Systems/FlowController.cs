@@ -52,20 +52,6 @@ public class FlowController : MonoBehaviour
         GameManager.Instance.ChangePhase(GamePhase.NotStarted);
         Debug.Log("notstarted");
     }
-#if UNITY_EDITOR
-    private void Update()
-    {
-        //  디버깅용 – 버튼으로 즉시 Outro 진입
-        if (Input.GetKeyDown(KeyCode.F12))
-        {
-            if (!IsBusy)
-            {
-                Debug.Log("[Debug] Force Outro Trigger");
-                StartCoroutine(PlayOutroSequence());
-            }
-        }
-    }
-#endif
     private void OnEnable()
     {
         EventBus.Subscribe(_startNewGameHandler);
