@@ -5,6 +5,7 @@ public class PrisonerAmbushState : BasePrisonerState
 {
     private const float AmbushDistance = 4.0f;
     private const float ArrivalDistance = 0.5f; // 도착 허용 오차
+    private const float StuckDistance = 1.5f;   // 끼임 방지용 거리 (추가됨)
     private bool _hasArrivedAtSpot = false;
 
     private const string STATE_ACTION = "Action";
@@ -17,14 +18,11 @@ public class PrisonerAmbushState : BasePrisonerState
         base.Enter();
         _hasArrivedAtSpot = false;
 
-        // ★ [중요] 이전 상태(Combat 등)에서 켜졌을 수 있는 IsAction을 확실히 끕니다.
-        // 이게 켜져 있으면 Run -> Action으로 멋대로 튀거나 블렌딩이 꼬일 수 있습니다.
+        // 이전 상태 정리
         anim.SetBool("IsAction", false);
-
-        // 이동 중에는 "서서" 뛰어야 하므로 false로 설정
         anim.SetBool("IsntStanding", false);
 
-        // 이동 시작: ActionType 0, Run 켜기
+        // 이동 시작 세팅
         anim.SetInteger("ActionType", 0);
         anim.SetBool("Run", true);
 
@@ -40,6 +38,14 @@ public class PrisonerAmbushState : BasePrisonerState
         {
             if (fsm.InspectionPoint != null)
             {
+                // 시작부터 이미 도착 지점 근처라면 바로 대기 상태로 진입
+                float dist = Vector3.Distance(fsm.transform.position, fsm.InspectionPoint.position);
+                if (dist <= ArrivalDistance)
+                {
+                    EnterAmbushPose();
+                    return;
+                }
+
                 agent.isStopped = false;
                 agent.SetDestination(fsm.InspectionPoint.position);
                 anim.CrossFade(STATE_RUN, 0.1f);
@@ -58,9 +64,16 @@ public class PrisonerAmbushState : BasePrisonerState
 
     public override void Update()
     {
+        // 1. 목적지 도착 체크 (플레이어 존재 여부와 무관하게 먼저 수행)
+        if (!_hasArrivedAtSpot && fsm.InspectionPoint != null)
+        {
+            CheckArrival();
+        }
+
+        // 2. 플레이어 체크 (없으면 기습 로직만 스킵)
         if (player == null) return;
 
-        // 1. 플레이어 기습 감지
+        // 3. 플레이어 기습 감지
         float distToPlayer = Vector3.Distance(fsm.transform.position, player.position);
         if (distToPlayer <= AmbushDistance)
         {
@@ -69,17 +82,10 @@ public class PrisonerAmbushState : BasePrisonerState
 
             Controller.StartActionBehavior(0);
             fsm.ChangeState(fsm.CombatState);
-            return;
-        }
-
-        // 2. 목적지 도착 체크
-        if (!_hasArrivedAtSpot && fsm.InspectionPoint != null)
-        {
-            CheckArrival();
         }
     }
 
-    // ★ [보강] NavMeshAgent가 멍청하게 굴 때를 대비한 2중 체크
+    // NavMeshAgent 보정 로직 추가
     private void CheckArrival()
     {
         if (agent.pathPending) return;
@@ -87,19 +93,22 @@ public class PrisonerAmbushState : BasePrisonerState
         // 1. NavMeshAgent 기준 도착 판정
         bool agentSaysArrived = (agent.remainingDistance <= agent.stoppingDistance + ArrivalDistance);
 
-        // 2. [추가] 물리적 거리 기준 강제 판정 (Agent가 벽에 걸려서 remainingDistance가 안 줄어들 때 대비)
-        // Y축 높이 차이는 무시하고 수평 거리만 계산 (2D 거리 체크가 더 정확함)
+        // 2. 물리적 거리 기준 강제 판정 (높이 무시)
         Vector3 myPos = fsm.transform.position;
         Vector3 targetPos = fsm.InspectionPoint.position;
-        myPos.y = targetPos.y = 0; // 높이 무시
+        myPos.y = targetPos.y = 0;
 
-        bool distanceSaysArrived = Vector3.Distance(myPos, targetPos) <= ArrivalDistance;
+        float distance = Vector3.Distance(myPos, targetPos);
+        bool distanceSaysArrived = distance <= ArrivalDistance;
 
-        // 둘 중 하나라도 만족하면 도착으로 간주
-        if (agentSaysArrived || distanceSaysArrived)
+        // 3. 끼임 방지: 목표 근처(1.5m)인데 속도가 거의 0이면 도착으로 간주
+        bool isStuckNearDestination = (distance <= StuckDistance) && (agent.velocity.sqrMagnitude <= 0.01f);
+
+        // 셋 중 하나라도 만족하면 도착 처리
+        if (agentSaysArrived || distanceSaysArrived || isStuckNearDestination)
         {
-            // 경로가 있거나, 혹은 이미 멈춰있다면 진입
-            if (!agent.hasPath || agent.velocity.sqrMagnitude <= 0.1f || distanceSaysArrived)
+            // 경로가 없거나, 멈췄거나, 거리상 도착했다면 진입
+            if (!agent.hasPath || agent.velocity.sqrMagnitude <= 0.1f || distanceSaysArrived || isStuckNearDestination)
             {
                 EnterAmbushPose();
             }
@@ -124,20 +133,14 @@ public class PrisonerAmbushState : BasePrisonerState
             Controller.transform.rotation = fsm.InspectionPoint.rotation;
         }
 
-        // ★ [핵심] 애니메이션 파라미터 정리 순서
-        // 1. Run 끄기
+        // 애니메이션 파라미터 정리
         anim.SetBool("Run", false);
-
-        // 2. 자세 잡기
         anim.SetBool("IsntStanding", true);
 
-        // 3. 행동 시작 (IsAction = true가 여기서 세팅됨)
+        // 행동 시작
         Controller.StartActionBehavior(PrisonerAIType.Ambusher);
+        anim.SetInteger("ActionType", 9); // 안전장치
 
-        // 4. 안전장치: ActionType 9번 강제
-        anim.SetInteger("ActionType", 9);
-
-        // 5. 전환
         anim.CrossFade(STATE_ACTION, 0.2f);
 
         Debug.Log($"[Ambush] 도착 완료. 매복 대기 (Run:False, IsntStanding:True, ActionType:9)");
@@ -148,8 +151,6 @@ public class PrisonerAmbushState : BasePrisonerState
         anim.SetBool("Run", false);
         anim.SetInteger("ActionType", 0);
         anim.SetBool("IsntStanding", false);
-
-        // ★ [추가] 나갈 때 IsAction도 꺼줘야 다음 상태(Return 등)에서 안 꼬임
         anim.SetBool("IsAction", false);
 
         if (agent != null && agent.isOnNavMesh)
