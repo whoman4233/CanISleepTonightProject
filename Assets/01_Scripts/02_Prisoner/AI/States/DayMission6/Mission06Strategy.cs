@@ -67,59 +67,63 @@ public class Mission06Strategy : DailyMissionStrategy
         _isCulpritCaught = false;
         AssignRandomNames(); // 이름 섞기
 
-        // 2. 기존 갱단원(PSN_Gang_01~03)이 배정된 방 번호 찾기
         List<string> allCellIds = scheduleManager.GetActiveCellIds();
         List<string> gangCellIds = new List<string>();
         string[] originGangIds = { "PSN_Gang_01", "PSN_Gang_02", "PSN_Gang_03" };
 
         foreach (string gangId in originGangIds)
         {
+            // ID로 직접 찾기 시도
             string foundCell = scheduleManager.GetCellIdByPrisonerId(gangId);
 
-            if (!string.IsNullOrEmpty(foundCell))
+            // 만약 못 찾았다면, 전체 셀을 뒤져서 templateId를 직접 대조
+            if (string.IsNullOrEmpty(foundCell))
             {
-                gangCellIds.Add(foundCell);
-            }
-            else
-            {
-                // 직접 순회하며 definition.templateId 대조
                 foreach (var cellId in allCellIds)
                 {
                     var pData = scheduleManager.GetPrisonerData(cellId);
+                    // pData.definition.templateId가 정확히 일치하는지 확인
                     if (pData != null && pData.definition.templateId == gangId)
                     {
-                        gangCellIds.Add(cellId);
+                        foundCell = cellId;
                         break;
                     }
                 }
             }
+
+            if (!string.IsNullOrEmpty(foundCell))
+                gangCellIds.Add(foundCell);
         }
 
-        // 만약 기존 방을 다 못 찾았다면(예외 처리), 부족한 만큼만 랜덤 보충
         if (gangCellIds.Count < 3)
         {
-            var otherCells = allCellIds.Except(gangCellIds).OrderBy(x => UnityEngine.Random.value);
-            gangCellIds.AddRange(otherCells.Take(3 - gangCellIds.Count));
+            int lackCount = 3 - gangCellIds.Count;
+
+            // 갱단원이 이미 뽑힌 방을 제외한 나머지 방들 중 랜덤으로 선택
+            var fallbackCells = allCellIds
+                .Except(gangCellIds)
+                .OrderBy(x => UnityEngine.Random.value)
+                .Take(lackCount);
+
+            gangCellIds.AddRange(fallbackCells);
+            Debug.Log($"[Mission06] 갱단원 부족으로 일반 죄수 {lackCount}명 추가 징집.");
         }
 
-        // 기존 갱단원 방을 용의자(Suspect) 프리팹으로 교체 및 역할 부여
+        var finalSuspectCells = gangCellIds.OrderBy(x => UnityEngine.Random.value).ToList();
         for (int i = 0; i < gangCellIds.Count; i++)
         {
             string cellId = gangCellIds[i];
-            string targetGangId = $"Suspect{i + 1}";
 
-            // 프리팹 강제 교체
-            scheduleManager.ForceTransformPrisoner(cellId, targetGangId);
-
-            // 역할 및 비주얼 타입 부여
+            // Enum 값을 통해 Suspect1, 2, 3 외형 지정
             VisualAnomalyType visualType = (VisualAnomalyType)((int)VisualAnomalyType.Suspect1 + i);
             bool isCulprit = (i == 0); // 첫 번째만 진범
+
             scheduleManager.SetDailyRole(cellId, PrisonerAIType.Good, visualType, isCulprit);
 
-            Debug.Log($"[Mission06] {cellId}번 방 (기존 {originGangIds[i]}) -> {targetGangId} 치환 완료.");
+            Debug.Log($"[Mission06] {cellId}번 방 (원본: {scheduleManager.GetPrisonerData(cellId).definition.templateId}) -> {visualType} 위장 완료.");
         }
 
-        // 나머지 방은 평범한 역할로 채우기 (이미 정해진 3명 제외)
+        // 나머지 방 초기화
         foreach (var cellId in allCellIds)
         {
             if (!gangCellIds.Contains(cellId))
