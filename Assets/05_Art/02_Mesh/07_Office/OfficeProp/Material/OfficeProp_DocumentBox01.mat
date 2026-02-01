@@ -26,13 +26,11 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _MK_ALBEDO_MAP
-  - _MK_LIGHT_CEL
   - _MK_NORMAL_MAP
   - _MK_RECEIVE_SHADOWS
   - _MK_SPECULAR_ISOTROPIC
   m_InvalidKeywords:
   - _MK_ARTISTIC_ANIMATION_STUTTER
-  - _MK_ENVIRONMENT_REFLECTIONS_ADVANCED
   - _MK_PBS_MAP_0
   - _MK_WRAPPED_DIFFUSE
   - _RECEIVESHADOWS_ON
@@ -240,9 +238,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _AdditionalLightsFalloff: 0
+    - _AdditionalLightsFalloff: 1
     - _AdditionalLightsThreshold: 0.13
-    - _AdvancedTab: 0
+    - _AdvancedTab: 1
     - _AlbedoMapIntensity: 1
     - _AlembicMotionVectors: 0
     - _AlphaClip: 0
@@ -286,7 +284,7 @@ Material:
     - _DrawnMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EnvironmentReflections: 2
+    - _EnvironmentReflections: 0
     - _FresnelHighlights: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -304,7 +302,7 @@ Material:
     - _IridescenceSize: 2.41
     - _IridescenceSmoothness: 0.5
     - _IridescenceThresholdOffset: 0
-    - _Light: 1
+    - _Light: 0
     - _LightBands: 4
     - _LightBandsScale: 0.67
     - _LightThreshold: 0.42
@@ -388,7 +386,7 @@ Material:
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GoochBrightColor: {r: 0.8867924, g: 0.8867924, b: 0.8867924, a: 1}
-    - _GoochDarkColor: {r: 0.26415092, g: 0.14278425, b: 0, a: 1}
+    - _GoochDarkColor: {r: 0.21698111, g: 0.11658686, b: 0, a: 1}
     - _IridescenceColor: {r: 0.9716981, g: 0.862178, b: 0.43543077, a: 0.5}
     - _LightTransmissionColor: {r: 1, g: 0.65, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
