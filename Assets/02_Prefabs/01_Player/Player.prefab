@@ -70,6 +70,9 @@ MonoBehaviour:
   baseFrequency: 20
   impulseAmplitude: 0.5
   impulseDuration: 0.1
+  hitAmplitude: 0.6
+  hitFrequency: 10
+  hitDuration: 0.15
 --- !u!114 &379761202227191077
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,7 +285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   carryParent: {fileID: 7114316389534495413}
   targetCamera: {fileID: 3519041656785010156}
-  interactDistance: 2
+  interactDistance: 1.6
   interactLayerMask:
     serializedVersion: 2
     m_Bits: 1280
