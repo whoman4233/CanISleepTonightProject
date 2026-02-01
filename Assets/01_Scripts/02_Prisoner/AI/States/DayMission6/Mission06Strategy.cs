@@ -66,52 +66,69 @@ public class Mission06Strategy : DailyMissionStrategy
         _current = 0;
         _isCulpritCaught = false;
         AssignRandomNames(); // 이름 섞기
+
+        // 2. 기존 갱단원(PSN_Gang_01~03)이 배정된 방 번호 찾기
         List<string> allCellIds = scheduleManager.GetActiveCellIds();
+        List<string> gangCellIds = new List<string>();
+        string[] originGangIds = { "PSN_Gang_01", "PSN_Gang_02", "PSN_Gang_03" };
 
-        // 무작위로 3개의 방을 선정 (용의자가 될 방)
-        // 리스트를 복사해서 셔플한 뒤 3개를 뽑음
-        List<string> targetCells = allCellIds.OrderBy(x => UnityEngine.Random.value).Take(3).ToList();
-
-        // 선정된 3명의 데이터를 "갱단원"으로 강제 치환
-        // targetTemplateId는 SO에 등록된 갱단원의 templateId와 일치시켜야함
-        //foreach (var cellId in targetCells)
-        //{
-        //    scheduleManager.ForceTransformPrisoner(cellId, "PSN_Gang_01");
-        //}
-        for (int i = 0; i < targetCells.Count; i++)
+        foreach (string gangId in originGangIds)
         {
-            string cellId = targetCells[i];
+            string foundCell = scheduleManager.GetCellIdByPrisonerId(gangId);
 
-            // i가 0이면 Gang_01, 1이면 Gang_02, 2이면 Gang_03 할당
-            string targetGangId = $"PSN_Gang_0{i + 1}";
-
-            scheduleManager.ForceTransformPrisoner(cellId, targetGangId);
-
-            // 역할 부여 시각화 타입도 순번에 맞춰 할당
-            VisualAnomalyType visualType = (VisualAnomalyType)((int)VisualAnomalyType.Suspect1 + i);
-            bool isCulprit = (i == 0); // 첫 번째(Gang_01)만 진범
-
-            scheduleManager.SetDailyRole(cellId, PrisonerAIType.Good, visualType, isCulprit);
-
-            Debug.Log($"[Mission06] 방 {cellId}에 {targetGangId} (Visual: {visualType}) 배치 완료.");
+            if (!string.IsNullOrEmpty(foundCell))
+            {
+                gangCellIds.Add(foundCell);
+            }
+            else
+            {
+                // 직접 순회하며 definition.templateId 대조
+                foreach (var cellId in allCellIds)
+                {
+                    var pData = scheduleManager.GetPrisonerData(cellId);
+                    if (pData != null && pData.definition.templateId == gangId)
+                    {
+                        gangCellIds.Add(cellId);
+                        break;
+                    }
+                }
+            }
         }
 
-        // 역할 부여 (중앙 소환을 위한 비주얼 타입 지정)
-        // 첫 번째 방(targetCells[0])을 진범(isSuspicious = true)으로 설정
-        //scheduleManager.SetDailyRole(targetCells[0], PrisonerAIType.Good, VisualAnomalyType.Suspect1, true);
-        //scheduleManager.SetDailyRole(targetCells[1], PrisonerAIType.Good, VisualAnomalyType.Suspect2, false);
-        //scheduleManager.SetDailyRole(targetCells[2], PrisonerAIType.Good, VisualAnomalyType.Suspect3, false);
+        // 만약 기존 방을 다 못 찾았다면(예외 처리), 부족한 만큼만 랜덤 보충
+        if (gangCellIds.Count < 3)
+        {
+            var otherCells = allCellIds.Except(gangCellIds).OrderBy(x => UnityEngine.Random.value);
+            gangCellIds.AddRange(otherCells.Take(3 - gangCellIds.Count));
+        }
 
-        // 나머지 방들은 평범한 죄수들로 채우기 (이미 정해진 3명 제외)
+        // 기존 갱단원 방을 용의자(Suspect) 프리팹으로 교체 및 역할 부여
+        for (int i = 0; i < gangCellIds.Count; i++)
+        {
+            string cellId = gangCellIds[i];
+            string targetGangId = $"Suspect{i + 1}";
+
+            // 프리팹 강제 교체
+            scheduleManager.ForceTransformPrisoner(cellId, targetGangId);
+
+            // 역할 및 비주얼 타입 부여
+            VisualAnomalyType visualType = (VisualAnomalyType)((int)VisualAnomalyType.Suspect1 + i);
+            bool isCulprit = (i == 0); // 첫 번째만 진범
+            scheduleManager.SetDailyRole(cellId, PrisonerAIType.Good, visualType, isCulprit);
+
+            Debug.Log($"[Mission06] {cellId}번 방 (기존 {originGangIds[i]}) -> {targetGangId} 치환 완료.");
+        }
+
+        // 나머지 방은 평범한 역할로 채우기 (이미 정해진 3명 제외)
         foreach (var cellId in allCellIds)
         {
-            if (!targetCells.Contains(cellId))
+            if (!gangCellIds.Contains(cellId))
             {
                 scheduleManager.SetDailyRole(cellId, defaultAI, VisualAnomalyType.None, false);
             }
         }
 
-        // 스폰 실행
+        // 스폰 실행 및 체력 설정
         var spawnController = GameObject.FindObjectOfType<PrisonerSpawnController>();
         if (spawnController != null)
         {
@@ -120,7 +137,7 @@ public class Mission06Strategy : DailyMissionStrategy
         }
 
         var allPrisoners = GameObject.FindObjectsOfType<PrisonerController>();
-        foreach (var prisoner in allPrisoners) // 미션 6 셋업 시 죄수 체력 말도안되게 올려서 안죽게 만들기. 꼬우면 다 깎아보셈~
+        foreach (var prisoner in allPrisoners) // 미션 6 셋업 시 죄수 체력 말도안되게 올려서 안죽게 만들기.
         {
             if (prisoner.Data != null)
             {
@@ -129,12 +146,6 @@ public class Mission06Strategy : DailyMissionStrategy
             }
         }
         Debug.Log("갱단원3명 소환");
-
-        //float missionTimeLimit = 180f;
-        //if (GameManager.Instance != null)
-        //{
-        //    GameManager.Instance.SetDailyTimeLimit(missionTimeLimit);
-        //}
     }
 
     private void AssignRandomNames()
