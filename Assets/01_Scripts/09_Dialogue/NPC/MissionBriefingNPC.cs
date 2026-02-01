@@ -64,7 +64,7 @@ public class MissionBriefingNPC : MonoBehaviour, IInteractable
             if (GameManager.Instance != null && GameManager.Instance.CurrentPhase != GamePhase.Patrol)
             {
                 // 경고 팝업
-                EventBus.Publish(new ShowTimedTextPopupEvent("순찰하지 않으면 보고 할 수 없어", 1f));
+                EventBus.Publish(new ShowTimedTextPopupEvent("순찰하지 않으면 보고 할 수 없어", 1f, true));
                 return;
             }
 
