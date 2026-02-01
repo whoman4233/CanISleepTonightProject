@@ -78,7 +78,7 @@ public class HUDDay : MonoBehaviour
         if (!_panelActive)
             return;
 
-        dayText.text = $"DAY {e.CurrentDay}";
+        dayText.text = $"{e.CurrentDay}";
     }
 
     private void OnDayChanged(DayChangedEvent e)
@@ -86,7 +86,7 @@ public class HUDDay : MonoBehaviour
         if (!_panelActive)
             return;
 
-        dayText.text = $"DAY {e.CurrentDay}";
+        dayText.text = $"{e.CurrentDay}";
     }
 
     private void SyncFromGameManager()
@@ -94,7 +94,7 @@ public class HUDDay : MonoBehaviour
         if (!_panelActive || GameManager.Instance == null)
             return;
 
-        dayText.text = $"DAY {GameManager.Instance.CurrentDay}";
+        dayText.text = $"{GameManager.Instance.CurrentDay}";
     }
 }
 
