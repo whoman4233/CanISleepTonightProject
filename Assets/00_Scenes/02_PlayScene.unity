@@ -230,7 +230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vignetteFade: {fileID: 2131051319}
-  defaultArrivalPoint: {fileID: 0}
+  defaultArrivalPoint: {fileID: 1687522171}
 --- !u!1 &168449256
 GameObject:
   m_ObjectHideFlags: 0
@@ -777,8 +777,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 2.8}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 2.613614, z: 2.8}
+  m_Center: {x: 0, y: 0.80680704, z: 0}
 --- !u!4 &553718073
 Transform:
   m_ObjectHideFlags: 0
@@ -2218,6 +2218,37 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.1
+--- !u!1 &1687522170
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1687522171}
+  m_Layer: 0
+  m_Name: M4FailSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1687522171
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1687522170}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.29382676, z: -0, w: 0.9558587}
+  m_LocalPosition: {x: -0.835, y: 11.07, z: 11.437}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 34.174, z: 0}
 --- !u!1 &1751555801
 GameObject:
   m_ObjectHideFlags: 0
@@ -3587,3 +3618,4 @@ SceneRoots:
   - {fileID: 527174033}
   - {fileID: 920716681}
   - {fileID: 5169692342495217252}
+  - {fileID: 1687522171}
