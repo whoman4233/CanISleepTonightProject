@@ -1,298 +1,244 @@
 # 🎮 근무 중 이상 무 (Report: No Anomalies)
 
-## 🎮 게임 정보
+## 게임 개요
+
 | 항목 | 내용 |
 | :--- | :--- |
-| **타이틀** | 근무 중 이상 무(Report: No Anomalies) |
-| **장르** | 3D 1인칭 타임어택 관찰&진압 액션 |
-| **플랫폼** | PC(Steam) |
-| **플레이 타임** | 1회 플레이 기준 30~50분 |
-| **배경** | 단체 폭동이 일어나기 직전의 교도소 |
-| **목표** | 7일 동안 폭동 게이지가 100에 도달하지 않도록 죄수들을 관리하며 생존 |
-| **기획 의도** | **관찰과 판단의 긴장감 극대화**<br>- 단순히 죄수들을 때려잡는 액션 게임이 아니라, '이 상황이 정상인가 아닌가?'를 판단해야 하는 심리적 압박<br>└ \<Paper, Please\>, \<8번 출구\>의 메커니즘을 액션에 접목<br><br>**불리한 상황에서 생존하는 스릴**<br>- 1명의 교도관 대 다수의 흉악범이라는 구도를 통해, 사냥꾼이 아닌 위태로운 관리자의 입장에서 오는 스릴 |
-| **핵심 감정** | **편집증에 가까운 의심**<br>- 평범한 행동조차 수상하게 보이게 만들어, 긴장을 풀 수 없음<br><br>**쫓기는 듯한 압박감**<br>- 타임어택 요소와 폭동 게이지라는 실패의 가시화가 심리적 압박 제공<br><br>**정당화된 폭력의 카타르시스**<br>- '나의 정확한 판단으로 위기를 사전에 차단했다'는 안도감과 성취감이 동반된 타격 행위<br>- '무조건 패는 게 아니다. 팰 만 해서 팬다!' |
+| **타이틀** | 근무 중 이상 무 (Report: No Anomalies) |
+| **장르** | #3D, #1인칭, #타임어택, #관찰, #액션, #시뮬레이션 |
+| **플랫폼** | PC (Windows) |
+| **플레이 타임** | 플레이 타임 불명 (테스트 후 수정 바람) |
+| **배경** | 하루라도 사고를 안 치면 참을 수 없는 죄수들이 가득한 교도소 제 7구역 |
+| **목표** | 죄수들이 사고 치는 것을 방지해 제 7구역의 무사고 날짜를 7일까지 갱신하기 |
 
 ---
 
-## 🕹️ 조작 키 (Control Keys)
+### 🎯 기획 의도
+
+1. **심리적 압박을 주는 타임어택 루프**
+   - 무사고 7일이라는 목표 아래, 제한 시간 내 미션을 클리어하지 못할 경우 무사고 날짜가 0일로 초기화되는 긴장감을 제공합니다.
+
+2. **정적인 관찰에서 벗어나, 직접 행동해서 결과를 바꾸는 재미**
+   - 단순한 클릭에서 벗어나 방 안을 뒤지고, 물건을 빼앗고, 진압하는 등 디테일한 1인칭 상호작용을 통해 수색과 진압의 효능감을 극대화합니다.
+
+3. **같은 규칙, 매일 다른 경험**
+   - 다채로운 상호작용 오브젝트들과 다양한 죄수 AI를 통해 미션마다 서로 다른 플레이 경험을 제공합니다.
+
+---
+
+### 🎮 플레이 개요
+
+* 플레이어는 사건 사고가 가득한 **제 7구역에 새로 근무하게 된 신입 교도관**입니다.
+* 플레이어는 날마다 죄수들이 발생시키는 사고를 방지하며, **무사고 날짜를 7일까지 갱신**해야 합니다.
+
+---
+
+### 🕹️ 조작 키 (Control Keys)
 | 기능 | 키 바인딩 | 기능 | 키 바인딩 |
 | :--- | :--- | :--- | :--- |
 | **이동** | `W`, `A`, `S`, `D` | **상호작용** | `E` |
-| **달리기** | `SHIFT` | **특정 UI 닫기** | `E` |
-| **앉기** | `CTRL` | **시점 조작** | 마우스 이동 |
-| **점프** | `SPACE` | **공격** | 마우스 좌클릭 |
-| **일시 정지** | `ESC` | **상세 보기 - 오브젝트 회전** | 마우스 우클릭 |
-| **튜토리얼 스킵** | `Q` | **상세 보기 - 추가 상호작용** | 마우스 좌클릭 |
-
----
-
-## 📝 플레이 개요
-* **신입 교도관의 임무**
-  * 플레이어는 집단 폭동과 집단 탈옥이 일어나기 직전의 교도소에 새로 근무하게 된 신입 교도관이다.
-  * 플레이어의 임무는 7일 동안 교도소에서 3교대로 근무하며, 죄수들이 단체 행동(폭동/탈옥)을 일으키지 않도록 교도소의 분위기를 조절하는 것.
-  * 플레이어는 교도소를 순찰하며 문제가 있는 죄수들은 진압하고, 멀쩡한 죄수들은 자극하지 않으며 교도소 내의 분위기(폭동 게이지)를 조절해야 한다.
-* **게임 진행 방식**
-  * 1회의 게임 플레이는 총 7일로 구성되어 있고, 플레이어 캐릭터는 각각의 하루마다 8시간씩 근무한다.
-  * 게임 내 8시간은 현실 시간으로는 8분이며, 플레이어는 이 시간 동안 교도소 안을 순찰하며 시끄러운 감방들을 확인한다.
+| **달리기** | `SHIFT` | **시점 조작** | 마우스 이동 |
+| **앉기** | `CTRL` | **공격** | 마우스 좌클릭 |
+| **점프** | `SPACE` | **상세 보기 - 오브젝트 회전** | 마우스 우클릭 |
+| **일시 정지** | `ESC` | **상세 보기 - 추가 상호작용** | 마우스 좌클릭 |
 
 # 프로젝트 개발 상세 내역
 
 ## 👤 손준형
 
-### Prisoner & Anomaly System (죄수 및 이상 현상)
-게임의 핵심 긴장감을 담당하는 죄수 AI와 게임 플레이의 변수를 창출하는 이상 현상(Anomaly) 시스템을 구현했습니다. FSM 기반의 행동 제어와 데이터 주도형 설계를 통해 확장성 있고 유연한 시스템을 구축했습니다.
+# Key System Architecture
 
-#### 1. 죄수 AI 시스템 (Prisoner AI)
-유한 상태 머신(Finite State Machine, FSM) 패턴을 도입하여 죄수들의 복잡한 행동 패턴을 체계적으로 관리합니다.
+## 1. Daily Mission System (데이터 주도적 미션 설계)
+게임의 날짜별로 달라지는 목표와 규칙을 코드 수정 없이 데이터(ScriptableObject) 교체만으로 관리할 수 있도록 설계했습니다.
 
+### • 구조 (Structure)
+* **DailyMissionManager**: 미션의 생명주기(Start -> Progress -> End)를 관리하는 중앙 컨트롤러.
+* **MissionDayTheme (SO)**: 날짜별 환경 설정(제한 시간, 날씨, 조명 등)을 담은 데이터 에셋.
+* **DailyMissionStrategy (Abstract)**: 미션 로직의 핵심. Collection, Suppression, Interrogation 등 구체적인 미션 목표를 상속받아 구현.
 
+### • 기술적 특징 (Key Features)
+* **OCP (Open-Closed Principle) 준수**: 새로운 미션 타입 추가 시 기존 매니저 코드를 수정하지 않고 Strategy 클래스만 확장하면 됩니다.
+* **Hot-Swapping**: 기획 단계에서 3일 차 미션 데이터를 5일 차로 드래그 앤 드롭하는 것만으로 게임 플로우 변경 가능.
 
-* **FSM 아키텍처:**
-    * PrisonerFSM을 통해 상태 간의 전이와 업데이트를 중앙에서 관리합니다.
-    * 각 행동 로직을 독립적인 클래스(State)로 분리하여 유지보수성을 높였습니다.
-* **주요 행동 상태 (States):**
-    * **Idle:** 평상시 감방 내에서 대기하거나 자유 행동을 취하는 상태입니다.
-    * **Inspection (점호):** 정해진 스케줄에 따라 기상(StandUp), 집합 장소로 이동(Moving), 점호 대기(WaitAtPoint)하는 일련의 시퀀스를 수행합니다.
-    * **Combat:** 플레이어 또는 위협 대상에게 반응하여 공격을 수행하는 전투 상태입니다.
-    * **Cower / Dead:** 위협에 처했을 때 움츠리거나 사망 처리되는 등 상황에 따른 리액션을 구현했습니다.
-* **컨트롤러 (Prisoner Controller):**
-    * NavMeshAgent를 활용한 길 찾기 및 이동 로직을 구현했습니다.
-    * 애니메이션 시스템과 연동하여 상태 변화에 따른 자연스러운 모션을 처리합니다.
+### • 코드 예시 (C#)
+```csharp
+// 코드 예시: 전략 패턴을 활용한 미션 세팅
+public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm) {
+    // 전략 클래스가 각 매니저에게 '데이터 세팅'을 지시 (Orchestration)
+    sm.AssignRolesForNewDay(suspiciousCount: 3, defaultAI: PrisonerAIType.Good);
+    ad.FilterAnomalies(this.missionTheme);
+}
+```
+## 2. Entity Spawn & Placement (역할 분담 및 조율)
+미션 전략(Strategy)이 내린 지시를 바탕으로, 각 매니저가 본연의 역할에 집중하여 객체를 생성하고 배치합니다.
 
-#### 2. 이상 현상 시스템 (Anomaly System)
-플레이어에게 예측 불가능한 경험을 제공하기 위한 이상 현상 생성 및 관리 시스템입니다.
+* **워크플로우 (Workflow)**
+    1. **PrisonerScheduleManager (The Brain)**:
+        * 전체 죄수 명단(Roster) 관리 및 역할(Role) 배정.
+        * "오늘의 용의자", "난동 피울 죄수" 등의 메타 데이터를 생성하여 저장.
+    2. **AnomalyDistributor (The Inventory)**:
+        * 미션 테마에 맞는 이상현상 아이템(밀수품, 흉기) 풀(Pool)을 필터링.
+        * 죄수의 성향(Trait)에 맞춰 특정 감방에 아이템을 확률적으로 분배.
+    3. **PrisonerSpawnController (The Builder)**:
+        * 위 두 매니저의 데이터를 참조하여 실제 게임 월드에 Prefab을 인스턴스화(Instantiate).
+        * 특수 외형(Visual Anomaly)이나 미션 전용 프롭(Prop) 배치 담당.
 
-* **이상 현상 관리자 (Anomaly Distributor):**
-    * 게임 내 발생하는 모든 이상 현상의 스폰과 생명 주기를 관리하는 매니저입니다.
-    * 게임 진행 상황에 따라 적절한 타이밍과 위치에 이상 현상을 배치합니다.
-* **데이터 주도형 설계 (Data-Driven Design):**
-    * ScriptableObject(AnomalyDatabaseSO)를 활용하여 다양한 이상 현상의 데이터를 에셋 형태로 관리합니다. 코드 수정 없이 기획 데이터 변경만으로 다양한 변수를 제어할 수 있습니다.
-* **스폰 및 상호작용:**
-    * **Anomaly Spawn Slot:** 이상 현상이 발생할 수 있는 잠재적 위치를 정의하고 관리합니다.
+* **해결 과제:**
+    * 대소문자 구분 문제로 인한 특정 죄수(Suspect) 소환 오류를 `StringComparison.OrdinalIgnoreCase` 필터링 로직으로 해결하여 안정성 확보.
+
+---
+
+## 3. Prisoner AI (FSM - Finite State Machine)
+죄수의 복잡한 행동 패턴을 상태(State) 단위로 모듈화하여 관리 및 확장이 용이하도록 구현했습니다.
+
+* **FSM 구조**
+    * **PrisonerFSM**: 상태 머신 컨트롤러. 현재 상태를 유지하고 전이를 담당.
+    * **BasePrisonerState**: 모든 상태의 부모 클래스. Enter, Update, Exit, OnDamaged 가상 함수 제공.
+
+* **주요 상태 (States)**
+    * **Idle / Wander
 
 ---
 
 ## 👤 유원영
 
-### -EventBus.cs
-프로젝트 전반에서 시스템 간 결합도를 낮추기 위한 전역 이벤트 전달 메커니즘
-(ex: Scene간 이동/UI 전환 / 게임 페이즈 변경 / 입력 상태)
+## 1. EventBus 기반 공통 구조
+* **EventBus (공통 인프라)**
+    * 시스템 간 직접 참조 제거를 위한 중앙 이벤트 허브
+    * QTE, 상세보기, UI, 애니메이션, 카메라 연출 간 결합도 최소화
+    * 모든 흐름은 **Subscribe / Publish** 기반으로 연결됨
 
+---
 
+## 2. QTE 트리거 & 진입 계층
+* **QTEDistanceTrigger**
+    * 죄수 접근 기반 QTE 트리거
+    * 플레이어 접근 + 상세보기 상태를 고려하여 QTE Armed/Disarmed 제어
+    * QTE 시작 시 `PrisonerQTEContext.SetAttacker()` 설정 후 `QTEStartedEvent` 발행
+    * **oneShot** 옵션으로 1회성 QTE 제어
+* **QTETrigger**
+    * 단순 Collider 기반 QTE 트리거
+    * 플레이어 진입 시 즉시 QTE 시작
+    * 테스트용 / 보조 트리거 용도
 
-* 이벤트 타입(Struct) 단위로 구독 리스트를 분리해서 책임 경계 유지.
-* 어떤 구독자에서 예외가 발생해도 다른 구독자에게 이벤트가 전달이 중단안되도록 보호로직 포함.
-* **\*WeakRefernce 기반 구독 구조**
-    * EventBus가 콜백을 소유하지 않고 수신 객체가 사라졌을 경우 자동으로 정리
-    * 씬 전환 시 Unsubscribe 누락으로 인한 메모리 누수 위험을 최소화 하기 위한 장치
-* UIScene에 있는 UI들은 EventBus를 통해 EventStruct(이벤트 모음집)에 있는 이벤트를 받아 활성화/비활성화를 하고 있음.
+---
 
-### -InspectionManager.cs
-플레이 중 특정 오브젝트를 상세보기 상태로 전환하고 관리하는 시스템
-* 입력, 카메라, 상호작용 흐름을 플레이어의 조작과 분리시켜서 제어함.
+## 3. QTE 상태 및 데이터 컨텍스트
+* **PrisonerQTEContext (Static)**
+    * QTE 전체 흐름의 공유 상태 저장소
+    * 현재 공격자, QTE 액션, 결과, 데미지 소비 여부 관리
+    * 중복 데미지 / 중복 애니메이션 문제 방지의 핵심
+    * **Resolver**가 데미지를 소비한 시점에 **Clear** 수행
 
-### -AudioManager.cs
-프로젝트의 사운드출력을 담당하는 매니저 클래스
-* AudioMixer의 사운드의 조절 파라미터 종류에 따라 사운드를 맞게 출력함.
+---
+
+## 4. QTE 로직 & 진행 제어
+* **QTEController (Pure Logic)**
+    * QTE 시간, 입력, 성공/실패 판정 담당
+    * UI / 애니메이션과 완전히 분리된 순수 로직 클래스
+    * **Tick** 기반 시간 감소, **Mash** 입력 누적 처리
+    * 종료 시 `QTEEndedEvent` 및 결과 이벤트 발행
+
+---
+
+## 5. QTE UI & 입력 처리
+* **QTEPresenter**
+    * QTE 시작/종료 이벤트 수신
+    * QTE UI Root 활성/비활성 관리
+    * `QTEController` 생성 및 **Update Tick** 연결
+    * `QTEInputReader` 생성/해제
+    * QTE 시작 시 상세보기 강제 종료
+
+---
+
+## 6. QTE 연출 디렉션 계층
+* **QTEFlowDirector**
+    * QTE 전체 연출 흐름
 
 ---
 
 ## 👤 임성규 (Im Sung-gyu)
 
-### 1. 페이즈 관리 시스템 (GameManager)
-게임의 흐름을 체계적으로 제어하기 위해 **페이즈(Phase) 전환 시스템**을 구축했습니다. 각 페이즈 진입 시 필요한 로직을 실행하고 `EventBus`를 통해 시스템 전반에 상태 변경을 전파합니다.
-
-* **중앙 집중형 페이즈 제어 (`ChangePhase`)**
-    * 새로운 페이즈 진입 시 기존 상태와 비교하여 중복 실행을 방지합니다.
-    * `switch`문을 통해 각 페이즈(`Briefing`, `Patrol`, `Settlement`, `Ending` 등)에 최적화된 초기화 메서드를 호출합니다.
-    * 페이즈 변경 정보를 `EventBus`로 발행하여 다른 클래스들이 독립적으로 반응할 수 있도록 설계했습니다.
-
-* **주요 페이즈별 실행 로직**
-    * **초기화 (`OnEnterNotStarted`)**: 새로운 루프 시작 시 날짜, 폭동 게이지, 플레이어 체력 등 기초 데이터를 초기화합니다.
-    * **준비 및 브리핑 (`OnEnterStandby`, `OnEnterBriefing`)**: 날짜 카운트를 증가시키고 브리핑 시퀀스를 트리거합니다.
-    * **순찰 (`OnEnterPatrol`)**: 순찰 제한 시간(480초) 설정, UI 타이머 초기화, 정산 보고용 기초 데이터를 캐싱하고 타이머 코루틴을 시작합니다.
-    * **정산 (`OnEnterSettlement`)**: 진행 중인 타이머를 중지하고 정산 시스템 시작 이벤트를 발행합니다.
-    * **엔딩 (`OnEnterEnding`)**: 최종 엔딩 종류를 판별하고, 세이브 데이터를 로드/업데이트하여 새로운 엔딩 해금 시 이를 메타 데이터에 기록합니다.
-
 ---
-
-### 2. 씬 흐름 제어 (FlowController)
-게임 전반의 씬 로드 및 언로드를 담당하며, 사용자에게 끊김 없는 경험을 제공하기 위한 **로딩 시퀀스**를 구현했습니다.
-
-* **안정적인 씬 전환 (`ReloadPlaySceneRoutine`)**
-    * 씬 교체 시 카메라나 오디오 리스너가 일시적으로 소멸되는 문제를 방지하기 위해 **로딩 씬 중첩 로드(Additive Load)** 방식을 채택했습니다.
-    * `Resources.UnloadUnusedAssets()`와 `System.GC.Collect()`를 호출하여 씬 전환 시점의 메모리 누수를 최소화합니다.
-    * 플레이 씬 로드가 완료되면 활성 씬을 설정하고 로딩 씬을 제거하여 자연스러운 화면 연결을 보장합니다.
-
-* **시퀀스 관리 (`LoadPlaySceneSequence`)**
-    * 튜토리얼 씬 로드와 인트로 씬 언로드 등 특정 상황에 맞는 씬 전환 순서를 코루틴으로 제어합니다.
-
+### 1. GameManager (The Heart of State & Data)
+GameManager는 게임의 전역적인 상태를 관리하고 시스템 간 데이터를 동기화하는 Central Authority입니다.
+Finite State Machine (FSM): GamePhase를 정의하여 Standby, Briefing, Patrol, Settlement 등 각 페이즈에 따른 게임 로직의 진입과 퇴장을 제어합니다.
+Data Persistence & Recovery: * SaveManager와 연동하여 현재 날짜, 체력, 미션 진행 상태 및 죄수 배치 데이터를 관리합니다.
+ResetAllSimulationData를 통해 새 게임 시작 시 이전 세션의 데이터(좀비 데이터)가 남지 않도록 데이터 무결성을 보장합니다.
+Time Attack System: 순찰 페이즈(Patrol)에서의 타임 제한 기능을 관리하며, 타임아웃 발생 시 EventBus를 통해 즉각적인 실패 처리를 수행합니다.
+Event-Driven Communication: 싱글톤 인스턴스를 유지하되, 대부분의 상태 변화를 EventBus를 통해 발행하여 다른 시스템과의 의존성을 최소화했습니다.
 ---
-
-### 3. 상호작용 시스템: 물건 옮기기 (Object Carrying)
-물리 기반의 상호작용을 통해 오브젝트를 들고 옮기거나 던지는 시스템을 구현했습니다.
-
-* **운반 로직 (`Interact` & `Drop`)**
-    * **들기**: 오브젝트의 물리 엔진(`isKinematic`) 및 충돌체(`Collider`)를 일시 제어하고, 플레이어의 손(CarryParent) 위치에 부속시켜 위치와 회전을 동기화합니다.
-    * **놓기/던지기**: 부모 관계를 해제하고 물리 효과를 재활성화합니다. 특히 `AddForce`를 이용해 플레이어의 정면 방향으로 물체를 날려 보내는 물리 반응을 구현했습니다.
-
-* **상호작용 판단 (`TryInteract`)**
-    * 레이캐스트(Raycast)를 활용하여 시야 중앙의 상호작용 대상을 탐색합니다.
-    * **상태 기반 로직**: 플레이어가 이미 물건을 들고 있다면 '내려놓기'를 우선 실행하고, 비어 있다면 새로운 대상과 '상호작용'하도록 조건문을 설계했습니다.
+### 2. FlowController (The Vein of Scene & Flow)
+FlowController는 씬 로딩과 게임의 물리적인 흐름을 제어하는 Scene Management Framework입니다.
+Async Additive Loading: LoadSceneAsync의 Additive 모드를 활용하여 로딩 씬(LoadingScene)을 오버레이한 상태에서 배경에서 실제 플레이 씬을 로드/언로드하는 고성능 로딩 시스템을 구현했습니다.
+Robust Scene Transition: * IsBusy 플래그를 통해 로딩 중 중복 요청을 방지합니다.
+씬 전환 전 UIHardResetEvent 및 InputHardResetEvent를 발행하여 이전 씬의 잔재(이벤트 구독, 입력 잠금 등)를 완전히 청소(Cleanup)합니다.
+Run-Table Recovery: 이어하기(LoadGameSequence)나 재시작 시, DailyMissionManager와 협력하여 섞여 있던 미션 리스트 순서를 그대로 복원하는 로직을 갖추고 있습니다.
+Timeline Integration: 엔딩(Outro) 진행 시 PlayableDirector와 연동하여 타임라인 재생이 완료될 때까지 대기한 후 자동으로 인트로 씬으로 복귀시키는 자동화된 시퀀스를 지원합니다.
+Fallback Sequence: 근무 실패 시 튜토리얼을 건너뛰고 바로 Standby 페이즈로 재진입하는 RestartFromFailureSequence를 통해 사용자 경험(UX)을 개선했습니다.
+---
+### 3. Dialogue System (SO & 키워드 매핑 기반)
+DialogueManager는 게임 내 모든 텍스트 상호작용을 총괄하며, 데이터 기반의 확장성을 가집니다.
+Robust Input Handling (입력 가드 시스템):
+E-Key Release Guard: 대화 진입 시 상호작용 키(E)가 눌려 있는 상태(IsPressed)를 감지하여, 키를 떼기 전까지는 대화가 넘어가거나 끊기지 않도록 WaitContinueReleaseThenEnable 루틴을 적용했습니다.
+Input Guard Timer: 대화 시작 후 0.25초간 입력을 무시하여 의도치 않은 대화 스킵을 원천 차단했습니다.
+Realtime Typing Logic: * Time.timeScale이 0인 일시정지 상태에서도 대화가 끊기지 않도록 WaitForSecondsRealtime 캐싱 알고리즘을 사용하여 타이핑 효과를 구현했습니다.
+Context-Aware Content (동적 텍스트 치환):
+DailyMissionManager와 연동하여, 대화 내용 중 미션 관련 데이터(예: 용의자 이름 등)를 런타임에 동적으로 치환(GetProcessedText)하여 출력합니다.
+Memory Optimization: * maxVisibleCharacters 속성을 사용하여 매 프레임 문자열을 새로 생성하지 않고 렌더링 범위만 조절하는 방식으로 메모리 가비지 생성을 최소화했습니다.
+---
+### 4. Tutorial System (Flow & Interaction Guide)
+튜토리얼 시스템은 신규 플레이어가 교도소 관리 메커니즘을 학습할 수 있도록 FlowController와 긴밀하게 협력합니다.
+Phase-Driven Progression:
+GamePhase.Tutorial 상태를 정의하여 일반 게임 루프와 분리된 독립적인 튜토리얼 씬(08_TutorialScene)을 운영합니다.
+Event-Based Stepping:
+특정 동작(예: 죄수 조사, 아이템 사용)을 완료했을 때 발행되는 이벤트를 수신하여 다음 단계로 넘어가는 이벤트 기반 시퀀스를 채택했습니다.
+Conditional Input Blocking:
+학습에 필요한 최소한의 입력만 허용하고 나머지 인터랙션을 차단하여 플레이어가 의도된 가이드를 따를 수 있도록 제어합니다.
+Tutorial Skip Logic:
+재시작(RestartFromFailureSequence) 시 튜토리얼 단계를 건너뛰고 바로 본 게임(Standby)으로 진입하는 로직을 통해 반복 플레이의 피로도를 낮췄습니다.
  
 ---
 
 ## 👤  장현우
 
-#### 본 프로젝트의 플레이어 시스템은 **FSM 기반 로직 설계 + Animator 표현 분리 + Ray 기반 상호작용 구조**를 중심으로 구현되었습니다.
 ---
-## 1. Player Animation System
-플레이어 애니메이션은 다음 구조로 구성되어 있습니다.
-- **FSM (PlayerStateMachine)**  
-  → 지금 무엇을 할 수 있는 상태인가를 판단
-- **Animator**  
-  → 현재 상태를 어떻게 보이게 할 것인가를 담당
-- **Animation Event**  
-  → 애니메이션 타이밍과 로직 상태를 정확히 동기화
+
+## 🔧 Technical Highlights
+
+### 1. FSM-based Player Control System
+플레이어 조작을 **FSM(State Machine)** 구조로 재설계하여 상태별 책임을 명확히 분리했습니다.
+* **상태 관리**: 이동, 점프, 낙하, 착지, 공격, 사망 등의 행동을 독립적인 State로 관리.
+* **논리적 분리**: 상태 전환 규칙을 명시적으로 정의해 조건문 난립 및 버그 추적 문제 해결.
+* **표현과 로직의 분할**: 애니메이션은 표현 중심(Blend Tree), 로직은 FSM 중심으로 분리하여 확장성 확보.
+
+**[Result]**
+* 높은 가독성과 유지보수성 확보.
+* 신규 상태 추가 시 기존 로직 수정 최소화.
+* 애니메이션·사운드·연출 연계가 쉬운 구조 완성.
+
 ---
-### 1.1 Animator 전체 구조
-Animator는 **2개의 주요 Layer**로 구성됩니다.
-#### ▸ Base Layer
-플레이어의 기본 동작을 담당합니다.
-- Locomotion (Idle / Walk / Run)
-- Jump / Fall / Land
-- CrouchDown / CrouchLocomotion / StandUp
-#### ▸ Attack Layer
-플레이어 공격 전용 레이어입니다.
-- Base Layer와 독립적으로 동작
-- Any State → Player_Attack 구조
+
+### 2. Interactive Object Highlighting System
+플레이어 시점 기준 **Ray 기반 상호작용 판별 시스템**을 구현했습니다.
+* **셰이더 제작**: URP Shader Graph를 활용한 아웃라인 강조 셰이더 제작.
+* **최적화**: `MaterialPropertyBlock`을 사용해 머티리얼 인스턴스 생성 없이 상태 제어(런타임 성능 최적화).
+* **모듈화**: 상호작용 오브젝트에 컴포넌트 방식으로 즉시 적용 가능한 구조 설계.
+
+**[Result]**
+* 상호작용 가능한 오브젝트를 플레이어가 직관적으로 인지 가능.
+* 렌더링 성능 저하 없이 다수 오브젝트에 적용 가능.
+* 색상, 조건, 거리 기반 강조 등 기능 확장 용이.
+
 ---
-### 1.2 Locomotion 구조 (Base Layer)
-**Blend Tree 구성**
-Locomotion
-└─ Blend Tree
-├─ Player_Idle
-├─ Walk2D
-│ ├─ Forward
-│ ├─ Backward
-│ ├─ Left
-│ └─ Right
-└─ Run2D
-├─ Forward
-├─ Backward
-├─ Left
-└─ Right
-markdown
-코드 복사
-**사용 파라미터**
-- `Speed` (float) : 이동 강도
-- `MoveX` (float) : 좌 / 우 입력
-- `MoveY` (float) : 전 / 후 입력
-> FSM(PlayerLocomotionState)에서 값만 세팅하며  
-> Animator는 계산 없이 애니메이션 표현만 담당합니다.
----
-### 1.3 Jump / Fall / Land 흐름
-Locomotion
-├─ Jump (Trigger)
-│ ↓
-├─ Fall (IsFalling = true)
-│ ↓
-└─ Land (Trigger)
-↓
-Locomotion
-markdown
-코드 복사
-**사용 파라미터**
-- `Jump` (Trigger)
-- `IsFalling` (Bool)
-- `Land` (Trigger)
-**특징**
-- 점프 / 낙하 판단은 FSM에서만 수행
-- 공중 상태에서는 이동 및 앉기 입력 자동 차단
----
-### 1.4 Crouch (앉기) 애니메이션
-Locomotion
-├─ CrouchDown
-│ ↓
-├─ CrouchLocomotion (Blend Tree)
-│ ↓
-└─ StandUp
-↓
-Locomotion
-yaml
-코드 복사
-**CrouchLocomotion 구성**
-- Player_CrouchIdle
-- Player_CrouchingForward / Backward / Left / Right
-**사용 파라미터**
-- `CrouchDown` (Trigger)
-- `StandUp` (Trigger)
-- `IsCrouching` (Bool)
-- `MoveX`, `MoveY`
----
-### 1.5 Animation Event 연동
-애니메이션 중간 프레임에서  
-FSM 상태를 정확하게 전환하기 위해 Animation Event를 사용합니다.
-| Event 함수 | 역할 |
-|-----------|------|
-| AE_BeginCrouchTransition | 앉기 / 서기 전환 시작 |
-| AE_EndCrouchTransition | 전환 종료 |
-| AE_EndCrouchDown | 앉기 상태 확정 |
-| AE_EndStandUp | 서기 상태 확정 |
-- 전환 중 이동 / 점프 / 공격 입력 차단
-- FSM과 Animator 상태 불일치 방지
----
-### 1.6 Animator Parameter 관리
-- `PlayerAnimationData.cs`에서 Animator 파라미터 Hash 관리
-- 매직 스트링(string 직접 사용) 방지
-- 성능 및 유지보수 안정성 확보
----
-## 2. Player Interaction System
-#### 플레이어 상호작용은 **중앙 Ray(SphereCast) 기반 감지 + 입력(E 키) 기반 실행** 구조입니다.
----
-### 2.1 핵심 구성 요소
-- **PlayerInteractor** : 상호작용 감지 및 실행
-- **IInteractable** : 상호작용 오브젝트 인터페이스
-- **InteractableOutliner** : 시각적 강조(아웃라인)
-- **EventBus** : UI(Hover / 안내 텍스트) 연동
----
-### 2.2 동작 흐름
-매 프레임
-→ 카메라 중앙 SphereCast
-→ IInteractable 탐색
-→ Outliner ON / OFF
-→ Hover 이벤트 발행
-E 키 입력 시
-→ 현재 대상이 있으면 Interact() 호출
-yaml
-코드 복사
-- 감지는 항상 수행
-- 실행은 입력이 있을 때만 수행
----
-### 2.3 Carry(들기) 시스템
-- `ICarryable` 인터페이스 기반
-- 플레이어는 한 번에 하나의 물체만 소지 가능
-- `IsCarrying == true` 상태에서 Interact 시 Drop 처리
----
-## 3. Interactable Outliner System
-상호작용 가능한 오브젝트에  
-**아웃라인(Outline) 시각 효과**를 제공하는 시스템입니다.
-### 동작 방식
-Ray 감지
-→ SetHighlight(true)
-→ Outline 표시
-Ray 해제
-→ SetHighlight(false)
-→ 알파 0 색상으로 완전 숨김
-yaml
-코드 복사
-- MaterialPropertyBlock 사용
-- 머티리얼 인스턴스 생성 없이 Renderer 단위 제어
-- 얇은 메쉬 잔상 문제 방지
----
-## 4. 구현 기능 (장현우)
-### ⚔️ Combat & Physics System
-**Ragdoll 피격 처리**
-- Animator → Ragdoll 전환 구조
-- 피격 방향(Vector3)과 힘(float)을 기반으로 AddForce 적용
-- 단순 정지가 아닌, 타격 방향으로 날아가며 쓰러지는 물리 반응 구현
+
+### 3. Impact-Driven Ragdoll System
+공격 방향과 힘을 반영한 **물리 기반 레그돌 시스템**을 구현했습니다.
+* **타격 계산**: 무기 공격력, 방향 벡터, 힘 배율, 최소 충격값을 조합한 정밀한 물리 연산.
+* **연출 강화**: **Upward Bias**를 적용해 단순히 쓰러지는 것이 아닌, 현실적인 피격 연출 강화.
+* **상태 안정성**: 레그돌 전환 이후 순수 물리 상태로 분리하여 기존 애니메이션 상태와의 충돌 방지.
+
+**[Result]**
+* 매 타격마다 다른 물리 반응으로 타격감 대폭 향상.
+* 전투 연출의 반복성 감소 및 현실감 증대.
+* 새로운 무기 및 특수 공격 타입 확장이 쉬운 구조 확보.
