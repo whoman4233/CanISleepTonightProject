@@ -160,45 +160,51 @@ public override void SetupDay(AnomalyDistributor ad, PrisonerScheduleManager sm)
 ## 👤 임성규 (Im Sung-gyu)
 
 ---
+
 ### 1. GameManager (The Heart of State & Data)
-GameManager는 게임의 전역적인 상태를 관리하고 시스템 간 데이터를 동기화하는 Central Authority입니다.
-Finite State Machine (FSM): GamePhase를 정의하여 Standby, Briefing, Patrol, Settlement 등 각 페이즈에 따른 게임 로직의 진입과 퇴장을 제어합니다.
-Data Persistence & Recovery: * SaveManager와 연동하여 현재 날짜, 체력, 미션 진행 상태 및 죄수 배치 데이터를 관리합니다.
-ResetAllSimulationData를 통해 새 게임 시작 시 이전 세션의 데이터(좀비 데이터)가 남지 않도록 데이터 무결성을 보장합니다.
-Time Attack System: 순찰 페이즈(Patrol)에서의 타임 제한 기능을 관리하며, 타임아웃 발생 시 EventBus를 통해 즉각적인 실패 처리를 수행합니다.
-Event-Driven Communication: 싱글톤 인스턴스를 유지하되, 대부분의 상태 변화를 EventBus를 통해 발행하여 다른 시스템과의 의존성을 최소화했습니다.
+**GameManager**는 게임의 전역적인 상태를 관리하고 시스템 간 데이터를 동기화하는 **Central Authority**입니다.
+
+* **Finite State Machine (FSM)**: `GamePhase`를 정의하여 Standby, Briefing, Patrol, Settlement 등 각 페이즈에 따른 게임 로직의 진입과 퇴장을 제어합니다.
+* **Data Persistence & Recovery**: 
+    * `SaveManager`와 연동하여 현재 날짜, 체력, 미션 진행 상태 및 죄수 배치 데이터를 관리합니다.
+    * `ResetAllSimulationData`를 통해 새 게임 시작 시 이전 세션의 데이터가 남지 않도록 데이터 무결성을 보장합니다.
+* **Time Attack System**: 순찰 페이즈(Patrol)에서의 타임 제한 기능을 관리하며, 타임아웃 발생 시 `EventBus`를 통해 즉각적인 실패 처리를 수행합니다.
+* **Event-Driven Communication**: 싱글톤 인스턴스를 유지하되, 대부분의 상태 변화를 `EventBus`를 통해 발행하여 다른 시스템과의 의존성을 최소화했습니다.
+
 ---
+
 ### 2. FlowController (The Vein of Scene & Flow)
-FlowController는 씬 로딩과 게임의 물리적인 흐름을 제어하는 Scene Management Framework입니다.
-Async Additive Loading: LoadSceneAsync의 Additive 모드를 활용하여 로딩 씬(LoadingScene)을 오버레이한 상태에서 배경에서 실제 플레이 씬을 로드/언로드하는 고성능 로딩 시스템을 구현했습니다.
-Robust Scene Transition: * IsBusy 플래그를 통해 로딩 중 중복 요청을 방지합니다.
-씬 전환 전 UIHardResetEvent 및 InputHardResetEvent를 발행하여 이전 씬의 잔재(이벤트 구독, 입력 잠금 등)를 완전히 청소(Cleanup)합니다.
-Run-Table Recovery: 이어하기(LoadGameSequence)나 재시작 시, DailyMissionManager와 협력하여 섞여 있던 미션 리스트 순서를 그대로 복원하는 로직을 갖추고 있습니다.
-Timeline Integration: 엔딩(Outro) 진행 시 PlayableDirector와 연동하여 타임라인 재생이 완료될 때까지 대기한 후 자동으로 인트로 씬으로 복귀시키는 자동화된 시퀀스를 지원합니다.
-Fallback Sequence: 근무 실패 시 튜토리얼을 건너뛰고 바로 Standby 페이즈로 재진입하는 RestartFromFailureSequence를 통해 사용자 경험(UX)을 개선했습니다.
+**FlowController**는 씬 로딩과 게임의 물리적인 흐름을 제어하는 **Scene Management Framework**입니다.
+
+* **Async Additive Loading**: `LoadSceneAsync`의 **Additive** 모드를 활용하여 로딩 씬(`LoadingScene`)을 오버레이한 상태에서 배경에서 실제 플레이 씬을 로드/언로드하는 고성능 로딩 시스템을 구현했습니다.
+* **Robust Scene Transition**: 
+    * `IsBusy` 플래그를 통해 로딩 중 중복 요청을 방지합니다.
+    * 씬 전환 전 `UIHardResetEvent` 및 `InputHardResetEvent`를 발행하여 이전 씬의 잔재(이벤트 구독, 입력 잠금 등)를 완전히 청소(Cleanup)합니다.
+* **Run-Table Recovery**: 이어하기(`LoadGameSequence`)나 재시작 시, `DailyMissionManager`와 협력하여 섞여 있던 미션 리스트 순서를 그대로 복원하는 로직을 갖추고 있습니다.
+* **Timeline Integration**: 엔딩(Outro) 진행 시 `PlayableDirector`와 연동하여 타임라인 재생이 완료될 때까지 대기한 후 자동으로 인트로 씬으로 복귀시키는 자동화된 시퀀스를 지원합니다.
+* **Fallback Sequence**: 근무 실패 시 튜토리얼을 건너뛰고 바로 Standby 페이즈로 재진입하는 `RestartFromFailureSequence`를 통해 사용자 경험(UX)을 개선했습니다.
+
 ---
+
 ### 3. Dialogue System (SO & 키워드 매핑 기반)
-DialogueManager는 게임 내 모든 텍스트 상호작용을 총괄하며, 데이터 기반의 확장성을 가집니다.
-Robust Input Handling (입력 가드 시스템):
-E-Key Release Guard: 대화 진입 시 상호작용 키(E)가 눌려 있는 상태(IsPressed)를 감지하여, 키를 떼기 전까지는 대화가 넘어가거나 끊기지 않도록 WaitContinueReleaseThenEnable 루틴을 적용했습니다.
-Input Guard Timer: 대화 시작 후 0.25초간 입력을 무시하여 의도치 않은 대화 스킵을 원천 차단했습니다.
-Realtime Typing Logic: * Time.timeScale이 0인 일시정지 상태에서도 대화가 끊기지 않도록 WaitForSecondsRealtime 캐싱 알고리즘을 사용하여 타이핑 효과를 구현했습니다.
-Context-Aware Content (동적 텍스트 치환):
-DailyMissionManager와 연동하여, 대화 내용 중 미션 관련 데이터(예: 용의자 이름 등)를 런타임에 동적으로 치환(GetProcessedText)하여 출력합니다.
-Memory Optimization: * maxVisibleCharacters 속성을 사용하여 매 프레임 문자열을 새로 생성하지 않고 렌더링 범위만 조절하는 방식으로 메모리 가비지 생성을 최소화했습니다.
+**DialogueManager**는 게임 내 모든 텍스트 상호작용을 총괄하며, 데이터 기반의 확장성을 가집니다.
+
+* **Robust Input Handling (입력 가드 시스템)**:
+    * **E-Key Release Guard**: 대화 진입 시 상호작용 키(E)가 눌려 있는 상태(`IsPressed`)를 감지하여, 키를 떼기 전까지는 대화가 넘어가거나 끊기지 않도록 `WaitContinueReleaseThenEnable` 루틴을 적용했습니다.
+    * **Input Guard Timer**: 대화 시작 후 0.25초간 입력을 무시하여 의도치 않은 대화 스킵을 원천 차단했습니다.
+* **Realtime Typing Logic**: `Time.timeScale`이 0인 일시정지 상태에서도 대화가 끊기지 않도록 `WaitForSecondsRealtime` 캐싱 알고리즘을 사용하여 타이핑 효과를 구현했습니다.
+* **Context-Aware Content (동적 텍스트 치환)**: `DailyMissionManager`와 연동하여, 대화 내용 중 미션 관련 데이터(예: 용의자 이름 등)를 런타임에 동적으로 치환(`GetProcessedText`)하여 출력합니다.
+* **Memory Optimization**: `maxVisibleCharacters` 속성을 사용하여 매 프레임 문자열을 새로 생성하지 않고 렌더링 범위만 조절하는 방식으로 메모리 가비지 생성을 최소화했습니다.
+
 ---
+
 ### 4. Tutorial System (Flow & Interaction Guide)
-튜토리얼 시스템은 신규 플레이어가 교도소 관리 메커니즘을 학습할 수 있도록 FlowController와 긴밀하게 협력합니다.
-Phase-Driven Progression:
-GamePhase.Tutorial 상태를 정의하여 일반 게임 루프와 분리된 독립적인 튜토리얼 씬(08_TutorialScene)을 운영합니다.
-Event-Based Stepping:
-특정 동작(예: 죄수 조사, 아이템 사용)을 완료했을 때 발행되는 이벤트를 수신하여 다음 단계로 넘어가는 이벤트 기반 시퀀스를 채택했습니다.
-Conditional Input Blocking:
-학습에 필요한 최소한의 입력만 허용하고 나머지 인터랙션을 차단하여 플레이어가 의도된 가이드를 따를 수 있도록 제어합니다.
-Tutorial Skip Logic:
-재시작(RestartFromFailureSequence) 시 튜토리얼 단계를 건너뛰고 바로 본 게임(Standby)으로 진입하는 로직을 통해 반복 플레이의 피로도를 낮췄습니다.
- 
----
+**튜토리얼 시스템**은 신규 플레이어가 교도소 관리 메커니즘을 학습할 수 있도록 `FlowController`와 긴밀하게 협력합니다.
+
+* **Phase-Driven Progression**: `GamePhase.Tutorial` 상태를 정의하여 일반 게임 루프와 분리된 독립적인 튜토리얼 씬(`08_TutorialScene`)을 운영합니다.
+* **Event-Based Stepping**: 특정 동작(예: 죄수 조사, 아이템 사용)을 완료했을 때 발행되는 이벤트를 수신하여 다음 단계로 넘어가는 이벤트 기반 시퀀스를 채택했습니다.
+* **Conditional Input Blocking**: 학습에 필요한 최소한의 입력만 허용하고 나머지 인터랙션을 차단하여 플레이어가 의도된 가이드를 따를 수 있도록 제어합니다.
+* **Tutorial Skip Logic**: 재시작(`RestartFromFailureSequence`) 시 튜토리얼 단계를 건너뛰고 바로 본 게임(Standby)으로 진입하는 로직을 통해 반복 플레이의 피로도를 낮췄습니다.
 
 ## 👤  장현우
 
