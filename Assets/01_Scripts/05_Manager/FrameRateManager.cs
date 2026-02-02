@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FrameRateManager : MonoBehaviour
 {
-    [SerializeField] private int targetFPS = 144;
+    [SerializeField] private int targetFPS = 90;
 
     void Awake()
     {
