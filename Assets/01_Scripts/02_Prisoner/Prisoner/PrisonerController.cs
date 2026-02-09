@@ -42,6 +42,10 @@ public class PrisonerController : MonoBehaviour
     [Header("Action Props (Tools)")]
     [SerializeField] private List<ActionPropData> actionProps;
 
+    // Animator Hashes 캐싱
+    private static readonly int IsActionHash = Animator.StringToHash("IsAction");
+    private static readonly int ActionTypeHash = Animator.StringToHash("ActionType");
+
     // 실제 생성된 오브젝트들을 관리하는 딕셔너리
     private Dictionary<PrisonerAIType, GameObject> _propMap;
 
@@ -220,8 +224,8 @@ public class PrisonerController : MonoBehaviour
     // Enum 기반 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
     {
-        if (animator != null) animator.SetBool("IsAction", true);
-        if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
+        if (animator != null) animator.SetBool(IsActionHash, true);
+        if (animator != null) animator.SetFloat(ActionTypeHash, (float)GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
 
         // 요청된 무기는 켜고, 나머지는 끈다. (중복 장착 방지)
@@ -248,17 +252,14 @@ public class PrisonerController : MonoBehaviour
     {
         if (animator != null)
         {
-            animator.SetFloat("ActionType", (float)rawAnimID);
+            animator.SetFloat(ActionTypeHash, (float)rawAnimID);
         }
     }
 
     public void StopActionBehavior()
     {
-        if (animator != null) animator.SetFloat("ActionType", 0);
+        if (animator != null) animator.SetFloat(ActionTypeHash, 0f);
         if (sfx != null) sfx.StopLoop();
-
-        // 무기를 끄는 코드 삭제!
-        // 이제 행동이 멈춰도(이동 중 등) 무기는 손에 계속 들려있습니다.
     }
 
     private int GetActionAnimID(PrisonerAIType type)

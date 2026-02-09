@@ -5,6 +5,8 @@ public class PrisonerCowerState : BasePrisonerState
     // 회전 속도 (높을수록 빨리 쳐다봄)
     private const float TurnSpeed = 5.0f;
 
+    private static readonly int HitCowerTriggerHash = Animator.StringToHash("HitCower");
+
     public PrisonerCowerState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
@@ -18,7 +20,7 @@ public class PrisonerCowerState : BasePrisonerState
             agent.velocity = Vector3.zero;
         }
 
-        anim.SetTrigger("HitCower"); 
+        anim.SetTrigger(HitCowerTriggerHash); 
 
         // 플레이어 찾기 (부모 클래스 변수 활용)
         if (player == null)
@@ -64,7 +66,7 @@ public class PrisonerCowerState : BasePrisonerState
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         // 3. 움찔하는 애니메이션 재생 (있다면)
-        anim.SetTrigger("HitCower");
+        anim.SetTrigger(HitCowerTriggerHash);
 
         Debug.Log($"[{Controller.name}] 으악! (맞아서 웅크리기 시간 연장됨)");
     }
