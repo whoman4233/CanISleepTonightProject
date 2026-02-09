@@ -14,7 +14,7 @@ public class PrisonerBikiniState : BasePrisonerState
 
     private Transform _soapOriginalParent;
 
-    private const string SOAP_OBJ_NAME = "SoapTrap";
+    private const string SOAP_OBJ_NAME = "PSNW_Soap01";
     private const string DIALOGUE_KEY = "DIAL_BIKINI_TRAP";
     private const float DETECT_RANGE = 4.0f;
     private const int AMBUSH_DAMAGE = 30;
@@ -25,6 +25,16 @@ public class PrisonerBikiniState : BasePrisonerState
     [SerializeField] private float _throwHeightOffset = 1.0f; // ★ [추가] 던지는 높이 보정값
 
     private Action<Mission03DialogueEnded> _onDialogueEndedHandler;
+
+    // ================================================================
+    // Animator Hashes 캐싱
+    // ================================================================
+    private static readonly int RunHash = Animator.StringToHash("Run");
+    private static readonly int ActionTypeHash = Animator.StringToHash("ActionType");
+    private static readonly int IsLuringHash = Animator.StringToHash("IsLuring");
+    private static readonly int IsTalkingHash = Animator.StringToHash("IsTalking");
+    private static readonly int DoDropHash = Animator.StringToHash("DoDrop");
+    private static readonly int DoAttackHash = Animator.StringToHash("DoAttack");
 
     public PrisonerBikiniState(PrisonerFSM fsm) : base(fsm)
     {
@@ -42,8 +52,8 @@ public class PrisonerBikiniState : BasePrisonerState
             Agent.isStopped = true;
             Agent.velocity = Vector3.zero;
         }
-        Anim.SetBool("Run", false);
-        Anim.SetInteger("ActionType", 0);
+        Anim.SetBool(RunHash, false);
+        Anim.SetInteger(ActionTypeHash, 0);
 
         // 1. 오브젝트 찾기
         if (_soapRootObject == null)
@@ -74,7 +84,7 @@ public class PrisonerBikiniState : BasePrisonerState
         }
 
         EventBus.Subscribe(_onDialogueEndedHandler);
-        Anim.SetBool("IsLuring", true);
+        Anim.SetBool(IsLuringHash, true);
     }
 
     public override void Update()
@@ -126,8 +136,8 @@ public class PrisonerBikiniState : BasePrisonerState
     private void RequestDialogueStart()
     {
         _currentStep = BikiniStep.Talking;
-        Anim.SetBool("IsLuring", false);
-        Anim.SetBool("IsTalking", true);
+        Anim.SetBool(IsLuringHash, false);
+        Anim.SetBool(IsTalkingHash, true);
 
         if (DialogueManager.Instance != null)
         {
@@ -146,8 +156,8 @@ public class PrisonerBikiniState : BasePrisonerState
     {
         _currentStep = BikiniStep.DropSequence;
 
-        Anim.SetBool("IsTalking", false);
-        Anim.SetTrigger("DoDrop");
+        Anim.SetBool(IsTalkingHash, false);
+        Anim.SetTrigger(DoDropHash);
 
         yield return new WaitForSeconds(0.5f);
 
@@ -208,7 +218,7 @@ public class PrisonerBikiniState : BasePrisonerState
 
         if (Agent != null) Agent.enabled = true;
 
-        Anim.SetTrigger("DoAttack");
+        Anim.SetTrigger(DoAttackHash);
 
         yield return new WaitForSeconds(0.3f);
 
@@ -259,9 +269,9 @@ public class PrisonerBikiniState : BasePrisonerState
             _soapRootObject.transform.localRotation = Quaternion.identity;
         }
 
-        Anim.SetBool("IsLuring", false);
-        Anim.SetBool("IsTalking", false);
-        Anim.SetBool("Run", false);
+        Anim.SetBool(IsLuringHash, false);
+        Anim.SetBool(IsTalkingHash, false);
+        Anim.SetBool(RunHash, false);
 
         base.Exit();
     }
