@@ -5,6 +5,14 @@ public class PrisonerActionIdleState : BasePrisonerState
     private PrisonerAIType _currentType;
     private float _noiseTimer = 0f;
 
+    // ================================================================
+    // Animator Hashes 캐싱
+    // ================================================================
+    private static readonly int WalkHash = Animator.StringToHash("Walk");
+    private static readonly int RunHash = Animator.StringToHash("Run");
+    private static readonly int IsActionHash = Animator.StringToHash("IsAction");
+    private static readonly int IdleVariantHash = Animator.StringToHash("IdleVariant");
+
     public PrisonerActionIdleState(PrisonerFSM fsm) : base(fsm) { }
 
     public void SetActionType(PrisonerAIType aiType)
@@ -16,13 +24,8 @@ public class PrisonerActionIdleState : BasePrisonerState
     {
         base.Enter();
 
-        // ================================================================
-        // ★ [핵심 수정] 상태 진입 시 이동 애니메이션 강제 종료
-        // ================================================================
-        // ReturnState나 다른 상태에서 Walk가 true인 채로 넘어왔을 경우,
-        // 여기서 끄지 않으면 제자리에서 계속 걷는 모션이 나옵니다.
-        anim.SetBool("Walk", false);
-        anim.SetBool("Run", false);
+        anim.SetBool(WalkHash, false);
+        anim.SetBool(RunHash, false);
 
         // 물리적인 이동 정지 (NavMeshAgent 멈춤)
         StopMovement();
@@ -34,15 +37,15 @@ public class PrisonerActionIdleState : BasePrisonerState
         // 타입별 행동 분기
         if (IsNormalIdleType(_currentType))
         {
-            anim.SetBool("IsAction", false);
+            anim.SetBool(IsActionHash, false);
 
             // 랜덤한 Idle 모션 재생 (0~2)
-            int randomVariant = Random.Range(0, 3);
-            anim.SetFloat("IdleVariant", randomVariant);
+            int randomVariant = Random.Range(0, 3); 
+            anim.SetFloat(IdleVariantHash, (float)randomVariant);
         }
         else
         {
-            anim.SetBool("IsAction", true);
+            anim.SetBool(IsActionHash, true);
             StartActionBehavior();
             PrintFlavorLog();
         }
@@ -75,7 +78,7 @@ public class PrisonerActionIdleState : BasePrisonerState
 
     public override void Exit()
     {
-        anim.SetBool("IsAction", false);
+        anim.SetBool(IsActionHash, false);
         Controller.StopActionBehavior();
         base.Exit();
     }

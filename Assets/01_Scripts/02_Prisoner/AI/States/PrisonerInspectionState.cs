@@ -5,13 +5,17 @@ public class PrisonerInspectionState : BasePrisonerState
     private enum SubStep { StandUp, Moving, WaitAtPoint }
     private SubStep _currentStep;
 
+    private static readonly int EnterCellTriggerHash = Animator.StringToHash("EnterCell");
+    private static readonly int WalkHash = Animator.StringToHash("Walk");
+    private static readonly int HitTriggerHash = Animator.StringToHash("Hit");
+    private static readonly int HitCowerTriggerHash = Animator.StringToHash("HitCower");
+
     public PrisonerInspectionState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
     {
         _currentStep = SubStep.StandUp;
-        anim.SetBool("Suspicious", false);
-        anim.SetTrigger("EnterCell");
+        anim.SetTrigger(EnterCellTriggerHash);
 
         // [안전장치] 플레이어 참조가 끊겼을 경우 다시 찾기
         if (player == null)
@@ -41,7 +45,7 @@ public class PrisonerInspectionState : BasePrisonerState
                 if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
                 {
                     _currentStep = SubStep.WaitAtPoint;
-                    anim.SetBool("Walk", false);
+                    anim.SetBool(WalkHash, false);
                     agent.isStopped = true;
 
                     // 도착 즉시 플레이어 방향으로 회전 강제
@@ -67,7 +71,7 @@ public class PrisonerInspectionState : BasePrisonerState
         _currentStep = SubStep.Moving;
         agent.isStopped = false;
         agent.SetDestination(fsm.InspectionPoint.position);
-        anim.SetBool("Walk", true);
+        anim.SetBool(WalkHash, true);
     }
 
     private void LookAtPlayer()
@@ -91,19 +95,19 @@ public class PrisonerInspectionState : BasePrisonerState
         }
         if (Controller.IsAggressive)
         {
-            anim.SetTrigger("Hit");
+            anim.SetTrigger(HitTriggerHash);
             fsm.ChangeState(fsm.CombatState);
         }
         else
         {
-            anim.SetTrigger("HitCower");
+            anim.SetTrigger(HitCowerTriggerHash);
             fsm.ChangeState(fsm.CowerState);
         }
     }
 
     public override void Exit()
     {
-        anim.SetBool("Walk", false);
+        anim.SetBool(WalkHash, false);
         if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
         base.Exit();
     }

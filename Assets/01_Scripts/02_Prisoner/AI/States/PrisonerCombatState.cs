@@ -11,26 +11,30 @@ public class PrisonerCombatState : BasePrisonerState
     // [최적화] 플레이어 찾는 빈도 조절용 타이머
     private float _playerFindTimer = 0f;
 
+    // ================================================================
+    // Animator Hashes 캐싱
+    // ================================================================
+    private static readonly int InCombatHash = Animator.StringToHash("InCombat");
+    private static readonly int RunHash = Animator.StringToHash("Run");
+    private static readonly int WalkHash = Animator.StringToHash("Walk");
+    private static readonly int HasWeaponHash = Animator.StringToHash("HasWeapon");
+    private static readonly int AttackTypeHash = Animator.StringToHash("AttackType");
+    private static readonly int AttackTriggerHash = Animator.StringToHash("Attack");
+    private static readonly int HitTriggerHash = Animator.StringToHash("Hit");
+
     public PrisonerCombatState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
     {
         base.Enter();
 
-        // ================================================================
-        // ★ [요청사항] 진입하자마자 InCombat 파라미터 ON
-        // ================================================================
-        // Animator의 파라미터 이름과 정확히 일치해야 합니다. ("InCombat" vs "IsCombat")
-        anim.SetBool("InCombat", true);
+        anim.SetBool(InCombatHash, true);
 
-        // 멍때림 방지용 강제 달리기 전환 (이전 수정사항 포함)
         anim.CrossFade("Run", 0.1f);
-        anim.SetBool("Run", true);
+        anim.SetBool(RunHash, true);
 
-        // 1. 플레이어 캐싱
         if (player == null) FindPlayer();
 
-        // 2. Agent 설정
         if (agent != null)
         {
             if (!agent.enabled) agent.enabled = true;
@@ -40,7 +44,6 @@ public class PrisonerCombatState : BasePrisonerState
             agent.updatePosition = true;
             agent.updateRotation = true;
 
-            // 속도 복구
             if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
                 agent.speed = fsm.Controller.Data.definition.spd;
             else
@@ -51,13 +54,11 @@ public class PrisonerCombatState : BasePrisonerState
 
         _cooldownTimer = 0.2f;
 
-        // 3. 무기 장착
         if (fsm.Controller.HasWeapon)
         {
             fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
         }
 
-        // 4. 즉시 추격 시작
         if (player != null)
         {
             float dist = Vector3.Distance(fsm.transform.position, player.position);
@@ -75,17 +76,16 @@ public class PrisonerCombatState : BasePrisonerState
 
     public override void Update()
     {
-        // 1. 플레이어 유효성 검사 (없으면 주기적으로 재검색)
         if (player == null)
         {
             _playerFindTimer -= Time.deltaTime;
             if (_playerFindTimer <= 0f)
             {
                 FindPlayer();
-                _playerFindTimer = 1.0f; // 1초 뒤에 다시 찾기 (성능 보호)
+                _playerFindTimer = 1.0f;
             }
 
-            if (player == null) // 여전히 없으면 정지
+            if (player == null)
             {
                 StopMovement();
                 return;
@@ -94,7 +94,6 @@ public class PrisonerCombatState : BasePrisonerState
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
-        // 2. 행동 불가 상태 체크 (피격, 공격 중)
         if (stateInfo.IsTag("Hit"))
         {
             StopMovement();
@@ -105,7 +104,7 @@ public class PrisonerCombatState : BasePrisonerState
         {
             _attackTagDelayTimer -= Time.deltaTime;
             StopMovement();
-            RotateTowardsPlayer(true); // 공격 직전 유도력 보정
+            RotateTowardsPlayer(true);
             return;
         }
 
@@ -115,14 +114,12 @@ public class PrisonerCombatState : BasePrisonerState
             return;
         }
 
-        // 3. 전투 로직 수행
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
         if (dist <= AttackRange)
         {
-            // [사거리 안] 공격 시도
             StopMovement();
             RotateTowardsPlayer(true);
 
@@ -133,7 +130,6 @@ public class PrisonerCombatState : BasePrisonerState
         }
         else
         {
-            // [사거리 밖] 추격
             MoveToPlayer();
         }
     }
@@ -142,24 +138,22 @@ public class PrisonerCombatState : BasePrisonerState
     {
         if (agent == null) return;
 
-        // ★ [안전장치] Agent가 갑자기 꺼지거나 NavMesh에서 이탈했을 경우 복구 시도
         if (!agent.enabled) agent.enabled = true;
         if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
-        // 정상 상태일 때만 이동 및 Run 애니메이션
         if (agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            anim.SetBool("Walk", false);
-            anim.SetBool("Run", true);
+            // [수정] Hash 사용
+            anim.SetBool(WalkHash, false);
+            anim.SetBool(RunHash, true);
 
             RotateTowardsPlayer(false);
         }
         else
         {
-            // 복구 실패 시 멈춤 (제자리 걷기 방지)
             StopMovement();
             RotateTowardsPlayer(true);
         }
@@ -170,18 +164,20 @@ public class PrisonerCombatState : BasePrisonerState
         StopMovement();
 
         bool hasWeapon = fsm.Controller.HasWeapon;
-        anim.SetBool("HasWeapon", hasWeapon);
+        // [수정] Hash 사용
+        anim.SetBool(HasWeaponHash, hasWeapon);
 
         int attackIndex = 0;
         if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 1;
         else if (!hasWeapon) attackIndex = Random.Range(0, 3);
 
-        anim.SetFloat("AttackType", (float)attackIndex);
+        // [수정] Hash 사용
+        anim.SetFloat(AttackTypeHash, (float)attackIndex);
 
-        // 공격 애니메이션 시작과 함께 사운드 재생
         fsm.Controller.PlayAttackSound();
 
-        anim.SetTrigger("Attack");
+        // [수정] Hash 사용
+        anim.SetTrigger(AttackTriggerHash);
 
         _cooldownTimer = AttackCooldown;
         _attackTagDelayTimer = 0.2f;
@@ -194,21 +190,23 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
         }
-        // ★ 멈출 때는 Run을 확실히 꺼야 함
-        anim.SetBool("Run", false);
+        // [수정] Hash 사용
+        anim.SetBool(RunHash, false);
     }
 
     public override void Exit()
     {
-        anim.SetBool("InCombat", false);
-        anim.SetBool("Run", false);
-        anim.SetBool("Walk", false);
+        // [수정] Hash 사용
+        anim.SetBool(InCombatHash, false);
+        anim.SetBool(RunHash, false);
+        anim.SetBool(WalkHash, false);
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        anim.SetTrigger("Hit");
+        // [수정] Hash 사용
+        anim.SetTrigger(HitTriggerHash);
         StopMovement();
     }
 
@@ -224,7 +222,6 @@ public class PrisonerCombatState : BasePrisonerState
         }
     }
 
-    // 헬퍼: 플레이어 찾기
     private void FindPlayer()
     {
         var pObj = GameObject.FindGameObjectWithTag("Player");
