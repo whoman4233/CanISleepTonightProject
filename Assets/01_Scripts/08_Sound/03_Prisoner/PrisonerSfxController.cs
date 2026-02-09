@@ -9,7 +9,6 @@ public sealed class PrisonerSfxController : MonoBehaviour
     [Header("Hit Clips")]
     [SerializeField] private AudioClip[] hitClips;
 
-    // ★ [추가] 공격 기합/휘두르는 소리 (Inspector에서 할당 필요)
     [Header("Attack Clips")]
     [SerializeField] private AudioClip[] attackClips;
 
@@ -19,33 +18,27 @@ public sealed class PrisonerSfxController : MonoBehaviour
     [Header("Die Clips")]
     [SerializeField] private AudioClip[] dieClips;
 
-    // 스크립트 내부 상수(매직넘버 방지)
+    // ★ [추가] 특수 상황용 1회성 클립 리스트 (Inspector 할당용)
+    [Header("Special Clips (1-Shot)")]
+    [SerializeField] private List<SpecialSoundData> specialClips;
+
     private const float HitVolume = 0.9f;
     private const float MoanVolume = 0.9f;
     private const float DieVolume = 1.0f;
-
-    // ★ [추가] 공격 사운드 볼륨
     private const float AttackVolume = 1.0f;
-
     private const float SpatialBlend3D = 1f;
-
-    // Moan이 너무 자주 나오지 않게(원하면 0으로 두면 매 히트마다 시도)
     private const float MoanCooldownSeconds = 0.25f;
 
     private AudioSource _hitSource;
     private AudioSource _voiceSource;
+    private AudioSource _loopSource;
 
-    // Shuffle bags
     private readonly List<int> _hitBag = new List<int>(16);
     private int _hitBagIndex;
-
-    // ★ [추가] 공격 사운드 셔플 백 & 인덱스
     private readonly List<int> _attackBag = new List<int>(16);
     private int _attackBagIndex;
-
     private readonly List<int> _moanBag = new List<int>(16);
     private int _moanBagIndex;
-
     private readonly List<int> _dieBag = new List<int>(16);
     private int _dieBagIndex;
 
@@ -53,19 +46,17 @@ public sealed class PrisonerSfxController : MonoBehaviour
     private float _lastMoanTime;
 
     [Header("Loop Clips (Action Type 매핑)")]
-    [SerializeField] private List<LoopSoundData> loopClips; // Inspector 할당용
-
-    // 딕셔너리: 타입을 넣으면 -> 클립이 나옴
+    [SerializeField] private List<LoopSoundData> loopClips;
     private Dictionary<PrisonerAIType, AudioClip> _loopClipMap;
-    private AudioSource _loopSource; // 루프 재생 전용 소스
+
+    // ★ [추가] 특수 클립 빠른 검색용 딕셔너리
+    private Dictionary<string, AudioClip> _specialClipMap;
 
     private void Awake()
     {
-        // Hit 전용 소스 (공격음도 여기서 재생 가능)
         _hitSource = gameObject.AddComponent<AudioSource>();
         Setup3DOneShot(_hitSource);
 
-        // 목소리/사망 전용 소스 (Hit와 겹쳐도 재생되게 분리)
         _voiceSource = gameObject.AddComponent<AudioSource>();
         Setup3DOneShot(_voiceSource);
 
@@ -75,22 +66,26 @@ public sealed class PrisonerSfxController : MonoBehaviour
         RefillAndShuffleBag(hitClips, _hitBag, ref _hitBagIndex);
         RefillAndShuffleBag(moanClips, _moanBag, ref _moanBagIndex);
         RefillAndShuffleBag(dieClips, _dieBag, ref _dieBagIndex);
-
-        // ★ [추가] 공격 가방 초기화
         RefillAndShuffleBag(attackClips, _attackBag, ref _attackBagIndex);
 
-        // 1. 루프 전용 소스 추가
         _loopSource = gameObject.AddComponent<AudioSource>();
-        Setup3DLoop(_loopSource); // 루프용 세팅
+        Setup3DLoop(_loopSource);
         _loopSource.outputAudioMixerGroup = sfxMixerGroup;
 
-        // 2. 리스트 -> 딕셔너리 변환 (빠른 검색을 위해)
+        // 루프 딕셔너리 초기화
         _loopClipMap = new Dictionary<PrisonerAIType, AudioClip>();
         foreach (var data in loopClips)
         {
-            if (!_loopClipMap.ContainsKey(data.type))
+            if (!_loopClipMap.ContainsKey(data.type)) _loopClipMap.Add(data.type, data.clip);
+        }
+
+        // ★ [추가] 특수 클립 딕셔너리 초기화
+        _specialClipMap = new Dictionary<string, AudioClip>();
+        foreach (var data in specialClips)
+        {
+            if (!string.IsNullOrEmpty(data.key) && !_specialClipMap.ContainsKey(data.key))
             {
-                _loopClipMap.Add(data.type, data.clip);
+                _specialClipMap.Add(data.key, data.clip);
             }
         }
     }
@@ -103,26 +98,36 @@ public sealed class PrisonerSfxController : MonoBehaviour
     }
 
     // ================================================================
-    // ★ [추가] 공격 애니메이션 시작 시 호출 (기합/휘두르는 소리)
+    // ★ [추가] 특수 사운드 재생 (Key 기반)
     // ================================================================
+    /// <summary>
+    /// Inspector에 등록된 Special Clips 중 키값에 맞는 소리를 1회 재생합니다.
+    /// </summary>
+    public void PlaySpecialClip(string key, float volume = 1.0f)
+    {
+        if (_specialClipMap.TryGetValue(key, out AudioClip clip))
+        {
+            if (_voiceSource != null && clip != null)
+            {
+                _voiceSource.PlayOneShot(clip, volume);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[PrisonerSfxController] '{key}' 키에 해당하는 Special Clip이 없습니다.");
+        }
+    }
+
     public void PlayRandomAttack()
     {
-        // _hitSource를 사용하여 재생 (PlayOneShot이므로 기존 소리와 섞임)
         PlayFromBag(_hitSource, attackClips, _attackBag, ref _attackBagIndex, AttackVolume);
     }
 
-    /// <summary>
-    /// 피격 시 호출: Hit은 항상, Moan은 랜덤으로 함께 재생
-    /// </summary>
     public void PlayHitAndRandomMoan()
     {
         PlayFromBag(_hitSource, hitClips, _hitBag, ref _hitBagIndex, HitVolume);
+        if (Time.time - _lastMoanTime < MoanCooldownSeconds) return;
 
-        // Moan 쿨타임(너무 연타되면 과하게 들릴 수 있음)
-        if (Time.time - _lastMoanTime < MoanCooldownSeconds)
-            return;
-
-        // Moan 클립이 있으면 1개 재생
         if (moanClips != null && moanClips.Length > 0)
         {
             PlayFromBag(_voiceSource, moanClips, _moanBag, ref _moanBagIndex, MoanVolume);
@@ -130,35 +135,17 @@ public sealed class PrisonerSfxController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 사망 시 호출: Die SFX를 랜덤으로 1회만 재생
-    /// </summary>
     public void PlayRandomDieOnce()
     {
         if (_diePlayed) return;
         _diePlayed = true;
-
         PlayFromBag(_voiceSource, dieClips, _dieBag, ref _dieBagIndex, DieVolume);
     }
 
-    // ====== Shuffle Bag 기반 재생 유틸 ======
-
-    private static void PlayFromBag(
-        AudioSource source,
-        AudioClip[] clips,
-        List<int> bag,
-        ref int bagIndex,
-        float volume)
+    private static void PlayFromBag(AudioSource source, AudioClip[] clips, List<int> bag, ref int bagIndex, float volume)
     {
-        if (source == null) return;
-        if (clips == null || clips.Length == 0) return;
-
-        if (bag.Count != clips.Length)
-        {
-            RefillAndShuffleBag(clips, bag, ref bagIndex);
-        }
-
-        if (bagIndex >= bag.Count)
+        if (source == null || clips == null || clips.Length == 0) return;
+        if (bag.Count != clips.Length || bagIndex >= bag.Count)
         {
             RefillAndShuffleBag(clips, bag, ref bagIndex);
         }
@@ -167,25 +154,18 @@ public sealed class PrisonerSfxController : MonoBehaviour
         bagIndex++;
 
         AudioClip clip = clips[clipIndex];
-        if (clip == null) return;
-
-        source.PlayOneShot(clip, volume);
+        if (clip != null) source.PlayOneShot(clip, volume);
     }
 
     private static void RefillAndShuffleBag(AudioClip[] clips, List<int> bag, ref int bagIndex)
     {
         bag.Clear();
-
         if (clips == null) return;
-
-        for (int i = 0; i < clips.Length; i++)
-            bag.Add(i);
-
+        for (int i = 0; i < clips.Length; i++) bag.Add(i);
         Shuffle(bag);
         bagIndex = 0;
     }
 
-    // Fisher-Yates shuffle
     private static void Shuffle(List<int> list)
     {
         for (int i = list.Count - 1; i > 0; i--)
@@ -195,12 +175,11 @@ public sealed class PrisonerSfxController : MonoBehaviour
         }
     }
 
-    // 루프 소스 세팅 (Loop = true)
     private static void Setup3DLoop(AudioSource src)
     {
         src.playOnAwake = false;
-        src.loop = true; // ★ 중요
-        src.spatialBlend = 1f; // 3D 사운드
+        src.loop = true;
+        src.spatialBlend = 1f;
         src.rolloffMode = AudioRolloffMode.Logarithmic;
         src.minDistance = 1f;
         src.maxDistance = 15f;
@@ -208,60 +187,52 @@ public sealed class PrisonerSfxController : MonoBehaviour
 
     public void PlayLoop(PrisonerAIType type)
     {
-        // 1. 해당 타입에 맞는 클립이 있는지 확인
         if (_loopClipMap.TryGetValue(type, out AudioClip clip))
         {
-            // 이미 같은 클립이 재생 중이면 무시 (끊김 방지)
             if (_loopSource.isPlaying && _loopSource.clip == clip) return;
-
             _loopSource.clip = clip;
             _loopSource.Play();
-
-            // (디버깅용) 소리 재생 확인 로그
-            // Debug.Log($"[SFX] Playing Loop: {type} / Clip: {clip.name}");
         }
         else
         {
-            // 딕셔너리에 해당 타입의 오디오 클립이 없으면 경고를 띄움
-            if (type != PrisonerAIType.Good && type != PrisonerAIType.Bad) // 소리가 없는게 정상인 타입 제외
+            if (type != PrisonerAIType.Good && type != PrisonerAIType.Bad)
             {
-                Debug.LogWarning($"[PrisonerSfxController] '{type}' 타입에 대한 LoopSoundData가 Inspector에 할당되지 않았습니다!");
+                Debug.LogWarning($"[PrisonerSfxController] '{type}' LoopSoundData 누락!");
             }
-
-            // 매핑된 소리가 없으면 그냥 멈춤
             StopLoop();
         }
     }
 
-    // 기존 StopLoop 수정 및 보강
     public void StopLoop()
     {
-        // 1. 루프 소스 정지
         if (_loopSource != null && _loopSource.isPlaying)
         {
             _loopSource.Stop();
             _loopSource.clip = null;
         }
-
-        // 2. 혹시 모를 코루틴이나 예약된 소리 재생 취소
         CancelInvoke();
         StopAllCoroutines();
     }
 
-    // ★ 사망 시 확실하게 모든 소리 끄기
     public void StopAllSounds()
     {
         StopLoop();
-
         if (_hitSource != null) _hitSource.Stop();
         if (_voiceSource != null) _voiceSource.Stop();
     }
 }
 
-// Inspector에서 보기 위한 데이터 구조체
 [System.Serializable]
 public struct LoopSoundData
 {
-    public PrisonerAIType type; // 예: Singing
-    public AudioClip clip;      // 예: Singing_Loop.mp3
+    public PrisonerAIType type;
+    public AudioClip clip;
+}
+
+// ★ [추가] 특수 사운드용 데이터 구조체
+[System.Serializable]
+public struct SpecialSoundData
+{
+    public string key;       // 예: "Bikini_Pleasure"
+    public AudioClip clip;
 }

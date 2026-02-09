@@ -386,4 +386,15 @@ public class PrisonerController : MonoBehaviour
             sfx.PlayRandomAttack();
         }
     }
+
+    /// <summary>
+    /// SfxController를 통해 특정 키에 해당하는 특수 효과음을 재생합니다.
+    /// </summary>
+    public void PlaySpecialSfx(string key, float volume = 1.0f)
+    {
+        if (sfx != null)
+        {
+            sfx.PlaySpecialClip(key, volume);
+        }
+    }
 }
