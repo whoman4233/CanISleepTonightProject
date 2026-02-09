@@ -455,6 +455,14 @@ public class FlowController : MonoBehaviour
         IsBusy = true;
         Time.timeScale = 1f;
 
+        // UI상태 초기화
+        GameManager.Instance.ChangePhase(GamePhase.Ending);
+        EventBus.Publish(new GameContextReadyEvent(
+            GameManager.Instance.CurrentDay,
+            GameManager.Instance.MaxDay,
+            GamePhase.Ending
+        ));
+
         EventBus.Publish(new UIHardResetEvent());
         EventBus.Publish(new InputHardResetEvent());
 
