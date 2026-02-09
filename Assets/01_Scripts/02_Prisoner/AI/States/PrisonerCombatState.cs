@@ -49,7 +49,7 @@ public class PrisonerCombatState : BasePrisonerState
             else
                 agent.speed = 3.5f;
 
-            agent.stoppingDistance = 0.1f;
+            agent.stoppingDistance = AttackRange * 0.8f;
         }
 
         _cooldownTimer = 0.2f;
