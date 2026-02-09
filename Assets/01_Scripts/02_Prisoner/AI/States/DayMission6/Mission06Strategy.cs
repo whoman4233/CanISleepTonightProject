@@ -123,12 +123,24 @@ public class Mission06Strategy : DailyMissionStrategy
             Debug.Log($"[Mission06] {cellId}번 방 (원본: {scheduleManager.GetPrisonerData(cellId).definition.templateId}) -> {visualType} 위장 완료.");
         }
 
-        // 나머지 방 초기화
+        // =========================================================
+        // ★ [수정] 용의자 외의 방 처리 (잠그기 & AI 설정)
+        // =========================================================
+        var prisonManager = FindObjectOfType<PrisonManager>(); // 감방 잠금용 매니저
+
         foreach (var cellId in allCellIds)
         {
             if (!gangCellIds.Contains(cellId))
             {
+                // 1. 기본 AI 설정
                 scheduleManager.SetDailyRole(cellId, defaultAI, VisualAnomalyType.None, false);
+
+                // 2. ★ 핵심: 용의자가 아닌 방은 아예 못 들어가게 잠가버림
+                if (prisonManager != null)
+                {
+                    // '이미 해결됨' 처리하여 문을 잠금 (Suppress 여부는 false)
+                    prisonManager.MarkResolvedAndLockForDay(cellId, false);
+                }
             }
         }
 
@@ -140,16 +152,27 @@ public class Mission06Strategy : DailyMissionStrategy
             spawnController.SpawnAllPrisoners();
         }
 
+        // =========================================================
+        // ★ [수정] 용의자(3명)만 체력 무한으로 설정
+        // =========================================================
         var allPrisoners = GameObject.FindObjectsOfType<PrisonerController>();
-        foreach (var prisoner in allPrisoners) // 미션 6 셋업 시 죄수 체력 말도안되게 올려서 안죽게 만들기.
+        foreach (var prisoner in allPrisoners)
         {
-            if (prisoner.Data != null)
+            if (prisoner.Data != null && prisoner.AssignedCell != null)
             {
-                //prisoner.Data.MaxHealth = 9999f;
-                prisoner.Data.CurrentHealth = 9999f;
+                // 이 죄수의 방이 갱단원(용의자) 리스트에 있다면 -> 무적 설정
+                if (gangCellIds.Contains(prisoner.AssignedCell.cellId))
+                {
+                    prisoner.Data.CurrentHealth = 9999f;
+                    Debug.Log($"[Mission06] 용의자({prisoner.AssignedCell.cellId}) 무적 설정 완료.");
+                }
+                else
+                {
+                    // 그 외 죄수는 정상 체력 (필요 시 로직 추가, 지금은 건드리지 않음)
+                }
             }
         }
-        Debug.Log("갱단원3명 소환");
+        Debug.Log("갱단원 3명 소환 및 무적 세팅 완료, 나머지 방 잠금 처리.");
     }
 
     private void AssignRandomNames()
