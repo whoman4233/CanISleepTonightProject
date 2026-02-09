@@ -13,6 +13,10 @@ public class InspectionManager : MonoBehaviour
     [SerializeField] private float rotateSpeed = 0.15f;
     [SerializeField] private float pitchLimit = 80f;
 
+    // [Camera Canvas 대응 수정]
+    // Inspection UI(Canvas_Inspection)의 Render Camera
+    private Camera inspectionUICamera;
+
     [Header("Ray")]
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private float inspectRayDistance = 5f;
@@ -233,7 +237,16 @@ public class InspectionManager : MonoBehaviour
         }
 
         inspectionViewRect = ui.GetInspectionViewRect();
-        _inspectionViewReady = inspectionViewRect != null;
+        inspectionUICamera = ui.RenderCamera; // UI Camera 동적 할당
+
+        if (inspectionViewRect == null || inspectionUICamera == null)
+        {
+            Debug.LogError("[InspectionManager] Inspection UI 바인드 실패");
+            _inspectionViewReady = false;
+            return;
+        }
+
+        _inspectionViewReady = true;
     }
 
     // =========================
@@ -291,16 +304,18 @@ public class InspectionManager : MonoBehaviour
 
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
+        // [Camera Canvas 대응 수정]
         if (!RectTransformUtility.RectangleContainsScreenPoint(
                 inspectionViewRect,
                 screenPos,
-                null))
+                inspectionUICamera))
             return;
 
+        // [Camera Canvas 대응 수정]
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             inspectionViewRect,
             screenPos,
-            null,
+            inspectionUICamera,
             out Vector2 localPoint);
 
         Rect rect = inspectionViewRect.rect;
@@ -335,21 +350,22 @@ public class InspectionManager : MonoBehaviour
         Vector2 screenPos = Mouse.current.position.ReadValue();
 
         // UI 영역 밖이면 즉시 해제
+        // [Camera Canvas 대응 수정]
         if (!RectTransformUtility.RectangleContainsScreenPoint(
                 inspectionViewRect,
                 screenPos,
-                null))
+                inspectionUICamera))
         {
             ClearOutline();
             PublishInspectionPrompt(null);
             return;
         }
 
-        // UI → Viewport 좌표 변환
+        // [Camera Canvas 대응 수정]
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             inspectionViewRect,
             screenPos,
-            null,
+            inspectionUICamera,
             out Vector2 localPoint);
 
         Rect rect = inspectionViewRect.rect;
@@ -473,11 +489,3 @@ public class InspectionManager : MonoBehaviour
         }
     }
 }
-
-
-
-
-
-
-
-
