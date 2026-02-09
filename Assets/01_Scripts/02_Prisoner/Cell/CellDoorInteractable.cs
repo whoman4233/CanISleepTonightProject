@@ -33,7 +33,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [SerializeField] private bool _isPlayerInside;
     private bool _isSimpleDoorOpen = false;
 
-    // ★ 실제 문이 시각적으로 열려있는지 체크하는 변수
+    // 실제 문이 시각적으로 열려있는지 체크하는 변수
     private bool _isVisuallyOpen = false;
 
     private Coroutine _autoCloseCoroutine;
@@ -64,17 +64,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
     }
 
-    // ========================================================================
-    // ★ [핵심 수정 1] 강제 개방 시 시스템(StateMachine)에 보고하지 않음
-    // ========================================================================
+    // 강제 개방 시 시스템(StateMachine)에 보고하지 않음 (이전 수정 유지)
     private void HandleForceOpen(string targetCellId)
     {
         if (this.cellId != targetCellId) return;
-
         if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방 (시스템 보고 안함)");
-
-        // 애니메이션과 시각적 상태만 변경하고, EventBus나 InspectionState는 건드리지 않음
-        // 이렇게 하면 시스템은 이 문이 '닫혀있다'고 판단하므로 다른 문을 여는데 방해되지 않음
         PlayOpen();
     }
 
@@ -94,7 +88,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         HandlePrisonDoor();
     }
 
-    // ... (HandleSimpleDoor, CoAutoCloseSimpleDoor 등은 기존과 동일하므로 생략 가능하나 전체 코드 유지를 위해 포함) ...
     private void HandleSimpleDoor()
     {
         var missionManager = DailyMissionManager.Instance;
@@ -126,48 +119,30 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (_isSimpleDoorOpen) HandleSimpleDoor();
     }
 
-    // ========================================================================
-    // ★ [핵심 수정 2] 상호작용 로직 개선
-    // ========================================================================
     private void HandlePrisonDoor()
     {
         if (inspection == null) return;
 
-        // "내가 정식으로 점검 중인 방인가?"
         bool isOfficialInspection = inspection.CurrentInspectingCellId == cellId;
-
-        // "눈에 보이기에 열려 있는가?" (강제 개방 포함)
         bool isOpen = isOfficialInspection || _isVisuallyOpen;
 
         if (isOpen)
         {
-            // 열려 있으면 -> 닫기 시도
             TryCloseDoor(isOfficialInspection);
         }
         else
         {
-            // 닫혀 있으면 -> 열기(점검 진입) 시도
             TryOpenDoor();
         }
     }
 
+    // ========================================================================
+    // ★ [핵심 수정] 문 열기 로직 개선 (재입장 허용 + 미션 잠금 준수)
+    // ========================================================================
     private void TryOpenDoor()
     {
-        // 1. 잠긴 방 체크
-        if (cellManager != null)
-        {
-            var cell = cellManager.GetCell(cellId);
-            if (cell != null && cell.IsLockedForDay)
-            {
-                EventBus.Publish(new ShowTimedTextPopupEvent("잠겨 있는 방입니다.", 2.0f, true));
-                PlayLocked();
-                return;
-            }
-        }
-
-        // 2. 시스템 점검 진입 시도
-        // 강제 개방된 문들은 시스템상 '닫힘' 상태이므로, 여기서 TryEnterCell을 호출해도 
-        // "다른 문이 열려있다"며 막히는 일이 발생하지 않음.
+        // 1. 먼저 시스템(InspectionStateMachine)에 진입을 요청합니다.
+        // 시스템이 재입장을 허용한다면(잠겨있더라도), TryEnterCell은 true를 반환할 것입니다.
         if (TryEnter())
         {
             if (verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
@@ -177,23 +152,43 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // 다른 방을 '정식 점검' 중일 때만 여기가 실행됨
-            Debug.LogWarning($"[Door] {cellId}: 진입 불가. 다른 방 점검 중.");
-            EventBus.Publish(new ShowTimedTextPopupEvent("다른 감방 문을 닫아야 열 수 있습니다.", 2.0f, true));
-            PlayLocked();
+            // 2. 시스템이 진입을 거부했습니다. 이유를 판별합니다.
+
+            // A. 진짜로 잠긴 방인가? (미션 06 등에서 강제 잠금된 경우)
+            // 시스템도 거부하고 + IsLockedForDay도 true라면 -> 절대 열어주면 안 됨.
+            if (IsLockedForDay())
+            {
+                if (verboseLog) Debug.Log($"[Door] {cellId}: 시스템 거부 및 잠금 상태 -> 열기 불가.");
+                EventBus.Publish(new ShowTimedTextPopupEvent("잠겨 있는 방입니다.", 2.0f, true));
+                PlayLocked();
+            }
+            // B. 잠기진 않았는데 시스템이 거부했는가? (다른 방이 열려있음 or 단순 시스템 Busy)
+            // 이 경우는 사용자가 요청한 '무시하고 열기(강제 오픈)' 케이스에 해당합니다.
+            else
+            {
+                if (verboseLog) Debug.Log($"[Door] {cellId}: 시스템 거부(Busy?) but 잠기진 않음 -> 물리적 개방.");
+                PlayOpen();
+                TriggerPrisonerInspection();
+            }
         }
+    }
+
+    // 오늘 잠긴 방인지 확인하는 헬퍼
+    private bool IsLockedForDay()
+    {
+        if (cellManager == null) return false;
+        var cell = cellManager.GetCell(cellId);
+        return cell != null && cell.IsLockedForDay;
     }
 
     private void TryCloseDoor(bool isOfficialInspection)
     {
-        // 1. 플레이어 내부 체크
         if (cellInsideTrigger != null && _isPlayerInside)
         {
             EventBus.Publish(new ShowTimedTextPopupEvent("내부에선 문을 닫을 수 없습니다.", 2.0f, true));
             return;
         }
 
-        // 2. 전투/도주 체크
         if (IsCombatInProgress() || IsEscapeInProgress())
         {
             EventBus.Publish(new ShowTimedTextPopupEvent("비상 상황! 문을 닫을 수 없습니다!", 2.0f, true));
@@ -201,12 +196,10 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        // 3. 닫기 실행
         PlayClose(); // 물리적으로 닫기
 
         if (isOfficialInspection)
         {
-            // 정식 점검 중이었다면 시스템 점검 종료 처리
             if (TryExit())
             {
                 inspection.CompleteInspection(cellId, inspection.IsSuppressionCleared);
@@ -215,12 +208,10 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // 강제 개방 상태였다면 그냥 문만 닫으면 됨 (시스템은 이미 닫힌 줄 아니까)
             if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방된 문 닫음.");
         }
     }
 
-    // ... (IsCombatInProgress, IsEscapeInProgress, TriggerPrisonerInspection 유지) ...
     private bool IsCombatInProgress()
     {
         if (contentRegistry == null) return false;
@@ -268,7 +259,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(CloseHash);
         doorAnimator.SetTrigger(OpenHash);
-        _isVisuallyOpen = true; // ★ 시각적 상태 True
+        _isVisuallyOpen = true;
         PlayOpenSound();
     }
 
@@ -277,7 +268,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(OpenHash);
         doorAnimator.SetTrigger(CloseHash);
-        _isVisuallyOpen = false; // ★ 시각적 상태 False
+        _isVisuallyOpen = false;
         PlayCloseSound();
     }
 
@@ -317,17 +308,15 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
         if (inspection == null) return OpenClosePromptState.Close;
 
-        // 프롬프트 표시 기준: 정식 점검 중이거나 OR 시각적으로 열려있으면 '닫기' 표시
         bool isOfficialInspection = inspection.CurrentInspectingCellId == cellId;
         bool isOpen = isOfficialInspection || _isVisuallyOpen;
 
-        if (!isOpen) return OpenClosePromptState.Close; // 닫혀있으면 Open(열기)
+        if (!isOpen) return OpenClosePromptState.Close;
 
-        // 열려있는 상태에서의 예외 처리
         if (_isPlayerInside) return OpenClosePromptState.CannotClose;
         if (IsCombatInProgress()) return OpenClosePromptState.CannotClose;
 
-        return OpenClosePromptState.Open; // 열려있으면 Close(닫기)
+        return OpenClosePromptState.Open;
     }
 
     private void PlayOpenSound()
