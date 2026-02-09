@@ -8,7 +8,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Tooltip("비어있으면 일반 문(단순 개폐)으로 동작합니다.")]
     [SerializeField] private string cellId;
 
-    [SerializeField] private Collider cellInsideTrigger; // 감방 내부를 덮는 트리거 콜라이더
+    [SerializeField] private Collider cellInsideTrigger;
 
     [Header("Refs")]
     [SerializeField] private InspectionStateMachine inspection;
@@ -22,7 +22,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     [Header("Settings")]
     [SerializeField] private float interactCooldown = 0.8f;
     private float _lastInteractTime = -999f;
-    [SerializeField] private bool useRedOutlineOnCloseOnlySlidingDoor = false;
     [SerializeField] private InteractableOutliner outliner;
 
     [Header("Door SFX")]
@@ -33,6 +32,10 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     [SerializeField] private bool _isPlayerInside;
     private bool _isSimpleDoorOpen = false;
+
+    // ★ 실제 문이 시각적으로 열려있는지 체크하는 변수
+    private bool _isVisuallyOpen = false;
+
     private Coroutine _autoCloseCoroutine;
 
     private static readonly int OpenHash = Animator.StringToHash("Open");
@@ -41,11 +44,8 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void Awake()
     {
-        if (outliner == null)
-            outliner = GetComponentInChildren<InteractableOutliner>(true);
-
-        if (outliner == null)
-            outliner = GetComponent<InteractableOutliner>();
+        if (outliner == null) outliner = GetComponentInChildren<InteractableOutliner>(true);
+        if (outliner == null) outliner = GetComponent<InteractableOutliner>();
     }
 
     private void OnEnable()
@@ -64,12 +64,17 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
     }
 
+    // ========================================================================
+    // ★ [핵심 수정 1] 강제 개방 시 시스템(StateMachine)에 보고하지 않음
+    // ========================================================================
     private void HandleForceOpen(string targetCellId)
     {
         if (this.cellId != targetCellId) return;
 
-        if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방 요청 수신 (Ambush)");
+        if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방 (시스템 보고 안함)");
 
+        // 애니메이션과 시각적 상태만 변경하고, EventBus나 InspectionState는 건드리지 않음
+        // 이렇게 하면 시스템은 이 문이 '닫혀있다'고 판단하므로 다른 문을 여는데 방해되지 않음
         PlayOpen();
     }
 
@@ -82,14 +87,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
         if (string.IsNullOrWhiteSpace(cellId))
         {
-            if (inspection != null && !string.IsNullOrEmpty(inspection.CurrentInspectingCellId))
-            {
-                Debug.Log($"[Door Blocked] 계단 문을 열 수 없습니다! 현재 열려있는 감방: {inspection.CurrentInspectingCellId}");
-                EventBus.Publish(new ShowTimedTextPopupEvent("감방 문이 열려있습니다! 문을 닫고 이동하세요.", 2.0f, true));
-                PlayLocked();
-                return;
-            }
-
             HandleSimpleDoor();
             return;
         }
@@ -97,13 +94,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         HandlePrisonDoor();
     }
 
+    // ... (HandleSimpleDoor, CoAutoCloseSimpleDoor 등은 기존과 동일하므로 생략 가능하나 전체 코드 유지를 위해 포함) ...
     private void HandleSimpleDoor()
     {
         var missionManager = DailyMissionManager.Instance;
-
-        if (missionManager != null &&
-            missionManager.CurrentMission != null &&
-            !missionManager.IsBriefingDialogueViewed)
+        if (missionManager != null && missionManager.CurrentMission != null && !missionManager.IsBriefingDialogueViewed)
         {
             EventBus.Publish(new ShowTimedTextPopupEvent("교도소장에게 오늘 미션에 대해 묻기", 2.0f, true));
             PlayLocked();
@@ -128,105 +123,112 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private IEnumerator CoAutoCloseSimpleDoor()
     {
         yield return new WaitForSeconds(5.0f);
+        if (_isSimpleDoorOpen) HandleSimpleDoor();
+    }
 
-        if (_isSimpleDoorOpen)
+    // ========================================================================
+    // ★ [핵심 수정 2] 상호작용 로직 개선
+    // ========================================================================
+    private void HandlePrisonDoor()
+    {
+        if (inspection == null) return;
+
+        // "내가 정식으로 점검 중인 방인가?"
+        bool isOfficialInspection = inspection.CurrentInspectingCellId == cellId;
+
+        // "눈에 보이기에 열려 있는가?" (강제 개방 포함)
+        bool isOpen = isOfficialInspection || _isVisuallyOpen;
+
+        if (isOpen)
         {
-            if (verboseLog) Debug.Log($"[Door] 일반 문 5초 경과하여 자동 닫힘");
-            HandleSimpleDoor();
+            // 열려 있으면 -> 닫기 시도
+            TryCloseDoor(isOfficialInspection);
+        }
+        else
+        {
+            // 닫혀 있으면 -> 열기(점검 진입) 시도
+            TryOpenDoor();
         }
     }
 
-    private void HandlePrisonDoor()
+    private void TryOpenDoor()
     {
-        if (inspection == null)
+        // 1. 잠긴 방 체크
+        if (cellManager != null)
         {
-            Debug.LogError($"[Door] {name}: InspectionStateMachine 연결 안됨!");
+            var cell = cellManager.GetCell(cellId);
+            if (cell != null && cell.IsLockedForDay)
+            {
+                EventBus.Publish(new ShowTimedTextPopupEvent("잠겨 있는 방입니다.", 2.0f, true));
+                PlayLocked();
+                return;
+            }
+        }
+
+        // 2. 시스템 점검 진입 시도
+        // 강제 개방된 문들은 시스템상 '닫힘' 상태이므로, 여기서 TryEnterCell을 호출해도 
+        // "다른 문이 열려있다"며 막히는 일이 발생하지 않음.
+        if (TryEnter())
+        {
+            if (verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
+            EventBus.Publish(new CellInspectionInProgressEvent { CellId = cellId });
+            PlayOpen();
+            TriggerPrisonerInspection();
+        }
+        else
+        {
+            // 다른 방을 '정식 점검' 중일 때만 여기가 실행됨
+            Debug.LogWarning($"[Door] {cellId}: 진입 불가. 다른 방 점검 중.");
+            EventBus.Publish(new ShowTimedTextPopupEvent("다른 감방 문을 닫아야 열 수 있습니다.", 2.0f, true));
+            PlayLocked();
+        }
+    }
+
+    private void TryCloseDoor(bool isOfficialInspection)
+    {
+        // 1. 플레이어 내부 체크
+        if (cellInsideTrigger != null && _isPlayerInside)
+        {
+            EventBus.Publish(new ShowTimedTextPopupEvent("내부에선 문을 닫을 수 없습니다.", 2.0f, true));
             return;
         }
 
-        bool isInspectingThisCell = inspection.CurrentInspectingCellId == cellId;
-
-        // [상황 1] 문이 닫혀있어서 열어야 함 (점검 시작)
-        if (!isInspectingThisCell)
+        // 2. 전투/도주 체크
+        if (IsCombatInProgress() || IsEscapeInProgress())
         {
-            if (TryEnter())
-            {
-                if (verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
-                EventBus.Publish(new CellInspectionInProgressEvent { CellId = cellId });
-                PlayOpen();
-                TriggerPrisonerInspection();
-            }
-            else
-            {
-                Debug.LogWarning($"[Door] {cellId}: 진입 불가. 잠김 애니메이션.");
-                EventBus.Publish(new ShowTimedTextPopupEvent("열려 있는 다른 감방 문을 닫아야 열 수 있습니다.", 2.0f, true));
-                PlayLocked();
-            }
+            EventBus.Publish(new ShowTimedTextPopupEvent("비상 상황! 문을 닫을 수 없습니다!", 2.0f, true));
+            PlayLocked();
+            return;
         }
-        // [상황 2] 문이 열려있어서 닫아야 함 (점검 종료 시도)
-        else
+
+        // 3. 닫기 실행
+        PlayClose(); // 물리적으로 닫기
+
+        if (isOfficialInspection)
         {
-            if (cellInsideTrigger != null && _isPlayerInside)
-            {
-                EventBus.Publish(new ShowTimedTextPopupEvent("내부에선 문을 닫을 수 없습니다.", 2.0f, true));
-                Debug.LogWarning($"[Door] {cellId} 내부에 플레이어가 있어 문을 닫을 수 없습니다.");
-                return;
-            }
-
-            // ====================================================
-            // 전투 중 문 닫기 방지 로직
-            // ====================================================
-            // 플레이어가 불리하다고 문 닫고 도망가는 꼼수 방지
-            if (IsCombatInProgress())
-            {
-                EventBus.Publish(new ShowTimedTextPopupEvent("전투 중에는 문을 닫을 수 없습니다!", 2.0f, true));
-                Debug.LogWarning($"[Door] {cellId}: 전투 중이라 문을 닫을 수 없음.");
-
-                // 문 흔들리는 연출(Locked)
-                PlayLocked();
-                return;
-            }
-            else if(IsEscapeInProgress())
-            {
-                EventBus.Publish(new ShowTimedTextPopupEvent("죄수 도주 중에는 문을 닫을 수 없습니다!", 2.0f, true));
-                Debug.LogWarning($"[Door] {cellId}: 죄수 도주 중이라 문을 닫을 수 없음.");
-
-                // 문 흔들리는 연출(Locked)
-                PlayLocked();
-                return;
-            }
-
+            // 정식 점검 중이었다면 시스템 점검 종료 처리
             if (TryExit())
             {
-                PlayClose();
                 inspection.CompleteInspection(cellId, inspection.IsSuppressionCleared);
                 EventBus.Publish(new CellInspectionCompletedEvent { CellId = cellId });
             }
-            else
-            {
-                PlayLocked();
-            }
+        }
+        else
+        {
+            // 강제 개방 상태였다면 그냥 문만 닫으면 됨 (시스템은 이미 닫힌 줄 아니까)
+            if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방된 문 닫음.");
         }
     }
 
-    // ★ [추가] 해당 방의 죄수들이 전투 중인지 체크
+    // ... (IsCombatInProgress, IsEscapeInProgress, TriggerPrisonerInspection 유지) ...
     private bool IsCombatInProgress()
     {
         if (contentRegistry == null) return false;
-
-        // 이 감방의 죄수 데이터를 가져옴
         if (contentRegistry.TryGet(cellId, out var content) && content.prisoner != null)
         {
             var fsm = content.prisoner.GetComponent<PrisonerFSM>();
-            if (fsm != null)
-            {
-                // 죄수가 전투 상태(CombatState)이거나 이미 공격 모드라면 true
-                // (PrisonerCombatState 타입 체크 방식이 가장 확실함)
-                if (fsm._currentState is PrisonerCombatState || fsm._currentState is PrisonerCowerState)
-                {
-                    return true;
-                }
-            }
+            if (fsm != null && (fsm._currentState is PrisonerCombatState || fsm._currentState is PrisonerCowerState))
+                return true;
         }
         return false;
     }
@@ -234,20 +236,11 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private bool IsEscapeInProgress()
     {
         if (contentRegistry == null) return false;
-
-        // 이 감방의 죄수 데이터를 가져옴
         if (contentRegistry.TryGet(cellId, out var content) && content.prisoner != null)
         {
             var fsm = content.prisoner.GetComponent<PrisonerFSM>();
-            if (fsm != null)
-            {
-                // 죄수가 전투 상태(CombatState)이거나 이미 공격 모드라면 true
-                // (PrisonerCombatState 타입 체크 방식이 가장 확실함)
-                if (fsm._currentState is PrisonerEscapeState)
-                {
-                    return true;
-                }
-            }
+            if (fsm != null && fsm._currentState is PrisonerEscapeState)
+                return true;
         }
         return false;
     }
@@ -255,36 +248,17 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private void TriggerPrisonerInspection()
     {
         if (contentRegistry == null) return;
-
-        if (contentRegistry.TryGet(cellId, out var content))
+        if (contentRegistry.TryGet(cellId, out var content) && content.prisoner != null)
         {
-            if (content.prisoner != null)
-            {
-                var fsm = content.prisoner.GetComponent<PrisonerFSM>();
-                if (fsm != null)
-                {
-                    fsm.OnStartInspection();
-                    if (verboseLog) Debug.Log($"[Door] {cellId} 죄수에게 점검 신호 전달.");
-                }
-            }
+            var fsm = content.prisoner.GetComponent<PrisonerFSM>();
+            if (fsm != null) fsm.OnStartInspection();
         }
     }
 
     private bool TryEnter()
     {
         if (cellManager == null) return false;
-
-        var cell = cellManager.GetCell(cellId);
-        if (cell == null)
-        {
-            Debug.LogError($"[Door] CellManager에서 ID '{cellId}'를 찾을 수 없습니다.");
-            return false;
-        }
-
-        bool canEnter = inspection.TryEnterCell(cellId);
-        if (!canEnter) Debug.Log($"[Door] InspectionStateMachine 거부됨.");
-
-        return canEnter;
+        return inspection.TryEnterCell(cellId);
     }
 
     private bool TryExit() => inspection.RequestExitCell(cellId);
@@ -294,6 +268,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(CloseHash);
         doorAnimator.SetTrigger(OpenHash);
+        _isVisuallyOpen = true; // ★ 시각적 상태 True
         PlayOpenSound();
     }
 
@@ -302,15 +277,13 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         if (doorAnimator == null) return;
         doorAnimator.ResetTrigger(OpenHash);
         doorAnimator.SetTrigger(CloseHash);
-
+        _isVisuallyOpen = false; // ★ 시각적 상태 False
         PlayCloseSound();
     }
 
     private void PlayLocked()
     {
-        if (doorAnimator != null)
-            doorAnimator.SetTrigger(LockedHash);
-
+        if (doorAnimator != null) doorAnimator.SetTrigger(LockedHash);
         if (outliner != null) outliner.SetHighlight(true, Color.red);
     }
 
@@ -329,35 +302,32 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-            _isPlayerInside = true;
+        if (other.CompareTag("Player")) _isPlayerInside = true;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
-            _isPlayerInside = false;
+        if (other.CompareTag("Player")) _isPlayerInside = false;
     }
 
     public OpenClosePromptState GetPromptStateEnum()
     {
         if (string.IsNullOrWhiteSpace(cellId))
-        {
             return _isSimpleDoorOpen ? OpenClosePromptState.Open : OpenClosePromptState.Close;
-        }
 
         if (inspection == null) return OpenClosePromptState.Close;
 
-        bool isInspectingThisCell = inspection.CurrentInspectingCellId == cellId;
+        // 프롬프트 표시 기준: 정식 점검 중이거나 OR 시각적으로 열려있으면 '닫기' 표시
+        bool isOfficialInspection = inspection.CurrentInspectingCellId == cellId;
+        bool isOpen = isOfficialInspection || _isVisuallyOpen;
 
-        if (!isInspectingThisCell) return OpenClosePromptState.Close;
+        if (!isOpen) return OpenClosePromptState.Close; // 닫혀있으면 Open(열기)
 
+        // 열려있는 상태에서의 예외 처리
         if (_isPlayerInside) return OpenClosePromptState.CannotClose;
-
-        // ★ [추가] 전투 중이면 닫을 수 없음 상태 반환 (UI 프롬프트 갱신용)
         if (IsCombatInProgress()) return OpenClosePromptState.CannotClose;
 
-        return OpenClosePromptState.Open;
+        return OpenClosePromptState.Open; // 열려있으면 Close(닫기)
     }
 
     private void PlayOpenSound()
