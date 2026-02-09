@@ -5,7 +5,7 @@ public class PrisonerCombatState : BasePrisonerState
 {
     private float _cooldownTimer = 0f;
     private const float AttackCooldown = 1.5f;
-    private const float AttackRange = 1.3f;
+    private const float AttackRange = 0.8f;
     private float _attackTagDelayTimer = 0f;
 
     // [최적화] 플레이어 찾는 빈도 조절용 타이머
