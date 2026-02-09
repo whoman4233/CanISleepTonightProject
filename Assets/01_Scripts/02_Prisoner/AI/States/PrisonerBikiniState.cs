@@ -14,7 +14,7 @@ public class PrisonerBikiniState : BasePrisonerState
 
     private Transform _soapOriginalParent;
 
-    private const string SOAP_OBJ_NAME = "SoapTrap";
+    private const string SOAP_OBJ_NAME = "PSNW_Soap01";
     private const string DIALOGUE_KEY = "DIAL_BIKINI_TRAP";
     private const float DETECT_RANGE = 4.0f;
     private const int AMBUSH_DAMAGE = 30;
