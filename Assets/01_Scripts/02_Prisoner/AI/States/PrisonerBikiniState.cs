@@ -11,24 +11,22 @@ public class PrisonerBikiniState : BasePrisonerState
     private GameObject _targetInteractableObject;
     private GameObject _soapRootObject;
     private Rigidbody _soapRb;
-
     private Transform _soapOriginalParent;
 
     private const string SOAP_OBJ_NAME = "PSNW_Soap01";
     private const string DIALOGUE_KEY = "DIAL_BIKINI_TRAP";
+    private const string PLEASURE_SFX_KEY = "Bikini_Pleasure"; // ★ 효과음 키값 정의
     private const float DETECT_RANGE = 4.0f;
     private const int AMBUSH_DAMAGE = 30;
 
     [Header("Throw Settings")]
     [SerializeField] private float _throwForce = 5.0f;
     [SerializeField] private float _upwardModifier = 2.0f;
-    [SerializeField] private float _throwHeightOffset = 1.0f; // ★ [추가] 던지는 높이 보정값
+    [SerializeField] private float _throwHeightOffset = 1.0f;
 
     private Action<Mission03DialogueEnded> _onDialogueEndedHandler;
 
-    // ================================================================
-    // Animator Hashes 캐싱
-    // ================================================================
+    // Animator Hashes
     private static readonly int RunHash = Animator.StringToHash("Run");
     private static readonly int ActionTypeHash = Animator.StringToHash("ActionType");
     private static readonly int IsLuringHash = Animator.StringToHash("IsLuring");
@@ -55,7 +53,6 @@ public class PrisonerBikiniState : BasePrisonerState
         Anim.SetBool(RunHash, false);
         Anim.SetInteger(ActionTypeHash, 0);
 
-        // 1. 오브젝트 찾기
         if (_soapRootObject == null)
         {
             var allTransforms = fsm.GetComponentsInChildren<Transform>(true);
@@ -69,7 +66,6 @@ public class PrisonerBikiniState : BasePrisonerState
             }
         }
 
-        // 2. 초기화
         if (_soapRootObject != null)
         {
             _soapOriginalParent = _soapRootObject.transform.parent;
@@ -91,20 +87,12 @@ public class PrisonerBikiniState : BasePrisonerState
     {
         if (Player == null) return;
 
-        // ================================================================
-        // 기습 전까지는 무적 상태 유지 (체력 고정)
-        // ================================================================
         if (_currentStep != BikiniStep.AmbushSequence)
         {
             if (fsm.Controller != null && fsm.Controller.Data != null)
             {
                 fsm.Controller.Data.CurrentHealth = fsm.Controller.Data.MaxHealth;
             }
-        }
-
-        // 기습 공격 전까지는 계속 플레이어를 쳐다봄
-        if (_currentStep != BikiniStep.AmbushSequence)
-        {
             LookAtPlayer();
         }
 
@@ -116,18 +104,11 @@ public class PrisonerBikiniState : BasePrisonerState
                     RequestDialogueStart();
                 }
                 break;
-
-            case BikiniStep.Talking:
-                break;
-
             case BikiniStep.WaitForSoap:
-                if (_targetInteractableObject != null)
+                if (_targetInteractableObject != null && !_targetInteractableObject.activeInHierarchy)
                 {
-                    if (!_targetInteractableObject.activeInHierarchy)
-                    {
-                        Debug.Log("[Bikini] ★ 비누 사라짐 감지 성공! -> 기습 시작");
-                        fsm.StartCoroutine(CoExecuteAmbush());
-                    }
+                    Debug.Log("[Bikini] 비누 사라짐 감지 성공! -> 기습 시작");
+                    fsm.StartCoroutine(CoExecuteAmbush());
                 }
                 break;
         }
@@ -138,12 +119,7 @@ public class PrisonerBikiniState : BasePrisonerState
         _currentStep = BikiniStep.Talking;
         Anim.SetBool(IsLuringHash, false);
         Anim.SetBool(IsTalkingHash, true);
-
-        if (DialogueManager.Instance != null)
-        {
-            // DialogueManager.Instance.StartDialogue(DIALOGUE_KEY); 
-            Debug.Log($"[Bikini] 대화 시작 요청");
-        }
+        Debug.Log($"[Bikini] 대화 시작 요청");
     }
 
     private void OnDialogueEnded(Mission03DialogueEnded eventData)
@@ -155,13 +131,10 @@ public class PrisonerBikiniState : BasePrisonerState
     private IEnumerator CoDropSoapSequence()
     {
         _currentStep = BikiniStep.DropSequence;
-
         Anim.SetBool(IsTalkingHash, false);
         Anim.SetTrigger(DoDropHash);
 
         yield return new WaitForSeconds(0.5f);
-
-        // 3. 비누 던지기
         ThrowSoap();
 
         _currentStep = BikiniStep.WaitForSoap;
@@ -173,33 +146,25 @@ public class PrisonerBikiniState : BasePrisonerState
         if (_soapRootObject != null)
         {
             _soapRootObject.SetActive(true);
-
-            // 1. 부모 분리
             _soapRootObject.transform.SetParent(null);
 
-            // ================================================================
-            // 비누 던지는 위치를 위로 보정
-            // ================================================================
+            // Y축 1.0f 높이 보정 (손 높이)
             _soapRootObject.transform.position += Vector3.up * _throwHeightOffset;
 
-            // 2. 활성화
             if (_targetInteractableObject != null) _targetInteractableObject.SetActive(true);
 
             var colliders = _soapRootObject.GetComponentsInChildren<Collider>(true);
             foreach (var col in colliders) col.enabled = true;
 
-            // 3. 물리력으로 던지기
             if (_soapRb != null)
             {
                 _soapRb.isKinematic = false;
+                Vector3 throwDir = (fsm.transform.forward + (Vector3.up * 0.5f)).normalized;
 
-                Vector3 throwDir = fsm.transform.forward + (Vector3.up * 0.5f);
-                throwDir.Normalize();
-
+                // 물리 힘 가하기 (이후 관여 안함)
                 _soapRb.AddForce(throwDir * _throwForce + (Vector3.up * _upwardModifier), ForceMode.Impulse);
                 _soapRb.AddTorque(UnityEngine.Random.insideUnitSphere * 5f, ForceMode.Impulse);
             }
-
             Debug.Log($"[Bikini] 비누 던지기 완료 (Y offset: {_throwHeightOffset})");
         }
     }
@@ -210,13 +175,19 @@ public class PrisonerBikiniState : BasePrisonerState
 
         if (Agent != null) Agent.enabled = false;
 
+        // 플레이어 뒤쪽으로 순간이동
         Vector3 backPos = Player.position - (Player.forward * 0.8f);
         backPos.y = fsm.transform.position.y;
         fsm.transform.position = backPos;
-
         fsm.transform.LookAt(Player.position);
 
         if (Agent != null) Agent.enabled = true;
+
+        // ★ [추가] 뒤를 잡았을 때 효과음 재생
+        if (Controller != null)
+        {
+            Controller.PlaySpecialSfx(PLEASURE_SFX_KEY);
+        }
 
         Anim.SetTrigger(DoAttackHash);
 
@@ -248,7 +219,6 @@ public class PrisonerBikiniState : BasePrisonerState
         EventBus.Unsubscribe(_onDialogueEndedHandler);
         Controller.StopActionBehavior();
 
-        // 4. 정리
         if (_soapRootObject != null)
         {
             if (_soapRb != null)
@@ -257,14 +227,8 @@ public class PrisonerBikiniState : BasePrisonerState
                 _soapRb.angularVelocity = Vector3.zero;
                 _soapRb.isKinematic = true;
             }
-
             _soapRootObject.SetActive(false);
-
-            if (_soapOriginalParent != null)
-                _soapRootObject.transform.SetParent(_soapOriginalParent);
-            else
-                _soapRootObject.transform.SetParent(fsm.transform);
-
+            _soapRootObject.transform.SetParent(_soapOriginalParent != null ? _soapOriginalParent : fsm.transform);
             _soapRootObject.transform.localPosition = Vector3.zero;
             _soapRootObject.transform.localRotation = Quaternion.identity;
         }
@@ -278,14 +242,7 @@ public class PrisonerBikiniState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // ================================================================
-        // 무적 처리: 기습 전까지는 피격되어도 CombatState로 전환하지 않음
-        // ================================================================
-        if (_currentStep != BikiniStep.AmbushSequence)
-        {
-            return;
-        }
-
+        if (_currentStep != BikiniStep.AmbushSequence) return;
         fsm.ChangeState(fsm.CombatState);
     }
 }
