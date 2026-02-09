@@ -181,12 +181,12 @@ public class Player : MonoBehaviour
             JumpPressedThisFrame = false;
 
         // 전환 애니메이션 중 이동/공격/점프 잠금
-        if (IsCrouchTransitioning)
-        {
-            MoveInput = Vector2.zero;
-            AttackPressedThisFrame = false;
-            CrouchToggleRequested = false;
-        }
+        //if (IsCrouchTransitioning)
+        //{
+        //    MoveInput = Vector2.zero;
+        //    AttackPressedThisFrame = false;
+        //    CrouchToggleRequested = false;
+        //}
     }
 
     private void ResetFrameInputs()
