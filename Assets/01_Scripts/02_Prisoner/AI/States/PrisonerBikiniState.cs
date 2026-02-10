@@ -209,6 +209,15 @@ public class PrisonerBikiniState : BasePrisonerState
         if (GameManager.Instance != null)
             GameManager.Instance.PlayerHP -= AMBUSH_DAMAGE;
 
+        if (Player != null)
+        {
+            // 직접 HP를 수정하지 않고 이벤트를 던집니다.
+            // 플레이어의 신음 소리 및 대미지 수치 적용은 이 이벤트를 받는 곳에서 처리됩니다.
+            EventBus.Publish(new PlayerDamagedEvent { });
+
+            Debug.Log($"[Bikini] 기습 성공: PlayerDamagedEvent 발행 (Damage: {AMBUSH_DAMAGE})");
+        }
+
         yield return new WaitForSeconds(0.5f);
 
         if (Agent != null) Agent.updateRotation = true;
