@@ -15,6 +15,8 @@ public sealed class PlayerLocomotionState : PlayerState
         // =========================
         if (P.CrouchToggleRequested)
         {
+            P.OnCrouchToggleStarted();
+
             P.CrouchToggleRequested = false;
 
             // 전환중이면 추가 토글 금지

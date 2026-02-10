@@ -390,5 +390,9 @@ public class Player : MonoBehaviour
 
         StateMachine.SetPaused(false);
     }
-
+    public void OnCrouchToggleStarted()
+    {
+        // 달리기 / 걷기 루프 즉시 정리
+        Sfx?.StopFootstepLoopImmediate();
+    }
 }
