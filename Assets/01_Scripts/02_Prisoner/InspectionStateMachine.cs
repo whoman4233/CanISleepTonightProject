@@ -7,10 +7,15 @@ public class InspectionStateMachine : MonoBehaviour
     [SerializeField] private PrisonManager cellManager;
     [SerializeField] private CellContentRegistry contentRegistry;
 
+    // 공식적으로 점검 중인 방 (UI 및 점검 로직용)
     public string CurrentInspectingCellId { get; private set; }
 
+    // ★ [추가] 물리적으로 열려 있는 방 ID (강제 개방 포함)
+    // 이 값이 null이 아닐 때 다른 문 상호작용을 막는 용도로 사용합니다.
+    public string PhysicallyOpenedCellId { get; private set; }
+
     public event Action<string> OnEnteredCell;
-    public event Action<string, bool, bool> OnResolved; // cellId, isSuspicious, didSuppress
+    public event Action<string, bool, bool> OnResolved;
     public event Action<string> OnSuppressStarted;
     public event Action<string> OnSuppressSuccess;
 
@@ -27,47 +32,50 @@ public class InspectionStateMachine : MonoBehaviour
     private void OnDisable() => PrisonerEventBus.OnPrisonerDown -= HandlePrisonerDown;
 
     // =======================================================================
+    // [추가] 물리적 상태 보고 (미션 7 강제 개방 등에서 호출)
+    // =======================================================================
+    public void ReportPhysicalOpen(string cellId)
+    {
+        PhysicallyOpenedCellId = cellId;
+    }
+
+    public void ReportPhysicalClose(string cellId)
+    {
+        if (PhysicallyOpenedCellId == cellId)
+        {
+            PhysicallyOpenedCellId = null;
+        }
+    }
+
+    // =======================================================================
     // [1] 점검 진입 (Enter)
     // =======================================================================
     public bool TryEnterCell(string cellId)
     {
-        if (cellManager == null)
-        {
-            Debug.LogError("[ISSM] CellManager 참조가 누락되었습니다.");
-            return false;
-        }
+        if (cellManager == null) return false;
 
-        // 1. 중복 진입 방지
-        // (다른 방을 점검 중일 때만 진입을 막음)
-        if (!string.IsNullOrEmpty(CurrentInspectingCellId) && CurrentInspectingCellId != cellId)
+        // ★ [수정] 중복 진입 방지 로직 개선
+        // 공식 점검 중인 방이 있거나, 물리적으로 이미 열린 방이 있다면 거부 (자기 자신 제외)
+        string activeId = !string.IsNullOrEmpty(CurrentInspectingCellId) ? CurrentInspectingCellId : PhysicallyOpenedCellId;
+
+        if (!string.IsNullOrEmpty(activeId) && activeId != cellId)
         {
-            Debug.LogWarning($"[ISSM] 진입 거부: 이미 {CurrentInspectingCellId} 점검 중입니다.");
+            Debug.LogWarning($"[ISSM] 진입 거부: 이미 {activeId}번 방의 문이 열려있거나 점검 중입니다.");
             return false;
         }
 
         var cell = cellManager.GetCell(cellId);
-        if (cell == null)
-        {
-            Debug.LogError($"[ISSM] 진입 실패: CellManager에서 ID '{cellId}'를 찾을 수 없습니다.");
-            return false;
-        }
+        if (cell == null || !cell.IsActiveToday) return false;
 
-        // 2. 상태 체크 (오늘 활성 여부)
-        if (!cell.IsActiveToday)
-        {
-            Debug.LogWarning($"[ISSM] 진입 실패: {cellId}번 방은 오늘 활성화(IsActiveToday)되지 않았습니다. (죄수 미배정 또는 스케줄 미로드)");
-            return false;
-        }
-
-        // 3. 상태 변경 적용
+        // 상태 변경 적용
         cell.IsInspectingNow = true;
         cell.State = CellState.Inspecting;
         CurrentInspectingCellId = cellId;
         _isSuppressionCleared = false;
 
-        // 4. 죄수 상태 변경 명령
-        //    무조건 InspectionState로 바꾸지 않고, FSM에게 '점검 시작' 신호만 보냄
-        //    (FSM 내부에서 AIType에 따라 순응할지, 무시할지, 도망갈지 결정)
+        // 점검 진입 시 물리적 개방 상태도 함께 업데이트
+        ReportPhysicalOpen(cellId);
+
         SetPrisonerState(cellId, pFsm => pFsm.OnStartInspection());
 
         OnEnteredCell?.Invoke(cellId);
@@ -75,7 +83,7 @@ public class InspectionStateMachine : MonoBehaviour
     }
 
     // =======================================================================
-    // [2] 점검 종료 및 이탈 (Exit / Complete)
+    // [2] 점검 종료 및 이탈
     // =======================================================================
 
     public void ForceReleaseOnTimeExpired()
@@ -84,7 +92,6 @@ public class InspectionStateMachine : MonoBehaviour
         var cellId = CurrentInspectingCellId;
 
         SetPrisonerState(cellId, pFsm => pFsm.BackToRoutine());
-
         cellManager.ForceReleaseInspectingOnly(cellId);
         EndInspection();
     }
@@ -97,29 +104,24 @@ public class InspectionStateMachine : MonoBehaviour
         OnResolved?.Invoke(cell.CellId, cell.IsSuspicious, didSuppress);
         cellManager.MarkResolvedAndLockForDay(cellId, didSuppress);
 
-        //FSM의 분기 함수 호출 (일반인은 Return, 특수인은 CenterIdle로 자동 분기)
-        SetPrisonerState(cellId, pFsm =>
-        {
-            Debug.Log($"[ISSM] {cellId} 점검 종료 -> 복귀 루틴 실행(BackToRoutine)");
-            pFsm.BackToRoutine();
-        });
+        SetPrisonerState(cellId, pFsm => pFsm.BackToRoutine());
 
         EndInspection();
     }
 
-    // 내부 초기화
     public void EndInspection()
     {
+        // 점검 종료 시 해당 ID에 대한 물리적 개방 보고도 해제
+        if (!string.IsNullOrEmpty(CurrentInspectingCellId))
+        {
+            ReportPhysicalClose(CurrentInspectingCellId);
+        }
+
         CurrentInspectingCellId = null;
         _isSuppressionCleared = false;
     }
 
-    // 문 닫기 요청 (UI 버튼 등)
-    public bool RequestExitCell(string cellId)
-    {
-        // 문 닫기 애니메이션 등을 기다려야 한다면 여기서 false 리턴 로직 추가 가능
-        return true;
-    }
+    public bool RequestExitCell(string cellId) => true;
 
     // =======================================================================
     // [3] 진압 (Suppression)
@@ -132,27 +134,19 @@ public class InspectionStateMachine : MonoBehaviour
         cell.IsSuppressing = true;
         cell.State = CellState.Suppressing;
 
-        // 죄수를 전투 상태로 전환
         SetPrisonerState(cellId, pFsm => pFsm.ChangeState(pFsm.CombatState));
-
         OnSuppressStarted?.Invoke(cellId);
-
-        // (선택) PrisonerEventBus를 통해서도 알림
         PrisonerEventBus.RaiseSuppressSessionStarted(cellId);
 
         return true;
     }
 
-    // 죄수가 쓰러졌을 때 호출되는 콜백
     private void HandlePrisonerDown(string downPrisonerInstanceId)
     {
-        // 현재 점검 중이 아니면 패스
         if (string.IsNullOrEmpty(CurrentInspectingCellId)) return;
 
-        // 레지스트리에서 현재 방의 죄수 ID를 직접 확인
         if (contentRegistry.TryGet(CurrentInspectingCellId, out var content))
         {
-            // 쓰러진 죄수가 지금 내 눈앞에 있는 죄수가 맞는가?
             if (content.prisonerInstanceId == downPrisonerInstanceId)
             {
                 _isSuppressionCleared = true;
@@ -168,7 +162,6 @@ public class InspectionStateMachine : MonoBehaviour
 
         cell.SuppressSuccess = true;
         OnSuppressSuccess?.Invoke(cellId);
-
         return true;
     }
 
@@ -176,7 +169,6 @@ public class InspectionStateMachine : MonoBehaviour
     // [4] 유틸리티
     // =======================================================================
 
-    // 죄수 FSM 제어 헬퍼 (Registry 활용)
     private void SetPrisonerState(string cellId, Action<PrisonerFSM> action)
     {
         if (contentRegistry != null && contentRegistry.TryGet(cellId, out var content))

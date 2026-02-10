@@ -64,11 +64,13 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
     }
 
-    // 강제 개방 시 시스템(StateMachine)에 보고하지 않음 (이전 수정 유지)
+    // ★ [수정] 강제 개방 시에도 시스템에 물리적 개방 상태 보고
     private void HandleForceOpen(string targetCellId)
     {
         if (this.cellId != targetCellId) return;
-        if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방 (시스템 보고 안함)");
+        if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방 보고");
+
+        if (inspection != null) inspection.ReportPhysicalOpen(cellId);
         PlayOpen();
     }
 
@@ -90,6 +92,17 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void HandleSimpleDoor()
     {
+        // ★ [추가] 감방 문이 하나라도 열려 있으면 계단 문 상호작용 차단
+        bool isAnyDoorOpen = !string.IsNullOrEmpty(inspection.CurrentInspectingCellId) ||
+                             !string.IsNullOrEmpty(inspection.PhysicallyOpenedCellId);
+
+        if (isAnyDoorOpen)
+        {
+            EventBus.Publish(new ShowTimedTextPopupEvent("모든 감방 문을 닫아야 이동할 수 있습니다.", 2.0f, true));
+            PlayLocked();
+            return;
+        }
+
         var missionManager = DailyMissionManager.Instance;
         if (missionManager != null && missionManager.CurrentMission != null && !missionManager.IsBriefingDialogueViewed)
         {
@@ -137,12 +150,14 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     }
 
     // ========================================================================
-    // ★ [핵심 수정] 문 열기 로직 개선 (재입장 허용 + 미션 잠금 준수)
+    // ★ [핵심 수정] 7번 미션 예외 처리 및 중복 개방 차단
     // ========================================================================
     private void TryOpenDoor()
     {
-        // 1. 먼저 시스템(InspectionStateMachine)에 진입을 요청합니다.
-        // 시스템이 재입장을 허용한다면(잠겨있더라도), TryEnterCell은 true를 반환할 것입니다.
+        // 1. 미션 07(폭동) 상황인지 체크
+        bool isRiotMission = (DailyMissionManager.Instance?.CurrentMission.missionId == DialogueKeys.Missions.Mission07);
+
+        // 2. 시스템 점검 시도
         if (TryEnter())
         {
             if (verboseLog) Debug.Log($"[Door] {cellId}: 문 열기 성공 & 점검 시작");
@@ -152,28 +167,56 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // 2. 시스템이 진입을 거부했습니다. 이유를 판별합니다.
+            // 3. 점검 진입 실패 시
 
-            // A. 진짜로 잠긴 방인가? (미션 06 등에서 강제 잠금된 경우)
-            // 시스템도 거부하고 + IsLockedForDay도 true라면 -> 절대 열어주면 안 됨.
-            if (IsLockedForDay())
+            // A. 미션 07 상황이라면 시스템 점검은 안 되더라도 물리적 개방 허용 (중복 열기)
+            if (isRiotMission)
             {
-                if (verboseLog) Debug.Log($"[Door] {cellId}: 시스템 거부 및 잠금 상태 -> 열기 불가.");
-                EventBus.Publish(new ShowTimedTextPopupEvent("잠겨 있는 방입니다.", 2.0f, true));
+                if (!IsLockedForDay())
+                {
+                    if (verboseLog) Debug.Log($"[Door] {cellId}: 미션 07 중복 개방 허용");
+                    inspection.ReportPhysicalOpen(cellId);
+                    PlayOpen();
+                    TriggerPrisonerInspection();
+                }
+                else
+                {
+                    ShowLockedPopup();
+                }
+                return;
+            }
+
+            // B. 일반적인 상황에서 중복 개방 시도인 경우 (경고 출력)
+            string openedId = !string.IsNullOrEmpty(inspection.CurrentInspectingCellId)
+                              ? inspection.CurrentInspectingCellId
+                              : inspection.PhysicallyOpenedCellId;
+
+            if (!string.IsNullOrEmpty(openedId))
+            {
+                if (verboseLog) Debug.Log($"[Door] {cellId}: 중복 개방 차단. 현재 열린 문: {openedId}");
+                EventBus.Publish(new ShowTimedTextPopupEvent("기존 감방 문을 먼저 닫아야 합니다.", 2.0f, true));
                 PlayLocked();
             }
-            // B. 잠기진 않았는데 시스템이 거부했는가? (다른 방이 열려있음 or 단순 시스템 Busy)
-            // 이 경우는 사용자가 요청한 '무시하고 열기(강제 오픈)' 케이스에 해당합니다.
+            // C. 잠긴 방인 경우
+            else if (IsLockedForDay())
+            {
+                ShowLockedPopup();
+            }
+            // D. 기타 상황 물리적 개방 (백업 로직)
             else
             {
-                if (verboseLog) Debug.Log($"[Door] {cellId}: 시스템 거부(Busy?) but 잠기진 않음 -> 물리적 개방.");
                 PlayOpen();
                 TriggerPrisonerInspection();
             }
         }
     }
 
-    // 오늘 잠긴 방인지 확인하는 헬퍼
+    private void ShowLockedPopup()
+    {
+        EventBus.Publish(new ShowTimedTextPopupEvent("잠겨 있는 방입니다.", 2.0f, true));
+        PlayLocked();
+    }
+
     private bool IsLockedForDay()
     {
         if (cellManager == null) return false;
@@ -208,7 +251,9 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            if (verboseLog) Debug.Log($"[Door] {cellId}: 강제 개방된 문 닫음.");
+            // 강제 개방 혹은 중복 개방된 문을 닫을 때도 시스템 보고 해제
+            if (inspection != null) inspection.ReportPhysicalClose(cellId);
+            if (verboseLog) Debug.Log($"[Door] {cellId}: 비공식 문 닫음 보고");
         }
     }
 
@@ -269,6 +314,10 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         doorAnimator.ResetTrigger(OpenHash);
         doorAnimator.SetTrigger(CloseHash);
         _isVisuallyOpen = false;
+
+        // ★ 물리적으로 닫힐 때 시스템에 항상 보고
+        if (inspection != null) inspection.ReportPhysicalClose(cellId);
+
         PlayCloseSound();
     }
 

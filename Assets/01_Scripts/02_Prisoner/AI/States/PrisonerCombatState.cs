@@ -8,7 +8,7 @@ public class PrisonerCombatState : BasePrisonerState
     private const float AttackRange = 0.8f;
     private float _attackTagDelayTimer = 0f;
 
-    // ★ [추가] 공격 시퀀스 제어용 플래그
+    // 공격 시퀀스 제어용 플래그
     private bool _isAttackStarted = false;
 
     private float _playerFindTimer = 0f;
@@ -29,10 +29,9 @@ public class PrisonerCombatState : BasePrisonerState
     public override void Enter()
     {
         base.Enter();
-        _isAttackStarted = false; // 진입 시 초기화
+        _isAttackStarted = false;
 
         anim.SetBool(InCombatHash, true);
-        anim.CrossFade("Run", 0.1f);
         anim.SetBool(RunHash, true);
 
         if (player == null) FindPlayer();
@@ -43,16 +42,16 @@ public class PrisonerCombatState : BasePrisonerState
             if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
             agent.isStopped = false;
+            // ★ [수정] 밀어내기 방지를 위해 정지 거리를 사거리와 유사하게 설정
+            agent.stoppingDistance = AttackRange * 0.9f;
             agent.updatePosition = true;
             agent.updateRotation = true;
+            agent.acceleration = 60f; // 즉각적인 정지를 위해 가속도 상향
 
             if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
                 agent.speed = fsm.Controller.Data.definition.spd;
             else
                 agent.speed = 3.5f;
-
-            // Stopping Distance를 사거리보다 약간 짧게 하여 공격 사거리 진입 보장
-            agent.stoppingDistance = 0.6f;
         }
 
         _cooldownTimer = 0.2f;
@@ -68,41 +67,33 @@ public class PrisonerCombatState : BasePrisonerState
         if (player == null)
         {
             _playerFindTimer -= Time.deltaTime;
-            if (_playerFindTimer <= 0f)
-            {
-                FindPlayer();
-                _playerFindTimer = 1.0f;
-            }
-
-            if (player == null)
-            {
-                StopMovement();
-                return;
-            }
+            if (_playerFindTimer <= 0f) { FindPlayer(); _playerFindTimer = 1.0f; }
+            if (player == null) { StopMovement(); return; }
         }
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
-        // 피격 상태면 이동 중지
+        // 피격 상태 처리
         if (stateInfo.IsTag("Hit"))
         {
-            _isAttackStarted = false; // 피격 시 공격 상태 리셋
+            _isAttackStarted = false;
             StopMovement();
             return;
         }
 
-        // ★ 공격 애니메이션 재생 중이면 이동 차단 및 플래그 유지
+        // ★ [해결] 공격 중 미끄러짐 방지: 애니메이션 재생 중엔 물리 속도를 강제로 0으로 고정
         if (stateInfo.IsTag("Attack"))
         {
-            StopMovement();
+            ForceStopPhysicalMovement();
             _isAttackStarted = true;
             return;
         }
 
-        // 공격 애니메이션이 끝났는데 플래그가 남아있다면 해제 (이제 이동 가능)
+        // 공격 애니메이션이 끝난 시점 처리
         if (_isAttackStarted && !stateInfo.IsTag("Attack"))
         {
             _isAttackStarted = false;
+            // 공격 직후 이동 판단을 위해 쿨타임과 별개로 짧은 지연 부여 가능
         }
 
         if (_attackTagDelayTimer > 0f)
@@ -117,47 +108,43 @@ public class PrisonerCombatState : BasePrisonerState
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        // ★ [핵심 수정] 1회 공격 후 강제 추적 로직
-        // 사거리 안이고, 쿨타임이 끝났으며, 현재 공격 중이 아닐 때만 공격 실행
+        // ★ [해결] 2회 공격 방지: 쿨타임이 완전히 끝났고 공격 중이 아닐 때만 사거리 체크
         if (dist <= AttackRange && _cooldownTimer <= 0f && !_isAttackStarted)
         {
             Attack();
         }
-        // 공격 중이 아니거나 사거리 밖이라면 즉시 플레이어 추적
         else if (!_isAttackStarted)
         {
-            MoveToPlayer();
+            MoveToPlayer(dist);
         }
     }
 
-    private void MoveToPlayer()
+    private void MoveToPlayer(float currentDist)
     {
-        if (agent == null) return;
+        if (agent == null || !agent.isOnNavMesh) return;
 
-        if (!agent.enabled) agent.enabled = true;
-        if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
-
-        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-            agent.SetDestination(player.position);
-
-            anim.SetBool(WalkHash, false);
-            anim.SetBool(RunHash, true);
-
-            RotateTowardsPlayer(false);
-        }
-        else
+        // ★ [해결] 플레이어 밀어내기 방지: 정지 거리 이내면 이동 중단
+        if (currentDist <= agent.stoppingDistance + 0.1f)
         {
             StopMovement();
             RotateTowardsPlayer(true);
+            return;
         }
+
+        agent.isStopped = false;
+        agent.SetDestination(player.position);
+
+        anim.SetBool(WalkHash, false);
+        anim.SetBool(RunHash, true);
+
+        RotateTowardsPlayer(false);
     }
 
     private void Attack()
     {
-        StopMovement();
-        _isAttackStarted = true; // 공격 시작 기록
+        // ★ 공격 시작 시 즉시 물리적 관성 제거
+        ForceStopPhysicalMovement();
+        _isAttackStarted = true;
 
         bool hasWeapon = fsm.Controller.HasWeapon;
         anim.SetBool(HasWeaponHash, hasWeapon);
@@ -171,7 +158,18 @@ public class PrisonerCombatState : BasePrisonerState
         anim.SetTrigger(AttackTriggerHash);
 
         _cooldownTimer = AttackCooldown;
-        _attackTagDelayTimer = 0.2f;
+        _attackTagDelayTimer = 0.3f; // 공격 직후 짧은 경직
+    }
+
+    // ★ 미끄러짐 방지를 위한 물리 속도 즉시 제거 메서드
+    private void ForceStopPhysicalMovement()
+    {
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero; // 물리 속도 즉시 0
+        }
+        anim.SetBool(RunHash, false);
     }
 
     private void StopMovement()
@@ -179,7 +177,8 @@ public class PrisonerCombatState : BasePrisonerState
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = true;
-            agent.velocity = Vector3.zero;
+            // 부드러운 정지보다 미끄러짐 방지를 위해 속도를 빠르게 줄임
+            agent.velocity = Vector3.Lerp(agent.velocity, Vector3.zero, Time.deltaTime * 10f);
         }
         anim.SetBool(RunHash, false);
     }
@@ -195,7 +194,7 @@ public class PrisonerCombatState : BasePrisonerState
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
         anim.SetTrigger(HitTriggerHash);
-        _isAttackStarted = false; // 피격 시 시퀀스 초기화
+        _isAttackStarted = false;
         StopMovement();
     }
 
