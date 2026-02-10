@@ -222,11 +222,11 @@ public class Mission06Strategy : DailyMissionStrategy
 
         // 3. AI 조건 확인 (구조체 안의 변수 사용)
         if (specialAIList.Contains(role.dailyAIType))
-            return true;
+            return false;
 
         // 4. Visual 조건 확인 (구조체 안의 변수 사용)
         if (specialVisualList.Contains(role.visualType))
-            return true;
+            return false;
 
         return false;
     }
