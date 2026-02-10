@@ -8,7 +8,9 @@ public class PrisonerCombatState : BasePrisonerState
     private const float AttackRange = 0.8f;
     private float _attackTagDelayTimer = 0f;
 
-    // [최적화] 플레이어 찾는 빈도 조절용 타이머
+    // ★ [추가] 공격 시퀀스 제어용 플래그
+    private bool _isAttackStarted = false;
+
     private float _playerFindTimer = 0f;
 
     // ================================================================
@@ -27,9 +29,9 @@ public class PrisonerCombatState : BasePrisonerState
     public override void Enter()
     {
         base.Enter();
+        _isAttackStarted = false; // 진입 시 초기화
 
         anim.SetBool(InCombatHash, true);
-
         anim.CrossFade("Run", 0.1f);
         anim.SetBool(RunHash, true);
 
@@ -49,7 +51,8 @@ public class PrisonerCombatState : BasePrisonerState
             else
                 agent.speed = 3.5f;
 
-            agent.stoppingDistance = 0.1f;
+            // Stopping Distance를 사거리보다 약간 짧게 하여 공격 사거리 진입 보장
+            agent.stoppingDistance = 0.6f;
         }
 
         _cooldownTimer = 0.2f;
@@ -57,20 +60,6 @@ public class PrisonerCombatState : BasePrisonerState
         if (fsm.Controller.HasWeapon)
         {
             fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
-        }
-
-        if (player != null)
-        {
-            float dist = Vector3.Distance(fsm.transform.position, player.position);
-
-            if (dist > AttackRange)
-            {
-                MoveToPlayer();
-            }
-            else
-            {
-                RotateTowardsPlayer(true);
-            }
         }
     }
 
@@ -94,10 +83,26 @@ public class PrisonerCombatState : BasePrisonerState
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
+        // 피격 상태면 이동 중지
         if (stateInfo.IsTag("Hit"))
         {
+            _isAttackStarted = false; // 피격 시 공격 상태 리셋
             StopMovement();
             return;
+        }
+
+        // ★ 공격 애니메이션 재생 중이면 이동 차단 및 플래그 유지
+        if (stateInfo.IsTag("Attack"))
+        {
+            StopMovement();
+            _isAttackStarted = true;
+            return;
+        }
+
+        // 공격 애니메이션이 끝났는데 플래그가 남아있다면 해제 (이제 이동 가능)
+        if (_isAttackStarted && !stateInfo.IsTag("Attack"))
+        {
+            _isAttackStarted = false;
         }
 
         if (_attackTagDelayTimer > 0f)
@@ -108,27 +113,18 @@ public class PrisonerCombatState : BasePrisonerState
             return;
         }
 
-        if (stateInfo.IsTag("Attack"))
-        {
-            StopMovement();
-            return;
-        }
-
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        if (dist <= AttackRange)
+        // ★ [핵심 수정] 1회 공격 후 강제 추적 로직
+        // 사거리 안이고, 쿨타임이 끝났으며, 현재 공격 중이 아닐 때만 공격 실행
+        if (dist <= AttackRange && _cooldownTimer <= 0f && !_isAttackStarted)
         {
-            StopMovement();
-            RotateTowardsPlayer(true);
-
-            if (_cooldownTimer <= 0f)
-            {
-                Attack();
-            }
+            Attack();
         }
-        else
+        // 공격 중이 아니거나 사거리 밖이라면 즉시 플레이어 추적
+        else if (!_isAttackStarted)
         {
             MoveToPlayer();
         }
@@ -146,7 +142,6 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            // [수정] Hash 사용
             anim.SetBool(WalkHash, false);
             anim.SetBool(RunHash, true);
 
@@ -162,21 +157,17 @@ public class PrisonerCombatState : BasePrisonerState
     private void Attack()
     {
         StopMovement();
+        _isAttackStarted = true; // 공격 시작 기록
 
         bool hasWeapon = fsm.Controller.HasWeapon;
-        // [수정] Hash 사용
         anim.SetBool(HasWeaponHash, hasWeapon);
 
         int attackIndex = 0;
         if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 1;
         else if (!hasWeapon) attackIndex = Random.Range(0, 3);
 
-        // [수정] Hash 사용
         anim.SetFloat(AttackTypeHash, (float)attackIndex);
-
         fsm.Controller.PlayAttackSound();
-
-        // [수정] Hash 사용
         anim.SetTrigger(AttackTriggerHash);
 
         _cooldownTimer = AttackCooldown;
@@ -190,13 +181,11 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
         }
-        // [수정] Hash 사용
         anim.SetBool(RunHash, false);
     }
 
     public override void Exit()
     {
-        // [수정] Hash 사용
         anim.SetBool(InCombatHash, false);
         anim.SetBool(RunHash, false);
         anim.SetBool(WalkHash, false);
@@ -205,8 +194,8 @@ public class PrisonerCombatState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        // [수정] Hash 사용
         anim.SetTrigger(HitTriggerHash);
+        _isAttackStarted = false; // 피격 시 시퀀스 초기화
         StopMovement();
     }
 

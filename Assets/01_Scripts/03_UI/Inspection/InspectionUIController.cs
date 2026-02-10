@@ -10,6 +10,9 @@ public class InspectionUIController : MonoBehaviour
     [SerializeField] private Volume inspectionBlurVolume;
     [SerializeField] private RawImage inspectionRawImage;
 
+    [Header("UIRender(상세보기) 캔버스")]
+    [SerializeField] private Canvas inspectionCanvas;
+
     [Header("UISound")]
     [SerializeField] private AudioClip onViewClip;
     [SerializeField] private AudioClip offViewClip;
@@ -21,6 +24,9 @@ public class InspectionUIController : MonoBehaviour
     private Coroutine _notifyCoroutine;
 
     public RectTransform InspectionViewRect => inspectionRawImage.rectTransform;
+
+    public Camera RenderCamera =>
+        inspectionCanvas != null ? inspectionCanvas.worldCamera : null;
 
     private void Awake()
     {

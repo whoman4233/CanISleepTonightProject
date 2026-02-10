@@ -4363,7 +4363,6 @@ GameObject:
   m_Component:
   - component: {fileID: 349754935}
   - component: {fileID: 349754932}
-  - component: {fileID: 349754934}
   - component: {fileID: 349754933}
   - component: {fileID: 349754936}
   m_Layer: 0
@@ -4441,7 +4440,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 1
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 1
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -4468,14 +4467,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &349754934
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 349754931}
-  m_Enabled: 1
 --- !u!4 &349754935
 Transform:
   m_ObjectHideFlags: 0
@@ -5441,6 +5432,7 @@ MonoBehaviour:
   inspectionRoot: {fileID: 1025033791}
   inspectionBlurVolume: {fileID: 1727811686}
   inspectionRawImage: {fileID: 148288680}
+  inspectionCanvas: {fileID: 510352704}
   onViewClip: {fileID: 8300000, guid: 7a1c9151a628d3949a887548c78a763b, type: 3}
   offViewClip: {fileID: 8300000, guid: 5d1af167c09ecb349b5a9a3ec60121f7, type: 3}
 --- !u!1 &528853501
