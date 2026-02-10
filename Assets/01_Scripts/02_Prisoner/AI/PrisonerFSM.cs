@@ -287,7 +287,7 @@ public class PrisonerFSM : MonoBehaviour
             _ambushCoroutine = null;
         }
 
-        // ★ [핵심 수정] 접근 중일 때의 처리 로직 추가
+        // 접근 중일 때의 처리 로직 추가
         if (_currentState == QTEApproachState)
         {
             // 1. 만약 내가 현재 '공격자'로 등록되어 있다면?
