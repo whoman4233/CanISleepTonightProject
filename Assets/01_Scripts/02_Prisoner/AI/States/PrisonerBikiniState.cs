@@ -25,6 +25,7 @@ public class PrisonerBikiniState : BasePrisonerState
     [SerializeField] private float _throwHeightOffset = 1.0f;
 
     private Action<Mission03DialogueEnded> _onDialogueEndedHandler;
+    private Vector3 _preCalculatedThrowDir; // ★ 던질 방향 미리 저장용
 
     // Animator Hashes
     private static readonly int RunHash = Animator.StringToHash("Run");
@@ -49,21 +50,15 @@ public class PrisonerBikiniState : BasePrisonerState
         {
             Agent.isStopped = true;
             Agent.velocity = Vector3.zero;
-            // ★ 에이전트가 경로 기반으로 몸을 돌리지 못하게 차단 (스크립트가 회전 주도권을 가짐)
             Agent.updateRotation = false;
         }
 
-        // ================================================================
-        // ★ [핵심 추가] 상태 진입 첫 프레임에 즉시 플레이어 방향 정렬
-        // ================================================================
         if (Player != null)
         {
             Vector3 initialDir = (Player.position - fsm.transform.position).normalized;
             initialDir.y = 0;
             if (initialDir != Vector3.zero)
-            {
                 fsm.transform.rotation = Quaternion.LookRotation(initialDir);
-            }
         }
 
         Anim.SetBool(RunHash, false);
@@ -86,7 +81,6 @@ public class PrisonerBikiniState : BasePrisonerState
         {
             _soapOriginalParent = _soapRootObject.transform.parent;
             _soapRb = _soapRootObject.GetComponent<Rigidbody>();
-
             var interactable = _soapRootObject.GetComponentInChildren<MissionItemInteractable>(true);
             if (interactable != null) _targetInteractableObject = interactable.gameObject;
             else _targetInteractableObject = _soapRootObject;
@@ -103,14 +97,11 @@ public class PrisonerBikiniState : BasePrisonerState
     {
         if (Player == null) return;
 
-        // 기습 공격 "전" 단계인 모든 경우에 플레이어를 쳐다보게 함
         if (_currentStep != BikiniStep.AmbushSequence)
         {
             if (fsm.Controller != null && fsm.Controller.Data != null)
-            {
                 fsm.Controller.Data.CurrentHealth = fsm.Controller.Data.MaxHealth;
-            }
-            // ★ Slerp를 통한 지속적인 추적 (처음 등장 시부터 작동)
+
             LookAtPlayer();
         }
 
@@ -118,13 +109,15 @@ public class PrisonerBikiniState : BasePrisonerState
         {
             case BikiniStep.WaitForPlayer:
                 if (Vector3.Distance(fsm.transform.position, Player.position) <= DETECT_RANGE)
-                {
                     RequestDialogueStart();
-                }
                 break;
             case BikiniStep.WaitForSoap:
                 if (_targetInteractableObject != null && !_targetInteractableObject.activeInHierarchy)
                 {
+                    // ★ [수정] 비누를 주운 직후에 바로 만족스러운 소리 재생
+                    if (Controller != null)
+                        Controller.PlaySpecialSfx(PLEASURE_SFX_KEY);
+
                     Debug.Log("[Bikini] 비누 사라짐 감지 성공! -> 기습 시작");
                     fsm.StartCoroutine(CoExecuteAmbush());
                 }
@@ -142,6 +135,11 @@ public class PrisonerBikiniState : BasePrisonerState
     private void OnDialogueEnded(Mission03DialogueEnded eventData)
     {
         if (_currentStep != BikiniStep.Talking) return;
+
+        // ★ [수정] 애니메이션으로 인한 회전 간섭을 피하기 위해, 대화 종료 시점의 방향을 고정
+        _preCalculatedThrowDir = (Player.position - fsm.transform.position).normalized;
+        _preCalculatedThrowDir.y = 0;
+
         fsm.StartCoroutine(CoDropSoapSequence());
     }
 
@@ -174,7 +172,9 @@ public class PrisonerBikiniState : BasePrisonerState
             if (_soapRb != null)
             {
                 _soapRb.isKinematic = false;
-                Vector3 throwDir = (fsm.transform.forward + (Vector3.up * 0.5f)).normalized;
+
+                // ★ [수정] fsm.forward 대신 미리 계산된 플레이어 방향(_preCalculatedThrowDir) 사용
+                Vector3 throwDir = (_preCalculatedThrowDir + (Vector3.up * 0.5f)).normalized;
                 _soapRb.AddForce(throwDir * _throwForce + (Vector3.up * _upwardModifier), ForceMode.Impulse);
                 _soapRb.AddTorque(UnityEngine.Random.insideUnitSphere * 5f, ForceMode.Impulse);
             }
@@ -184,47 +184,43 @@ public class PrisonerBikiniState : BasePrisonerState
     private IEnumerator CoExecuteAmbush()
     {
         _currentStep = BikiniStep.AmbushSequence;
-
         if (Agent != null) Agent.enabled = false;
 
-        // 플레이어 뒤쪽으로 순간이동
         Vector3 backPos = Player.position - (Player.forward * 0.8f);
         backPos.y = fsm.transform.position.y;
         fsm.transform.position = backPos;
 
-        // ★ 순간이동 직후 즉시 정면 고정 (다음 프레임에 딴 곳 보는 것 방지)
         Vector3 lookDir = (Player.position - fsm.transform.position).normalized;
         lookDir.y = 0;
         if (lookDir != Vector3.zero)
-        {
             fsm.transform.rotation = Quaternion.LookRotation(lookDir);
-        }
 
         if (Agent != null)
         {
             Agent.enabled = true;
-            Agent.updateRotation = false; // 복구 시에도 회전 주도권 유지
+            Agent.updateRotation = false;
         }
 
-        if (Controller != null)
-        {
-            Controller.PlaySpecialSfx(PLEASURE_SFX_KEY);
-        }
+        // (이곳의 사운드 코드는 Update의 주웠을 때 시점으로 이동했으므로 삭제해도 무방하나 중복 재생 방지를 위해 Update에서만 호출 권장)
 
         Anim.SetTrigger(DoAttackHash);
-
         yield return new WaitForSeconds(0.3f);
 
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.PlayerHP -= AMBUSH_DAMAGE;
+
+        if (Player != null)
+        {
+            // 직접 HP를 수정하지 않고 이벤트를 던집니다.
+            // 플레이어의 신음 소리 및 대미지 수치 적용은 이 이벤트를 받는 곳에서 처리됩니다.
+            EventBus.Publish(new PlayerDamagedEvent { });
+
+            Debug.Log($"[Bikini] 기습 성공: PlayerDamagedEvent 발행 (Damage: {AMBUSH_DAMAGE})");
         }
 
         yield return new WaitForSeconds(0.5f);
 
-        // 전투 상태로 넘어가기 전 에이전트 회전 복구
         if (Agent != null) Agent.updateRotation = true;
-
         fsm.Controller.StartActionBehavior(0);
         fsm.ChangeState(fsm.CombatState);
     }
@@ -234,10 +230,7 @@ public class PrisonerBikiniState : BasePrisonerState
         Vector3 dir = (Player.position - fsm.transform.position).normalized;
         dir.y = 0;
         if (dir != Vector3.zero)
-        {
-            // 회전 속도를 10f로 높여서 기민하게 반응
             fsm.transform.rotation = Quaternion.Slerp(fsm.transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
-        }
     }
 
     public override void Exit()
@@ -259,12 +252,10 @@ public class PrisonerBikiniState : BasePrisonerState
             _soapRootObject.transform.localRotation = Quaternion.identity;
         }
 
-        if (Agent != null) Agent.updateRotation = true; // 상태 종료 시 회전 복구
-
+        if (Agent != null) Agent.updateRotation = true;
         Anim.SetBool(IsLuringHash, false);
         Anim.SetBool(IsTalkingHash, false);
         Anim.SetBool(RunHash, false);
-
         base.Exit();
     }
 
