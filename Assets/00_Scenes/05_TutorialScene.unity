@@ -2570,7 +2570,7 @@ MonoBehaviour:
   - step: 4
     target: {fileID: 858824240}
   tutorialColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  tutorialWidth: 0.05
+  tutorialWidth: 0.01
 --- !u!4 &984972311
 Transform:
   m_ObjectHideFlags: 0
@@ -4760,6 +4760,29 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1875548280 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8235576423841883650, guid: a1958c498efb1664487e6deb0824cf7e,
+    type: 3}
+  m_PrefabInstance: {fileID: 1954512376}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1875548281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1875548280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9bb630f5b7f83478d5be1c9b941b91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  carryPromptObjectType: Box02
+  sfxRuleTable: {fileID: 11400000, guid: 71a49ea2082f73841ac17f4944648095, type: 2}
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 9216
 --- !u!1 &1884760875
 GameObject:
   m_ObjectHideFlags: 0
@@ -4926,7 +4949,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8235576423841883650, guid: a1958c498efb1664487e6deb0824cf7e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1875548281}
   m_SourcePrefab: {fileID: 100100000, guid: a1958c498efb1664487e6deb0824cf7e, type: 3}
 --- !u!4 &1954512377 stripped
 Transform:

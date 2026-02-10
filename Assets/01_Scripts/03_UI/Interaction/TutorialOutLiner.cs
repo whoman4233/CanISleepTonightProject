@@ -65,7 +65,7 @@ public class TutorialOutLiner : MonoBehaviour
         while (true)
         {
             // 두께를 주기적으로 변화시킴 (예: 설정값의 70% ~ 130% 사이)
-            float animatedWidth = tutorialWidth * (Mathf.Sin(Time.time * 5f) * 0.3f);
+            float animatedWidth = tutorialWidth * (1.0f + Mathf.Sin(Time.time * 5f) * 0.2f);
             SetWidth(outliner, animatedWidth);
             yield return null;
         }
