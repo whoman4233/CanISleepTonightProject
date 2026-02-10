@@ -42,6 +42,15 @@ public class Player : MonoBehaviour
     // 점프는 "전환 중" + "앉은 자세 유지" 둘 다 막아야 함
     public bool IsJumpBlockedByCrouch => IsCrouchTransitioning || IsCrouchMode;
 
+    // 현재 이동 속도 (FSM이 계산한 결과)
+    public float CurrentMoveSpeed { get; set; }
+
+    // Crouch 전환 중 목표 속도
+    public float TargetMoveSpeed { get; set; }
+
+    // 전환 보간 중 현재 속도
+    public float SmoothedMoveSpeed { get; set; }
+
     private PlayerInputs _inputs;
     private PlayerInputs.PlayerActions _playerActions;
     private InspectionManager _inspectionManager;
@@ -201,6 +210,8 @@ public class Player : MonoBehaviour
     public void BeginCrouchTransitionLock()
     {
         IsCrouchTransitioning = true;
+
+
         ResetFrameInputs();
     }
 
@@ -218,6 +229,12 @@ public class Player : MonoBehaviour
     public void AE_EndCrouchDown()
     {
         IsCrouchMode = true;
+    }
+
+    // StandUp 시작 시 호출
+    public void ExitCrouchModeEarly()
+    {
+        IsCrouchMode = false;
     }
 
     public void AE_EndStandUp()

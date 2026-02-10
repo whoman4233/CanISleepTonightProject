@@ -295,7 +295,6 @@ GameObject:
   m_Component:
   - component: {fileID: 83386923}
   - component: {fileID: 83386922}
-  - component: {fileID: 83386921}
   - component: {fileID: 83386920}
   m_Layer: 0
   m_Name: UICamera_Base
@@ -348,14 +347,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &83386921
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 83386919}
-  m_Enabled: 1
 --- !u!20 &83386922
 Camera:
   m_ObjectHideFlags: 0
@@ -415,12 +406,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 83386919}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -6.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1827686773}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &93261664
 GameObject:
@@ -887,11 +878,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.1
-  far clip plane: 5000
-  field of view: 60.000004
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
   orthographic: 0
-  orthographic size: 10
+  orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -915,13 +906,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.103392825, y: -0.7831583, z: 0.13557751, w: 0.5979898}
-  m_LocalPosition: {x: -5.224, y: 12.516, z: -6.003}
+  m_LocalRotation: {x: 0.07692492, y: -0.8101624, z: 0.1091855, w: 0.57078713}
+  m_LocalPosition: {x: -5.52, y: 12.454, z: -5.576}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1827686773}
-  m_LocalEulerAnglesHint: {x: 0, y: 179.013, z: 0}
+  m_LocalEulerAnglesHint: {x: 15.351, y: -109.668, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6265,6 +6256,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 330585546}
+  - {fileID: 83386923}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1918747293
@@ -7238,7 +7230,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -563.00006, y: 305}
+  m_AnchoredPosition: {x: -563, y: 305}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2047790933
@@ -8516,4 +8508,3 @@ SceneRoots:
   - {fileID: 1408748818}
   - {fileID: 502184024}
   - {fileID: 4582902540212821403}
-  - {fileID: 83386923}
