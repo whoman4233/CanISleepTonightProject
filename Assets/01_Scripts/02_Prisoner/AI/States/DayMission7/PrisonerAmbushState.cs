@@ -5,7 +5,7 @@ public class PrisonerAmbushState : BasePrisonerState
 {
     // ★ 기습 인식 범위 (방 중심으로부터의 거리)
     // 방 크기에 맞춰 4.0f ~ 6.0f 정도로 조절하세요.
-    private const float AmbushDistance = 6.0f;
+    private const float AmbushDistance = 4.0f;
     private const float ArrivalDistance = 0.5f;
     private bool _hasArrivedAtSpot = false;
 

@@ -80,7 +80,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.229866
   m_Height: 2.0508783
   m_Direction: 1
   m_Center: {x: 0, y: 1.0001045, z: 0}
@@ -140,6 +140,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   InspectionPoint: {fileID: 0}
+  defaultQteAction: {fileID: 0}
+  <QteStopDistance>k__BackingField: 1.2
+  ambushDelay: 1.5
 --- !u!114 &-4063779458962385547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181,6 +184,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: d24017bf3765f814389d86cd2515bbdc, type: 3}
   - {fileID: 8300000, guid: 217eefb52fc86f344b4d05a7bc49c045, type: 3}
   - {fileID: 8300000, guid: d8b151495877de94ba1056bd0d6f7d20, type: 3}
+  attackClips: []
   moanClips:
   - {fileID: 8300000, guid: cbf326520da24ca4c9dec07d8cec861f, type: 3}
   - {fileID: 8300000, guid: 84275b5647952774bb4113f2b259e70c, type: 3}
@@ -193,6 +197,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 976aca2e0e7430549bb8559950a694ee, type: 3}
   - {fileID: 8300000, guid: 599593838205ffb4f8840cb4bc0e7435, type: 3}
   - {fileID: 8300000, guid: b4b7d3bf774bd6647acfc9548592a4dd, type: 3}
+  specialClips: []
   loopClips:
   - type: 7
     clip: {fileID: 8300000, guid: 6f258327db467b145883ce7fecaa9f10, type: 3}
@@ -215,7 +220,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 5788057086556402941}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.229866
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
