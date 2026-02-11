@@ -5,7 +5,7 @@ public class PrisonerCombatState : BasePrisonerState
 {
     private float _cooldownTimer = 0f;
     private const float AttackCooldown = 1.5f;
-    private const float AttackRange = 0.6f;
+    private const float AttackRange = 1f;
     private float _attackTagDelayTimer = 0f;
 
     private bool _isAttackStarted = false;
