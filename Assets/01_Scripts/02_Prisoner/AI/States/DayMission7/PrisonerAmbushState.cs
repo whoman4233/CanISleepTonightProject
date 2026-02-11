@@ -78,18 +78,19 @@ public class PrisonerAmbushState : BasePrisonerState
             if (player == null) return;
         }
 
-        // ================================================================
-        // ★ [핵심 수정] 기습 판정 기준점 변경 (죄수 -> 방 중심)
-        // ================================================================
+        // 기습 판정 기준점 설정
         Vector3 detectionOrigin;
-
-        // 죄수에게 할당된 방(AssignedCell)이 있다면 방 위치를 기준으로, 없다면 본인 기준
         if (Controller.AssignedCell != null)
             detectionOrigin = Controller.AssignedCell.transform.position;
         else
             detectionOrigin = fsm.transform.position;
 
-        // Y축 차이로 인한 거리 오차 제거
+        // [층간 구분 추가] Y축 거리 차이 계산
+        // 보통 한 층의 높이가 3~4m이므로, 2m 이상 차이나면 다른 층으로 판단
+        float heightDiff = Mathf.Abs(detectionOrigin.y - player.position.y);
+        if (heightDiff > 2.5f) return;
+
+        // 수평 거리 계산 (XZ 평면)
         Vector3 originPos = detectionOrigin;
         Vector3 playerPos = player.position;
         originPos.y = playerPos.y = 0;
