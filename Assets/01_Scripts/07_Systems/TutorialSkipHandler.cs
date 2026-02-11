@@ -44,10 +44,13 @@ public class TutorialSkipHandler : MonoBehaviour
             _isDecisionMade = true;
             Time.timeScale = 1f; // 시간 복구
             // 커서 다시 잠금
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            //Cursor.lockState = CursorLockMode.Locked;
+            //Cursor.visible = false;
             skipUIPanel.SetActive(false);
-            Destroy(gameObject);
+            //EventBus.Publish(new GlobalInputLockRequestedEvent());
+            EventBus.Publish(new OpenControlGuideEvent());
+            //Cursor.lockState = CursorLockMode.None;
+            //Cursor.visible = true;
         }
     }
 }

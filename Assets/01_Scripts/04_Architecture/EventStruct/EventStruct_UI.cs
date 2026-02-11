@@ -263,3 +263,8 @@ public struct PromptChangedEvent
     public PromptContext context;
     public string promptId; // null or empty → 숨김
 }
+
+public class OpenControlGuideEvent // 조작설명 이벤트
+{
+
+}

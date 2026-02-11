@@ -8,10 +8,14 @@ public class InGameMenuController : MonoBehaviour
     [SerializeField] private Button btnResume;
     [SerializeField] private Button btnReturnToTitle;
     [SerializeField] private Button btnOptions;
+    [SerializeField] private Button btnGuide;
     [Header("UI Sounds")]
     [SerializeField] private AudioClip openClip;
     [SerializeField] private AudioClip closeClip;
     private bool isOpen;
+
+    [Header("Control Guide")]
+    [SerializeField] private ControlGuide _controlGuide;
 
     private Action<PauseMenuOpenRequestedEvent> _onOpenRequested;
     private Action<PauseMenuCloseRequestedEvent> _onCloseRequested;
@@ -23,6 +27,7 @@ public class InGameMenuController : MonoBehaviour
         if (btnResume != null) btnResume.onClick.AddListener(OnClickResume);
         if (btnReturnToTitle != null) btnReturnToTitle.onClick.AddListener(OnClickReturnToTitle);
         if (btnOptions != null) btnOptions.onClick.AddListener(OnClickOptions);
+        if (btnGuide != null) btnGuide.onClick.AddListener(OnClickGuide);
 
         _onOpenRequested = OnPauseMenuOpenRequested;
         _onCloseRequested = OnPauseMenuCloseRequested;
@@ -42,11 +47,13 @@ public class InGameMenuController : MonoBehaviour
     }
     private void OnPauseMenuOpenRequested(PauseMenuOpenRequestedEvent e)
     {
+        if (_controlGuide.IsOpen == true) return;
         SetOpen(true);
     }
 
     private void OnPauseMenuCloseRequested(PauseMenuCloseRequestedEvent e)
     {
+        if (_controlGuide.IsOpen == true) return;
         SetOpen(false);
     }
     private void OnClickResume()
@@ -70,6 +77,11 @@ public class InGameMenuController : MonoBehaviour
     private void OnClickOptions()
     {
         EventBus.Publish(new ShowSettingsPopupEvent());
+    }
+    private void OnClickGuide()
+    {
+        EventBus.Publish(new OpenControlGuideEvent());
+        Debug.Log("조작가이드 이벤트 발행");
     }
 
     private void SetOpen(bool open)
