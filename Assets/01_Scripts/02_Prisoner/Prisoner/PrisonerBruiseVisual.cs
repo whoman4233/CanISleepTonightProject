@@ -22,7 +22,7 @@ public sealed class PrisonerBruiseVisual : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float stage2Threshold = OneThird; // 남은 HP <= 1/3 (피 2/3 감소)
 
     [Header("Update")]
-    [SerializeField] private float refreshIntervalSeconds = 0.1f; // 매직넘버 방지: 인스펙터에서 조절
+    [SerializeField] private float refreshIntervalSeconds = 0.1f;
 
     [Header("Option")]
     [Tooltip("Stage2가 켜질 때 Stage1도 같이 켭니다(누적 멍 연출).")]
