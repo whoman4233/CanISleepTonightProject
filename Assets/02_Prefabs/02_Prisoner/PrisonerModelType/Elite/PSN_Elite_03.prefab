@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 2672436844793215148}
   - component: {fileID: -358427008635283056}
   - component: {fileID: -157184812906551878}
+  - component: {fileID: 1132882433467068419}
   m_Layer: 8
   m_Name: PSN_Elite_03
   m_TagString: Untagged
@@ -283,6 +284,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   action: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
   oneShot: 1
+--- !u!114 &1132882433467068419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49f4c43255c47a946a30589c7179a67c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 2672436844793215148}
+  bruiseStage1: {fileID: 7633503729191088837}
+  bruiseStage2: {fileID: 5621773071727562853}
+  forceOffOnAwake: 1
+  forceOffOnEnable: 1
+  forceOffOnStart: 1
+  stage1Threshold: 0.6666667
+  stage2Threshold: 0.33333334
+  refreshIntervalSeconds: 0.1
+  stage2AlsoEnablesStage1: 0
 --- !u!1001 &4855910291948607191
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1411,6 +1434,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 4855910291948607191}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5621773071727562853 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 965780760238687922, guid: ef966ca8be8b798449f8180b4ded4cad,
+    type: 3}
+  m_PrefabInstance: {fileID: 4855910291948607191}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5657055525857340547 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1000448557295188564, guid: ef966ca8be8b798449f8180b4ded4cad,
@@ -1513,6 +1542,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &7633503729191088837 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3065842610478212114, guid: ef966ca8be8b798449f8180b4ded4cad,
+    type: 3}
+  m_PrefabInstance: {fileID: 4855910291948607191}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &9123392220536076878 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4755972396125524839, guid: ef966ca8be8b798449f8180b4ded4cad,
