@@ -3,9 +3,9 @@ using UnityEngine.AI;
 
 public class PrisonerAmbushState : BasePrisonerState
 {
-    // ★ 기습 인식 범위 (방 중심으로부터의 거리)
+    // 기습 인식 범위 (방 중심으로부터의 거리)
     // 방 크기에 맞춰 4.0f ~ 6.0f 정도로 조절하세요.
-    private const float AmbushDistance = 4.0f;
+    private const float AmbushDistance = 6.0f;
     private const float ArrivalDistance = 0.5f;
     private bool _hasArrivedAtSpot = false;
 
@@ -64,13 +64,8 @@ public class PrisonerAmbushState : BasePrisonerState
 
     public override void Update()
     {
-        // 1. 도착 판정
-        if (!_hasArrivedAtSpot && fsm.InspectionPoint != null)
-        {
-            CheckArrival();
-        }
+        if (!_hasArrivedAtSpot && fsm.InspectionPoint != null) CheckArrival();
 
-        // 2. 플레이어 재탐색
         if (player == null)
         {
             var pObj = GameObject.FindWithTag("Player");
@@ -78,24 +73,27 @@ public class PrisonerAmbushState : BasePrisonerState
             if (player == null) return;
         }
 
-        // 기습 판정 기준점 설정
-        Vector3 detectionOrigin;
-        if (Controller.AssignedCell != null)
-            detectionOrigin = Controller.AssignedCell.transform.position;
-        else
-            detectionOrigin = fsm.transform.position;
+        Vector3 detectionOrigin = (Controller.AssignedCell != null)
+            ? Controller.AssignedCell.transform.position
+            : fsm.transform.position;
 
-        // [층간 구분 추가] Y축 거리 차이 계산
-        // 보통 한 층의 높이가 3~4m이므로, 2m 이상 차이나면 다른 층으로 판단
+        // [로그 1] Y축(층) 차이 판정 로그
         float heightDiff = Mathf.Abs(detectionOrigin.y - player.position.y);
-        if (heightDiff > 2.5f) return;
+        if (heightDiff > 3f)
+        {
+            // 너무 자주 찍히지 않도록 거리 정도만 체크하고 싶을 때 사용
+            // Debug.Log($"[Ambush] {Controller.Data.ID}: 층 차이 과다 ({heightDiff:F1}m)");
+            return;
+        }
 
-        // 수평 거리 계산 (XZ 평면)
         Vector3 originPos = detectionOrigin;
         Vector3 playerPos = player.position;
         originPos.y = playerPos.y = 0;
 
         float distToRoom = Vector3.Distance(originPos, playerPos);
+
+        // [로그 2] 거리 실시간 체크 (필요 시 주석 해제하여 거리 확인)
+        // Debug.Log($"[Ambush] {Controller.Data.ID} -> Player Dist: {distToRoom:F2}");
 
         if (distToRoom <= AmbushDistance)
         {
@@ -105,9 +103,9 @@ public class PrisonerAmbushState : BasePrisonerState
 
     private void ExecuteAmbush()
     {
-        Debug.Log($"<color=red>[Ambush] {Controller.Data.ID} : 방 근처 플레이어 감지! 기습 개시!</color>");
+        // [로그 3] 감지 성공 및 이벤트 발행 로그
+        Debug.Log($"<color=cyan>[Ambush] {Controller.Data.ID} 감지 성공! CellID: {Controller.Data.CellID}로 강제 개방 이벤트 발행</color>");
 
-        // 문 강제 개방 이벤트 발행
         PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
 
         Controller.StartActionBehavior(0);
@@ -164,7 +162,6 @@ public class PrisonerAmbushState : BasePrisonerState
 
     public override void Exit()
     {
-        anim.SetBool(RunHash, false);
         anim.SetInteger(ActionTypeHash, 0);
         anim.SetBool(IsntStandingHash, false);
         anim.SetBool(IsActionHash, false);
