@@ -86,7 +86,7 @@ public class FlowController : MonoBehaviour
         if (!loaded)
         {
             Debug.LogWarning("LoadGame 실패: 세이브 데이터 없음");
-            EventBus.Publish(new ShowTimedTextPopupEvent("저장된 데이터가 없습니다.", 1f));
+            EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_58", 1f));
             IsBusy = false;
             yield break;
         }
