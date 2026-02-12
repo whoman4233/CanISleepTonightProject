@@ -213,7 +213,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private void ShowLockedPopup()
     {
-        EventBus.Publish(new ShowTimedTextPopupEvent("잠겨 있는 방입니다.", 2.0f, true));
+        EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_56", 2.0f, true));
         PlayLocked();
     }
 
@@ -228,7 +228,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     {
         if (cellInsideTrigger != null && _isPlayerInside)
         {
-            EventBus.Publish(new ShowTimedTextPopupEvent("내부에선 문을 닫을 수 없습니다.", 2.0f, true));
+            EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_57", 2.0f, true));
             return;
         }
 
