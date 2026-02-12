@@ -98,7 +98,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
         if (isAnyDoorOpen)
         {
-            EventBus.Publish(new ShowTimedTextPopupEvent("모든 감방 문을 닫아야 이동할 수 있습니다.", 2.0f, true));
+            EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_53", 2.0f, true));
             PlayLocked();
             return;
         }
@@ -106,7 +106,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         var missionManager = DailyMissionManager.Instance;
         if (missionManager != null && missionManager.CurrentMission != null && !missionManager.IsBriefingDialogueViewed)
         {
-            EventBus.Publish(new ShowTimedTextPopupEvent("교도소장에게 오늘 미션에 대해 묻기", 2.0f, true));
+            EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_51", 2.0f, true));
             PlayLocked();
             return;
         }
@@ -194,7 +194,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
             if (!string.IsNullOrEmpty(openedId))
             {
                 if (verboseLog) Debug.Log($"[Door] {cellId}: 중복 개방 차단. 현재 열린 문: {openedId}");
-                EventBus.Publish(new ShowTimedTextPopupEvent("기존 감방 문을 먼저 닫아야 합니다.", 2.0f, true));
+                EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_54", 2.0f, true));
                 PlayLocked();
             }
             // C. 잠긴 방인 경우
@@ -234,7 +234,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
         if (IsCombatInProgress() || IsEscapeInProgress())
         {
-            EventBus.Publish(new ShowTimedTextPopupEvent("비상 상황! 문을 닫을 수 없습니다!", 2.0f, true));
+            EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_55", 2.0f, true));
             PlayLocked();
             return;
         }

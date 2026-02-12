@@ -98,34 +98,35 @@ public struct HideSettingsPopupEvent //옵션 팝업 숨기기
 }
 
 //==========================================
-//경고 텍스트 팝업
+// 경고 텍스트 팝업
 //==========================================
 public struct ShowTimedTextPopupEvent
 {
-    public string Message;
+    public string MessageId;   //  UITextTableSO의 ID
     public float Duration;
     public bool PlayBeep;
 
     // 기본: 안내용 (사운드 없음)
-    public ShowTimedTextPopupEvent(string message, float duration = 1f)
+    public ShowTimedTextPopupEvent(string messageId, float duration = 1f)
     {
-        Message = message;
+        MessageId = messageId;
         Duration = duration;
         PlayBeep = false;
     }
 
     // 경고용 명시 생성자
     public ShowTimedTextPopupEvent(
-        string message,
+        string messageId,
         float duration,
         bool playBeep
     )
     {
-        Message = message;
+        MessageId = messageId;
         Duration = duration;
         PlayBeep = playBeep;
     }
 }
+
 
 //==========================================
 //보고서 팝업
