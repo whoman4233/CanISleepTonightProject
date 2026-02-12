@@ -124,7 +124,7 @@ public class TextManager : MonoBehaviour
     {
         if (_dialogueLookup.TryGetValue(key, out var entry))
         {
-            return currentLanguage == Language.Korean ? entry.ko : entry.en;
+            return entry.ko; // 현재 활성화된 SO의 텍스트를 그대로 반환
         }
         return key;
     }

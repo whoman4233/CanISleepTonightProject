@@ -4,6 +4,13 @@ using UnityEngine.UI;
 
 public class SettingsPopupController : MonoBehaviour
 {
+    private enum PanelType
+    {
+        Sound,
+        Mouse,
+        Language
+    }
+
     private const string LookSensitivitySliderPrefKey = "Settings.LookSensitivitySlider01";
     private const float DefaultSlider01 = 0.35f;
 
@@ -13,6 +20,16 @@ public class SettingsPopupController : MonoBehaviour
 
     [Header("Buttons")]
     [SerializeField] private Button btnBack;
+
+    [Header("Category Panels")]
+    [SerializeField] private GameObject soundPanel;
+    [SerializeField] private GameObject mousePanel;
+    [SerializeField] private GameObject languagePanel;
+
+    [Header("Category Buttons")]
+    [SerializeField] private Button btnSound;
+    [SerializeField] private Button btnMouse;
+    [SerializeField] private Button btnLanguage;
 
     [Header("Sliders")]
     [SerializeField] private Slider masterSlider;
@@ -25,11 +42,21 @@ public class SettingsPopupController : MonoBehaviour
     [SerializeField] private CinemachinePOVInput povInput;
 
     public bool IsOpen { get; private set; }
+    public bool IsInCategoryRoot { get; private set; }
 
     private void Awake()
     {
         if (btnBack != null)
             btnBack.onClick.AddListener(OnClickBack);
+
+        if (btnSound != null)
+            btnSound.onClick.AddListener(() => OpenPanel(PanelType.Sound));
+
+        if (btnMouse != null)
+            btnMouse.onClick.AddListener(() => OpenPanel(PanelType.Mouse));
+
+        if (btnLanguage != null)
+            btnLanguage.onClick.AddListener(() => OpenPanel(PanelType.Language));
 
         IsOpen = false;
     }
@@ -37,6 +64,7 @@ public class SettingsPopupController : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Publish(new GlobalInputLockRequestedEvent());
+        CloseAllPanels();   // 기본 상태: 전부 닫힘
         StartCoroutine(InitSlidersNextFrame());
     }
 
@@ -52,7 +80,36 @@ public class SettingsPopupController : MonoBehaviour
         if (lookSensitivitySlider != null)
             lookSensitivitySlider.onValueChanged.RemoveAllListeners();
     }
+    private void CloseAllPanels()
+    {
+        if (soundPanel != null)
+            soundPanel.SetActive(false);
 
+        if (mousePanel != null)
+            mousePanel.SetActive(false);
+
+        if (languagePanel != null)
+            languagePanel.SetActive(false);
+    }
+    private void OpenPanel(PanelType type)
+    {
+        CloseAllPanels();
+
+        switch (type)
+        {
+            case PanelType.Sound:
+                soundPanel?.SetActive(true);
+                break;
+
+            case PanelType.Mouse:
+                mousePanel?.SetActive(true);
+                break;
+
+            case PanelType.Language:
+                languagePanel?.SetActive(true);
+                break;
+        }
+    }
     private IEnumerator InitSlidersNextFrame()
     {
         yield return null;

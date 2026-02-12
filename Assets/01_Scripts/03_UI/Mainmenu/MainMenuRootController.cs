@@ -37,11 +37,6 @@ public class MainMenuRootController : MonoBehaviour
         EventBus.Subscribe(_onShowSettings);
         EventBus.Subscribe(_onHideSettings);
 
-        // =========================
-        // 메인메뉴용 ESC 입력
-        // =========================
-        _inputs.UI.Setting.performed += OnEsc;
-
         Show(); // 앱 최초 진입 시 메인메뉴 표시
     }
 
@@ -50,9 +45,6 @@ public class MainMenuRootController : MonoBehaviour
         EventBus.Unsubscribe(_onRequestStartNewGame);
         EventBus.Unsubscribe(_onShowSettings);
         EventBus.Unsubscribe(_onHideSettings);
-
-        // [ADDED]
-        _inputs.UI.Setting.performed -= OnEsc;
     }
 
     // =========================
@@ -81,18 +73,6 @@ public class MainMenuRootController : MonoBehaviour
         // Popup 닫히면 Raycast 복구
         if (menuCanvasGroup != null)
             menuCanvasGroup.blocksRaycasts = true;
-    }
-
-    // =========================
-    // ESC handler
-    // =========================
-    private void OnEsc(InputAction.CallbackContext ctx)
-    {
-        // 메인메뉴가 보이는 상태 + SettingsPopup이 열려 있을 때만 처리
-        if (menuRoot != null && menuRoot.activeInHierarchy && _settingsOpen)
-        {
-            EventBus.Publish(new HideSettingsPopupEvent());
-        }
     }
 
     // =========================
