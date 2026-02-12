@@ -64,7 +64,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
         }
     }
 
-    // ★ [수정] 강제 개방 시에도 시스템에 물리적 개방 상태 보고
+    // 강제 개방 시에도 시스템에 물리적 개방 상태 보고
     private void HandleForceOpen(string targetCellId)
     {
         if (this.cellId != targetCellId) return;
@@ -128,7 +128,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
 
     private IEnumerator CoAutoCloseSimpleDoor()
     {
-        yield return new WaitForSeconds(5.0f);
+        yield return new WaitForSeconds(3.0f);
         if (_isSimpleDoorOpen) HandleSimpleDoor();
     }
 
@@ -150,7 +150,7 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     }
 
     // ========================================================================
-    // ★ [핵심 수정] 7번 미션 예외 처리 및 중복 개방 차단
+    //  7번 미션 예외 처리 및 중복 개방 차단
     // ========================================================================
     private void TryOpenDoor()
     {

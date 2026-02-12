@@ -27,8 +27,8 @@ public class PrisonerCombatState : BasePrisonerState
         base.Enter();
         _isAttackStarted = false;
 
+        // 1. 상태 파라미터 설정
         anim.SetBool(InCombatHash, true);
-        anim.SetBool(RunHash, true);
 
         if (player == null) FindPlayer();
 
@@ -38,10 +38,10 @@ public class PrisonerCombatState : BasePrisonerState
             if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
             agent.isStopped = false;
-            agent.stoppingDistance = AttackRange * 0.9f;
+            agent.stoppingDistance = AttackRange * 0.8f;
             agent.updatePosition = true;
             agent.updateRotation = true;
-            agent.acceleration = 100f; // 가속도를 극단적으로 높여 즉각 정지 유도
+            agent.acceleration = 100f;
 
             if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
                 agent.speed = fsm.Controller.Data.definition.spd;
@@ -50,6 +50,15 @@ public class PrisonerCombatState : BasePrisonerState
         }
 
         _cooldownTimer = 0.2f;
+
+        // ★ [해결] 만약 플레이어가 멀리 있다면 즉시 이동 애니메이션 강제 적용
+        float dist = Vector3.Distance(fsm.transform.position, player.position);
+        if (dist > agent.stoppingDistance + 0.1f)
+        {
+            anim.SetBool(RunHash, true);
+            // 애니메이터가 Idle을 거치지 않고 바로 Run으로 CrossFade 하게 유도
+            anim.CrossFade("Run", 0.1f);
+        }
     }
 
     public override void Update()
@@ -63,17 +72,16 @@ public class PrisonerCombatState : BasePrisonerState
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
-        // ★ [해결] 공격 중 미끄러짐 방지 핵심 강화
-        // 애니메이션 태그가 "Attack"이거나 전이 중일 때도 물리 이동을 강제로 차단합니다.
-        if (stateInfo.IsTag("Attack") || anim.IsInTransition(0))
+        // 공격 중일 때만 물리 이동을 강제로 차단 (전이 중 체크는 공격 시퀀스 시작 후에만 유효하도록 수정)
+        if (stateInfo.IsTag("Attack"))
         {
             ForceStopPhysicalMovement();
             _isAttackStarted = true;
             return;
         }
 
-        // 공격 애니메이션이 끝난 시점 처리
-        if (_isAttackStarted && !stateInfo.IsTag("Attack"))
+        // 공격 애니메이션 종료 판단
+        if (_isAttackStarted && !stateInfo.IsTag("Attack") && !anim.IsInTransition(0))
         {
             _isAttackStarted = false;
         }
@@ -81,7 +89,7 @@ public class PrisonerCombatState : BasePrisonerState
         if (_attackTagDelayTimer > 0f)
         {
             _attackTagDelayTimer -= Time.deltaTime;
-            ForceStopPhysicalMovement(); // 경직 중에도 물리 이동 차단
+            ForceStopPhysicalMovement();
             RotateTowardsPlayer(true);
             return;
         }
@@ -90,6 +98,7 @@ public class PrisonerCombatState : BasePrisonerState
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
+        // 공격 가능 거리라면 공격, 아니면 이동
         if (dist <= AttackRange && _cooldownTimer <= 0f && !_isAttackStarted)
         {
             Attack();
@@ -104,30 +113,28 @@ public class PrisonerCombatState : BasePrisonerState
     {
         if (agent == null || !agent.isOnNavMesh) return;
 
-        if (currentDist <= agent.stoppingDistance + 0.1f)
+        // 사거리보다 멀 때만 이동 로직 수행
+        if (currentDist > agent.stoppingDistance + 0.05f)
         {
-            ForceStopPhysicalMovement(); // 가까우면 즉시 정지
-            RotateTowardsPlayer(true);
-            return;
+            agent.isStopped = false;
+            agent.SetDestination(player.position);
+
+            anim.SetBool(RunHash, true); // 여기서 확실히 Run을 켬
+            RotateTowardsPlayer(false);
         }
-
-        agent.isStopped = false;
-        agent.SetDestination(player.position);
-
-        anim.SetBool(WalkHash, false);
-        anim.SetBool(RunHash, true);
-        RotateTowardsPlayer(false);
+        else
+        {
+            // 충분히 가까우면 정지하고 플레이어를 바라봄
+            StopMovement();
+            RotateTowardsPlayer(true);
+        }
     }
 
     private void Attack()
     {
-        // 공격 실행 로그 추가 (죄수 ID와 타겟 플레이어 정보 포함)
         Debug.Log($"<color=orange>[Combat] {fsm.Controller.Data.ID} : 플레이어를 공격합니다! (Distance: {Vector3.Distance(fsm.transform.position, player.position):F2})</color>");
 
-        // 1. 물리 정지 및 애니메이션 파라미터 정리
         ForceStopPhysicalMovement();
-        anim.SetBool(RunHash, false);
-        anim.SetBool(WalkHash, false);
 
         _isAttackStarted = true;
 
@@ -141,7 +148,6 @@ public class PrisonerCombatState : BasePrisonerState
         anim.SetFloat(AttackTypeHash, (float)attackIndex);
         fsm.Controller.PlayAttackSound();
 
-        // 2. 트리거 실행
         anim.SetTrigger(AttackTriggerHash);
 
         _cooldownTimer = AttackCooldown;
@@ -153,8 +159,8 @@ public class PrisonerCombatState : BasePrisonerState
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = true;
-            agent.velocity = Vector3.zero; // 물리 속도 0
-            agent.ResetPath(); // 경로 데이터를 비워 관성 이동을 완전히 차단
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
         }
         anim.SetBool(RunHash, false);
     }
@@ -173,7 +179,6 @@ public class PrisonerCombatState : BasePrisonerState
     {
         anim.SetBool(InCombatHash, false);
         anim.SetBool(RunHash, false);
-        anim.SetBool(WalkHash, false);
         if (agent != null && agent.isOnNavMesh) agent.ResetPath();
         base.Exit();
     }
