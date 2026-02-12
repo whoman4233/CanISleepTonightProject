@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
 
     [Header("순찰 페이즈 타임어택")]
     [SerializeField] private float patrolDurationSeconds = 480f;
+    private float _remainingPatrolSeconds;
     private bool _patrolTimeoutHandled; // 중복 방지
 
     public float CurrentInGameSeconds { get; private set; }
@@ -278,6 +279,7 @@ public class GameManager : MonoBehaviour
         _patrolTimeoutHandled = false;
         EventBus.Publish(new ShowTimedTextPopupEvent("순찰 시작", 1.5f));
         //patrolDurationSeconds = 480;
+        _remainingPatrolSeconds = patrolDurationSeconds;
         CurrentInGameSeconds = patrolDurationSeconds;
         //EventBus.Publish(new PatrolTimerResetEvent(patrolDurationSeconds));
         EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.Fin));
@@ -330,16 +332,16 @@ public class GameManager : MonoBehaviour
 
         while (CurrentPhase == GamePhase.Patrol)
         {
-            patrolDurationSeconds -= Time.deltaTime;
+            _remainingPatrolSeconds -= Time.deltaTime;
 
-            if (patrolDurationSeconds <= 0f)
+            if (_remainingPatrolSeconds <= 0f)
             {
                 HandlePatrolTimeout();
                 yield break;
             }
 
-            CurrentInGameSeconds = patrolDurationSeconds;
-            OnInGameTimeUpdated?.Invoke(patrolDurationSeconds);
+            CurrentInGameSeconds = _remainingPatrolSeconds;
+            OnInGameTimeUpdated?.Invoke(_remainingPatrolSeconds);
 
             yield return null;
         }
