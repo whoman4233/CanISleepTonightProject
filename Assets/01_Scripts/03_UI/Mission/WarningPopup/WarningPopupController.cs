@@ -46,7 +46,10 @@ public class WarningPopupController : MonoBehaviour
             StopCoroutine(_routine);
 
         if (text != null)
-            text.text = e.Message;
+        {
+            string message = TextManager.Instance.GetUIText(e.MessageId);
+            text.text = message;
+        }
 
         if (e.PlayBeep && warningClip != null)
         {

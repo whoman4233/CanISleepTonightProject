@@ -277,7 +277,7 @@ public class GameManager : MonoBehaviour
     private void OnEnterPatrol()
     {
         _patrolTimeoutHandled = false;
-        EventBus.Publish(new ShowTimedTextPopupEvent("순찰 시작", 1.5f));
+        EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_52", 1.5f));
         //patrolDurationSeconds = 480;
         _remainingPatrolSeconds = patrolDurationSeconds;
         CurrentInGameSeconds = patrolDurationSeconds;
