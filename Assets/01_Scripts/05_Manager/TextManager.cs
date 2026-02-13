@@ -15,7 +15,7 @@ public class TextManager : MonoBehaviour
     public static TextManager Instance;
 
     [Header("설정")]
-    [SerializeField] private Language currentLanguage = Language.Korean;
+    [SerializeField] public Language CurrentLanguage = Language.Korean;
 
     // 각 카테고리별로 데이터를 관리하기 위한 구조체
     [Serializable]
@@ -65,9 +65,9 @@ public class TextManager : MonoBehaviour
 
     public void SetLanguage(Language lang)
     {
-        if (currentLanguage == lang) return;
+        if (CurrentLanguage == lang) return;
 
-        currentLanguage = lang;
+        CurrentLanguage = lang;
         RefreshAllCaches();
 
         OnLanguageChanged?.Invoke();
@@ -83,7 +83,7 @@ public class TextManager : MonoBehaviour
         _currentMissionTable = null;
 
         // 1. Dialogue 캐시 구성
-        var dialogueEntry = dialogueTables.Find(x => x.language == currentLanguage);
+        var dialogueEntry = dialogueTables.Find(x => x.language == CurrentLanguage);
         if (dialogueEntry.data != null)
         {
             foreach (var t in dialogueEntry.data.textList)
@@ -94,7 +94,7 @@ public class TextManager : MonoBehaviour
         }
 
         // 2. UI 캐시 구성
-        var uiEntry = uiTextTables.Find(x => x.language == currentLanguage);
+        var uiEntry = uiTextTables.Find(x => x.language == CurrentLanguage);
         if (uiEntry.data != null)
         {
             foreach (var e in uiEntry.data.entries)
@@ -105,7 +105,7 @@ public class TextManager : MonoBehaviour
         }
 
         // 3. Prompt 캐시 구성
-        var promptEntry = promptTextTables.Find(x => x.language == currentLanguage);
+        var promptEntry = promptTextTables.Find(x => x.language == CurrentLanguage);
         if (promptEntry.data != null)
         {
             foreach (var e in promptEntry.data.entries)
@@ -125,9 +125,9 @@ public class TextManager : MonoBehaviour
         }
 
         // 4. Mission 테이블 설정
-        _currentMissionTable = missionTextTables.Find(x => x.language == currentLanguage).data;
+        _currentMissionTable = missionTextTables.Find(x => x.language == CurrentLanguage).data;
 
-        Debug.Log($"[TextManager] 캐시 갱신 완료: {currentLanguage}");
+        Debug.Log($"[TextManager] 캐시 갱신 완료: {CurrentLanguage}");
     }
 
     // =======================================================================
@@ -148,7 +148,7 @@ public class TextManager : MonoBehaviour
         if (_uiTextLookup.TryGetValue(id, out var text))
             return text;
 
-        Debug.LogWarning($"[UIText] Not Found: {id} in {currentLanguage}");
+        Debug.LogWarning($"[UIText] Not Found: {id} in {CurrentLanguage}");
         return id;
     }
 
@@ -159,7 +159,7 @@ public class TextManager : MonoBehaviour
         if (_promptTextLookup.TryGetValue(id, out var text))
             return text;
 
-        Debug.LogWarning($"[PromptText] Not Found: {id} in {currentLanguage}");
+        Debug.LogWarning($"[PromptText] Not Found: {id} in {CurrentLanguage}");
         return id;
     }
 

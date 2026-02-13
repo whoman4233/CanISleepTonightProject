@@ -5,10 +5,10 @@ public class PromptUIController : MonoBehaviour
 {
     [Header("Panels")]
     [SerializeField] private GameObject interactPanel;
-    [SerializeField] private TMPro.TMP_Text interactText;
+    [SerializeField] private LocalizedText interactText;
 
     [SerializeField] private GameObject inspectionPanel;
-    [SerializeField] private TMPro.TMP_Text inspectionText;
+    [SerializeField] private LocalizedText inspectionText;
 
     private Action<PromptChangedEvent> _onPrompt;
 
@@ -49,11 +49,11 @@ public class PromptUIController : MonoBehaviour
             return;
         }
 
-        // Inspection이 활성 중이면 Interact 무시
         if (inspectionPanel.activeSelf)
             return;
 
-        interactText.text = TextManager.Instance.GetPromptText(id);
+        // 문자열 직접 세팅 제거
+        interactText.SetRuntimeId(id);
         interactPanel.SetActive(true);
     }
 
@@ -65,10 +65,10 @@ public class PromptUIController : MonoBehaviour
             return;
         }
 
-        inspectionText.text =
-            TextManager.Instance.GetPromptText(id);
+        inspectionText.SetRuntimeId(id);
 
         inspectionPanel.SetActive(true);
         interactPanel.SetActive(false);
     }
 }
+

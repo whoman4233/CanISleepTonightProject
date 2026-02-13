@@ -302,16 +302,38 @@ public class PrisonerController : MonoBehaviour
 
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
+        // 1. 기존 행동 중지
         StopActionBehavior();
 
+        // 2. [추가] 물리 즉시 정지: 관성에 의해 앞으로 튕기는 현상 방지
+        if (agent != null && agent.enabled)
+        {
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.ResetPath(); // 경로 초기화
+            }
+            agent.velocity = Vector3.zero; // 물리적 속도 즉시 제거
+            agent.enabled = false; // 에이전트 비활성화
+        }
+
+        // 3. 사운드 처리
         if (sfx != null)
         {
             sfx.StopAllSounds();
             sfx.PlayRandomDieOnce();
         }
 
+        // 4. 상태 변경 (DeadState 내부에서 애니메이션 트리거 등이 처리됨)
         fsm.ChangeState(fsm.DeadState);
-        if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
+
+        // 5. 래그돌 물리 적용 (이미 에이전트를 껐으므로 래그돌이 정상 작동함)
+        if (ragdoll != null)
+        {
+            ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
+        }
+
+        // 6. 이벤트 발행
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 
