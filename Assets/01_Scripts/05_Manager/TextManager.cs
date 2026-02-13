@@ -15,9 +15,10 @@ public class TextManager : MonoBehaviour
     public static TextManager Instance;
 
     [Header("설정")]
-    [SerializeField] public Language CurrentLanguage = Language.Korean;
+    // [수정] 외부에서 읽기 편하게 프로퍼티로 노출하거나, 변수명을 통일합니다.
+    [SerializeField] private Language currentLanguage = Language.Korean;
+    public Language CurrentLanguage => currentLanguage;
 
-    // 각 카테고리별로 데이터를 관리하기 위한 구조체
     [Serializable]
     public struct TableEntry<T> where T : ScriptableObject
     {
@@ -61,9 +62,9 @@ public class TextManager : MonoBehaviour
 
     public void SetLanguage(Language lang)
     {
-        if (CurrentLanguage == lang) return;
+        if (currentLanguage == lang) return;
 
-        CurrentLanguage = lang;
+        currentLanguage = lang;
         RefreshAllCaches();
 
         OnLanguageChanged?.Invoke();
@@ -78,7 +79,7 @@ public class TextManager : MonoBehaviour
         _currentMissionTable = null;
 
         // 1. Dialogue 캐시 구성
-        var dialogueEntry = dialogueTables.Find(x => x.language == CurrentLanguage);
+        var dialogueEntry = dialogueTables.Find(x => x.language == currentLanguage);
         if (dialogueEntry.data != null)
         {
             foreach (var t in dialogueEntry.data.textList)
@@ -89,7 +90,7 @@ public class TextManager : MonoBehaviour
         }
 
         // 2. UI 캐시 구성
-        var uiEntry = uiTextTables.Find(x => x.language == CurrentLanguage);
+        var uiEntry = uiTextTables.Find(x => x.language == currentLanguage);
         if (uiEntry.data != null)
         {
             foreach (var e in uiEntry.data.entries)
@@ -100,7 +101,7 @@ public class TextManager : MonoBehaviour
         }
 
         // 3. Prompt 캐시 구성
-        var promptEntry = promptTextTables.Find(x => x.language == CurrentLanguage);
+        var promptEntry = promptTextTables.Find(x => x.language == currentLanguage);
         if (promptEntry.data != null)
         {
             foreach (var e in promptEntry.data.entries)
@@ -110,10 +111,10 @@ public class TextManager : MonoBehaviour
             }
         }
 
-        // 4. Mission 테이블 설정
-        _currentMissionTable = missionTextTables.Find(x => x.language == CurrentLanguage).data;
+        // 4. Mission 테이블 설정 (Find 결과가 없을 경우 대비 null 조건부 연산자 사용)
+        _currentMissionTable = missionTextTables.Find(x => x.language == currentLanguage).data;
 
-        Debug.Log($"[TextManager] 캐시 갱신 완료: {CurrentLanguage}");
+        Debug.Log($"[TextManager] 캐시 갱신 완료: {currentLanguage}");
     }
 
     // =======================================================================
@@ -124,7 +125,10 @@ public class TextManager : MonoBehaviour
     {
         if (_dialogueLookup.TryGetValue(key, out var entry))
         {
-            return entry.ko; // 현재 활성화된 SO의 텍스트를 그대로 반환
+            // SO를 언어별로 쪼개서 관리하므로, 해당 SO에 들어있는 텍스트를 반환해야 합니다.
+            // 보통 언어별 SO를 만들 때 해당 언어 데이터를 ko 또는 en 필드 중 하나에 몰아넣으므로 
+            // 현재 언어에 맞는 필드를 참조하도록 수정합니다.
+            return currentLanguage == Language.Korean ? entry.ko : entry.en;
         }
         return key;
     }
@@ -134,7 +138,7 @@ public class TextManager : MonoBehaviour
         if (_uiTextLookup.TryGetValue(id, out var text))
             return text;
 
-        Debug.LogWarning($"[UIText] Not Found: {id} in {CurrentLanguage}");
+        Debug.LogWarning($"[UIText] Not Found: {id} in {currentLanguage}");
         return id;
     }
 
@@ -145,7 +149,7 @@ public class TextManager : MonoBehaviour
         if (_promptTextLookup.TryGetValue(id, out var text))
             return text;
 
-        Debug.LogWarning($"[PromptText] Not Found: {id} in {CurrentLanguage}");
+        Debug.LogWarning($"[PromptText] Not Found: {id} in {currentLanguage}");
         return id;
     }
 

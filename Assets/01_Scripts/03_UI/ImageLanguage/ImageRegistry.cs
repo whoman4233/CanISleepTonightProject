@@ -4,8 +4,6 @@ using UnityEngine;
 public class ImageRegistry : MonoBehaviour
 {
     public static ImageRegistry Instance;
-
-    // 현재 씬에서 활성화된 이미지들의 리스트
     private HashSet<ImageInteractable> _registeredImages = new HashSet<ImageInteractable>();
 
     private void Awake()
@@ -23,7 +21,7 @@ public class ImageRegistry : MonoBehaviour
 
     private void OnEnable()
     {
-        // TextManager의 언어 변경 이벤트 구독
+        // TextManager가 아직 없더라도 등록 예약 (이벤트 기반이므로 안전)
         TextManager.OnLanguageChanged += HandleLanguageChanged;
     }
 
@@ -34,6 +32,7 @@ public class ImageRegistry : MonoBehaviour
 
     public void RegisterImage(ImageInteractable item)
     {
+        if (item == null) return;
         _registeredImages.Add(item);
     }
 
@@ -44,6 +43,9 @@ public class ImageRegistry : MonoBehaviour
 
     private void HandleLanguageChanged()
     {
+        // Instance 존재 여부 확인
+        if (TextManager.Instance == null) return;
+
         Language newLang = TextManager.Instance.CurrentLanguage;
 
         foreach (var imageItem in _registeredImages)
@@ -53,7 +55,6 @@ public class ImageRegistry : MonoBehaviour
                 imageItem.UpdateImage(newLang);
             }
         }
-
-        Debug.Log($"[ImageRegistry] {newLang}으로 이미지 {_registeredImages.Count}개 일괄 변경 완료.");
+        Debug.Log($"[ImageRegistry] {newLang}으로 이미지 {_registeredImages.Count}개 일괄 변경.");
     }
 }
