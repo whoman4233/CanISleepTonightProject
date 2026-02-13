@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 
 public class ImageInteractable : MonoBehaviour
@@ -14,15 +14,15 @@ public class ImageInteractable : MonoBehaviour
         _targetImage = GetComponent<Image>();
     }
 
-    private void Start() // OnEnable ´ë½Å Start »ç¿ë ±ÇÀå (¾ÈÀüÇÑ ÂüÁ¶¸¦ À§ÇØ)
+    private void Start() // OnEnable ëŒ€ì‹  Start ì‚¬ìš© ê¶Œì¥ (ì•ˆì „í•œ ì°¸ì¡°ë¥¼ ìœ„í•´)
     {
-        // Registry¿¡ µî·Ï
+        // Registryì— ë“±ë¡
         if (ImageRegistry.Instance != null)
         {
             ImageRegistry.Instance.RegisterImage(this);
         }
 
-        // ÃÊ±â ÀÌ¹ÌÁö ¼³Á¤ (TextManager°¡ ÁØºñµÇ¾úÀ» ¶§¸¸)
+        // ì´ˆê¸° ì´ë¯¸ì§€ ì„¤ì • (TextManagerê°€ ì¤€ë¹„ë˜ì—ˆì„ ë•Œë§Œ)
         if (TextManager.Instance != null)
         {
             UpdateImage(TextManager.Instance.CurrentLanguage);
@@ -31,10 +31,16 @@ public class ImageInteractable : MonoBehaviour
 
     private void OnEnable()
     {
-        // ¸¸¾à ¿ÀºêÁ§Æ®°¡ ²°´Ù ÄÑÁú ¶§¸¦ ´ëºñ (Start´Â ÃÖÃÊ 1È¸¸¸ ½ÇÇàµÊ)
+        // ë§Œì•½ ì˜¤ë¸Œì íŠ¸ê°€ ê»ë‹¤ ì¼œì§ˆ ë•Œë¥¼ ëŒ€ë¹„ (StartëŠ” ìµœì´ˆ 1íšŒë§Œ ì‹¤í–‰ë¨)
         if (ImageRegistry.Instance != null)
         {
             ImageRegistry.Instance.RegisterImage(this);
+        }
+
+        // í™œì„±í™”ë  ë•Œë§ˆë‹¤ í˜„ì¬ ì–¸ì–´ ê¸°ì¤€ìœ¼ë¡œ ì¦‰ì‹œ ê°±ì‹ 
+        if (TextManager.Instance != null)
+        {
+            UpdateImage(TextManager.Instance.CurrentLanguage);
         }
     }
 
