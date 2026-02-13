@@ -258,7 +258,7 @@ RectTransform:
   m_Father: {fileID: 2990269403879740580}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 1.2000122, y: -9}
   m_SizeDelta: {x: 109, y: -7.9}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -602,7 +602,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -871,7 +871,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB4A4\uB85C \uAC00\uAE30"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e60880e2af5bd1e428f52a64b1805708, type: 2}
   m_sharedMaterial: {fileID: 6750668251425825914, guid: e60880e2af5bd1e428f52a64b1805708,
@@ -1429,7 +1429,7 @@ RectTransform:
   m_Father: {fileID: 1020728248375860287}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 5.619995, y: -7.330002}
   m_SizeDelta: {x: -98.759964, y: 0.66000056}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1659,6 +1659,7 @@ GameObject:
   - component: {fileID: 6901508613147358582}
   - component: {fileID: 4531809587987889877}
   - component: {fileID: 3329964782532485158}
+  - component: {fileID: 7269174053321839457}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -1723,6 +1724,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7269174053321839457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1740152268145707134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7530bcf4e5c82e418f56557f54ea4f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  koreanSprite: {fileID: 21300000, guid: 3799d757d7a85d94c9a037d7d13f6bf7, type: 3}
+  englishSprite: {fileID: 21300000, guid: 99166468509410d4cb7954793695b685, type: 3}
 --- !u!1 &1771471187132715866
 GameObject:
   m_ObjectHideFlags: 0
@@ -1906,7 +1921,7 @@ RectTransform:
   m_Father: {fileID: 4230969758025335019}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 1.2000122, y: -9}
   m_SizeDelta: {x: 109, y: -7.9}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1981,7 +1996,7 @@ RectTransform:
   m_Father: {fileID: 7596080081333074075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 1.2000122, y: -9}
   m_SizeDelta: {x: 109, y: -7.9}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2056,7 +2071,7 @@ RectTransform:
   m_Father: {fileID: 378414495416890887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 5.619995, y: -7.330002}
   m_SizeDelta: {x: -98.759964, y: 0.66000056}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2548,7 +2563,7 @@ RectTransform:
   m_Father: {fileID: 3036123572458617454}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 5.619995, y: -7.330002}
   m_SizeDelta: {x: -98.759964, y: 0.66000056}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2809,7 +2824,7 @@ RectTransform:
   m_Father: {fileID: 4673504031407622499}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 5.619995, y: -7.330002}
   m_SizeDelta: {x: -98.759964, y: 0.66000056}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3306,6 +3321,7 @@ GameObject:
   - component: {fileID: 813053881797100421}
   - component: {fileID: 4898809212537813885}
   - component: {fileID: 6366977873340605633}
+  - component: {fileID: 3587122313783736988}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -3370,6 +3386,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3587122313783736988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3048608600845160500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7530bcf4e5c82e418f56557f54ea4f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  koreanSprite: {fileID: 21300000, guid: 3799d757d7a85d94c9a037d7d13f6bf7, type: 3}
+  englishSprite: {fileID: 21300000, guid: 99166468509410d4cb7954793695b685, type: 3}
 --- !u!1 &3109176837537795219
 GameObject:
   m_ObjectHideFlags: 0
@@ -3480,7 +3510,7 @@ RectTransform:
   m_Father: {fileID: 9155313238702112243}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 5.619995, y: -7.330002}
   m_SizeDelta: {x: -98.759964, y: 0.66000056}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3956,7 +3986,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5621,7 +5651,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2727780213674685661
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6086,6 +6116,7 @@ GameObject:
   - component: {fileID: 3719307041762215462}
   - component: {fileID: 6999293086801094185}
   - component: {fileID: 6625702509289958845}
+  - component: {fileID: 6703385780535804867}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -6150,6 +6181,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6703385780535804867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5978866143851341584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7530bcf4e5c82e418f56557f54ea4f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  koreanSprite: {fileID: 21300000, guid: 3799d757d7a85d94c9a037d7d13f6bf7, type: 3}
+  englishSprite: {fileID: 21300000, guid: 99166468509410d4cb7954793695b685, type: 3}
 --- !u!1 &6110566670608282223
 GameObject:
   m_ObjectHideFlags: 0
@@ -7597,7 +7642,7 @@ RectTransform:
   m_Father: {fileID: 7493864315993777645}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 1.2000122, y: -9}
   m_SizeDelta: {x: 109, y: -7.9}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -7817,7 +7862,7 @@ RectTransform:
   m_Father: {fileID: 5461078813105070210}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 1.2000122, y: -9}
   m_SizeDelta: {x: 109, y: -7.9}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -7870,6 +7915,7 @@ GameObject:
   - component: {fileID: 3612292495391900130}
   - component: {fileID: 3279455283983110872}
   - component: {fileID: 2524416060665489754}
+  - component: {fileID: 2263170612178803257}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -7934,3 +7980,17 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2263170612178803257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9080094278015840862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7530bcf4e5c82e418f56557f54ea4f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  koreanSprite: {fileID: 21300000, guid: 3799d757d7a85d94c9a037d7d13f6bf7, type: 3}
+  englishSprite: {fileID: 21300000, guid: 99166468509410d4cb7954793695b685, type: 3}
