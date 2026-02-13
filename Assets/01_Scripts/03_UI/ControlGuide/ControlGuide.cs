@@ -1,8 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
+[System.Serializable]
+public struct GuideTextMapping
+{
+    public string localizationKey; // CSV에 적은 키
+    public TextMeshProUGUI tmpComponent; // 연결할 TMP
+}
 
 public class ControlGuide : MonoBehaviour
 {
@@ -16,6 +24,20 @@ public class ControlGuide : MonoBehaviour
     [Header("Navigation")]
     [SerializeField] private Button nextBtn;
     [SerializeField] private Button prevBtn;
+
+    [Header("Localization Guide Texts")]
+    [SerializeField] private TextMeshProUGUI moveText;    // Ttxt_G_01
+    [SerializeField] private TextMeshProUGUI dashText;    // Ttxt_G_02
+    [SerializeField] private TextMeshProUGUI sitText;  // Ttxt_G_03
+    [SerializeField] private TextMeshProUGUI interactText; // Ttxt_G_04
+    [SerializeField] private TextMeshProUGUI settingText;
+    [SerializeField] private TextMeshProUGUI skipText;
+    [SerializeField] private TextMeshProUGUI cameraText;
+    [SerializeField] private TextMeshProUGUI inspectText;
+    [SerializeField] private TextMeshProUGUI leftClickText;
+    [SerializeField] private TextMeshProUGUI qSkipText;
+
+
 
     private Action<OpenControlGuideEvent> _controlGuide;
     private Action<GamePhaseChangedEvent> _phaseChangedHandler;
@@ -66,6 +88,7 @@ public class ControlGuide : MonoBehaviour
         IsOpen = true;
         rootPanel.SetActive(true);
         _currentIndex = 0;
+        RefreshLocalizedTexts();
         UpdateUI();
         // 마우스 커서 활성화
         if (_currentPhase == GamePhase.Tutorial)
@@ -115,6 +138,21 @@ public class ControlGuide : MonoBehaviour
                 EventBus.Publish(new GlobalInputLockReleasedEvent());
             }
         }
-    }   
+    }
+
+    private void RefreshLocalizedTexts()
+    {
+        // 기획자 CSV의 TutorialTextID 열에 적힌 값 그대로 사용
+        if (moveText != null) moveText.text = TextManager.Instance.GetTutorialText("Ttxt_G_01");
+        if (dashText != null) dashText.text = TextManager.Instance.GetTutorialText("Ttxt_G_02");
+        if (sitText != null) sitText.text = TextManager.Instance.GetTutorialText("Ttxt_G_03");
+        if (interactText != null) interactText.text = TextManager.Instance.GetTutorialText("Ttxt_G_04");
+        if (settingText != null) settingText.text = TextManager.Instance.GetTutorialText("Ttxt_G_05");
+        if (skipText != null) skipText.text = TextManager.Instance.GetTutorialText("Ttxt_G_06");
+        if (cameraText != null) cameraText.text = TextManager.Instance.GetTutorialText("Ttxt_G_07");
+        if (inspectText != null) inspectText.text = TextManager.Instance.GetTutorialText("Ttxt_G_08");
+        if (leftClickText != null) leftClickText.text = TextManager.Instance.GetTutorialText("Ttxt_G_09");
+        if (qSkipText != null) qSkipText.text = TextManager.Instance.GetTutorialText("Ttxt_G_10");
+    }
 
 }

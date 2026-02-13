@@ -2501,6 +2501,12 @@ MonoBehaviour:
   batonEquip: {fileID: 1837248097}
   npcHit: {fileID: 202406936}
   bookClose: {fileID: 799193488}
+  tutorialDialogueText: {fileID: 1123790845}
+  boardText: {fileID: 24034370}
+  boxText: {fileID: 1660751672}
+  batonText: {fileID: 918870742}
+  hitText: {fileID: 1496933725}
+  bookText: {fileID: 2016459060}
 --- !u!4 &419562351
 Transform:
   m_ObjectHideFlags: 0
@@ -7004,11 +7010,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 785cee52a03029544b84106060743b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textDataList: []
   currentLanguage: 0
-  uiTextTable: {fileID: 0}
-  missionTextTable: {fileID: 0}
-  promptTextTable: {fileID: 0}
+  dialogueTables: []
+  uiTextTables: []
+  missionTextTables: []
+  promptTextTables: []
+  tutorialTextTables: []
 --- !u!1 &1075987406
 GameObject:
   m_ObjectHideFlags: 0

@@ -41,6 +41,10 @@ public class TextManager : MonoBehaviour
     [SerializeField] private List<TableEntry<UITextTableSO>> promptTextTables = new List<TableEntry<UITextTableSO>>();
     private Dictionary<string, string> _promptTextLookup = new Dictionary<string, string>();
 
+    [Header("5. Tutorial Text Tables")]
+    [SerializeField] private List<TableEntry<UITextTableSO>> tutorialTextTables = new List<TableEntry<UITextTableSO>>();
+    private Dictionary<string, string> _tutorialTextLookup = new Dictionary<string, string>();
+
     public static event Action OnTextDataReady;
     public static event Action OnLanguageChanged;
 
@@ -75,6 +79,7 @@ public class TextManager : MonoBehaviour
         _dialogueLookup.Clear();
         _uiTextLookup.Clear();
         _promptTextLookup.Clear();
+        _tutorialTextLookup.Clear();
         _currentMissionTable = null;
 
         // 1. Dialogue 캐시 구성
@@ -107,6 +112,15 @@ public class TextManager : MonoBehaviour
             {
                 if (!string.IsNullOrEmpty(e.id))
                     _promptTextLookup[e.id] = e.text;
+            }
+        }
+        var tutorialEntry = tutorialTextTables.Find(x => x.language == currentLanguage);
+        if (tutorialEntry.data != null)
+        {
+            foreach (var e in tutorialEntry.data.entries)
+            {
+                if (!string.IsNullOrEmpty(e.id))
+                    _tutorialTextLookup[e.id] = e.text;
             }
         }
 
@@ -177,5 +191,14 @@ public class TextManager : MonoBehaviour
     {
         _dialogueLookup.TryGetValue(key, out var entry);
         return entry;
+    }
+
+    public string GetTutorialText(string id)
+    {
+        if (_tutorialTextLookup.TryGetValue(id, out var text))
+            return text;
+
+        Debug.LogWarning($"[Tutorial] Key not found: {id}");
+        return id;
     }
 }
