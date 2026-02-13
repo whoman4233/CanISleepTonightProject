@@ -324,7 +324,6 @@ public sealed class CellDoorInteractable : MonoBehaviour, IInteractable
     private void PlayLocked()
     {
         if (doorAnimator != null) doorAnimator.SetTrigger(LockedHash);
-        if (outliner != null) outliner.SetHighlight(true, Color.red);
     }
 
     private bool Validate()
