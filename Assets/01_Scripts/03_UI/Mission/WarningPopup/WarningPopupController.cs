@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public class WarningPopupController : MonoBehaviour
 {
     [SerializeField] private GameObject root;
-    [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private LocalizedText localizedText;
 
     [Header("UISound")]
     [SerializeField] private AudioClip warningClip;
@@ -45,10 +45,9 @@ public class WarningPopupController : MonoBehaviour
         if (_routine != null)
             StopCoroutine(_routine);
 
-        if (text != null)
+        if (localizedText != null)
         {
-            string message = TextManager.Instance.GetUIText(e.MessageId);
-            text.text = message;
+            localizedText.SetRuntimeId(e.MessageId);
         }
 
         if (e.PlayBeep && warningClip != null)
@@ -58,7 +57,6 @@ public class WarningPopupController : MonoBehaviour
 
         _routine = StartCoroutine(ShowRoutineRealtime(e.Duration));
     }
-
 
     private IEnumerator ShowRoutineRealtime(float duration)
     {

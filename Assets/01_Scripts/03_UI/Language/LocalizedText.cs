@@ -20,19 +20,22 @@ public class LocalizedText : MonoBehaviour
     private void OnEnable()
     {
         TextManager.OnLanguageChanged += Refresh;
+        TextManager.OnTextDataReady += Refresh;
         Refresh();
     }
 
     private void OnDisable()
     {
         TextManager.OnLanguageChanged -= Refresh;
+        TextManager.OnTextDataReady -= Refresh;
     }
 
     public void SetRuntimeId(string id)
     {
         _runtimeOverrideId = id;
         _useRuntimeId = true;
-        Refresh();
+        if (TextManager.Instance != null)
+            Refresh();
     }
 
     public void ClearRuntimeOverride()
@@ -43,6 +46,9 @@ public class LocalizedText : MonoBehaviour
 
     private void Refresh()
     {
+        if (_text == null)
+            return;
+
         if (TextManager.Instance == null)
             return;
 
@@ -66,6 +72,7 @@ public class LocalizedText : MonoBehaviour
                 break;
         }
     }
+
 }
 
 
