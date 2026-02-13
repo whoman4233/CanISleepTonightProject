@@ -7,7 +7,8 @@ public enum TextTableType
     Dialogue,
     UI,
     Mission,
-    Prompt
+    Prompt,
+    Tutorial
 }
 
 public class TextManager : MonoBehaviour
@@ -15,7 +16,6 @@ public class TextManager : MonoBehaviour
     public static TextManager Instance;
 
     [Header("설정")]
-    // [수정] 외부에서 읽기 편하게 프로퍼티로 노출하거나, 변수명을 통일합니다.
     [SerializeField] private Language currentLanguage = Language.Korean;
     public Language CurrentLanguage => currentLanguage;
 
@@ -115,6 +115,8 @@ public class TextManager : MonoBehaviour
                     _promptTextLookup[e.id] = e.text;
             }
         }
+
+        // 4. Tutorial 캐시 구성
         var tutorialEntry = tutorialTextTables.Find(x => x.language == currentLanguage);
         if (tutorialEntry.data != null)
         {
@@ -125,10 +127,11 @@ public class TextManager : MonoBehaviour
             }
         }
 
-        // 4. Mission 테이블 설정 (Find 결과가 없을 경우 대비 null 조건부 연산자 사용)
-        _currentMissionTable = missionTextTables.Find(x => x.language == currentLanguage).data;
+        // 5. Mission 테이블 설정
+        var missionEntry = missionTextTables.Find(x => x.language == currentLanguage);
+        _currentMissionTable = missionEntry.data;
 
-        Debug.Log($"[TextManager] 캐시 갱신 완료: {currentLanguage}");
+        Debug.Log($"[TextManager] 캐시 갱신 완료: {currentLanguage} | UI 캐시 수: {_uiTextLookup.Count}");
     }
 
     // =======================================================================
@@ -139,10 +142,11 @@ public class TextManager : MonoBehaviour
     {
         if (_dialogueLookup.TryGetValue(key, out var entry))
         {
-            // SO를 언어별로 쪼개서 관리하므로, 해당 SO에 들어있는 텍스트를 반환해야 합니다.
-            // 보통 언어별 SO를 만들 때 해당 언어 데이터를 ko 또는 en 필드 중 하나에 몰아넣으므로 
-            // 현재 언어에 맞는 필드를 참조하도록 수정합니다.
-            return currentLanguage == Language.Korean ? entry.ko : entry.en;
+            // [중요 수정] 이미 언어별 SO를 캐싱했으므로, 
+            // 데이터가 입력된 필드를 우선적으로 반환하도록 로직 보강.
+            // 만약 영어 SO에서 데이터를 'en' 필드에 넣었다면 아래 조건이 정상 작동합니다.
+            if (currentLanguage == Language.Korean) return entry.ko;
+            return string.IsNullOrEmpty(entry.en) ? entry.ko : entry.en;
         }
         return key;
     }
@@ -167,6 +171,15 @@ public class TextManager : MonoBehaviour
         return id;
     }
 
+    public string GetTutorialText(string id)
+    {
+        if (_tutorialTextLookup.TryGetValue(id, out var text))
+            return text;
+
+        Debug.LogWarning($"[Tutorial] Key not found: {id} in {currentLanguage}");
+        return id;
+    }
+
     public string GetMissionText(int missionNo, MissionTextRole role)
     {
         if (_currentMissionTable == null) return role.ToString();
@@ -184,9 +197,7 @@ public class TextManager : MonoBehaviour
         foreach (var entry in _dialogueLookup.Values)
         {
             if (entry.mission == missionId && entry.speaker == speakerName && entry.type == textType)
-            {
                 resultKeys.Add(entry.key);
-            }
         }
         return resultKeys;
     }
@@ -195,14 +206,5 @@ public class TextManager : MonoBehaviour
     {
         _dialogueLookup.TryGetValue(key, out var entry);
         return entry;
-    }
-
-    public string GetTutorialText(string id)
-    {
-        if (_tutorialTextLookup.TryGetValue(id, out var text))
-            return text;
-
-        Debug.LogWarning($"[Tutorial] Key not found: {id}");
-        return id;
     }
 }
