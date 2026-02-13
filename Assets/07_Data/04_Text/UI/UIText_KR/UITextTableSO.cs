@@ -12,6 +12,7 @@ public class UITextTableSO : ScriptableObject
 public class UITextEntry
 {
     public string id;
+    [TextArea(3, 10)] // 줄바꿈용으로 추가
     public string text;
     public string info;
 }
