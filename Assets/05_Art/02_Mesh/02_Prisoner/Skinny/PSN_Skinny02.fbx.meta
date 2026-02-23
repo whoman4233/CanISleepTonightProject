@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: eb34a9cdb036cdf41bd91f374590bcfa
+guid: a968315a978855c459d3f1c57178b807
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,13 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: PSNHead_Skinny01
-    second: {fileID: 2100000, guid: d7857349931b15746b9cfd59d03ef387, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: PSN_Body_Skinny
-    second: {fileID: 2100000, guid: 35725eb7382cb384c8e554ce86880663, type: 2}
+    second: {fileID: 2100000, guid: a0ab2804e1f71d44c8f18b5bbe2bdddb, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -22,13 +17,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Skinny01_Eyes
-    second: {fileID: 2100000, guid: 980a0d407ced4534997940b53d3f02fc, type: 2}
+      name: Skinny02_Eyes
+    second: {fileID: 2100000, guid: f6adfd41cd0a5bb4f9aba2c93339f57a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Skinny01_Head
-    second: {fileID: 2100000, guid: d7857349931b15746b9cfd59d03ef387, type: 2}
+      name: Skinny02_Head
+    second: {fileID: 2100000, guid: 3d4195cdc337cfa4b9a71a5ef2ef0ce3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -524,13 +519,13 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: PSN_Skinny01(Clone)
+    - name: PSN_Skinny02(Clone)
       parentName: 
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0.0000004872172, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001
-      parentName: PSN_Skinny01(Clone)
+      parentName: PSN_Skinny02(Clone)
       position: {x: -0, y: 1.0375419, z: 0}
       rotation: {x: -0.50000036, y: 0.49999967, z: 0.49999967, w: 0.50000036}
       scale: {x: 0.9999999, y: 0.9999999, z: 0.99999994}
@@ -584,21 +579,6 @@ ModelImporter:
       position: {x: -0.07140475, y: -0.00051536795, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000007, y: 1.0000006, z: 1.0000007}
-    - name: Face_Chin
-      parentName: Bip001 Head
-      position: {x: -0.053388212, y: 0.042304665, z: -0.00015076599}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1.0000001, y: 1, z: 1}
-    - name: Face_Eyelid_L
-      parentName: Bip001 Head
-      position: {x: -0.14862135, y: 0.0624062, z: 0.044849064}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1.0000001, y: 1, z: 0.99999994}
-    - name: Face_Eyelid_R
-      parentName: Bip001 Head
-      position: {x: -0.14862132, y: 0.062406328, z: -0.04515094}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1.0000001, y: 1.0000002, z: -0.99999994}
     - name: Bip001 L Clavicle
       parentName: Bip001 Spine2
       position: {x: -0.16426866, y: -0.00000014486685, z: 0.05221157}
@@ -815,27 +795,27 @@ ModelImporter:
       rotation: {x: 0, y: 0, z: 0.7071068, w: -0.7071068}
       scale: {x: 1.0000007, y: 1.0000004, z: 1.0000006}
     - name: PSNBody_Skinny01
-      parentName: PSN_Skinny01(Clone)
+      parentName: PSN_Skinny02(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: PSNCostume_Skinny01
-      parentName: PSN_Skinny01(Clone)
-      position: {x: -0, y: 0, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-      scale: {x: 1, y: 1, z: 1}
-    - name: PSNEyes_Skinny01
-      parentName: PSN_Skinny01(Clone)
-      position: {x: -0, y: 0, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-      scale: {x: 1, y: 1, z: 1}
-    - name: PSNHead_Skinny01
-      parentName: PSN_Skinny01(Clone)
+      parentName: PSN_Skinny02(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: PSNTeeth_Skinny01
-      parentName: PSN_Skinny01(Clone)
+      parentName: PSN_Skinny02(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Skinny02_Head
+      parentName: PSN_Skinny02(Clone)
+      position: {x: -0.000000012111664, y: 1.8249084, z: 0.0027238284}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: PSN_Eyes_Skinny02
+      parentName: PSN_Skinny02(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
