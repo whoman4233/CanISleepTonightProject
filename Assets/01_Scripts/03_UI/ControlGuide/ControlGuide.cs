@@ -78,6 +78,15 @@ public class ControlGuide : MonoBehaviour
         {
             Close();
         }
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            Prev();
+        }
+
+        if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            Next();
+        }
     }
 
     public void Next() { if (_currentIndex < pages.Count - 1) { _currentIndex++; UpdateUI(); } }

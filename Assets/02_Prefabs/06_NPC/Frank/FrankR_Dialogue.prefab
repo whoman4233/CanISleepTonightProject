@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2099718738025898684}
   - component: {fileID: 3916054258548737670}
   - component: {fileID: 7706328169684302509}
+  - component: {fileID: 3432886452305083978}
   m_Layer: 10
   m_Name: FrankR_Dialogue
   m_TagString: Untagged
@@ -86,6 +87,27 @@ CapsuleCollider:
   m_Height: 2.145388
   m_Direction: 1
   m_Center: {x: 0.010917902, y: 1.0053912, z: 0}
+--- !u!95 &3432886452305083978
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5788057086556402941}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 5b1b41136fd05394bb8e0c8da68eddb6, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0cb8cd278ae4bd9419217680c57f1f31, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &2632438814640319633
 PrefabInstance:
   m_ObjectHideFlags: 0
