@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PSN_Skinny01_Hair01
+  m_Name: PSN_Skinny03_Hair02
   m_Shader: {fileID: -6465566751694194690, guid: 90b761d840db7844e9ffa8a2d2355e83,
     type: 3}
   m_Parent: {fileID: 0}
@@ -37,8 +37,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: 55459dc4fd0b0cc448c7a4ce366ba608, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _AnisoDirMap:
+        m_Texture: {fileID: 2800000, guid: 4ba9e60f13b6be84b99452a54acee61c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BASE_COLOR_MAP:
-        m_Texture: {fileID: 2800000, guid: a32f04841dca5764ab08a28491bdb151, type: 3}
+        m_Texture: {fileID: 2800000, guid: f9c1d4c136c5c2640a73629906751e05, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BC_rgb_Roughness_a:
@@ -154,7 +158,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NORMAL_MAP:
-        m_Texture: {fileID: 2800000, guid: 9a91b42134925da41b3bf13f4c2144f9, type: 3}
+        m_Texture: {fileID: 2800000, guid: 2b3bd4b3b36259f439a14e577bcfe617, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseMap:
@@ -166,7 +170,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OPACITY_MAP:
-        m_Texture: {fileID: 2800000, guid: de3d4e94ffba19948bc01ec3d63cd70e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4f6634ec70eb12846aae5be0f1bf122b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -273,6 +277,8 @@ Material:
     - _AlphaClipping: 1
     - _AlphaCutoff: 0.79
     - _AlphaToMask: 0
+    - _AnisoPower: 255.53
+    - _AnisoStrenghth: 2
     - _Anisotropy: 0
     - _Artistic: 0
     - _ArtisticFrequency: 1
@@ -441,6 +447,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _AlbedoColor: {r: 1, g: 1, b: 1, a: 1}
+    - _AnisoColor: {r: 0.8584906, g: 0.69002336, b: 0.56287825, a: 0.7176471}
     - _BASE_COLOR: {r: 1, g: 1, b: 1, a: 1}
     - _BackSpecularColor: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
