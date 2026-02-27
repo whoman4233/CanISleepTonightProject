@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 6948067153894314097}
   - component: {fileID: 2672436844793215148}
   - component: {fileID: 8823069288003752535}
+  - component: {fileID: 3105675136023832649}
   m_Layer: 8
   m_Name: PSN_Bikini_01
   m_TagString: Untagged
@@ -245,6 +246,28 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
+--- !u!114 &3105675136023832649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49f4c43255c47a946a30589c7179a67c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 2672436844793215148}
+  bruiseStage1: {fileID: 5661523949230321578}
+  bruiseStage2: {fileID: 4915025723131742732}
+  forceOffOnAwake: 1
+  forceOffOnEnable: 1
+  forceOffOnStart: 1
+  stage1Threshold: 0.6666667
+  stage2Threshold: 0.33333334
+  refreshIntervalSeconds: 0.1
+  stage2AlsoEnablesStage1: 0
 --- !u!1001 &124388479393273650
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -493,12 +516,12 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 0efe1aae5fa538241b3d28294f71e518, type: 2}
+      objectReference: {fileID: 2100000, guid: 94fdb9d15077ff8499fdd3923e544400, type: 2}
     - target: {fileID: 1416573516680409066, guid: 8e9a20a0203a6d64fac1af3c98639c15,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 034d30e7b1bdfc2419491b02c0a4bd8c, type: 2}
+      objectReference: {fileID: 2100000, guid: 4833144af7625e54d9e3c6a8cb49008c, type: 2}
     - target: {fileID: 1955664680214137884, guid: 8e9a20a0203a6d64fac1af3c98639c15,
         type: 3}
       propertyPath: m_IsActive
@@ -508,7 +531,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 0efe1aae5fa538241b3d28294f71e518, type: 2}
+      objectReference: {fileID: 2100000, guid: 94fdb9d15077ff8499fdd3923e544400, type: 2}
     - target: {fileID: 3177938002978881727, guid: 8e9a20a0203a6d64fac1af3c98639c15,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -538,7 +561,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 0efe1aae5fa538241b3d28294f71e518, type: 2}
+      objectReference: {fileID: 2100000, guid: 4833144af7625e54d9e3c6a8cb49008c, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -882,6 +905,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &4915025723131742732 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -3338192512002160676, guid: 8e9a20a0203a6d64fac1af3c98639c15,
+    type: 3}
+  m_PrefabInstance: {fileID: 1556545911626321360}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5043209607254940081 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3430368352385215391, guid: 8e9a20a0203a6d64fac1af3c98639c15,
@@ -1138,6 +1167,12 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!1 &5661523949230321578 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -2663826079530114438, guid: 8e9a20a0203a6d64fac1af3c98639c15,
+    type: 3}
+  m_PrefabInstance: {fileID: 1556545911626321360}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &6192661100334501101 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4641300503261839677, guid: 8e9a20a0203a6d64fac1af3c98639c15,

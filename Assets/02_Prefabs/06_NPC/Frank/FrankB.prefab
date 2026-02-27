@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1165662162926616833}
   - component: {fileID: -6951381841094856597}
   - component: {fileID: -3631661070977798130}
+  - component: {fileID: 7091514324847568647}
   m_Layer: 8
   m_Name: FrankB
   m_TagString: Untagged
@@ -233,6 +234,28 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &7091514324847568647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5788057086556402941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49f4c43255c47a946a30589c7179a67c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 1165662162926616833}
+  bruiseStage1: {fileID: 5693204800750180149}
+  bruiseStage2: {fileID: 3899015490489538458}
+  forceOffOnAwake: 1
+  forceOffOnEnable: 1
+  forceOffOnStart: 1
+  stage1Threshold: 0.6666667
+  stage2Threshold: 0.33333334
+  refreshIntervalSeconds: 0.1
+  stage2AlsoEnablesStage1: 0
 --- !u!1001 &8470824930170004446
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -749,7 +772,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: -7370249033123945340, guid: 9d49e2a76b64a344a8a64841898128e5,
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 9d49e2a76b64a344a8a64841898128e5,
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 9042772305607395991}
@@ -1749,6 +1772,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &3899015490489538458 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4869094379988563012, guid: 9d49e2a76b64a344a8a64841898128e5,
+    type: 3}
+  m_PrefabInstance: {fileID: 8470824930170004446}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5219969012524486471 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4755972396125524839, guid: 9d49e2a76b64a344a8a64841898128e5,
@@ -1851,9 +1880,9 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!4 &7798536812002363226 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -7370249033123945340, guid: 9d49e2a76b64a344a8a64841898128e5,
+--- !u!1 &5693204800750180149 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4218810718101517547, guid: 9d49e2a76b64a344a8a64841898128e5,
     type: 3}
   m_PrefabInstance: {fileID: 8470824930170004446}
   m_PrefabAsset: {fileID: 0}
@@ -1971,7 +2000,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 7798536812002363226}
+    m_TransformParent: {fileID: 8215923727711536181}
     m_Modifications:
     - target: {fileID: 254263374147684170, guid: 8d2587178bb98254ea5f349663a25e15,
         type: 3}
