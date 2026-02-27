@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PSN_Skinny03_Hair01
-  m_Shader: {fileID: -6465566751694194690, guid: 4a20e0548427e5e42b2dccc38d36379a,
+  m_Name: PSN_Gang03_Hair01
+  m_Shader: {fileID: -6465566751694194690, guid: 90b761d840db7844e9ffa8a2d2355e83,
     type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -17,7 +17,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2500
+  m_CustomRenderQueue: 3050
   stringTagMap:
     IGNOREPROJECTOR: true
   disabledShaderPasses: []
@@ -37,12 +37,8 @@ Material:
         m_Texture: {fileID: 2800000, guid: 55459dc4fd0b0cc448c7a4ce366ba608, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _AnisoDirMap:
-        m_Texture: {fileID: 2800000, guid: 4ba9e60f13b6be84b99452a54acee61c, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _BASE_COLOR_MAP:
-        m_Texture: {fileID: 2800000, guid: 5e38fef1a8b643645b2a1b6214a8be2e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0de2b547e067a4c4f9d49c6bb6caa2c8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BC_rgb_Roughness_a:
@@ -158,7 +154,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NORMAL_MAP:
-        m_Texture: {fileID: 2800000, guid: a50f9a30038d03e428cb20a1ef065033, type: 3}
+        m_Texture: {fileID: 2800000, guid: 9a91b42134925da41b3bf13f4c2144f9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseMap:
@@ -170,7 +166,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OPACITY_MAP:
-        m_Texture: {fileID: 2800000, guid: bfa4af31167db294d8bc77127f8af37b, type: 3}
+        m_Texture: {fileID: 2800000, guid: de3d4e94ffba19948bc01ec3d63cd70e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -214,11 +210,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SPECULAR_IOR_MAP:
-        m_Texture: {fileID: 2800000, guid: a00669cf04a90af4098fe607c140cef6, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SPECULAR_ROUGHNESS_MAP:
-        m_Texture: {fileID: 2800000, guid: a00669cf04a90af4098fe607c140cef6, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SketchMap:
@@ -277,8 +273,6 @@ Material:
     - _AlphaClipping: 1
     - _AlphaCutoff: 0.79
     - _AlphaToMask: 0
-    - _AnisoPower: 255.53
-    - _AnisoStrenghth: 2
     - _Anisotropy: 0
     - _Artistic: 0
     - _ArtisticFrequency: 1
@@ -358,7 +352,7 @@ Material:
     - _LightTransmissionIntensity: 1
     - _LightTransmissionSmoothness: 0.5
     - _LightTransmissionThresholdOffset: 0.25
-    - _METALNESS: 0.9
+    - _METALNESS: 0
     - _Metalic: -0.15
     - _Metallic: 0
     - _MetalnessStrength: 1
@@ -394,8 +388,8 @@ Material:
     - _RimSmoothness: 0.5
     - _RimThresholdOffset: 0.25
     - _Roughness: 0.5
-    - _SPECULAR_IOR: 1.4
-    - _SPECULAR_ROUGHNESS: 0.5
+    - _SPECULAR_IOR: 3
+    - _SPECULAR_ROUGHNESS: 10.4
     - _Saturation: 1
     - _SketchMapScale: 1
     - _Smoothness: 0.5
@@ -447,7 +441,6 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _AlbedoColor: {r: 1, g: 1, b: 1, a: 1}
-    - _AnisoColor: {r: 0.8584906, g: 0.69002336, b: 0.56287825, a: 0.7176471}
     - _BASE_COLOR: {r: 1, g: 1, b: 1, a: 1}
     - _BackSpecularColor: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
