@@ -12,6 +12,7 @@ public class TutorialCarryEventTrigger : CarryableBox
 
     public override void Interact(Player player) // 그냥 오브젝트에 상호작용하면 바로 스텝 넘어가게
     {
+        TutorialOutLiner.Instance.StopCurrentHighlight();
         if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
 
         if (_cachedNpc != null && _cachedNpc.currentSubStep == DialogueKeys.DialogueType.BoardSee)

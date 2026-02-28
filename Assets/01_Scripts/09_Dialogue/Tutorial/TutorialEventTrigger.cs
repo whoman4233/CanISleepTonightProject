@@ -13,6 +13,7 @@ public class TutorialEventTrigger : MonoBehaviour , IInteractable
 
     public void Interact(Player player) // 그냥 오브젝트에 상호작용하면 바로 스텝 넘어가게
     {
+        TutorialOutLiner.Instance.StopCurrentHighlight();
         TutorialNPC npc = FindObjectOfType<TutorialNPC>();
         if (npc == null) return;
 
