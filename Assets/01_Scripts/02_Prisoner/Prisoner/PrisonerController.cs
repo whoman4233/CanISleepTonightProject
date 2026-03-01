@@ -105,25 +105,26 @@ public class PrisonerController : MonoBehaviour
     {
         if (animator == null) return;
 
-        // 1. 오른손 본 찾기
-        Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-        if (rightHand == null) return;
-
-        // ★ [수정] "Weapon_R" 찾기 로직 추가
-        // 기본값은 오른손(rightHand)으로 설정하되, Weapon_R을 발견하면 교체합니다.
-        Transform targetParent = rightHand;
-
-        // 직계 자식 중에서 "Weapon_R" 이름을 가진 오브젝트 탐색
-        Transform weaponMount = rightHand.Find("Weapon_R");
-
-        // (선택 사항: 만약 계층구조가 깊어서 Find로 안 찾아진다면 아래 주석을 풀어 깊은 탐색을 사용하세요)
-        /*
-        if (weaponMount == null) {
-            foreach (Transform t in rightHand.GetComponentsInChildren<Transform>()) {
-                if (t.name == "Weapon_R") { weaponMount = t; break; }
-            }
+        // 1. Humanoid가 아니면 손을 찾을 수 없으므로 안전하게 리턴 (예외 처리)
+        if (!animator.isHuman)
+        {
+            Debug.Log($"[PrisonerController] {gameObject.name}는 Humanoid가 아니므로 프롭 부착을 건너뜁니다.");
+            return;
         }
-        */
+
+        // 2. 오른손 본 찾기
+        Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+
+        // 손을 못 찾는 경우에도 에러 방지를 위해 리턴
+        if (rightHand == null)
+        {
+            Debug.LogWarning($"[PrisonerController] {gameObject.name}의 RightHand를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 3. 기존의 "Weapon_R" 찾기 및 프롭 생성 로직
+        Transform targetParent = rightHand;
+        Transform weaponMount = rightHand.Find("Weapon_R");
 
         if (weaponMount != null)
         {
@@ -136,11 +137,8 @@ public class PrisonerController : MonoBehaviour
             {
                 GameObject propInstance = Instantiate(data.propObject);
                 propInstance.name = data.propObject.name;
-
-                // ★ [수정] 찾은 Weapon_R(혹은 오른손)을 부모로 설정
                 propInstance.transform.SetParent(targetParent);
 
-                // 위치/회전 초기화 (Weapon_R 기준으로 0,0,0 정렬)
                 propInstance.transform.localPosition = Vector3.zero;
                 propInstance.transform.localRotation = Quaternion.identity;
 
