@@ -81,6 +81,7 @@ public class TutorialNPC : MonoBehaviour, IInteractable
     {
         if (currentSubStep == DialogueKeys.DialogueType.BatonEquipped)
         {
+            TutorialOutLiner.Instance.StopCurrentHighlight();
             EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.NPCHit));
             Debug.Log("이벤트 발행: NPCHit");
             StartCoroutine(DelayedDialogue());

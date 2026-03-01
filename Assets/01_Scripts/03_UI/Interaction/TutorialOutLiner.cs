@@ -64,7 +64,7 @@ public class TutorialOutLiner : MonoBehaviour
         while (true)
         {
             // Sin 함수를 이용해 0.5 ~ intensity 사이를 부드럽게 왕복
-            float pingPong = (Mathf.Sin(Time.time * 5f) + 1f) * 0.5f;
+            float pingPong = (Mathf.Sin(Time.unscaledTime * 5f) + 1f) * 0.5f;
             float currentIntensity = intensity * pingPong * targetAlphaRatio;
 
             Color finalColor = highlightColor * currentIntensity;
@@ -91,8 +91,17 @@ public class TutorialOutLiner : MonoBehaviour
             r.SetPropertyBlock(mpb);
 
             // 실시간으로 키워드를 켜줘야 하는 경우 (Standard Shader 대응)
-            if (enable) r.material.EnableKeyword("_EMISSION");
-            else r.material.DisableKeyword("_EMISSION");
+            if (enable)
+            {
+                // 키워드 활성화
+                r.sharedMaterial.EnableKeyword("_EMISSION");
+                r.sharedMaterial.EnableKeyword("_EMISSION_COLOR");
+            }
+            else
+            {
+                r.sharedMaterial.DisableKeyword("_EMISSION");
+                r.sharedMaterial.DisableKeyword("_EMISSION_COLOR");
+            }
         }
     }
     public void StopCurrentHighlight()
