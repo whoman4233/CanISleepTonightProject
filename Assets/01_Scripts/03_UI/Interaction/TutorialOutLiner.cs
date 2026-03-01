@@ -4,86 +4,118 @@ using UnityEngine;
 
 public class TutorialOutLiner : MonoBehaviour
 {
+
+    public static TutorialOutLiner Instance { get; private set; }
+
+    private void Awake()
+    {
+        // 씬에 하나만 존재하도록 보장
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        // 튜토리얼이 끝나서 오브젝트가 파괴될 때 인스턴스 초기화
+        if (Instance == this) Instance = null;
+    }
+
     [System.Serializable]
     public struct HighlightStep
     {
-        public DialogueKeys.DialogueType step; // 어떤 단계에서
-        public InteractableOutliner target;    // 어떤 오브젝트를 켤 것인가
+        public DialogueKeys.DialogueType step;
+        public GameObject target; // InteractableOutliner 대신 GameObject로 범용성 확보
     }
 
     [Header("Highlight Settings")]
     [SerializeField] private List<HighlightStep> highlightSteps;
-    [SerializeField] private Color tutorialColor = Color.blue; // 아웃라인 색상
-    [SerializeField] private float tutorialWidth = 0.05f; // 아웃라인 두께
+    [SerializeField] private Color highlightColor = Color.yellow; // 노란색 강조
+    [SerializeField][Range(0f, 5f)] private float intensity = 2f; // 발광 세기
 
-    private static readonly int OutlineWidthId = Shader.PropertyToID("_Scale"); // 쉐이더 프로퍼티 ID
+    // 쉐이더 프로퍼티 ID (대부분의 Standard/URP 쉐이더 공용)
+    private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+    private static readonly int EmissiveColorId = Shader.PropertyToID("EmissiveColor"); // 3ds Max 셰이더 그래프용
+    private static readonly int EmissionColorUpperId = Shader.PropertyToID("_EMISSION_COLOR");
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor"); // URP 기준
 
-    private InteractableOutliner _currentActiveOutliner;
+    private GameObject _currentActiveTarget;
     private Coroutine _blinkCoroutine;
 
-    private void OnEnable()
-    {
-        EventBus.Subscribe<DialogueStepChangedEvent>(OnStepChanged);
-    }
-
-    private void OnDisable()
-    {
-        EventBus.Unsubscribe<DialogueStepChangedEvent>(OnStepChanged);
-    }
+    private void OnEnable() => EventBus.Subscribe<DialogueStepChangedEvent>(OnStepChanged);
+    private void OnDisable() => EventBus.Unsubscribe<DialogueStepChangedEvent>(OnStepChanged);
 
     private void OnStepChanged(DialogueStepChangedEvent e)
     {
-        // 1. 기존 강조 종료 및 두께 초기화
-        if (_currentActiveOutliner != null)
-        {
-            if (_blinkCoroutine != null) StopCoroutine(_blinkCoroutine);
+        // 새로운 단계로 넘어오면 기존 꺼줌
+        StopCurrentHighlight();
 
-            _currentActiveOutliner.SetHighlight(false);
-            SetWidth(_currentActiveOutliner, 0f); // 두께 초기화
-            _currentActiveOutliner.ResetColorToDefault();
-            _currentActiveOutliner = null;
-        }
-
-        // 2. 새로운 타겟 탐색
         HighlightStep targetStep = highlightSteps.Find(x => x.step == e.NewStep);
-
         if (targetStep.target != null)
         {
-            _currentActiveOutliner = targetStep.target;
-
-            // 3. 하이라이트 적용 (색상)
-            _currentActiveOutliner.SetHighlight(true, tutorialColor);
-
-            // 4. [핵심] 두께 적용 (깜빡이는 연출 추가하면 더 눈에 띔)
-            _blinkCoroutine = StartCoroutine(BlinkWidthRoutine(_currentActiveOutliner));
-
-            Debug.Log($"[TutorialHighlight] {e.NewStep} 단계 강조: {targetStep.target.name} (Width: {tutorialWidth})");
+            _currentActiveTarget = targetStep.target;
+            _blinkCoroutine = StartCoroutine(BlinkEmissionRoutine(_currentActiveTarget));
         }
     }
-    private IEnumerator BlinkWidthRoutine(InteractableOutliner outliner)
+
+    private IEnumerator BlinkEmissionRoutine(GameObject target)
     {
+        float targetAlphaRatio = 200f / 255f;
+
         while (true)
         {
-            // 두께를 주기적으로 변화시킴 (예: 설정값의 70% ~ 130% 사이)
-            float animatedWidth = tutorialWidth * (1.0f + Mathf.Sin(Time.time * 5f) * 0.2f);
-            SetWidth(outliner, animatedWidth);
+            // Sin 함수를 이용해 0.5 ~ intensity 사이를 부드럽게 왕복
+            float pingPong = (Mathf.Sin(Time.unscaledTime * 5f) + 1f) * 0.5f;
+            float currentIntensity = intensity * pingPong * targetAlphaRatio;
+
+            Color finalColor = highlightColor * currentIntensity;
+            SetObjectHighlight(target, finalColor, true);
+
             yield return null;
         }
     }
-    private void SetWidth(InteractableOutliner outliner, float width)
-    {
-        if (outliner == null) return;
 
-        // Reflection이나 내부 구조 접근 대신 직접 MPB를 쏴줍니다.
-        // InteractableOutliner가 사용하는 렌더러 목록을 가져오기 위해 GetComponents 사용
-        Renderer[] renderers = outliner.GetComponentsInChildren<Renderer>(true);
+    private void SetObjectHighlight(GameObject target, Color color, bool enable)
+    {
+        if (target == null) return;
+
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
         MaterialPropertyBlock mpb = new MaterialPropertyBlock();
 
         foreach (var r in renderers)
         {
             r.GetPropertyBlock(mpb);
-            mpb.SetFloat(OutlineWidthId, width);
+            // Emission 컬러 적용 (HDR 효과)
+            mpb.SetColor(EmissionColorId, color);
+            mpb.SetColor(EmissiveColorId, color);
+            mpb.SetColor(EmissionColorUpperId, color);
             r.SetPropertyBlock(mpb);
+
+            // 실시간으로 키워드를 켜줘야 하는 경우 (Standard Shader 대응)
+            if (enable)
+            {
+                // 키워드 활성화
+                r.sharedMaterial.EnableKeyword("_EMISSION");
+                r.sharedMaterial.EnableKeyword("_EMISSION_COLOR");
+            }
+            else
+            {
+                r.sharedMaterial.DisableKeyword("_EMISSION");
+                r.sharedMaterial.DisableKeyword("_EMISSION_COLOR");
+            }
+        }
+    }
+    public void StopCurrentHighlight()
+    {
+        if (_blinkCoroutine != null)
+        {
+            StopCoroutine(_blinkCoroutine);
+            _blinkCoroutine = null;
+        }
+
+        if (_currentActiveTarget != null)
+        {
+            SetObjectHighlight(_currentActiveTarget, Color.black, false);
+            _currentActiveTarget = null;
         }
     }
 }

@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: -8515938486967224681}
   - component: {fileID: 7268619919570130053}
   - component: {fileID: -6414484148590387286}
+  - component: {fileID: 7711667377756514936}
   m_Layer: 8
   m_Name: PSN_Gang_01
   m_TagString: Untagged
@@ -319,6 +320,28 @@ MonoBehaviour:
   defaultPromptId: 
   ruleTable: {fileID: 0}
   objectType: 
+--- !u!114 &7711667377756514936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49f4c43255c47a946a30589c7179a67c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 2672436844793215148}
+  bruiseStage1: {fileID: 3745474441334524769}
+  bruiseStage2: {fileID: 1632208651697416561}
+  forceOffOnAwake: 1
+  forceOffOnEnable: 1
+  forceOffOnStart: 1
+  stage1Threshold: 0.6666667
+  stage2Threshold: 0.33333334
+  refreshIntervalSeconds: 0.1
+  stage2AlsoEnablesStage1: 0
 --- !u!1001 &1473564100627325204
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -845,6 +868,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1473564100627325204}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1632208651697416561 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -9019052398377269147, guid: 7907f04b023014f43a0c898daa430b99,
+    type: 3}
+  m_PrefabInstance: {fileID: 1473564100627325204}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1812066813147940901 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 961210195233335601, guid: 7907f04b023014f43a0c898daa430b99,
@@ -1055,6 +1084,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &3745474441334524769 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -6374353142495810955, guid: 7907f04b023014f43a0c898daa430b99,
+    type: 3}
+  m_PrefabInstance: {fileID: 1473564100627325204}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4906606469865977205 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3430368352385215391, guid: 7907f04b023014f43a0c898daa430b99,

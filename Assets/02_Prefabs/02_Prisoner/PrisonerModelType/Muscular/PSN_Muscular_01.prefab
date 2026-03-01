@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 1651365417575173780}
   - component: {fileID: 3382974597763725389}
   - component: {fileID: 1452432844160746898}
+  - component: {fileID: 5708527672189090540}
   m_Layer: 8
   m_Name: PSN_Muscular_01
   m_TagString: Untagged
@@ -303,6 +304,28 @@ MonoBehaviour:
   qteLoopSfx: {fileID: 8300000, guid: 7cc1a7e48fb93eb44bc2146811260940, type: 3}
   hitSfx: {fileID: 8300000, guid: 1fbd80de8ecf5454ba5197bafa767020, type: 3}
   qteLayerIndex: 1
+--- !u!114 &5708527672189090540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650839560293477269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49f4c43255c47a946a30589c7179a67c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 2672436844793215148}
+  bruiseStage1: {fileID: 4468907944847659083}
+  bruiseStage2: {fileID: 5379484119754057475}
+  forceOffOnAwake: 1
+  forceOffOnEnable: 1
+  forceOffOnStart: 1
+  stage1Threshold: 0.6666667
+  stage2Threshold: 0.33333334
+  refreshIntervalSeconds: 0.1
+  stage2AlsoEnablesStage1: 0
 --- !u!1001 &1943632108880297978
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -481,6 +504,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: -3432042718479394567, guid: 507cd82cca1df544bbe5f3cc28ce6832,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: -3430368352385215391, guid: 507cd82cca1df544bbe5f3cc28ce6832,
         type: 3}
       propertyPath: m_Layer
@@ -602,6 +630,11 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2107212286306525351, guid: 507cd82cca1df544bbe5f3cc28ce6832,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2665544956169072561, guid: 507cd82cca1df544bbe5f3cc28ce6832,
         type: 3}
       propertyPath: m_Layer
       value: 8
@@ -1069,6 +1102,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &4468907944847659083 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2665544956169072561, guid: 507cd82cca1df544bbe5f3cc28ce6832,
+    type: 3}
+  m_PrefabInstance: {fileID: 1943632108880297978}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4840642438576236342 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2750501195568244532, guid: 507cd82cca1df544bbe5f3cc28ce6832,
@@ -1338,6 +1377,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &5379484119754057475 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -3432042718479394567, guid: 507cd82cca1df544bbe5f3cc28ce6832,
+    type: 3}
+  m_PrefabInstance: {fileID: 1943632108880297978}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &6525747941302992583 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4641300503261839677, guid: 507cd82cca1df544bbe5f3cc28ce6832,
