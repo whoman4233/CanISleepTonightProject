@@ -20,7 +20,7 @@ public class PrisonerBikiniState : BasePrisonerState
     private const int AMBUSH_DAMAGE = 30;
 
     [Header("Throw Settings")]
-    [SerializeField] private float _throwForce = 5.0f;
+    [SerializeField] private float _throwForce = 2.0f;
     [SerializeField] private float _upwardModifier = 2.0f;
     [SerializeField] private float _throwHeightOffset = 1.0f;
 
@@ -160,24 +160,42 @@ public class PrisonerBikiniState : BasePrisonerState
     {
         if (_soapRootObject != null)
         {
-            _soapRootObject.SetActive(true);
+            // 1. 부모 해제 및 활성화
             _soapRootObject.transform.SetParent(null);
-            _soapRootObject.transform.position += Vector3.up * _throwHeightOffset;
+            _soapRootObject.SetActive(true);
 
-            if (_targetInteractableObject != null) _targetInteractableObject.SetActive(true);
+            // 2. [핵심] 발사 위치를 캐릭터 정면 약간 앞 + 위쪽으로 강제 설정
+            // 본체 콜라이더와 겹치지 않게 정면 방향으로 0.6m 정도 오프셋을 줍니다.
+            Vector3 spawnPos = fsm.transform.position + (_preCalculatedThrowDir * 0.6f);
+            spawnPos.y += _throwHeightOffset;
+            _soapRootObject.transform.position = spawnPos;
 
+            if (_targetInteractableObject != null)
+                _targetInteractableObject.SetActive(true);
+
+            // 콜라이더 활성화
             var colliders = _soapRootObject.GetComponentsInChildren<Collider>(true);
             foreach (var col in colliders) col.enabled = true;
 
             if (_soapRb != null)
             {
+                // 3. 물리 상태 초기화 (이전 관성 제거)
                 _soapRb.isKinematic = false;
+                _soapRb.velocity = Vector3.zero;
+                _soapRb.angularVelocity = Vector3.zero;
 
-                // ★ [수정] fsm.forward 대신 미리 계산된 플레이어 방향(_preCalculatedThrowDir) 사용
-                Vector3 throwDir = (_preCalculatedThrowDir + (Vector3.up * 0.5f)).normalized;
-                _soapRb.AddForce(throwDir * _throwForce + (Vector3.up * _upwardModifier), ForceMode.Impulse);
+                // 4. 힘 계산 및 적용
+                // 수평으로 날아가는 힘(throwForce)과 위로 띄우는 힘(upwardModifier)을 조합
+                Vector3 horizontalForce = _preCalculatedThrowDir * _throwForce;
+                Vector3 verticalForce = Vector3.up * _upwardModifier;
+
+                _soapRb.AddForce(horizontalForce + verticalForce, ForceMode.Impulse);
+
+                // 약간의 회전을 주어 자연스럽게 던져지는 연출
                 _soapRb.AddTorque(UnityEngine.Random.insideUnitSphere * 5f, ForceMode.Impulse);
             }
+
+            Debug.Log($"[Bikini] 비누 투척 완료: 방향 {_preCalculatedThrowDir}");
         }
     }
 
