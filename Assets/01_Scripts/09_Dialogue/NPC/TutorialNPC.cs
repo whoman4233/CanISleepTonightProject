@@ -67,6 +67,7 @@ public class TutorialNPC : MonoBehaviour, IInteractable
         }
         else if (currentSubStep == DialogueKeys.DialogueType.Dialogue)
         {
+            TutorialOutLiner.Instance.StopCurrentHighlight();
             onComplete = () =>
             {
                 boardSequence.StartSequence();
@@ -81,12 +82,12 @@ public class TutorialNPC : MonoBehaviour, IInteractable
     {
         if (currentSubStep == DialogueKeys.DialogueType.BatonEquipped)
         {
+            book.SetActive(true);
             TutorialOutLiner.Instance.StopCurrentHighlight();
             EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.NPCHit));
             Debug.Log("이벤트 발행: NPCHit");
             StartCoroutine(DelayedDialogue());
             finishedDialogue = true;
-            book.SetActive(true);
         }
     }
 
