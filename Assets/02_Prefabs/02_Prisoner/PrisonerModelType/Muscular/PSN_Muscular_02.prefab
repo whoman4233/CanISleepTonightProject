@@ -822,6 +822,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1846413544911437262}
+    - targetCorrespondingSourceObject: {fileID: -2486420778618896525, guid: f2813653e4c05a348b4250c1de91daf6,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7761073629214558374}
     - targetCorrespondingSourceObject: {fileID: 8293792417697028184, guid: f2813653e4c05a348b4250c1de91daf6,
         type: 3}
       insertIndex: -1
@@ -1103,6 +1107,19 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &7761073629214558374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136535495314212861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c32e73042d49a8b429a40ff062600f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  headLookTarget: {fileID: 6912282085705863615}
 --- !u!1 &1356298500040898995 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4641300503261839677, guid: f2813653e4c05a348b4250c1de91daf6,
@@ -1833,6 +1850,12 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!4 &6912282085705863615 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 961210195233335601, guid: f2813653e4c05a348b4250c1de91daf6,
+    type: 3}
+  m_PrefabInstance: {fileID: 5961565769574037646}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8017770965746930711 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4755972396125524839, guid: f2813653e4c05a348b4250c1de91daf6,
