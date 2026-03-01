@@ -72,7 +72,14 @@ public class PrisonerCombatState : BasePrisonerState
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
 
-        // 공격 중일 때만 물리 이동을 강제로 차단 (전이 중 체크는 공격 시퀀스 시작 후에만 유효하도록 수정)
+        // ★ [추가] 피격 중일 때 처리: 이동을 멈추고 로직을 중단하지만, 공격 시작 변수는 건드리지 않음
+        if (stateInfo.IsTag("Hit"))
+        {
+            ForceStopPhysicalMovement();
+            return;
+        }
+
+        // 공격 중일 때만 물리 이동을 강제로 차단
         if (stateInfo.IsTag("Attack"))
         {
             ForceStopPhysicalMovement();
