@@ -60,7 +60,7 @@ public class TutorialOutLiner : MonoBehaviour
         UpdateHighlight(e.NewStep);
     }
 
-    private void UpdateHighlight(DialogueKeys.DialogueType newStep)
+    public void UpdateHighlight(DialogueKeys.DialogueType newStep)
     {
         StopCurrentHighlight();
 

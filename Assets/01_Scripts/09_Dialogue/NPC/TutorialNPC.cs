@@ -90,7 +90,11 @@ public class TutorialNPC : MonoBehaviour, IInteractable
         if (currentSubStep == DialogueKeys.DialogueType.BatonEquipped)
         {
             book.SetActive(true);
-            TutorialOutLiner.Instance.StopCurrentHighlight();
+            //TutorialOutLiner.Instance.StopCurrentHighlight();
+            if (TutorialOutLiner.Instance != null)
+            {
+                TutorialOutLiner.Instance.UpdateHighlight(DialogueKeys.DialogueType.NPCHit);
+            }
             EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.NPCHit));
             Debug.Log("이벤트 발행: NPCHit");
             StartCoroutine(DelayedDialogue());
