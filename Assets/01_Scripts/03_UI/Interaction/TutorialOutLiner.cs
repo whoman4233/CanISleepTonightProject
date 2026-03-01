@@ -103,6 +103,10 @@ public class TutorialOutLiner : MonoBehaviour
         if (target == null) return;
 
         Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length == 0 && enable)
+        {
+            Debug.LogWarning($"{target.name}에 렌더러가 없거나 비활성화되어 하이라이트 불가");
+        }
         MaterialPropertyBlock mpb = new MaterialPropertyBlock();
 
         foreach (var r in renderers)

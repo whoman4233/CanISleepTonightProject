@@ -32,7 +32,14 @@ public class TutorialNPC : MonoBehaviour, IInteractable
         {
             UpdateStep(e.NewStep);
         };
-        book.SetActive(false);
+    }
+
+    private void Start()
+    {
+        if (currentSubStep == DialogueKeys.DialogueType.Dialogue)
+        {
+            book.SetActive(false);
+        }
     }
 
     private void OnEnable()
