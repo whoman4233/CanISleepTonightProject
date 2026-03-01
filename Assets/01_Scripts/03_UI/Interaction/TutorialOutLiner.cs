@@ -13,6 +13,14 @@ public class TutorialOutLiner : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
+    private void Start()
+    {
+
+        if (DialogueManager.Instance != null)
+        {
+            UpdateHighlight(DialogueKeys.DialogueType.Dialogue);
+        }
+    }
 
     private void OnDestroy()
     {
@@ -25,6 +33,8 @@ public class TutorialOutLiner : MonoBehaviour
     {
         public DialogueKeys.DialogueType step;
         public GameObject target; // InteractableOutliner 대신 GameObject로 범용성 확보
+        public GameObject vfxObject;
+        public bool useHighlight;
     }
 
     [Header("Highlight Settings")]
@@ -40,20 +50,34 @@ public class TutorialOutLiner : MonoBehaviour
 
     private GameObject _currentActiveTarget;
     private Coroutine _blinkCoroutine;
+    private GameObject _currentActiveVFX;
 
     private void OnEnable() => EventBus.Subscribe<DialogueStepChangedEvent>(OnStepChanged);
     private void OnDisable() => EventBus.Unsubscribe<DialogueStepChangedEvent>(OnStepChanged);
 
     private void OnStepChanged(DialogueStepChangedEvent e)
     {
-        // 새로운 단계로 넘어오면 기존 꺼줌
+        UpdateHighlight(e.NewStep);
+    }
+
+    private void UpdateHighlight(DialogueKeys.DialogueType newStep)
+    {
         StopCurrentHighlight();
 
-        HighlightStep targetStep = highlightSteps.Find(x => x.step == e.NewStep);
-        if (targetStep.target != null)
+        HighlightStep targetStep = highlightSteps.Find(x => x.step == newStep);
+
+        // 하이라이트 실행
+        if (targetStep.target != null && targetStep.useHighlight)
         {
             _currentActiveTarget = targetStep.target;
             _blinkCoroutine = StartCoroutine(BlinkEmissionRoutine(_currentActiveTarget));
+        }
+
+        // VFX 실행
+        if (targetStep.vfxObject != null)
+        {
+            _currentActiveVFX = targetStep.vfxObject;
+            _currentActiveVFX.SetActive(true);
         }
     }
 
@@ -116,6 +140,11 @@ public class TutorialOutLiner : MonoBehaviour
         {
             SetObjectHighlight(_currentActiveTarget, Color.black, false);
             _currentActiveTarget = null;
+        }
+        if (_currentActiveVFX != null)
+        {
+            _currentActiveVFX.SetActive(false); // VFX 끄기
+            _currentActiveVFX = null;
         }
     }
 }
