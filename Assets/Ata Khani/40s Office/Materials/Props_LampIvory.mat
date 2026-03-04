@@ -23,12 +23,16 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Props_P1_Glass_Mat
+  m_Name: Props_LampIvory
   m_Shader: {fileID: 4800000, guid: df695d70c539c3d4c87b79de307ab7bb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _MK_ALBEDO_MAP
+  - _MK_ARTISTIC_HATCHING
+  - _MK_COLOR_GRADING_ALBEDO
+  - _MK_ENVIRONMENT_REFLECTIONS_AMBIENT
+  - _MK_LIGHT_TRANSMISSION_TRANSLUCENT
   - _MK_NORMAL_MAP
   - _MK_PBS_MAP_0
   m_InvalidKeywords:
@@ -50,7 +54,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: b637acba44991914c8a3081b707c292e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 22af889921620df4daa6462695e5d442, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AnisotropyMap:
@@ -162,7 +166,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: b637acba44991914c8a3081b707c292e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 22af889921620df4daa6462695e5d442, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskMap:
@@ -170,7 +174,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicMap:
-        m_Texture: {fileID: 2800000, guid: 9816e7b2b93e5f241a9fc6354edb5090, type: 3}
+        m_Texture: {fileID: 2800000, guid: a697f93b13dc23e4e91988759f0166d9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NORMAL_MAP:
@@ -182,7 +186,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 42f18d23af201dd44988c995e736d0af, type: 3}
+        m_Texture: {fileID: 2800000, guid: c3f44827db3096b469e09ce54b314e1c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapOS:
@@ -299,7 +303,7 @@ Material:
     - _AORemapMin: 0
     - _ATDistance: 1
     - _AddPrecomputedVelocity: 0
-    - _AdditionalLightsFalloff: 1
+    - _AdditionalLightsFalloff: 0
     - _AdditionalLightsThreshold: 0.5
     - _AdvancedTab: 0
     - _AlbedoAffectEmissive: 0
@@ -316,7 +320,7 @@ Material:
     - _AlphaRemapMin: 0
     - _AlphaSrcBlend: 1
     - _Anisotropy: 0
-    - _Artistic: 0
+    - _Artistic: 2
     - _ArtisticFrequency: 1
     - _ArtisticProjection: 0
     - _ArtisticShadowFilter: 0
@@ -328,9 +332,9 @@ Material:
     - _BlendMode: 1
     - _BlendSrc: 1
     - _BlendSrcAlpha: 1
-    - _Brightness: 1
+    - _Brightness: 2.65
     - _CoatMask: 0
-    - _ColorGrading: 0
+    - _ColorGrading: 1
     - _Contrast: 1
     - _CullMode: 0
     - _CullModeForward: 2
@@ -371,7 +375,7 @@ Material:
     - _EnableFogOnTransparent: 1
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
-    - _EnvironmentReflections: 0
+    - _EnvironmentReflections: 1
     - _FresnelHighlights: 0
     - _GoochDarkRemapFadeWithIndirect: 0
     - _GoochDarkRemapMax: 1
@@ -387,25 +391,25 @@ Material:
     - _HeightPoMAmplitude: 2
     - _HeightTessAmplitude: 2
     - _HeightTessCenter: 0.5
-    - _Hue: 0
-    - _IndirectFade: 1
+    - _Hue: 0.726
+    - _IndirectFade: 0.3
     - _Initialized: 0
     - _InputTab: 1
     - _InvTilingScale: 1
     - _Ior: 1.5
     - _Iridescence: 0
     - _IridescenceMask: 1
-    - _IridescenceSize: 1
+    - _IridescenceSize: 4.34
     - _IridescenceSmoothness: 0.5
     - _IridescenceThickness: 1
     - _IridescenceThresholdOffset: 0
     - _Light: 0
     - _LightBands: 4
     - _LightBandsScale: 0.5
-    - _LightThreshold: 0.5
-    - _LightTransmission: 0
+    - _LightThreshold: 0.065
+    - _LightTransmission: 1
     - _LightTransmissionDistortion: 0.25
-    - _LightTransmissionIntensity: 1
+    - _LightTransmissionIntensity: 0.25
     - _LightTransmissionSmoothness: 0.5
     - _LightTransmissionThresholdOffset: 0.25
     - _LinkDetailsWithBase: 1
@@ -455,7 +459,7 @@ Material:
     - _Roughness: 0.5
     - _SPECULAR_IOR: 1.5
     - _SPECULAR_ROUGHNESS: 0
-    - _Saturation: 1
+    - _Saturation: 0.17
     - _SketchMapScale: 1
     - _Smoothness: 0.5
     - _SmoothnessRemapMax: 1
@@ -477,12 +481,12 @@ Material:
     - _StencilRefDepth: 0
     - _StencilRefGBuffer: 2
     - _StencilRefMV: 32
-    - _StencilWriteMask: 6
+    - _StencilWriteMask: 255
     - _StencilWriteMaskDepth: 9
     - _StencilWriteMaskGBuffer: 15
     - _StencilWriteMaskMV: 41
     - _StencilZFail: 0
-    - _StylizeTab: 0
+    - _StylizeTab: 1
     - _SubsurfaceMask: 1
     - _SupportDecals: 1
     - _Surface: 0
@@ -533,7 +537,7 @@ Material:
     - _GoochBrightColor: {r: 1, g: 1, b: 1, a: 1}
     - _GoochDarkColor: {r: 0, g: 0, b: 0, a: 1}
     - _InvPrimScale: {r: 1, g: 1, b: 0, a: 0}
-    - _IridescenceColor: {r: 1, g: 1, b: 1, a: 0.5}
+    - _IridescenceColor: {r: 0, g: 1, b: 0.6127536, a: 0.5}
     - _IridescenceThicknessRemap: {r: 0, g: 1, b: 0, a: 0}
     - _LightTransmissionColor: {r: 1, g: 0.65, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
