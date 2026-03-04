@@ -80,6 +80,10 @@ public class TutorialNPC : MonoBehaviour, IInteractable
                 boardSequence.StartSequence();
                 finishedDialogue = true;
                 Debug.Log("자동대화진행 및 finishedDialogue 는 true로 변경됨");
+                if (TutorialOutLiner.Instance != null)
+                {
+                    TutorialOutLiner.Instance.UpdateHighlight(DialogueKeys.DialogueType.BoardSee);
+                }
             };
         }
         dialogueManager.StartDialogueByKeys(speakerKey, textType, onComplete);

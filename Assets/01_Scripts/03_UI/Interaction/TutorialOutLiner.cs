@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,11 +8,14 @@ public class TutorialOutLiner : MonoBehaviour
 
     public static TutorialOutLiner Instance { get; private set; }
 
+    private Action<DialogueStepChangedEvent> _onStepChanged;
+
     private void Awake()
     {
         // 씬에 하나만 존재하도록 보장
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+        _onStepChanged = e => OnStepChanged(e);
     }
     private void Start()
     {
@@ -52,8 +56,8 @@ public class TutorialOutLiner : MonoBehaviour
     private Coroutine _blinkCoroutine;
     private GameObject _currentActiveVFX;
 
-    private void OnEnable() => EventBus.Subscribe<DialogueStepChangedEvent>(OnStepChanged);
-    private void OnDisable() => EventBus.Unsubscribe<DialogueStepChangedEvent>(OnStepChanged);
+    private void OnEnable() => EventBus.Subscribe(_onStepChanged);
+    private void OnDisable() => EventBus.Unsubscribe(_onStepChanged);
 
     private void OnStepChanged(DialogueStepChangedEvent e)
     {
