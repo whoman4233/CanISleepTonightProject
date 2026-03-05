@@ -11,10 +11,15 @@ public class SettingsPopupController : MonoBehaviour
         Language
     }
 
-    private const string LookSensitivitySliderPrefKey = "Settings.LookSensitivitySlider01";
-    private const float DefaultSlider01 = 0.35f;
+    // ===== PlayerPrefs Keys =====
+    private const string LookHorizontalPrefKey = "Settings.LookSensitivity.Horizontal01";
+    private const string LookVerticalPrefKey = "Settings.LookSensitivity.Vertical01";
 
-    // 슬라이더 UI는 0~1로 고정 (감도는 POVInput에서 곡선 변환)
+    // ===== Defaults (UI Slider 0~1) =====
+    private const float DefaultHorizontal01 = 0.35f;
+    private const float DefaultVertical01 = 0.35f;
+
+    // ===== Slider Range (UI 0~1 fixed) =====
     private const float SliderMin = 0f;
     private const float SliderMax = 1f;
 
@@ -37,8 +42,9 @@ public class SettingsPopupController : MonoBehaviour
     [SerializeField] private Slider sfxSlider;
     [SerializeField] private Slider uiSlider;
 
-    [Header("Camera")]
-    [SerializeField] private Slider lookSensitivitySlider;
+    [Header("Camera - Look Sensitivity (0~1)")]
+    [SerializeField] private Slider lookHorizontalSlider;
+    [SerializeField] private Slider lookVerticalSlider;
     [SerializeField] private CinemachinePOVInput povInput;
 
     public bool IsOpen { get; private set; }
@@ -64,7 +70,7 @@ public class SettingsPopupController : MonoBehaviour
     private void OnEnable()
     {
         EventBus.Publish(new GlobalInputLockRequestedEvent());
-        CloseAllPanels();   // 기본 상태: 전부 닫힘
+        CloseAllPanels();
         StartCoroutine(InitSlidersNextFrame());
     }
 
@@ -72,25 +78,27 @@ public class SettingsPopupController : MonoBehaviour
     {
         EventBus.Publish(new GlobalInputLockReleasedEvent());
 
+        // 오디오 리스너 제거
         if (masterSlider != null) masterSlider.onValueChanged.RemoveAllListeners();
         if (bgmSlider != null) bgmSlider.onValueChanged.RemoveAllListeners();
         if (sfxSlider != null) sfxSlider.onValueChanged.RemoveAllListeners();
         if (uiSlider != null) uiSlider.onValueChanged.RemoveAllListeners();
 
-        if (lookSensitivitySlider != null)
-            lookSensitivitySlider.onValueChanged.RemoveAllListeners();
+        // 마우스 감도 리스너 제거
+        if (lookHorizontalSlider != null) lookHorizontalSlider.onValueChanged.RemoveAllListeners();
+        if (lookVerticalSlider != null) lookVerticalSlider.onValueChanged.RemoveAllListeners();
+
+        // 변경사항 저장 (한 번만)
+        PlayerPrefs.Save();
     }
+
     private void CloseAllPanels()
     {
-        if (soundPanel != null)
-            soundPanel.SetActive(false);
-
-        if (mousePanel != null)
-            mousePanel.SetActive(false);
-
-        if (languagePanel != null)
-            languagePanel.SetActive(false);
+        if (soundPanel != null) soundPanel.SetActive(false);
+        if (mousePanel != null) mousePanel.SetActive(false);
+        if (languagePanel != null) languagePanel.SetActive(false);
     }
+
     private void OpenPanel(PanelType type)
     {
         CloseAllPanels();
@@ -110,6 +118,7 @@ public class SettingsPopupController : MonoBehaviour
                 break;
         }
     }
+
     private IEnumerator InitSlidersNextFrame()
     {
         yield return null;
@@ -144,37 +153,69 @@ public class SettingsPopupController : MonoBehaviour
         }
 
         // ===== 카메라 감도 슬라이더 =====
-        if (lookSensitivitySlider == null)
-            yield break;
-
-        lookSensitivitySlider.minValue = SliderMin;
-        lookSensitivitySlider.maxValue = SliderMax;
-        lookSensitivitySlider.wholeNumbers = false;
-
         if (povInput == null)
             povInput = FindObjectOfType<CinemachinePOVInput>();
 
-        float saved01 = PlayerPrefs.GetFloat(LookSensitivitySliderPrefKey, DefaultSlider01);
+        InitLookSlider(lookHorizontalSlider);
+        InitLookSlider(lookVerticalSlider);
 
-        // UI 반영
-        lookSensitivitySlider.SetValueWithoutNotify(saved01);
+        float savedHorizontal01 = PlayerPrefs.GetFloat(LookHorizontalPrefKey, DefaultHorizontal01);
+        float savedVertical01 = PlayerPrefs.GetFloat(LookVerticalPrefKey, DefaultVertical01);
+
+        if (lookHorizontalSlider != null)
+            lookHorizontalSlider.SetValueWithoutNotify(savedHorizontal01);
+
+        if (lookVerticalSlider != null)
+            lookVerticalSlider.SetValueWithoutNotify(savedVertical01);
 
         // 즉시 적용
         if (povInput != null)
-            povInput.SetLookSensitivityFromSlider(saved01);
+        {
+            povInput.SetHorizontalSensitivityFromSlider(savedHorizontal01);
+            povInput.SetVerticalSensitivityFromSlider(savedVertical01);
+        }
 
-        // 리스너 등록 (중복 등록 방지)
-        lookSensitivitySlider.onValueChanged.RemoveAllListeners();
-        lookSensitivitySlider.onValueChanged.AddListener(OnLookSensitivitySliderChanged);
+        // 리스너 등록 (중복 방지)
+        if (lookHorizontalSlider != null)
+        {
+            lookHorizontalSlider.onValueChanged.RemoveAllListeners();
+            lookHorizontalSlider.onValueChanged.AddListener(OnLookHorizontalChanged);
+        }
+
+        if (lookVerticalSlider != null)
+        {
+            lookVerticalSlider.onValueChanged.RemoveAllListeners();
+            lookVerticalSlider.onValueChanged.AddListener(OnLookVerticalChanged);
+        }
     }
 
-    private void OnLookSensitivitySliderChanged(float slider01)
+    private static void InitLookSlider(Slider slider)
     {
-        if (povInput != null)
-            povInput.SetLookSensitivityFromSlider(slider01);
+        if (slider == null) return;
 
-        PlayerPrefs.SetFloat(LookSensitivitySliderPrefKey, slider01);
-        PlayerPrefs.Save();
+        slider.minValue = SliderMin;
+        slider.maxValue = SliderMax;
+        slider.wholeNumbers = false;
+    }
+
+    private void OnLookHorizontalChanged(float slider01)
+    {
+        float t = Mathf.Clamp01(slider01);
+
+        if (povInput != null)
+            povInput.SetHorizontalSensitivityFromSlider(t);
+
+        PlayerPrefs.SetFloat(LookHorizontalPrefKey, t);
+    }
+
+    private void OnLookVerticalChanged(float slider01)
+    {
+        float t = Mathf.Clamp01(slider01);
+
+        if (povInput != null)
+            povInput.SetVerticalSensitivityFromSlider(t);
+
+        PlayerPrefs.SetFloat(LookVerticalPrefKey, t);
     }
 
     public void Show()

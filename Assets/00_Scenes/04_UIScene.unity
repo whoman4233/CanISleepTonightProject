@@ -3257,7 +3257,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &240137042
@@ -26075,7 +26075,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1893935112
@@ -28368,7 +28368,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &2038564668
@@ -30119,6 +30119,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 279166135}
     m_Modifications:
+    - target: {fileID: 1362313137856481715, guid: e123ac7e36d96ce469fa4127198f81d6,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1765387384043554646, guid: e123ac7e36d96ce469fa4127198f81d6,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2727780213674685661, guid: e123ac7e36d96ce469fa4127198f81d6,
         type: 3}
       propertyPath: m_Pivot.x
@@ -30224,9 +30234,24 @@ PrefabInstance:
       propertyPath: m_Name
       value: SettingsPopup
       objectReference: {fileID: 0}
-    - target: {fileID: 5365522268277780321, guid: e123ac7e36d96ce469fa4127198f81d6,
+    - target: {fileID: 5579596075948092469, guid: e123ac7e36d96ce469fa4127198f81d6,
         type: 3}
-      propertyPath: m_IsActive
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5579596075948092469, guid: e123ac7e36d96ce469fa4127198f81d6,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7228425168423422655, guid: e123ac7e36d96ce469fa4127198f81d6,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7228425168423422655, guid: e123ac7e36d96ce469fa4127198f81d6,
+        type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

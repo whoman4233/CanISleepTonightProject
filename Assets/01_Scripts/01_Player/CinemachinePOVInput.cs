@@ -4,12 +4,18 @@ using Cinemachine;
 [RequireComponent(typeof(CinemachineVirtualCamera))]
 public sealed class CinemachinePOVInput : MonoBehaviour
 {
-    // ===== 감도 범위(실사용 영역만) =====
-    private const float MinSensitivity = 0.03f;   // 최저
-    private const float MaxSensitivity = 0.25f;   // 최고(너무 빠르면 0.18~0.22로 낮춰)
+    // 슬라이더 0일 때 "완전 정지"를 만들기 위해 Min은 0으로 둡니다.
+    private const float MinSensitivity = 0.0f;
 
-    // ===== 곡선 세기(클수록 '최소 근처' 조절이 촘촘해짐) =====
-    private const float SensitivityCurvePower = 3.0f;
+    // 1일 때 너무 빠르면 여기만 낮추면 됨 (프로젝트마다 체감 다름)
+    // 추천 시작값: 0.16 ~ 0.20
+    private const float MaxSensitivity = 0.18f;
+
+    // 0 근처를 더 촘촘하게(미세 조절) 만들고 싶으면 키우기
+    private const float SensitivityCurvePower = 2.5f;
+
+    // 아주 작은 입력(노이즈)을 무시하는 데드존 (움직임 "미세하게 남는" 느낌 방지)
+    private const float InputDeadZone = 0.0005f;
 
     [SerializeField] private Player player;
 
@@ -36,32 +42,52 @@ public sealed class CinemachinePOVInput : MonoBehaviour
 
         Vector2 look = player.LookInput;
 
-        // Yaw: 플레이어 회전
-        float yawDelta = look.x * horizontalSensitivity;
-        player.transform.Rotate(Vector3.up, yawDelta, Space.World);
+        // 입력 노이즈 제거 (특히 0 감도에서 미세하게 움직이는 느낌 방지)
+        if (Mathf.Abs(look.x) < InputDeadZone) look.x = 0f;
+        if (Mathf.Abs(look.y) < InputDeadZone) look.y = 0f;
 
-        // Pitch: POV 입력
+        // Horizontal (Yaw): 플레이어 회전
+        float yawDelta = look.x * horizontalSensitivity;
+        if (yawDelta != 0f)
+            player.transform.Rotate(Vector3.up, yawDelta, Space.World);
+
+        // Vertical (Pitch): POV 입력
         pov.m_HorizontalAxis.m_InputAxisValue = 0f;
         pov.m_VerticalAxis.m_InputAxisValue = look.y * verticalSensitivity;
     }
 
-    /// <summary>
-    /// 설정창 슬라이더(0~1) 값을 실제 감도로 변환해서 적용
-    /// </summary>
+    // ===== Public API =====
+
+    // (호환용) 예전 1슬라이더: 둘 다 같은 값
     public void SetLookSensitivityFromSlider(float slider01)
+    {
+        float sens = Slider01ToSensitivity(slider01);
+        horizontalSensitivity = sens;
+        verticalSensitivity = sens;
+    }
+
+    public void SetHorizontalSensitivityFromSlider(float slider01)
+    {
+        horizontalSensitivity = Slider01ToSensitivity(slider01);
+    }
+
+    public void SetVerticalSensitivityFromSlider(float slider01)
+    {
+        verticalSensitivity = Slider01ToSensitivity(slider01);
+    }
+
+    public float GetHorizontalSensitivity() => horizontalSensitivity;
+    public float GetVerticalSensitivity() => verticalSensitivity;
+
+    private static float Slider01ToSensitivity(float slider01)
     {
         float t = Mathf.Clamp01(slider01);
 
-        // 핵심: 초반을 촘촘하게 만들기
+        // 슬라이더 0은 확실하게 0으로 (부동소수점/곡선 영향 제거)
+        if (t <= 0f)
+            return 0f;
+
         float curved = Mathf.Pow(t, SensitivityCurvePower);
-
-        // 실감도 계산
-        float sensitivity = Mathf.Lerp(MinSensitivity, MaxSensitivity, curved);
-
-        horizontalSensitivity = sensitivity;
-        verticalSensitivity = sensitivity;
+        return Mathf.Lerp(MinSensitivity, MaxSensitivity, curved);
     }
-
-    // (선택) 디버그/표시용
-    public float GetCurrentSensitivity() => horizontalSensitivity;
 }
