@@ -106,6 +106,28 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &-4807828651445521093
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 3503552825919011394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.60526335
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &-1531518843955113356
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -251,7 +273,8 @@ AnimatorState:
   m_Name: PSN_Bikini01_Attack01
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
+  m_Transitions:
+  - {fileID: -4807828651445521093}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -302,7 +325,8 @@ AnimatorState:
   m_Name: PSN_Hit03
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
+  m_Transitions:
+  - {fileID: 4762425808967240705}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -419,6 +443,28 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &4762425808967240705
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 3503552825919011394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.08870971
+  m_TransitionOffset: 0
+  m_ExitTime: 0.9
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1107 &5743081183228116292
 AnimatorStateMachine:
   serializedVersion: 6
@@ -430,7 +476,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 909377455058073698}
-    m_Position: {x: 240, y: -80, z: 0}
+    m_Position: {x: 320, y: -60, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8449428118224069958}
     m_Position: {x: 270, y: 120, z: 0}
@@ -439,7 +485,7 @@ AnimatorStateMachine:
     m_Position: {x: 280, y: 260, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -7873229975454420950}
-    m_Position: {x: 290, y: -20, z: 0}
+    m_Position: {x: 310, y: 0, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3503552825919011394}
     m_Position: {x: 170, y: -140, z: 0}
@@ -448,7 +494,7 @@ AnimatorStateMachine:
     m_Position: {x: 60, y: 260, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1521113801008511646}
-    m_Position: {x: 290, y: 40, z: 0}
+    m_Position: {x: 290, y: 60, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: 1089338069643505725}

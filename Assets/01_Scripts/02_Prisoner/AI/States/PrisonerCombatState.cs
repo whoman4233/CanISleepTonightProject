@@ -166,7 +166,7 @@ public class PrisonerCombatState : BasePrisonerState
         anim.SetBool(HasWeaponHash, hasWeapon);
 
         int attackIndex = 0;
-        if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 1;
+        if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 0;
         else if (!hasWeapon) attackIndex = Random.Range(0, 3);
 
         anim.SetFloat(AttackIndexHash, (float)attackIndex);
