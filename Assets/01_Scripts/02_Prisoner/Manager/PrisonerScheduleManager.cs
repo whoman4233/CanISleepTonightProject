@@ -11,6 +11,11 @@ public class PrisonerScheduleManager : MonoBehaviour
     [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
     [SerializeField] private CellAnchorRegistry anchorRegistry;
 
+    // ★ [추가] Good 죄수가 나올 확률 (기본값 0.5 = 50%)
+    // Range 속성을 사용하여 유니티 에디터에서 0.0 ~ 1.0 사이의 슬라이더로 조절 가능하게 합니다.
+    [Header("AI Ratio Config")]
+    [SerializeField, Range(0f, 1f)] private float goodPrisonerRatio = 0.5f;
+
     private static Dictionary<string, PrisonerData> _cachedResidents;
     private Dictionary<string, PrisonerData> _residents;
     private Dictionary<string, DailyRoleData> _todayRoles = new Dictionary<string, DailyRoleData>();
@@ -142,7 +147,8 @@ public class PrisonerScheduleManager : MonoBehaviour
 
             if (defaultAI == PrisonerAIType.Good)
             {
-                defaultRole.dailyAIType = (UnityEngine.Random.value > 0.5f) ? PrisonerAIType.Good : PrisonerAIType.Bad;
+                // ★ [수정] 0.5 고정값 대신 goodPrisonerRatio 변수를 사용하여 확률 적용
+                defaultRole.dailyAIType = (UnityEngine.Random.value <= goodPrisonerRatio) ? PrisonerAIType.Good : PrisonerAIType.Bad;
             }
             _todayRoles[cellId] = defaultRole;
         }
