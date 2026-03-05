@@ -16,7 +16,7 @@ public class PrisonerBikiniState : BasePrisonerState
     private const string SOAP_OBJ_NAME = "PSNW_Soap01";
     private const string DIALOGUE_KEY = "DIAL_BIKINI_TRAP";
     private const string PLEASURE_SFX_KEY = "Bikini_Pleasure";
-    private const float DETECT_RANGE = 4.0f;
+    private const float DETECT_RANGE = 2.0f;
     private const int AMBUSH_DAMAGE = 30;
 
     [Header("Throw Settings")]
