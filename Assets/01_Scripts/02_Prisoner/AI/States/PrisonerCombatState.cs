@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class PrisonerCombatState : BasePrisonerState
 {
     private float _cooldownTimer = 0f;
-    private const float AttackCooldown = 1.5f;
+    private const float AttackCooldown = 0.5f;
     private const float AttackRange = 1f;
     private float _attackTagDelayTimer = 0f;
 
@@ -16,7 +16,7 @@ public class PrisonerCombatState : BasePrisonerState
     private static readonly int RunHash = Animator.StringToHash("Run");
     private static readonly int WalkHash = Animator.StringToHash("Walk");
     private static readonly int HasWeaponHash = Animator.StringToHash("HasWeapon");
-    private static readonly int AttackTypeHash = Animator.StringToHash("AttackType");
+    private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
     private static readonly int AttackTriggerHash = Animator.StringToHash("Attack");
     private static readonly int HitTriggerHash = Animator.StringToHash("Hit");
 
@@ -71,28 +71,44 @@ public class PrisonerCombatState : BasePrisonerState
         }
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+        bool isInTransition = anim.IsInTransition(0);
 
-        // ★ [추가] 피격 중일 때 처리: 이동을 멈추고 로직을 중단하지만, 공격 시작 변수는 건드리지 않음
+        // 1. 피격 중 처리 (최우선)
         if (stateInfo.IsTag("Hit"))
         {
             ForceStopPhysicalMovement();
             return;
         }
 
-        // 공격 중일 때만 물리 이동을 강제로 차단
-        if (stateInfo.IsTag("Attack"))
+        // 2. [핵심] 공격 진행 여부 판정 보정
+        bool currentIsAttack = stateInfo.IsTag("Attack");
+        bool nextIsAttack = isInTransition && anim.GetNextAnimatorStateInfo(0).IsTag("Attack");
+
+        // 애니메이션이 90% 이상 진행되었거나, 다음 상태가 공격이 아니라면 "공격 중 아님"으로 간주
+        bool isMotionFinishing = currentIsAttack && stateInfo.normalizedTime >= 0.9f;
+        bool isActuallyAttacking = (currentIsAttack && !isMotionFinishing) || nextIsAttack;
+
+        if (isActuallyAttacking)
         {
             ForceStopPhysicalMovement();
             _isAttackStarted = true;
             return;
         }
 
-        // 공격 애니메이션 종료 판단
-        if (_isAttackStarted && !stateInfo.IsTag("Attack") && !anim.IsInTransition(0))
+        // 3. [해결] 공격 종료 즉시 복구
+        // 공격 중이었다가(isAttackStarted) 위의 판정 로직에 의해 끝났다고 판단되는 순간
+        if (_isAttackStarted && !isActuallyAttacking)
         {
             _isAttackStarted = false;
+
+            // 이동 로직 가동 전 NavMeshAgent 상태만 미리 살려줌
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
         }
 
+        // 공격 트리거 직후 물리적 멈춤 보장용 타이머
         if (_attackTagDelayTimer > 0f)
         {
             _attackTagDelayTimer -= Time.deltaTime;
@@ -105,13 +121,14 @@ public class PrisonerCombatState : BasePrisonerState
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        // 공격 가능 거리라면 공격, 아니면 이동
+        // 4. [해결] 공격 동작이 끝났다면 쿨타임 중이라도 즉시 추격 가능
         if (dist <= AttackRange && _cooldownTimer <= 0f && !_isAttackStarted)
         {
             Attack();
         }
         else if (!_isAttackStarted)
         {
+            // 이제 공격 휘두르기가 끝나자마자 멍하니 서 있지 않고 플레이어를 따라갑니다.
             MoveToPlayer(dist);
         }
     }
@@ -152,7 +169,7 @@ public class PrisonerCombatState : BasePrisonerState
         if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 1;
         else if (!hasWeapon) attackIndex = Random.Range(0, 3);
 
-        anim.SetFloat(AttackTypeHash, (float)attackIndex);
+        anim.SetFloat(AttackIndexHash, (float)attackIndex);
         fsm.Controller.PlayAttackSound();
 
         anim.SetTrigger(AttackTriggerHash);
