@@ -134,9 +134,14 @@ public class PrisonerBikiniState : BasePrisonerState
 
     private void OnDialogueEnded(Mission03DialogueEnded eventData)
     {
-        if (_currentStep != BikiniStep.Talking) return;
+        // 대화가 먼저 끝나버린 경우(WaitForPlayer)도 허용하도록 변경
+        if (_currentStep != BikiniStep.Talking && _currentStep != BikiniStep.WaitForPlayer)
+            return;
 
-        // ★ [수정] 애니메이션으로 인한 회전 간섭을 피하기 위해, 대화 종료 시점의 방향을 고정
+        // 대기 상태에서 대화가 끝났다면 유혹 애니메이션 강제 종료
+        Anim.SetBool(IsLuringHash, false);
+
+        // 애니메이션으로 인한 회전 간섭을 피하기 위해, 대화 종료 시점의 방향을 고정
         _preCalculatedThrowDir = (Player.position - fsm.transform.position).normalized;
         _preCalculatedThrowDir.y = 0;
 
