@@ -212,7 +212,7 @@ public class PrisonerCombatState : BasePrisonerState
         //anim.SetTrigger(HitTriggerHash);
         //_isAttackStarted = false;
         //ForceStopPhysicalMovement();
-        if (Random.value <= 0.8f)
+        if (Random.value <= 0.2f)
         {
             anim.SetTrigger(HitTriggerHash);
 
