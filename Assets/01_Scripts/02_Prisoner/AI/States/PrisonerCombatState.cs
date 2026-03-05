@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 public class PrisonerCombatState : BasePrisonerState
@@ -27,7 +27,7 @@ public class PrisonerCombatState : BasePrisonerState
         base.Enter();
         _isAttackStarted = false;
 
-        // 1. »óÅÂ ÆÄ¶ó¹ÌÅÍ ¼³Á¤
+        // 1. ìƒíƒœ íŒŒë¼ë¯¸í„° ì„¤ì •
         anim.SetBool(InCombatHash, true);
 
         if (player == null) FindPlayer();
@@ -51,12 +51,12 @@ public class PrisonerCombatState : BasePrisonerState
 
         _cooldownTimer = 0.2f;
 
-        // ¡Ú [ÇØ°á] ¸¸¾à ÇÃ·¹ÀÌ¾î°¡ ¸Ö¸® ÀÖ´Ù¸é Áï½Ã ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼Ç °­Á¦ Àû¿ë
+        // â˜… [í•´ê²°] ë§Œì•½ í”Œë ˆì´ì–´ê°€ ë©€ë¦¬ ìˆë‹¤ë©´ ì¦‰ì‹œ ì´ë™ ì• ë‹ˆë©”ì´ì…˜ ê°•ì œ ì ìš©
         float dist = Vector3.Distance(fsm.transform.position, player.position);
         if (dist > agent.stoppingDistance + 0.1f)
         {
             anim.SetBool(RunHash, true);
-            // ¾Ö´Ï¸ŞÀÌÅÍ°¡ IdleÀ» °ÅÄ¡Áö ¾Ê°í ¹Ù·Î RunÀ¸·Î CrossFade ÇÏ°Ô À¯µµ
+            // ì• ë‹ˆë©”ì´í„°ê°€ Idleì„ ê±°ì¹˜ì§€ ì•Šê³  ë°”ë¡œ Runìœ¼ë¡œ CrossFade í•˜ê²Œ ìœ ë„
             anim.CrossFade("Run", 0.1f);
         }
     }
@@ -73,18 +73,18 @@ public class PrisonerCombatState : BasePrisonerState
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
         bool isInTransition = anim.IsInTransition(0);
 
-        // 1. ÇÇ°İ Áß Ã³¸® (ÃÖ¿ì¼±)
+        // 1. í”¼ê²© ì¤‘ ì²˜ë¦¬ (ìµœìš°ì„ )
         if (stateInfo.IsTag("Hit"))
         {
             ForceStopPhysicalMovement();
             return;
         }
 
-        // 2. [ÇÙ½É] °ø°İ ÁøÇà ¿©ºÎ ÆÇÁ¤ º¸Á¤
+        // 2. [í•µì‹¬] ê³µê²© ì§„í–‰ ì—¬ë¶€ íŒì • ë³´ì •
         bool currentIsAttack = stateInfo.IsTag("Attack");
         bool nextIsAttack = isInTransition && anim.GetNextAnimatorStateInfo(0).IsTag("Attack");
 
-        // ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ 90% ÀÌ»ó ÁøÇàµÇ¾ú°Å³ª, ´ÙÀ½ »óÅÂ°¡ °ø°İÀÌ ¾Æ´Ï¶ó¸é "°ø°İ Áß ¾Æ´Ô"À¸·Î °£ÁÖ
+        // ì• ë‹ˆë©”ì´ì…˜ì´ 90% ì´ìƒ ì§„í–‰ë˜ì—ˆê±°ë‚˜, ë‹¤ìŒ ìƒíƒœê°€ ê³µê²©ì´ ì•„ë‹ˆë¼ë©´ "ê³µê²© ì¤‘ ì•„ë‹˜"ìœ¼ë¡œ ê°„ì£¼
         bool isMotionFinishing = currentIsAttack && stateInfo.normalizedTime >= 0.9f;
         bool isActuallyAttacking = (currentIsAttack && !isMotionFinishing) || nextIsAttack;
 
@@ -95,20 +95,20 @@ public class PrisonerCombatState : BasePrisonerState
             return;
         }
 
-        // 3. [ÇØ°á] °ø°İ Á¾·á Áï½Ã º¹±¸
-        // °ø°İ ÁßÀÌ¾ú´Ù°¡(isAttackStarted) À§ÀÇ ÆÇÁ¤ ·ÎÁ÷¿¡ ÀÇÇØ ³¡³µ´Ù°í ÆÇ´ÜµÇ´Â ¼ø°£
+        // 3. [í•´ê²°] ê³µê²© ì¢…ë£Œ ì¦‰ì‹œ ë³µêµ¬
+        // ê³µê²© ì¤‘ì´ì—ˆë‹¤ê°€(isAttackStarted) ìœ„ì˜ íŒì • ë¡œì§ì— ì˜í•´ ëë‚¬ë‹¤ê³  íŒë‹¨ë˜ëŠ” ìˆœê°„
         if (_isAttackStarted && !isActuallyAttacking)
         {
             _isAttackStarted = false;
 
-            // ÀÌµ¿ ·ÎÁ÷ °¡µ¿ Àü NavMeshAgent »óÅÂ¸¸ ¹Ì¸® »ì·ÁÁÜ
+            // ì´ë™ ë¡œì§ ê°€ë™ ì „ NavMeshAgent ìƒíƒœë§Œ ë¯¸ë¦¬ ì‚´ë ¤ì¤Œ
             if (agent != null && agent.isOnNavMesh)
             {
                 agent.isStopped = false;
             }
         }
 
-        // °ø°İ Æ®¸®°Å Á÷ÈÄ ¹°¸®Àû ¸ØÃã º¸Àå¿ë Å¸ÀÌ¸Ó
+        // ê³µê²© íŠ¸ë¦¬ê±° ì§í›„ ë¬¼ë¦¬ì  ë©ˆì¶¤ ë³´ì¥ìš© íƒ€ì´ë¨¸
         if (_attackTagDelayTimer > 0f)
         {
             _attackTagDelayTimer -= Time.deltaTime;
@@ -121,14 +121,14 @@ public class PrisonerCombatState : BasePrisonerState
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        // 4. [ÇØ°á] °ø°İ µ¿ÀÛÀÌ ³¡³µ´Ù¸é ÄğÅ¸ÀÓ ÁßÀÌ¶óµµ Áï½Ã Ãß°İ °¡´É
+        // 4. [í•´ê²°] ê³µê²© ë™ì‘ì´ ëë‚¬ë‹¤ë©´ ì¿¨íƒ€ì„ ì¤‘ì´ë¼ë„ ì¦‰ì‹œ ì¶”ê²© ê°€ëŠ¥
         if (dist <= AttackRange && _cooldownTimer <= 0f && !_isAttackStarted)
         {
             Attack();
         }
         else if (!_isAttackStarted)
         {
-            // ÀÌÁ¦ °ø°İ ÈÖµÎ¸£±â°¡ ³¡³ªÀÚ¸¶ÀÚ ¸ÛÇÏ´Ï ¼­ ÀÖÁö ¾Ê°í ÇÃ·¹ÀÌ¾î¸¦ µû¶ó°©´Ï´Ù.
+            // ì´ì œ ê³µê²© íœ˜ë‘ë¥´ê¸°ê°€ ëë‚˜ìë§ˆì ë©í•˜ë‹ˆ ì„œ ìˆì§€ ì•Šê³  í”Œë ˆì´ì–´ë¥¼ ë”°ë¼ê°‘ë‹ˆë‹¤.
             MoveToPlayer(dist);
         }
     }
@@ -137,18 +137,18 @@ public class PrisonerCombatState : BasePrisonerState
     {
         if (agent == null || !agent.isOnNavMesh) return;
 
-        // »ç°Å¸®º¸´Ù ¸Ö ¶§¸¸ ÀÌµ¿ ·ÎÁ÷ ¼öÇà
+        // ì‚¬ê±°ë¦¬ë³´ë‹¤ ë©€ ë•Œë§Œ ì´ë™ ë¡œì§ ìˆ˜í–‰
         if (currentDist > agent.stoppingDistance + 0.05f)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            anim.SetBool(RunHash, true); // ¿©±â¼­ È®½ÇÈ÷ RunÀ» ÄÔ
+            anim.SetBool(RunHash, true); // ì—¬ê¸°ì„œ í™•ì‹¤íˆ Runì„ ì¼¬
             RotateTowardsPlayer(false);
         }
         else
         {
-            // ÃæºĞÈ÷ °¡±î¿ì¸é Á¤ÁöÇÏ°í ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº½
+            // ì¶©ë¶„íˆ ê°€ê¹Œìš°ë©´ ì •ì§€í•˜ê³  í”Œë ˆì´ì–´ë¥¼ ë°”ë¼ë´„
             StopMovement();
             RotateTowardsPlayer(true);
         }
@@ -156,7 +156,7 @@ public class PrisonerCombatState : BasePrisonerState
 
     private void Attack()
     {
-        Debug.Log($"<color=orange>[Combat] {fsm.Controller.Data.ID} : ÇÃ·¹ÀÌ¾î¸¦ °ø°İÇÕ´Ï´Ù! (Distance: {Vector3.Distance(fsm.transform.position, player.position):F2})</color>");
+        Debug.Log($"<color=orange>[Combat] {fsm.Controller.Data.ID} : í”Œë ˆì´ì–´ë¥¼ ê³µê²©í•©ë‹ˆë‹¤! (Distance: {Vector3.Distance(fsm.transform.position, player.position):F2})</color>");
 
         ForceStopPhysicalMovement();
 
@@ -209,9 +209,21 @@ public class PrisonerCombatState : BasePrisonerState
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        anim.SetTrigger(HitTriggerHash);
-        _isAttackStarted = false;
-        ForceStopPhysicalMovement();
+        //anim.SetTrigger(HitTriggerHash);
+        //_isAttackStarted = false;
+        //ForceStopPhysicalMovement();
+        if (Random.value <= 0.5f)
+        {
+            anim.SetTrigger(HitTriggerHash);
+
+            // í”¼ê²© ì‹œ ê³µê²© ìƒíƒœë¥¼ ìº”ìŠ¬í•˜ê³  ë©ˆì¶”ê²Œ í•˜ëŠ” ë¡œì§
+            _isAttackStarted = false;
+            ForceStopPhysicalMovement();
+        }
+        else
+        {
+            Debug.Log("í”¼ê²©ë˜ì—ˆìœ¼ë‚˜ ë¬´ì‹œí•˜ê³  ê³„ì† í–‰ë™í•©ë‹ˆë‹¤.");
+        }
     }
 
     private void RotateTowardsPlayer(bool fastTurn)
