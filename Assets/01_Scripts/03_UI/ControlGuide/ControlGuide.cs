@@ -74,7 +74,7 @@ public class ControlGuide : MonoBehaviour
 
     private void Update()
     {
-        if (rootPanel.activeSelf && Input.GetKeyDown(KeyCode.Q))
+        if (rootPanel.activeSelf && Input.GetKeyDown(KeyCode.Escape))
         {
             Close();
         }
@@ -94,6 +94,11 @@ public class ControlGuide : MonoBehaviour
 
     private void OnOpenGuide()
     {
+        if(IsOpen == true)
+        {
+            Close();
+            return;
+        }
         IsOpen = true;
         rootPanel.SetActive(true);
         _currentIndex = 0;
