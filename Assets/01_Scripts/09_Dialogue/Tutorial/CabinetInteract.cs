@@ -16,6 +16,8 @@ public class CabinetInteract : MonoBehaviour, IInteractable
     [SerializeField] private AudioClip closeClip;
 
     private bool isOpen = false;
+    [SerializeField] private TutorialNPC _cachedNpc;
+
 
     // =========================
     // 아이템 획득 여부
@@ -49,9 +51,9 @@ public class CabinetInteract : MonoBehaviour, IInteractable
         if (isLootTaken) return;
         bool wasOpen = isOpen; // 상태 토글 전 값 보관
 
-        TutorialNPC npc = FindObjectOfType<TutorialNPC>();
-        if (npc == null) return;
-        if (npc.currentSubStep == DialogueKeys.DialogueType.BoxOpened)
+        //TutorialNPC npc = FindObjectOfType<TutorialNPC>();
+        if (_cachedNpc == null) return;
+        if (_cachedNpc.currentSubStep == DialogueKeys.DialogueType.BoxOpened)
         {
             isOpen = !isOpen;
             animator.SetBool("IsOpen", isOpen);
