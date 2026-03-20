@@ -37,6 +37,10 @@ public class ControlGuide : MonoBehaviour
     [SerializeField] private TextMeshProUGUI leftClickText;
     [SerializeField] private TextMeshProUGUI qSkipText;
 
+    [Header("Click Sound")]
+    [SerializeField] private AudioClip clickClip;
+    [SerializeField] private AudioClip exitClip;
+
 
 
     private Action<OpenControlGuideEvent> _controlGuide;
@@ -76,15 +80,18 @@ public class ControlGuide : MonoBehaviour
     {
         if (rootPanel.activeSelf && Input.GetKeyDown(KeyCode.Escape))
         {
+            ExitSound();
             Close();
         }
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
+            PlaySound();
             Prev();
         }
 
         if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
+            PlaySound();
             Next();
         }
     }
@@ -167,6 +174,28 @@ public class ControlGuide : MonoBehaviour
         if (inspectText != null) inspectText.text = TextManager.Instance.GetTutorialText("Ttxt_G_08");
         if (leftClickText != null) leftClickText.text = TextManager.Instance.GetTutorialText("Ttxt_G_09");
         if (qSkipText != null) qSkipText.text = TextManager.Instance.GetTutorialText("Ttxt_G_10");
+    }
+
+    private void PlaySound()
+    {
+        if (clickClip == null)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlayUISound(clickClip);
+    }
+
+    private void ExitSound()
+    {
+        if (exitClip == null)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlayUISound(exitClip);
     }
 
 }
