@@ -33,6 +33,7 @@ public class TutorialCarryEventTrigger : CarryableBox
                 _isTriggered = true;
                 EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
                 StartCoroutine(DelayedDialogueStart());
+                TutorialOutLiner.Instance.UpdateHighlight(DialogueKeys.DialogueType.BoxOpened);
                 _cachedNpc.finishedDialogue = true;
                 Debug.Log("[BoxDrop]튜토리얼 미션 UI 갱신 성공!!");
             }
