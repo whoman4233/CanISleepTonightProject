@@ -7,11 +7,14 @@ public class PrisonerScheduleManager : MonoBehaviour
 {
     public static PrisonerScheduleManager Instance;
 
+    [Header("Debug")]
+    public bool enableDebugLogs = true; // 로그 온오프용 변수 추가
+
     [Header("References")]
     [SerializeField] private PrisonerDatabaseSO prisonerDatabase;
     [SerializeField] private CellAnchorRegistry anchorRegistry;
 
-    // ★ [추가] Good 죄수가 나올 확률 (기본값 0.5 = 50%)
+    // Good 죄수가 나올 확률 (기본값 0.5 = 50%)
     // Range 속성을 사용하여 유니티 에디터에서 0.0 ~ 1.0 사이의 슬라이더로 조절 가능하게 합니다.
     [Header("AI Ratio Config")]
     [SerializeField, Range(0f, 1f)] private float goodPrisonerRatio = 0.5f;
@@ -27,7 +30,8 @@ public class PrisonerScheduleManager : MonoBehaviour
         if (_cachedResidents == null)
         {
             _cachedResidents = new Dictionary<string, PrisonerData>();
-            Debug.Log("[Schedule] 새 게임: 거주자 명부 초기화됨");
+            if (enableDebugLogs)
+                Debug.Log("[Schedule] 새 게임: 거주자 명부 초기화됨");
         }
 
         _residents = _cachedResidents;
@@ -56,21 +60,23 @@ public class PrisonerScheduleManager : MonoBehaviour
 
         if (prisonerDatabase == null || anchorRegistry == null)
         {
-            Debug.LogError("[Schedule] 필수 데이터베이스 또는 레지스트리가 연결되지 않았습니다.");
+            if (enableDebugLogs)
+                Debug.LogError("[Schedule] 필수 데이터베이스 또는 레지스트리가 연결되지 않았습니다.");
             return;
         }
 
         var allAnchors = anchorRegistry.GetAllCellIds();
         Shuffle(allAnchors); // 방 섞기
 
-        Debug.Log($"[Schedule] 방 개수: {allAnchors.Count}, 생성 목표: 4종류(Skinny, Muscular, Gang, Elite) x 3명");
+        if (enableDebugLogs)
+            Debug.Log($"[Schedule] 방 개수: {allAnchors.Count}, 생성 목표: 4종류(Skinny, Muscular, Gang, Elite) x 3명");
 
         // --------------------------------------------------------
-        // [핵심] 확정 명단(Deck) 만들기
+        // 핵심 확정 명단(Deck) 만들기
         // --------------------------------------------------------
         List<PrisonerDefinition> spawnDeck = new List<PrisonerDefinition>();
 
-        // ★ 각 타입별 데이터 가져오기 (오타나 데이터 누락 시 에러 로그 발생함)
+        // 각 타입별 데이터 가져오기 (오타나 데이터 누락 시 에러 로그 발생함)
         spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Skinny", 3));
         spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Muscular", 3));
         spawnDeck.AddRange(GetRandomDefinitionsByKeyword("Gang", 3));
@@ -80,7 +86,8 @@ public class PrisonerScheduleManager : MonoBehaviour
         // 덱 섞기 (누가 몇 번 방에 갈지 랜덤)
         Shuffle(spawnDeck);
 
-        Debug.Log($"[Schedule] 생성된 죄수 덱 크기: {spawnDeck.Count}명 (목표: 12명)");
+        if (enableDebugLogs)
+            Debug.Log($"[Schedule] 생성된 죄수 덱 크기: {spawnDeck.Count}명 (목표: 12명)");
 
         // 방에 배정
         for (int i = 0; i < allAnchors.Count; i++)
@@ -101,7 +108,8 @@ public class PrisonerScheduleManager : MonoBehaviour
             }
         }
 
-        Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 데이터 생성 완료.");
+        if (enableDebugLogs)
+            Debug.Log($"[Schedule] 신규 입주민 {_residents.Count}명 데이터 생성 완료.");
         _cachedResidents = _residents;
     }
 
@@ -124,7 +132,6 @@ public class PrisonerScheduleManager : MonoBehaviour
         return new DailyRoleData();
     }
 
-    // ... (AssignRolesForNewDay 등 기존 로직 유지 - 변경 없음) ...
     public void AssignRolesForNewDay(
         int suspiciousCount,
         PrisonerAIType defaultAI,
@@ -133,7 +140,8 @@ public class PrisonerScheduleManager : MonoBehaviour
     {
         if (_residents == null || _residents.Count == 0)
         {
-            Debug.LogWarning("[Schedule] 거주민 명부 비어있음 -> 강제 재생성");
+            if (enableDebugLogs)
+                Debug.LogWarning("[Schedule] 거주민 명부 비어있음 -> 강제 재생성");
             GenerateNewResidents();
         }
 
@@ -147,7 +155,7 @@ public class PrisonerScheduleManager : MonoBehaviour
 
             if (defaultAI == PrisonerAIType.Good)
             {
-                // ★ [수정] 0.5 고정값 대신 goodPrisonerRatio 변수를 사용하여 확률 적용
+                // 0.5 고정값 대신 goodPrisonerRatio 변수를 사용하여 확률 적용
                 defaultRole.dailyAIType = (UnityEngine.Random.value <= goodPrisonerRatio) ? PrisonerAIType.Good : PrisonerAIType.Bad;
             }
             _todayRoles[cellId] = defaultRole;
@@ -183,10 +191,11 @@ public class PrisonerScheduleManager : MonoBehaviour
                 assignedCount++;
             }
         }
-        Debug.Log($"[Schedule] 역할 배정 완료. (용의자 {assignedCount}명)");
+
+        if (enableDebugLogs)
+            Debug.Log($"[Schedule] 역할 배정 완료. (용의자 {assignedCount}명)");
     }
 
-    // ... (저장/로드 관련 기존 코드 유지) ...
     public static void ResetStaticData() { _cachedResidents = null; }
 
     public void ResetAllSimulationData()
@@ -203,7 +212,7 @@ public class PrisonerScheduleManager : MonoBehaviour
                 kvp.Value.ResetDailyFlags();
             }
 
-            // ★ [추가] 인스턴스 데이터 비우기
+            // 인스턴스 데이터 비우기
             // 루프가 끝난 후 리스트를 비워야, 현재 매니저가 들고 있는 낡은 데이터가 사라집니다.
             _residents.Clear();
         }
@@ -215,7 +224,8 @@ public class PrisonerScheduleManager : MonoBehaviour
         // 수정: null로 만들어야 다음 게임 시작(Awake) 시 "어? 데이터 없네? 새로 만들자!"가 발동됨.
         _cachedResidents = null;
 
-        Debug.Log("[Schedule] 데이터 리셋 완료 (New Game - Cache Cleared)");
+        if (enableDebugLogs)
+            Debug.Log("[Schedule] 데이터 리셋 완료 (New Game - Cache Cleared)");
     }
 
     // ============================================================
@@ -226,7 +236,7 @@ public class PrisonerScheduleManager : MonoBehaviour
         // 1. 오늘 역할 테이블 비우기
         _todayRoles.Clear();
 
-        // 2. ★ [여기입니다] 모든 죄수의 일일 상태 초기화 호출
+        // 2. 모든 죄수의 일일 상태 초기화 호출
         if (_residents != null)
         {
             foreach (var kvp in _residents)
@@ -239,7 +249,8 @@ public class PrisonerScheduleManager : MonoBehaviour
         if (_cachedResidents != null)
             _cachedResidents = _residents;
 
-        Debug.Log("[Schedule] 모든 죄수의 일일 상태(제압 등)가 초기화되었습니다.");
+        if (enableDebugLogs)
+            Debug.Log("[Schedule] 모든 죄수의 일일 상태(제압 등)가 초기화되었습니다.");
     }
 
     public void ExtractDataForSave(out List<PrisonerSaveData> outRoster, out List<DailyRoleSaveData> outDailyRoles)
@@ -296,7 +307,9 @@ public class PrisonerScheduleManager : MonoBehaviour
         ResetStaticData();
         _cachedResidents = _residents;
         GenerateNewResidents();
-        Debug.Log("[Schedule] DB 강제 재구축 완료.");
+
+        if (enableDebugLogs)
+            Debug.Log("[Schedule] DB 강제 재구축 완료.");
     }
 
     // =======================================================================
@@ -348,7 +361,7 @@ public class PrisonerScheduleManager : MonoBehaviour
     }
 
     // =======================================================================
-    // ★ [수정] 특정 키워드 검색 실패 시 -> 일반 죄수로 대체하여 반환
+    // 특정 키워드 검색 실패 시 -> 일반 죄수로 대체하여 반환
     // =======================================================================
     private List<PrisonerDefinition> GetRandomDefinitionsByKeyword(string keyword, int count)
     {

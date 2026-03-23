@@ -184,7 +184,7 @@ MonoBehaviour:
   spawnController: {fileID: 2029310977}
   floors: 2
   cellsPerFloor: 6
-  verboseLog: 1
+  verboseLog: 0
 --- !u!1 &144340682
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,6 +275,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc428276f857d6c4fafe8f6b2d538705, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableDebugLogs: 0
   prisonerDatabase: {fileID: 11400000, guid: 2b112f9033548174e8788f03a4c6368d, type: 2}
   anchorRegistry: {fileID: 2005062747}
   goodPrisonerRatio: 0.2
@@ -1990,6 +1991,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8caa00a132a081846b60133cde2f786e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableDebugLogs: 0
   masterDatabase: {fileID: 11400000, guid: 1b34bf38cda3cab40ac0f04d18c240ae, type: 2}
   anchorRegistry: {fileID: 2005062747}
   prisonManager: {fileID: 65292951}
@@ -2827,7 +2829,7 @@ MonoBehaviour:
     type: 3}
   goatHeadPrefab: {fileID: 51263258616741703, guid: e4236f4e6dcd12f41aecd8e84300bfc6,
     type: 3}
-  verboseLog: 1
+  verboseLog: 0
 --- !u!4 &2029310978
 Transform:
   m_ObjectHideFlags: 0

@@ -14,16 +14,19 @@ public class PrisonerEscapeState : BasePrisonerState
     private float _originalSpeed = 3.5f;
 
     // =======================================================================
-    // [추가] Animator Hashes (성능 최적화용)
+    // Animator Hashes (성능 최적화용)
     // =======================================================================
     private static readonly int IsActionHash = Animator.StringToHash("IsAction");
     private static readonly int IsntStandingHash = Animator.StringToHash("IsntStanding");
     private static readonly int RunHash = Animator.StringToHash("Run");
     private static readonly int WalkHash = Animator.StringToHash("Walk");
 
+    // RunStyle 파라미터 해시 추가
+    private static readonly int RunStyleHash = Animator.StringToHash("RunStyle");
+
     // CrossFade용 상태(State) 이름 해시
     private static readonly int WalkStateHash = Animator.StringToHash("Prisoner_Walk01");
-    private static readonly int IdleStateHash = Animator.StringToHash("Idle");
+    private static readonly int IdleStateHash = Animator.StringToHash("Prisoner_Standing01");
     private static readonly int RunStateHash = Animator.StringToHash("Run");
 
     public PrisonerEscapeState(PrisonerFSM fsm) : base(fsm) { }
@@ -56,7 +59,7 @@ public class PrisonerEscapeState : BasePrisonerState
         }
 
         // ================================================================
-        // ★ 이전 행동 강제 초기화 (애니메이션 씹힘 방지)
+        // 이전 행동 강제 초기화 (애니메이션 씹힘 방지)
         // ================================================================
         Controller.StopActionBehavior(); // 들고 있던 도구 제거, 소리 끄기
         Anim.SetBool(IsActionHash, false); // 특수 행동 파라미터 해제
@@ -76,8 +79,9 @@ public class PrisonerEscapeState : BasePrisonerState
 
                 Agent.SetDestination(fsm.InspectionPoint.position);
 
-                // 자연스러운 걷기 전이 유도
+                // 자연스러운 걷기 전이 유도 및 강제 전환
                 Anim.SetBool(WalkHash, true);
+                Anim.CrossFade(WalkStateHash, 0.1f);
             }
         }
         else
@@ -154,7 +158,11 @@ public class PrisonerEscapeState : BasePrisonerState
         }
 
         Anim.SetBool(WalkHash, false);
+
+        // RunStyle 파라미터를 1로 설정하여 특정 달리기 스타일 지정
+        Anim.SetInteger(RunStyleHash, 1);
         Anim.SetBool(RunHash, true);
+
         Anim.CrossFade(RunStateHash, 0.1f); // 바로 달리기 상태로 전환
     }
 
@@ -199,6 +207,9 @@ public class PrisonerEscapeState : BasePrisonerState
         Anim.SetBool(RunHash, false);
         Anim.SetBool(WalkHash, false);
         Anim.SetBool(IsActionHash, false);
+
+        // RunStyle 초기화 (다른 상태 진입 시 오류 방지)
+        Anim.SetInteger(RunStyleHash, 0);
 
         if (Agent != null && Agent.isOnNavMesh)
         {
