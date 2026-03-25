@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
     private SaveManager _saveManager;
+    public bool IsTimerPaused { get; set; } = false; // 타임어택 멈추게 하는 변수
 
     [Header("페이즈 상태")]
     [SerializeField] private GamePhase initialPhase = GamePhase.NotStarted; // [TEST ONLY] 테스트 시작 페이즈
@@ -276,6 +277,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterPatrol()
     {
+        IsTimerPaused = false;
         _patrolTimeoutHandled = false;
         EventBus.Publish(new ShowTimedTextPopupEvent("Utxt_KR_52", 1.5f));
         //patrolDurationSeconds = 480;
@@ -332,17 +334,19 @@ public class GameManager : MonoBehaviour
 
         while (CurrentPhase == GamePhase.Patrol)
         {
-            _remainingPatrolSeconds -= Time.deltaTime;
-
-            if (_remainingPatrolSeconds <= 0f)
+            if (!IsTimerPaused)
             {
-                HandlePatrolTimeout();
-                yield break;
+                _remainingPatrolSeconds -= Time.deltaTime;
+
+                if (_remainingPatrolSeconds <= 0f)
+                {
+                    HandlePatrolTimeout();
+                    yield break;
+                }
+
+                CurrentInGameSeconds = _remainingPatrolSeconds;
+                OnInGameTimeUpdated?.Invoke(_remainingPatrolSeconds);
             }
-
-            CurrentInGameSeconds = _remainingPatrolSeconds;
-            OnInGameTimeUpdated?.Invoke(_remainingPatrolSeconds);
-
             yield return null;
         }
     }
