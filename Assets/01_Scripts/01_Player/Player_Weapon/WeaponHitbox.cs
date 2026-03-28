@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public sealed class WeaponHitbox : MonoBehaviour
 {
@@ -26,6 +27,10 @@ public sealed class WeaponHitbox : MonoBehaviour
     private Collider _weaponCollider;
     private int _prisonerLayer;
     private bool _swingActive;
+
+
+    // 이번 스윙(공격)에서 이미 타격 판정이 완료된 객체들의 ID 저장
+    private readonly HashSet<int> _alreadyHitList = new HashSet<int>();
 
     private void Awake()
     {
@@ -55,6 +60,7 @@ public sealed class WeaponHitbox : MonoBehaviour
     // 애니메이션 이벤트에서 호출
     public void BeginSwing()
     {
+        _alreadyHitList.Clear(); // 새로운 공격 시작 시 명부 초기화
         _swingActive = true;
         if (_weaponCollider != null)
             _weaponCollider.enabled = true;
@@ -65,6 +71,7 @@ public sealed class WeaponHitbox : MonoBehaviour
         _swingActive = false;
         if (_weaponCollider != null)
             _weaponCollider.enabled = false;
+        _alreadyHitList.Clear(); // 안전을 위해 종료 시에도 비움
     }
 
     private void OnTriggerEnter(Collider other)
@@ -72,8 +79,14 @@ public sealed class WeaponHitbox : MonoBehaviour
         if (!_swingActive || other == null) return;
         if (other.gameObject.layer != _prisonerLayer) return;
 
+        int targetId = other.GetInstanceID();
+        if (_alreadyHitList.Contains(targetId)) return;
+
         var prisoner = other.GetComponent<PrisonerController>() ?? other.GetComponentInParent<PrisonerController>();
         if (prisoner == null) return;
+
+        // 타격 성공 시 명부에 추가 (다단히트 방지)
+        _alreadyHitList.Add(targetId);
 
         int damage = GetPlayerDamage();
         Vector3 hitPoint = other.ClosestPoint(vfxSpawnPoint.position);
@@ -83,8 +96,9 @@ public sealed class WeaponHitbox : MonoBehaviour
         PlayHitVfx(hitPoint, hitDir);
 
         // 1회 타격 후 다단히트 방지(네 코드 유지)
-        if (_weaponCollider != null)
-            _weaponCollider.enabled = false;
+        //if (_weaponCollider != null)
+        //    _weaponCollider.enabled = false;
+
     }
 
     private void PlayHitVfx(Vector3 hitPoint, Vector3 hitDir)
