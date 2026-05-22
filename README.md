@@ -2,7 +2,7 @@
 
 ![gameplay](GamePlay.gif)
 
-https://store.steampowered.com/app/4417570/_/
+[![Steam에서 플레이하기](https://img.shields.io/badge/Steam-%EC%B6%9C%EC%8B%9C%EC%A4%91-1b2838?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/4417570/_/)
 
 ## 게임 개요
 
