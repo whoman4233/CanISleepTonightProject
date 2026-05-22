@@ -1,5 +1,7 @@
 # 🎮 근무 중 이상 무 (Report: No Anomalies)
 
+![gameplay](GamePlay.gif)
+
 ## 게임 개요
 
 | 항목 | 내용 |
