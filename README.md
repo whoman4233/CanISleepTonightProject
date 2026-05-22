@@ -2,6 +2,8 @@
 
 ![gameplay](GamePlay.gif)
 
+https://store.steampowered.com/app/4417570/_/
+
 ## 게임 개요
 
 | 항목 | 내용 |
