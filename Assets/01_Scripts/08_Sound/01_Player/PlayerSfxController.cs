@@ -27,6 +27,7 @@ public sealed class PlayerSfxController : MonoBehaviour
     private const float WalkVolume = 0.5f;
     private const float RunVolume = 0.7f;
     private const float FadeSpeed = 8f;
+    private const float CrouchVolume = 0.3f;
 
     private const float JumpVolume = 0.9f;
     private const float LandVolume = 0.95f;
@@ -74,20 +75,70 @@ public sealed class PlayerSfxController : MonoBehaviour
 
     public void TickFootstepLoop(float dt, Vector2 moveInput, bool isGrounded, bool isRunning, bool isCrouchMode)
     {
-        if (footstepLoopSource == null) return;
+        if (footstepLoopSource == null)
+            return;
 
-        bool shouldHear =
-            isGrounded &&
-            !isCrouchMode &&
-            moveInput.sqrMagnitude >= MinMoveInputSqr;
+        bool hasMoveInput = moveInput.sqrMagnitude >= MinMoveInputSqr;
 
-        AudioClip targetClip = isRunning ? runLoopClip : walkLoopClip;
-        float targetVolume = isRunning ? RunVolume : WalkVolume;
+        // ---------------------------------
+        // 1. 이동 불가 → 볼륨만 0 (Stop 금지)
+        // ---------------------------------
+        if (!isGrounded || !hasMoveInput)
+        {
+            footstepLoopSource.volume = Mathf.MoveTowards(
+                footstepLoopSource.volume,
+                0f,
+                FadeSpeed * dt
+            );
+            return;
+        }
 
-        EnsurePlayingWithClip(targetClip);
+        // ---------------------------------
+        // 2. 상태별 클립 / 볼륨
+        // ---------------------------------
+        AudioClip targetClip;
+        float targetVolume;
 
-        float desired = shouldHear ? targetVolume : 0f;
-        footstepLoopSource.volume = Mathf.MoveTowards(footstepLoopSource.volume, desired, FadeSpeed * dt);
+        if (isCrouchMode)
+        {
+            targetClip = walkLoopClip;
+            targetVolume = CrouchVolume;
+        }
+        else if (isRunning)
+        {
+            targetClip = runLoopClip;
+            targetVolume = RunVolume;
+        }
+        else
+        {
+            targetClip = walkLoopClip;
+            targetVolume = WalkVolume;
+        }
+
+        // ---------------------------------
+        // 3. 클립 변경 시에만 Stop + Play
+        // ---------------------------------
+        if (footstepLoopSource.clip != targetClip)
+        {
+            footstepLoopSource.Stop();
+            footstepLoopSource.clip = targetClip;
+            footstepLoopSource.volume = 0f;
+            footstepLoopSource.Play();
+        }
+        else if (!footstepLoopSource.isPlaying)
+        {
+            // 같은 clip인데 Stop된 경우 복구
+            footstepLoopSource.Play();
+        }
+
+        // ---------------------------------
+        // 4. 볼륨 보간
+        // ---------------------------------
+        footstepLoopSource.volume = Mathf.MoveTowards(
+            footstepLoopSource.volume,
+            targetVolume,
+            FadeSpeed * dt
+        );
     }
 
     public void PlayJumpSfx()

@@ -13,6 +13,8 @@ public class PlayerStateMachine
 
     private PlayerState _current;
 
+    public float CurrentSpeed { get; private set; }
+
     private bool _isPaused; //FSM Pause 플래그
     public bool IsPaused => _isPaused;
     public PlayerStateMachine(Player player)
@@ -60,5 +62,9 @@ public class PlayerStateMachine
     {
         if (_isPaused) return;
         _current?.FixedTick(fdt);
+    }
+    public void SetCurrentSpeed(float speed)
+    {
+        CurrentSpeed = speed;
     }
 }

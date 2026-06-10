@@ -10,6 +10,7 @@ public class QTEFlowDirector : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private CameraDirector cameraDirector;
     [SerializeField] private CameraShakeController shakeController;
+    [SerializeField] private QTEVolumeController qteVolumeController;
 
     private Action<QTEStartedEvent> _onStart;
     private Action<QTEInputFeedbackEvent> _onInput;
@@ -82,6 +83,9 @@ public class QTEFlowDirector : MonoBehaviour
 
         if (shakeController != null)
             shakeController.OnQTEStarted();
+
+        if (qteVolumeController != null)
+            qteVolumeController.Enter(attacker);
     }
 
     private void OnQTEInputFeedback(QTEInputFeedbackEvent e)
@@ -107,6 +111,10 @@ public class QTEFlowDirector : MonoBehaviour
         // 쉐이크 종료
         if (shakeController != null)
             shakeController.OnQTEEnded();
+
+        // DOF 효과 종료
+        if (qteVolumeController != null)
+            qteVolumeController.Exit();
     }
 
     // ======================================================

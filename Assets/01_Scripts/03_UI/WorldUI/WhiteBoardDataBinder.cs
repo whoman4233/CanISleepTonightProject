@@ -30,6 +30,8 @@ public class WhiteBoardDataBinder : MonoBehaviour
         EventBus.Subscribe(_onPhaseChanged);
         EventBus.Subscribe(_onMissionRevealed);
         EventBus.Subscribe(_onUIHardReset);
+
+        TextManager.OnLanguageChanged += RefreshMissionText;
     }
 
     private void OnDisable()
@@ -37,6 +39,8 @@ public class WhiteBoardDataBinder : MonoBehaviour
         EventBus.Unsubscribe(_onPhaseChanged);
         EventBus.Unsubscribe(_onMissionRevealed);
         EventBus.Unsubscribe(_onUIHardReset);
+
+        TextManager.OnLanguageChanged -= RefreshMissionText;
     }
 
     private void OnMissionRevealed(MissionRevealedEvent e)
@@ -45,9 +49,16 @@ public class WhiteBoardDataBinder : MonoBehaviour
             return;
 
         _missionRevealed = true;
-        missionDescriptionText.text = e.mission.description;
+
+        string text = TextManager.Instance.GetMissionText(
+            e.mission.MissionTextNo,
+            MissionTextRole.MissionTitle
+        );
+
+        missionDescriptionText.text = text;
         missionDescriptionText.gameObject.SetActive(true);
     }
+
 
     private void OnPhaseChanged(GamePhaseChangedEvent e)
     {
@@ -92,6 +103,23 @@ public class WhiteBoardDataBinder : MonoBehaviour
         int displayDay = Mathf.Max(0, systemDay);
 
         dayText.text = $"{displayDay}";
+    }
+
+    private void RefreshMissionText()
+    {
+        if (!_missionRevealed)
+            return;
+
+        var mission = DailyMissionManager.Instance?.CurrentMission;
+        if (mission == null)
+            return;
+
+        string text = TextManager.Instance.GetMissionText(
+            mission.MissionTextNo,
+            MissionTextRole.MissionTitle
+        );
+
+        missionDescriptionText.text = text;
     }
 }
 

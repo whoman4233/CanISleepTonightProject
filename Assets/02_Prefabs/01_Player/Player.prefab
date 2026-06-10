@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8646659414983776047}
   - component: {fileID: 3266078730474386718}
   - component: {fileID: 379761202227191077}
+  - component: {fileID: 3895399071798638598}
   m_Layer: 6
   m_Name: CameraContainer
   m_TagString: Untagged
@@ -88,6 +89,26 @@ MonoBehaviour:
   actionFilter: {fileID: 11400000, guid: fe3d5fc4b5fa98543a190e1abd4457ff, type: 2}
   cameraDirector: {fileID: 8646659414983776047}
   shakeController: {fileID: 3266078730474386718}
+  qteVolumeController: {fileID: 3895399071798638598}
+--- !u!114 &3895399071798638598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478576560861453752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b4dcffc5d9fcb44a9e8fb87aab48077, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  qteVolume: {fileID: 0}
+  blendInTime: 0.15
+  blendOutTime: 0.15
+  autoFocusToTarget: 0
+  focusOffset: 0
+  focusLerpSpeed: 12
+  logBinding: 0
 --- !u!1 &1225454943606127437
 GameObject:
   m_ObjectHideFlags: 0
@@ -712,6 +733,7 @@ GameObject:
   - component: {fileID: 8276877521905377850}
   - component: {fileID: 6912972206494567956}
   - component: {fileID: 9189452086200419332}
+  - component: {fileID: 111154460366020125}
   m_Layer: 6
   m_Name: MainCamera
   m_TagString: MainCamera
@@ -815,7 +837,7 @@ MonoBehaviour:
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 18433
+    m_Bits: 51201
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
@@ -873,6 +895,18 @@ MonoBehaviour:
   m_CameraActivatedEvent:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &111154460366020125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4082147970510165749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d88c92facd789c42a43f575f6894d20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4517878728287188215
 GameObject:
   m_ObjectHideFlags: 0
@@ -973,7 +1007,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 8356192855900131991}
   horizontalSensitivity: 0.1
-  verticalSensitivity: 0.1
+  verticalSensitivity: 0.03
 --- !u!114 &7472181039583815139
 MonoBehaviour:
   m_ObjectHideFlags: 0

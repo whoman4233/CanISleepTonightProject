@@ -8,11 +8,12 @@ public class TutorialCarryEventTrigger : CarryableBox
 {
     public DialogueKeys.DialogueType stepToPublish; // 인스펙터에서 설정 (예: BoxOpened)
     private bool _isTriggered = false; // 실행 여부 체크
-    private TutorialNPC _cachedNpc;
+    [SerializeField] private TutorialNPC _cachedNpc;
 
     public override void Interact(Player player) // 그냥 오브젝트에 상호작용하면 바로 스텝 넘어가게
     {
-        if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
+        TutorialOutLiner.Instance.StopCurrentHighlight();
+        //if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
 
         if (_cachedNpc != null && _cachedNpc.currentSubStep == DialogueKeys.DialogueType.BoardSee)
         {
@@ -23,7 +24,7 @@ public class TutorialCarryEventTrigger : CarryableBox
     public override void Drop(Player player)
     {
         if (_isTriggered) return;
-        if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
+        //if (_cachedNpc == null) _cachedNpc = FindObjectOfType<TutorialNPC>();
 
         if (_cachedNpc != null && !_isTriggered)
         {
@@ -32,6 +33,7 @@ public class TutorialCarryEventTrigger : CarryableBox
                 _isTriggered = true;
                 EventBus.Publish(new DialogueStepChangedEvent(stepToPublish));
                 StartCoroutine(DelayedDialogueStart());
+                TutorialOutLiner.Instance.UpdateHighlight(DialogueKeys.DialogueType.BoxOpened);
                 _cachedNpc.finishedDialogue = true;
                 Debug.Log("[BoxDrop]튜토리얼 미션 UI 갱신 성공!!");
             }

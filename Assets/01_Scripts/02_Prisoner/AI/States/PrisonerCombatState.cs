@@ -1,165 +1,154 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 public class PrisonerCombatState : BasePrisonerState
 {
     private float _cooldownTimer = 0f;
-    private const float AttackCooldown = 1.5f;
-    private const float AttackRange = 1.3f;
+    private const float AttackCooldown = 0.5f;
+    private const float AttackRange = 1f;
     private float _attackTagDelayTimer = 0f;
 
-    // [ÃÖÀûÈ­] ÇÃ·¹ÀÌ¾î Ã£´Â ºóµµ Á¶Àı¿ë Å¸ÀÌ¸Ó
+    private bool _isAttackStarted = false;
     private float _playerFindTimer = 0f;
+
+    // Animator Hashes
+    private static readonly int InCombatHash = Animator.StringToHash("InCombat");
+    private static readonly int RunHash = Animator.StringToHash("Run");
+    private static readonly int WalkHash = Animator.StringToHash("Walk");
+    private static readonly int HasWeaponHash = Animator.StringToHash("HasWeapon");
+    private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
+    private static readonly int AttackTriggerHash = Animator.StringToHash("Attack");
+    private static readonly int HitTriggerHash = Animator.StringToHash("Hit");
 
     public PrisonerCombatState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
     {
         base.Enter();
+        _isAttackStarted = false;
 
-        // ================================================================
-        // ¡Ú [¿äÃ»»çÇ×] ÁøÀÔÇÏÀÚ¸¶ÀÚ InCombat ÆÄ¶ó¹ÌÅÍ ON
-        // ================================================================
-        // AnimatorÀÇ ÆÄ¶ó¹ÌÅÍ ÀÌ¸§°ú Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÕ´Ï´Ù. ("InCombat" vs "IsCombat")
-        anim.SetBool("InCombat", true);
+        // 1. ìƒíƒœ íŒŒë¼ë¯¸í„° ì„¤ì •
+        anim.SetBool(InCombatHash, true);
 
-        // ¸Û¶§¸² ¹æÁö¿ë °­Á¦ ´Ş¸®±â ÀüÈ¯ (ÀÌÀü ¼öÁ¤»çÇ× Æ÷ÇÔ)
-        anim.CrossFade("Run", 0.1f);
-        anim.SetBool("Run", true);
-
-        // 1. ÇÃ·¹ÀÌ¾î Ä³½Ì
         if (player == null) FindPlayer();
 
-        // 2. Agent ¼³Á¤
         if (agent != null)
         {
             if (!agent.enabled) agent.enabled = true;
             if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
 
             agent.isStopped = false;
+            agent.stoppingDistance = AttackRange * 0.8f;
             agent.updatePosition = true;
             agent.updateRotation = true;
+            agent.acceleration = 100f;
 
-            // ¼Óµµ º¹±¸
             if (fsm.Controller.Data != null && fsm.Controller.Data.definition != null)
                 agent.speed = fsm.Controller.Data.definition.spd;
             else
                 agent.speed = 3.5f;
-
-            agent.stoppingDistance = 0.1f;
         }
 
         _cooldownTimer = 0.2f;
 
-        // 3. ¹«±â ÀåÂø
-        if (fsm.Controller.HasWeapon)
+        // â˜… [í•´ê²°] ë§Œì•½ í”Œë ˆì´ì–´ê°€ ë©€ë¦¬ ìˆë‹¤ë©´ ì¦‰ì‹œ ì´ë™ ì• ë‹ˆë©”ì´ì…˜ ê°•ì œ ì ìš©
+        float dist = Vector3.Distance(fsm.transform.position, player.position);
+        if (dist > agent.stoppingDistance + 0.1f)
         {
-            fsm.Controller.StartActionBehavior(fsm.Controller.AIType);
-        }
-
-        // 4. Áï½Ã Ãß°İ ½ÃÀÛ
-        if (player != null)
-        {
-            float dist = Vector3.Distance(fsm.transform.position, player.position);
-
-            if (dist > AttackRange)
-            {
-                MoveToPlayer();
-            }
-            else
-            {
-                RotateTowardsPlayer(true);
-            }
+            anim.SetBool(RunHash, true);
+            // ì• ë‹ˆë©”ì´í„°ê°€ Idleì„ ê±°ì¹˜ì§€ ì•Šê³  ë°”ë¡œ Runìœ¼ë¡œ CrossFade í•˜ê²Œ ìœ ë„
+            anim.CrossFade("Run", 0.1f);
         }
     }
 
     public override void Update()
     {
-        // 1. ÇÃ·¹ÀÌ¾î À¯È¿¼º °Ë»ç (¾øÀ¸¸é ÁÖ±âÀûÀ¸·Î Àç°Ë»ö)
         if (player == null)
         {
             _playerFindTimer -= Time.deltaTime;
-            if (_playerFindTimer <= 0f)
-            {
-                FindPlayer();
-                _playerFindTimer = 1.0f; // 1ÃÊ µÚ¿¡ ´Ù½Ã Ã£±â (¼º´É º¸È£)
-            }
-
-            if (player == null) // ¿©ÀüÈ÷ ¾øÀ¸¸é Á¤Áö
-            {
-                StopMovement();
-                return;
-            }
+            if (_playerFindTimer <= 0f) { FindPlayer(); _playerFindTimer = 1.0f; }
+            if (player == null) { StopMovement(); return; }
         }
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+        bool isInTransition = anim.IsInTransition(0);
 
-        // 2. Çàµ¿ ºÒ°¡ »óÅÂ Ã¼Å© (ÇÇ°İ, °ø°İ Áß)
+        // 1. í”¼ê²© ì¤‘ ì²˜ë¦¬ (ìµœìš°ì„ )
         if (stateInfo.IsTag("Hit"))
         {
-            StopMovement();
+            ForceStopPhysicalMovement();
             return;
         }
 
+        // 2. [í•µì‹¬] ê³µê²© ì§„í–‰ ì—¬ë¶€ íŒì • ë³´ì •
+        bool currentIsAttack = stateInfo.IsTag("Attack");
+        bool nextIsAttack = isInTransition && anim.GetNextAnimatorStateInfo(0).IsTag("Attack");
+
+        // ì• ë‹ˆë©”ì´ì…˜ì´ 90% ì´ìƒ ì§„í–‰ë˜ì—ˆê±°ë‚˜, ë‹¤ìŒ ìƒíƒœê°€ ê³µê²©ì´ ì•„ë‹ˆë¼ë©´ "ê³µê²© ì¤‘ ì•„ë‹˜"ìœ¼ë¡œ ê°„ì£¼
+        bool isMotionFinishing = currentIsAttack && stateInfo.normalizedTime >= 0.9f;
+        bool isActuallyAttacking = (currentIsAttack && !isMotionFinishing) || nextIsAttack;
+
+        if (isActuallyAttacking)
+        {
+            ForceStopPhysicalMovement();
+            _isAttackStarted = true;
+            return;
+        }
+
+        // 3. [í•´ê²°] ê³µê²© ì¢…ë£Œ ì¦‰ì‹œ ë³µêµ¬
+        // ê³µê²© ì¤‘ì´ì—ˆë‹¤ê°€(isAttackStarted) ìœ„ì˜ íŒì • ë¡œì§ì— ì˜í•´ ëë‚¬ë‹¤ê³  íŒë‹¨ë˜ëŠ” ìˆœê°„
+        if (_isAttackStarted && !isActuallyAttacking)
+        {
+            _isAttackStarted = false;
+
+            // ì´ë™ ë¡œì§ ê°€ë™ ì „ NavMeshAgent ìƒíƒœë§Œ ë¯¸ë¦¬ ì‚´ë ¤ì¤Œ
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
+        }
+
+        // ê³µê²© íŠ¸ë¦¬ê±° ì§í›„ ë¬¼ë¦¬ì  ë©ˆì¶¤ ë³´ì¥ìš© íƒ€ì´ë¨¸
         if (_attackTagDelayTimer > 0f)
         {
             _attackTagDelayTimer -= Time.deltaTime;
-            StopMovement();
-            RotateTowardsPlayer(true); // °ø°İ Á÷Àü À¯µµ·Â º¸Á¤
+            ForceStopPhysicalMovement();
+            RotateTowardsPlayer(true);
             return;
         }
 
-        if (stateInfo.IsTag("Attack"))
-        {
-            StopMovement();
-            return;
-        }
-
-        // 3. ÀüÅõ ·ÎÁ÷ ¼öÇà
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
         float dist = Vector3.Distance(fsm.transform.position, player.position);
 
-        if (dist <= AttackRange)
+        // 4. [í•´ê²°] ê³µê²© ë™ì‘ì´ ëë‚¬ë‹¤ë©´ ì¿¨íƒ€ì„ ì¤‘ì´ë¼ë„ ì¦‰ì‹œ ì¶”ê²© ê°€ëŠ¥
+        if (dist <= AttackRange && _cooldownTimer <= 0f && !_isAttackStarted)
         {
-            // [»ç°Å¸® ¾È] °ø°İ ½Ãµµ
-            StopMovement();
-            RotateTowardsPlayer(true);
-
-            if (_cooldownTimer <= 0f)
-            {
-                Attack();
-            }
+            Attack();
         }
-        else
+        else if (!_isAttackStarted)
         {
-            // [»ç°Å¸® ¹Û] Ãß°İ
-            MoveToPlayer();
+            // ì´ì œ ê³µê²© íœ˜ë‘ë¥´ê¸°ê°€ ëë‚˜ìë§ˆì ë©í•˜ë‹ˆ ì„œ ìˆì§€ ì•Šê³  í”Œë ˆì´ì–´ë¥¼ ë”°ë¼ê°‘ë‹ˆë‹¤.
+            MoveToPlayer(dist);
         }
     }
 
-    private void MoveToPlayer()
+    private void MoveToPlayer(float currentDist)
     {
-        if (agent == null) return;
+        if (agent == null || !agent.isOnNavMesh) return;
 
-        // ¡Ú [¾ÈÀüÀåÄ¡] Agent°¡ °©ÀÚ±â ²¨Áö°Å³ª NavMesh¿¡¼­ ÀÌÅ»ÇßÀ» °æ¿ì º¹±¸ ½Ãµµ
-        if (!agent.enabled) agent.enabled = true;
-        if (!agent.isOnNavMesh) agent.Warp(fsm.transform.position);
-
-        // Á¤»ó »óÅÂÀÏ ¶§¸¸ ÀÌµ¿ ¹× Run ¾Ö´Ï¸ŞÀÌ¼Ç
-        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+        // ì‚¬ê±°ë¦¬ë³´ë‹¤ ë©€ ë•Œë§Œ ì´ë™ ë¡œì§ ìˆ˜í–‰
+        if (currentDist > agent.stoppingDistance + 0.05f)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            anim.SetBool("Walk", false);
-            anim.SetBool("Run", true);
-
+            anim.SetBool(RunHash, true); // ì—¬ê¸°ì„œ í™•ì‹¤íˆ Runì„ ì¼¬
             RotateTowardsPlayer(false);
         }
         else
         {
-            // º¹±¸ ½ÇÆĞ ½Ã ¸ØÃã (Á¦ÀÚ¸® °È±â ¹æÁö)
+            // ì¶©ë¶„íˆ ê°€ê¹Œìš°ë©´ ì •ì§€í•˜ê³  í”Œë ˆì´ì–´ë¥¼ ë°”ë¼ë´„
             StopMovement();
             RotateTowardsPlayer(true);
         }
@@ -167,24 +156,37 @@ public class PrisonerCombatState : BasePrisonerState
 
     private void Attack()
     {
-        StopMovement();
+        Debug.Log($"<color=orange>[Combat] {fsm.Controller.Data.ID} : í”Œë ˆì´ì–´ë¥¼ ê³µê²©í•©ë‹ˆë‹¤! (Distance: {Vector3.Distance(fsm.transform.position, player.position):F2})</color>");
+
+        ForceStopPhysicalMovement();
+
+        _isAttackStarted = true;
 
         bool hasWeapon = fsm.Controller.HasWeapon;
-        anim.SetBool("HasWeapon", hasWeapon);
+        anim.SetBool(HasWeaponHash, hasWeapon);
 
         int attackIndex = 0;
-        if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 1;
+        if (hasWeapon && fsm.Controller.AIType == PrisonerAIType.Ambusher) attackIndex = 0;
         else if (!hasWeapon) attackIndex = Random.Range(0, 3);
 
-        anim.SetFloat("AttackType", (float)attackIndex);
-
-        // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç ½ÃÀÛ°ú ÇÔ²² »ç¿îµå Àç»ı
+        anim.SetFloat(AttackIndexHash, (float)attackIndex);
         fsm.Controller.PlayAttackSound();
 
-        anim.SetTrigger("Attack");
+        anim.SetTrigger(AttackTriggerHash);
 
         _cooldownTimer = AttackCooldown;
-        _attackTagDelayTimer = 0.2f;
+        _attackTagDelayTimer = 0.3f;
+    }
+
+    private void ForceStopPhysicalMovement()
+    {
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
+        }
+        anim.SetBool(RunHash, false);
     }
 
     private void StopMovement()
@@ -194,22 +196,34 @@ public class PrisonerCombatState : BasePrisonerState
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
         }
-        // ¡Ú ¸ØÃâ ¶§´Â RunÀ» È®½ÇÈ÷ ²¨¾ß ÇÔ
-        anim.SetBool("Run", false);
+        anim.SetBool(RunHash, false);
     }
 
     public override void Exit()
     {
-        anim.SetBool("InCombat", false);
-        anim.SetBool("Run", false);
-        anim.SetBool("Walk", false);
+        anim.SetBool(InCombatHash, false);
+        anim.SetBool(RunHash, false);
+        if (agent != null && agent.isOnNavMesh) agent.ResetPath();
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        anim.SetTrigger("Hit");
-        StopMovement();
+        //anim.SetTrigger(HitTriggerHash);
+        //_isAttackStarted = false;
+        //ForceStopPhysicalMovement();
+        if (Random.value <= 0.2f)
+        {
+            anim.SetTrigger(HitTriggerHash);
+
+            // í”¼ê²© ì‹œ ê³µê²© ìƒíƒœë¥¼ ìº”ìŠ¬í•˜ê³  ë©ˆì¶”ê²Œ í•˜ëŠ” ë¡œì§
+            _isAttackStarted = false;
+            ForceStopPhysicalMovement();
+        }
+        else
+        {
+            Debug.Log("í”¼ê²©ë˜ì—ˆìœ¼ë‚˜ ë¬´ì‹œí•˜ê³  ê³„ì† í–‰ë™í•©ë‹ˆë‹¤.");
+        }
     }
 
     private void RotateTowardsPlayer(bool fastTurn)
@@ -224,7 +238,6 @@ public class PrisonerCombatState : BasePrisonerState
         }
     }
 
-    // ÇïÆÛ: ÇÃ·¹ÀÌ¾î Ã£±â
     private void FindPlayer()
     {
         var pObj = GameObject.FindGameObjectWithTag("Player");

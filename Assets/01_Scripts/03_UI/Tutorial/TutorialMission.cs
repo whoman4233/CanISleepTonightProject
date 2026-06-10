@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+
 
 public class TutorialMission : MonoBehaviour
 {
@@ -12,6 +14,13 @@ public class TutorialMission : MonoBehaviour
 
     private Action<DialogueStepChangedEvent> _stepChanged;
 
+    [Header("Localization Guide Texts")]
+    [SerializeField] private TextMeshProUGUI tutorialDialogueText;    // M01
+    [SerializeField] private TextMeshProUGUI boardText;    // M02
+    [SerializeField] private TextMeshProUGUI boxText;  // M03
+    [SerializeField] private TextMeshProUGUI batonText; // M04 
+    [SerializeField] private TextMeshProUGUI hitText;
+    [SerializeField] private TextMeshProUGUI bookText;
 
 
     private void Awake()
@@ -73,6 +82,8 @@ public class TutorialMission : MonoBehaviour
 
     private void InitMissionMap()
     {
+        RefreshLocalizedTexts();
+
         if (_missionMap != null) return;
         _missionMap = new Dictionary<DialogueKeys.DialogueType, Image>
         {
@@ -105,5 +116,17 @@ public class TutorialMission : MonoBehaviour
         {
             _currentActivePanel.gameObject.SetActive(true);
         }
+    }
+
+    private void RefreshLocalizedTexts()
+    {
+        // 기획자 CSV의 TutorialTextID 열에 적힌 값 그대로 사용
+        if (tutorialDialogueText != null) tutorialDialogueText.text = TextManager.Instance.GetTutorialText("Ttxt_M_01");
+        if(boardText != null) boardText.text = TextManager.Instance.GetTutorialText("Ttxt_M_02");
+        if(boxText != null) boxText.text = TextManager.Instance.GetTutorialText("Ttxt_M_03");
+        if(batonText != null) batonText.text = TextManager.Instance.GetTutorialText("Ttxt_M_04");
+        if(hitText != null) hitText.text = TextManager.Instance.GetTutorialText("Ttxt_M_05");
+        if(bookText != null) bookText.text = TextManager.Instance.GetTutorialText("Ttxt_M_06");
+
     }
 }

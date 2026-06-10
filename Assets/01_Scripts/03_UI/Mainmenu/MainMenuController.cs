@@ -11,6 +11,7 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Button btnStart;
     [SerializeField] private Button btnExit;
     [SerializeField] private Button btnSettings;
+    [SerializeField] private Button btnGuide; // 조작방법 설명 버튼
 
     [Header("Start Buttons")]
     [SerializeField] private Button btnNewGame;
@@ -27,6 +28,7 @@ public class MainMenuController : MonoBehaviour
         btnStart.onClick.AddListener(OnClickStart);
         btnExit.onClick.AddListener(OnClickExit);
         btnSettings.onClick.AddListener(OnClickSettings);
+        btnGuide.onClick.AddListener(OnClickGuide);
 
         btnNewGame.onClick.AddListener(OnClickNewGame);
         btnLoadGame.onClick.AddListener(OnClickLoadGame);
@@ -74,6 +76,12 @@ public class MainMenuController : MonoBehaviour
     private void OnClickNewGame()
     {
         EventBus.Publish(new RequestStartNewGameEvent());
+    }
+
+    private void OnClickGuide()
+    {
+        EventBus.Publish(new OpenControlGuideEvent());
+        Debug.Log("조작가이드 이벤트 발행");
     }
 }
 

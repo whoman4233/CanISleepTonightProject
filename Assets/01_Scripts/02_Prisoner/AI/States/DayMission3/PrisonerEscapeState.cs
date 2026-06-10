@@ -13,6 +13,22 @@ public class PrisonerEscapeState : BasePrisonerState
     // 원래 속도를 기억할 변수
     private float _originalSpeed = 3.5f;
 
+    // =======================================================================
+    // Animator Hashes (성능 최적화용)
+    // =======================================================================
+    private static readonly int IsActionHash = Animator.StringToHash("IsAction");
+    private static readonly int IsntStandingHash = Animator.StringToHash("IsntStanding");
+    private static readonly int RunHash = Animator.StringToHash("Run");
+    private static readonly int WalkHash = Animator.StringToHash("Walk");
+
+    // RunStyle 파라미터 해시 추가
+    private static readonly int RunStyleHash = Animator.StringToHash("RunStyle");
+
+    // CrossFade용 상태(State) 이름 해시
+    private static readonly int WalkStateHash = Animator.StringToHash("Prisoner_Walk01");
+    private static readonly int IdleStateHash = Animator.StringToHash("Prisoner_Standing01");
+    private static readonly int RunStateHash = Animator.StringToHash("Run");
+
     public PrisonerEscapeState(PrisonerFSM fsm) : base(fsm) { }
 
     public override void Enter()
@@ -43,12 +59,12 @@ public class PrisonerEscapeState : BasePrisonerState
         }
 
         // ================================================================
-        // ★ [핵심 수정 1] 이전 행동 강제 초기화 (애니메이션 씹힘 방지)
+        // 이전 행동 강제 초기화 (애니메이션 씹힘 방지)
         // ================================================================
         Controller.StopActionBehavior(); // 들고 있던 도구 제거, 소리 끄기
-        Anim.SetBool("IsAction", false); // 특수 행동 파라미터 해제
-        Anim.SetBool("IsntStanding", false); // 앉아/누워있었다면 기상
-        Anim.SetBool("Run", false);
+        Anim.SetBool(IsActionHash, false); // 특수 행동 파라미터 해제
+        Anim.SetBool(IsntStandingHash, false); // 앉아/누워있었다면 기상
+        Anim.SetBool(RunHash, false);
 
         // 3. 점호 위치로 이동 시작
         if (fsm.InspectionPoint != null)
@@ -57,15 +73,15 @@ public class PrisonerEscapeState : BasePrisonerState
             {
                 Agent.isStopped = false;
 
-                // ★ [핵심 수정 2] 점호 위치로 갈 때는 '원래 속도' (걷기)
-                Agent.speed = _originalSpeed;
-                Agent.acceleration = 12.0f; // 미끄러짐 방지용 가속도
+                // 점호 위치로 갈 때는 걷기 속도로 강제 고정하여 미끄러짐 방지
+                Agent.speed = 2.0f;
+                Agent.acceleration = 12.0f;
 
                 Agent.SetDestination(fsm.InspectionPoint.position);
 
-                // ★ [핵심 수정 3] 애니메이션 강제 전환 (SetBool + CrossFade)
-                Anim.SetBool("Walk", true);
-                Anim.CrossFade("Prisoner_Walk01", 0.15f); // 0.15초 만에 걷기로 부드럽게 전환
+                // 자연스러운 걷기 전이 유도 및 강제 전환
+                Anim.SetBool(WalkHash, true);
+                Anim.CrossFade(WalkStateHash, 0.1f);
             }
         }
         else
@@ -89,22 +105,14 @@ public class PrisonerEscapeState : BasePrisonerState
             }
         }
 
-        // 2. 도망치는 중일 때 도착 체크
+        // 2. 도망치는 중일 때 멈추지 않고 계속해서 새로운 도주 경로 갱신
         if (_isEscaping)
         {
-            if (!Agent.pathPending && Agent.remainingDistance <= 1.5f)
+            // 목적지에 거의 다다르면 멈추지 않고 다음 도주 위치를 바로 갱신함
+            if (!Agent.pathPending && Agent.remainingDistance <= 2.0f)
             {
-                Debug.Log($"[Escaper] {Controller.name}: 따돌렸다.. (휴식)");
-                StopRunning(); // 멈춰서 대기
-            }
-        }
-        // 3. 멈춰서 쉬고 있는데 플레이어가 또 쫓아오면? (재도주)
-        else if (_hasArrivedAtInspectionPoint)
-        {
-            if (player != null && Vector3.Distance(fsm.transform.position, player.position) < 5.0f)
-            {
-                Debug.Log($"[Escaper] {Controller.name}: 젠장! 또 쫓아온다!");
-                RunAway(); // 다시 뜀
+                Vector3 fleePos = CalculateRobustFleePosition();
+                Agent.SetDestination(fleePos);
             }
         }
     }
@@ -124,9 +132,9 @@ public class PrisonerEscapeState : BasePrisonerState
             Agent.velocity = Vector3.zero;
         }
 
-        Anim.SetBool("Walk", false);
-        Anim.SetBool("Run", false);
-        Anim.CrossFade("Idle", 0.2f); // 자연스럽게 대기 모션
+        Anim.SetBool(WalkHash, false);
+        Anim.SetBool(RunHash, false);
+        Anim.CrossFade(IdleStateHash, 0.2f); // 자연스럽게 대기 모션
 
         // 2. 1.5초 대기
         yield return new WaitForSeconds(1.5f);
@@ -142,25 +150,20 @@ public class PrisonerEscapeState : BasePrisonerState
         {
             Agent.isStopped = false;
 
-            // ★ 도망칠 때는 속도 증가 (원래 속도 * 2배 혹은 고정 6.0)
+            // 도망칠 때는 달리기 속도 적용
             Agent.speed = 6.0f;
 
             Vector3 fleePos = CalculateRobustFleePosition();
             Agent.SetDestination(fleePos);
         }
 
-        Anim.SetBool("Run", true);
-        Anim.CrossFade("Run", 0.1f); // 즉시 달리기 모션
-    }
+        Anim.SetBool(WalkHash, false);
 
-    private void StopRunning()
-    {
-        _isEscaping = false;
-        Agent.isStopped = true;
-        Agent.velocity = Vector3.zero;
+        // RunStyle 파라미터를 1로 설정하여 특정 달리기 스타일 지정
+        Anim.SetInteger(RunStyleHash, 1);
+        Anim.SetBool(RunHash, true);
 
-        Anim.SetBool("Run", false);
-        Anim.CrossFade("Idle", 0.2f);
+        Anim.CrossFade(RunStateHash, 0.1f); // 바로 달리기 상태로 전환
     }
 
     private Vector3 CalculateRobustFleePosition()
@@ -201,9 +204,12 @@ public class PrisonerEscapeState : BasePrisonerState
 
         // 상태 나갈 때 정리
         Controller.StopActionBehavior();
-        Anim.SetBool("Run", false);
-        Anim.SetBool("Walk", false);
-        Anim.SetBool("IsAction", false);
+        Anim.SetBool(RunHash, false);
+        Anim.SetBool(WalkHash, false);
+        Anim.SetBool(IsActionHash, false);
+
+        // RunStyle 초기화 (다른 상태 진입 시 오류 방지)
+        Anim.SetInteger(RunStyleHash, 0);
 
         if (Agent != null && Agent.isOnNavMesh)
         {

@@ -42,6 +42,10 @@ public class PrisonerController : MonoBehaviour
     [Header("Action Props (Tools)")]
     [SerializeField] private List<ActionPropData> actionProps;
 
+    // Animator Hashes 캐싱
+    private static readonly int IsActionHash = Animator.StringToHash("IsAction");
+    private static readonly int ActionTypeHash = Animator.StringToHash("ActionType");
+
     // 실제 생성된 오브젝트들을 관리하는 딕셔너리
     private Dictionary<PrisonerAIType, GameObject> _propMap;
 
@@ -101,25 +105,26 @@ public class PrisonerController : MonoBehaviour
     {
         if (animator == null) return;
 
-        // 1. 오른손 본 찾기
-        Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-        if (rightHand == null) return;
-
-        // ★ [수정] "Weapon_R" 찾기 로직 추가
-        // 기본값은 오른손(rightHand)으로 설정하되, Weapon_R을 발견하면 교체합니다.
-        Transform targetParent = rightHand;
-
-        // 직계 자식 중에서 "Weapon_R" 이름을 가진 오브젝트 탐색
-        Transform weaponMount = rightHand.Find("Weapon_R");
-
-        // (선택 사항: 만약 계층구조가 깊어서 Find로 안 찾아진다면 아래 주석을 풀어 깊은 탐색을 사용하세요)
-        /*
-        if (weaponMount == null) {
-            foreach (Transform t in rightHand.GetComponentsInChildren<Transform>()) {
-                if (t.name == "Weapon_R") { weaponMount = t; break; }
-            }
+        // 1. Humanoid가 아니면 손을 찾을 수 없으므로 안전하게 리턴 (예외 처리)
+        if (!animator.isHuman)
+        {
+            Debug.Log($"[PrisonerController] {gameObject.name}는 Humanoid가 아니므로 프롭 부착을 건너뜁니다.");
+            return;
         }
-        */
+
+        // 2. 오른손 본 찾기
+        Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+
+        // 손을 못 찾는 경우에도 에러 방지를 위해 리턴
+        if (rightHand == null)
+        {
+            Debug.LogWarning($"[PrisonerController] {gameObject.name}의 RightHand를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 3. 기존의 "Weapon_R" 찾기 및 프롭 생성 로직
+        Transform targetParent = rightHand;
+        Transform weaponMount = rightHand.Find("Weapon_R");
 
         if (weaponMount != null)
         {
@@ -132,11 +137,8 @@ public class PrisonerController : MonoBehaviour
             {
                 GameObject propInstance = Instantiate(data.propObject);
                 propInstance.name = data.propObject.name;
-
-                // ★ [수정] 찾은 Weapon_R(혹은 오른손)을 부모로 설정
                 propInstance.transform.SetParent(targetParent);
 
-                // 위치/회전 초기화 (Weapon_R 기준으로 0,0,0 정렬)
                 propInstance.transform.localPosition = Vector3.zero;
                 propInstance.transform.localRotation = Quaternion.identity;
 
@@ -220,8 +222,8 @@ public class PrisonerController : MonoBehaviour
     // Enum 기반 행동 시작
     public void StartActionBehavior(PrisonerAIType type)
     {
-        if (animator != null) animator.SetBool("IsAction", true);
-        if (animator != null) animator.SetFloat("ActionType", GetActionAnimID(type));
+        if (animator != null) animator.SetBool(IsActionHash, true);
+        if (animator != null) animator.SetFloat(ActionTypeHash, (float)GetActionAnimID(type));
         if (sfx != null) sfx.PlayLoop(type);
 
         // 요청된 무기는 켜고, 나머지는 끈다. (중복 장착 방지)
@@ -248,17 +250,14 @@ public class PrisonerController : MonoBehaviour
     {
         if (animator != null)
         {
-            animator.SetFloat("ActionType", (float)rawAnimID);
+            animator.SetFloat(ActionTypeHash, (float)rawAnimID);
         }
     }
 
     public void StopActionBehavior()
     {
-        if (animator != null) animator.SetFloat("ActionType", 0);
+        if (animator != null) animator.SetFloat(ActionTypeHash, 0f);
         if (sfx != null) sfx.StopLoop();
-
-        // 무기를 끄는 코드 삭제!
-        // 이제 행동이 멈춰도(이동 중 등) 무기는 손에 계속 들려있습니다.
     }
 
     private int GetActionAnimID(PrisonerAIType type)
@@ -301,16 +300,38 @@ public class PrisonerController : MonoBehaviour
 
     private void Die(Vector3 hitPoint, Vector3 hitDirection)
     {
+        // 1. 기존 행동 중지
         StopActionBehavior();
 
+        // 2. [추가] 물리 즉시 정지: 관성에 의해 앞으로 튕기는 현상 방지
+        if (agent != null && agent.enabled)
+        {
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.ResetPath(); // 경로 초기화
+            }
+            agent.velocity = Vector3.zero; // 물리적 속도 즉시 제거
+            agent.enabled = false; // 에이전트 비활성화
+        }
+
+        // 3. 사운드 처리
         if (sfx != null)
         {
             sfx.StopAllSounds();
             sfx.PlayRandomDieOnce();
         }
 
+        // 4. 상태 변경 (DeadState 내부에서 애니메이션 트리거 등이 처리됨)
         fsm.ChangeState(fsm.DeadState);
-        if (ragdoll != null) ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
+
+        // 5. 래그돌 물리 적용 (이미 에이전트를 껐으므로 래그돌이 정상 작동함)
+        if (ragdoll != null)
+        {
+            ragdoll.ApplyImpact(hitPoint, hitDirection, RagdollImpactForce);
+        }
+
+        // 6. 이벤트 발행
         PrisonerEventBus.RaisePrisonerDown(Data.ID);
     }
 
@@ -383,6 +404,17 @@ public class PrisonerController : MonoBehaviour
         if (sfx != null)
         {
             sfx.PlayRandomAttack();
+        }
+    }
+
+    /// <summary>
+    /// SfxController를 통해 특정 키에 해당하는 특수 효과음을 재생합니다.
+    /// </summary>
+    public void PlaySpecialSfx(string key, float volume = 1.0f)
+    {
+        if (sfx != null)
+        {
+            sfx.PlaySpecialClip(key, volume);
         }
     }
 }

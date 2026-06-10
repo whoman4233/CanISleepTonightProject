@@ -20,6 +20,14 @@ public class CarryableBox : MonoBehaviour, ICarryable
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+        if (rb != null)
+        {
+            // 1. 시작하자마자 Kinematic으로 물리 연산을 아예 끕니다.
+            rb.isKinematic = true;
+
+            // 2. 0.5초 뒤에 위치가 안정화되면 물리 연산을 켭니다.
+            StartCoroutine(EnablePhysicsDelayed(rb));
+        }
     }
     public string GetCarryPromptObjectType() //프롬프트 출력용 메서드
     {
@@ -104,5 +112,13 @@ public class CarryableBox : MonoBehaviour, ICarryable
             AudioManager.Instance.PlaySFX(clip);
         }
     }
+    private IEnumerator EnablePhysicsDelayed(Rigidbody rb)
+    {
+        // 0.5초면 씬 로딩 후 물리 엔진이 바닥 위치를 파악하기에 충분한 시간입니다.
+        yield return new WaitForSeconds(0.5f);
+        rb.isKinematic = false;
 
+        // 만약 여전히 조금 떨린다면 Sleep을 강제합니다.
+        rb.Sleep();
+    }
 }

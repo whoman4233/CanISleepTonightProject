@@ -71,12 +71,14 @@ public class SettlementConfirmPopupController : MonoBehaviour
     {
         // 먼저 닫고(락/정지 해제), 다음 프레임에 보고 확정 이벤트 발행
         Hide();
+        GameManager.Instance.IsTimerPaused = true;
         EventBus.Publish(new SettlementReportConfirmedEvent());
     }
 
     private void OnCancelClicked()
     {
         Hide();
+        GameManager.Instance.IsTimerPaused = false;
     }
 }
 

@@ -17,6 +17,11 @@ public class DialogueManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float typingSpeed = 0.05f; // 타이핑 속도 (추후 조절 가능)
 
+    [Header("Current Dialogue")]
+    private string _currentDialogueKey;
+    private string _currentSpeakerNameRaw;
+    private string _currentDialogueRaw;
+
     private float _lastOpenTime;
     private bool _isFirstInputGuard = false;
 
@@ -101,6 +106,8 @@ public class DialogueManager : MonoBehaviour
             _dialogueActions.Continue.canceled += OnDialogueContinueCanceled; // [추가]
 
             _dialogueActions.Skip.started += OnDialogueSkip; // Skip은 단발 입력
+
+            TextManager.OnLanguageChanged += RefreshCurrentDialogue;
         }
     }
 
@@ -118,6 +125,8 @@ public class DialogueManager : MonoBehaviour
         _dialogueActions.Continue.canceled -= OnDialogueContinueCanceled; // [추가]
 
         _dialogueActions.Skip.started -= OnDialogueSkip;
+
+        TextManager.OnLanguageChanged -= RefreshCurrentDialogue;
     }
 
     // =========================
@@ -295,34 +304,51 @@ public class DialogueManager : MonoBehaviour
 
         currentLine = dialogueQueue.Dequeue();
 
-        var entry = currentLine.Entry;
+        // =========================
+        // 현재 대화 Key 저장 (언어 변경 대응용)
+        // =========================
+        _currentDialogueKey = currentLine.textKey; 
+
+        var entry = TextManager.Instance.GetEntry(_currentDialogueKey); // Entry 직접 다시 조회
         if (entry == null)
         {
             Debug.LogWarning("대사가 없읍니다.");
             return;
         }
 
-        string speakerName = entry.speaker;
-        string dialogueContent = currentLine.TranslatedContent;
+        // =========================
+        // raw 데이터 캐싱 (언어 변경 대응용)
+        // =========================
+        _currentSpeakerNameRaw = entry.speaker;
+        _currentDialogueRaw = TextManager.Instance.GetText(_currentDialogueKey);
 
-        if (DailyMissionManager.Instance != null && DailyMissionManager.Instance.CurrentMission != null)
+        // =========================
+        // 치환 처리
+        // =========================
+        if (DailyMissionManager.Instance != null &&
+            DailyMissionManager.Instance.CurrentMission != null)
         {
             var strategy = DailyMissionManager.Instance.CurrentMission;
-            speakerName = strategy.GetProcessedText(speakerName);
-            dialogueContent = strategy.GetProcessedText(dialogueContent);
+
+            _currentSpeakerNameRaw =
+                strategy.GetProcessedText(_currentSpeakerNameRaw);
+
+            _currentDialogueRaw =
+                strategy.GetProcessedText(_currentDialogueRaw);
         }
 
-        speakerNameText.text = speakerName; // 치환된 이름 적용
+        // =========================
+        // 문자열 직접 사용하지 않고 캐싱값 사용
+        // =========================
+        speakerNameText.text = _currentSpeakerNameRaw;
 
         // 타이핑 시작
         ResetRoutine();
         isTyping = true;
         canClick = false;
 
-        // =========================
-        // TimeScale=0 상태에서도 타이핑 진행
-        // =========================
-        dialogueRoutine = StartCoroutine(TypeSentenceRealtime(dialogueContent));
+        dialogueRoutine =
+            StartCoroutine(TypeSentenceRealtime(_currentDialogueRaw)); // raw 사용
     }
 
     // =========================
@@ -491,9 +517,47 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.SetActive(true);
         DisplayNextLine();
     }
+    private void RefreshCurrentDialogue()
+    {
+        if (!IsDialogueOpen)
+            return;
 
+        if (string.IsNullOrEmpty(_currentDialogueKey))
+            return;
 
+        var entry = TextManager.Instance.GetEntry(_currentDialogueKey);
+        if (entry == null)
+            return;
 
+        _currentSpeakerNameRaw = entry.speaker;
+        _currentDialogueRaw =
+            TextManager.Instance.GetText(_currentDialogueKey);
+
+        if (DailyMissionManager.Instance != null &&
+            DailyMissionManager.Instance.CurrentMission != null)
+        {
+            var strategy = DailyMissionManager.Instance.CurrentMission;
+
+            _currentSpeakerNameRaw =
+                strategy.GetProcessedText(_currentSpeakerNameRaw);
+
+            _currentDialogueRaw =
+                strategy.GetProcessedText(_currentDialogueRaw);
+        }
+
+        speakerNameText.text = _currentSpeakerNameRaw;
+
+        // 타이핑 중이면 전체 표시로 전환
+        if (isTyping)
+        {
+            StopCoroutine(dialogueRoutine);
+            isTyping = false;
+        }
+
+        dialogueContentText.text = _currentDialogueRaw;
+        dialogueContentText.maxVisibleCharacters =
+            dialogueContentText.text.Length;
+    }
 }
 
 

@@ -2,18 +2,16 @@
 using TMPro;
 using UnityEngine;
 
+[RequireComponent(typeof(TMP_Text))]
 public class MissionTextBinder : MonoBehaviour
 {
-    [Header("Mission Text Key")]
     [SerializeField] private MissionTextRole role;
 
-    [Header("Target")]
-    [SerializeField] private TMP_Text target;
+    private TMP_Text _text;
 
     private void Awake()
     {
-        if (target == null)
-            target = GetComponent<TMP_Text>();
+        _text = GetComponent<TMP_Text>();
     }
 
     private void OnEnable()
@@ -41,20 +39,23 @@ public class MissionTextBinder : MonoBehaviour
 
     private void Refresh()
     {
-        if (target == null)
+        if (_text == null)
             return;
 
         var missionManager = DailyMissionManager.Instance;
-        if (missionManager == null || missionManager.CurrentMission == null)
+
+        if (missionManager == null ||
+            missionManager.CurrentMission == null)
         {
-            target.text = string.Empty;
+            _text.text = string.Empty;
             return;
         }
 
-        target.text = TextManager.Instance.GetMissionText(
+        _text.text = TextManager.Instance.GetMissionText(
             missionManager.CurrentMission.MissionTextNo,
             role
         );
     }
 }
+
 

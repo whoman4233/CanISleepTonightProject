@@ -9,7 +9,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] public GameObject playerPrefab; // 플레이어 프리팹
     [SerializeField] public Transform spawnPoint;    // 생성 위치
 
-    private GameObject currentPlayer;
+    protected GameObject currentPlayer;
     private Action<GamePhaseChangedEvent> _phaseChangedHandler;
 
     private void Awake()
@@ -49,7 +49,7 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void SpawnPlayer()
+    public virtual void SpawnPlayer()
     {
         // 이미 플레이어가 있다면 중복 생성 방지
         if (currentPlayer != null) return;

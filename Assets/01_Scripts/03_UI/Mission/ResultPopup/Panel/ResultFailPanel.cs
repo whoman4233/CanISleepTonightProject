@@ -36,7 +36,7 @@ public class ResultFailPanel : ResultPanelBase
         base.Show();
 
         int currentDay = GameManager.Instance.CurrentDay;
-        systemDayText.text = $"{currentDay}일";
+        systemDayText.text = $"{currentDay}";
     }
 
     private void OnRestartClicked()

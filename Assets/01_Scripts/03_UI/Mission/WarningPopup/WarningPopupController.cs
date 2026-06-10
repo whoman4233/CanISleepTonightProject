@@ -7,14 +7,14 @@ using System.Collections.Generic;
 public class WarningPopupController : MonoBehaviour
 {
     [SerializeField] private GameObject root;
-    [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private LocalizedText localizedText;
 
     [Header("UISound")]
     [SerializeField] private AudioClip warningClip;
 
     private Coroutine _routine;
     private Action<ShowTimedTextPopupEvent> _onShow;
-
+    private Action<UIHardResetEvent> _onHardReset;
     //Realtime 캐시
     private readonly Dictionary<float, WaitForSecondsRealtime> _waitRealtimeCache =
         new Dictionary<float, WaitForSecondsRealtime>();
@@ -25,16 +25,19 @@ public class WarningPopupController : MonoBehaviour
             root.SetActive(false);
 
         _onShow = OnShow;
+        _onHardReset = OnHardReset;
     }
 
     private void OnEnable()
     {
         EventBus.Subscribe(_onShow);
+        EventBus.Subscribe(_onHardReset);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe(_onShow);
+        EventBus.Unsubscribe(_onHardReset);
     }
 
     private void OnShow(ShowTimedTextPopupEvent e)
@@ -42,8 +45,10 @@ public class WarningPopupController : MonoBehaviour
         if (_routine != null)
             StopCoroutine(_routine);
 
-        if (text != null)
-            text.text = e.Message;
+        if (localizedText != null)
+        {
+            localizedText.SetRuntimeId(e.MessageId);
+        }
 
         if (e.PlayBeep && warningClip != null)
         {
@@ -52,7 +57,6 @@ public class WarningPopupController : MonoBehaviour
 
         _routine = StartCoroutine(ShowRoutineRealtime(e.Duration));
     }
-
 
     private IEnumerator ShowRoutineRealtime(float duration)
     {
@@ -75,6 +79,20 @@ public class WarningPopupController : MonoBehaviour
             _waitRealtimeCache.Add(time, wait);
         }
         return wait;
+    }
+
+    private void OnHardReset(UIHardResetEvent e)
+    {
+        // 진행 중인 타이머 중단
+        if (_routine != null)
+        {
+            StopCoroutine(_routine);
+            _routine = null;
+        }
+
+        // 팝업 즉시 종료
+        if (root != null)
+            root.SetActive(false);
     }
 }
 

@@ -1,0 +1,808 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b631211225048214fb47dd70a97c4c62, type: 3}
+  m_Name: DialogueTextDataEN
+  m_EditorClassIdentifier: 
+  textList:
+  - key: DTxt_KR_T_01
+    speaker: Frank
+    mission: Tutorial
+    type: Dialogue
+    ko: Let me see. You're the rookie. Right?
+    en: 
+  - key: DTxt_KR_T_02
+    speaker: Frank
+    mission: Tutorial
+    type: Dialogue
+    ko: You have the right look.<br>But that's not what's important.
+    en: 
+  - key: DTxt_KR_T_03
+    speaker: Frank
+    mission: Tutorial
+    type: Dialogue
+    ko: All that matters is luck and intuition
+    en: 
+  - key: DTxt_KR_T_04
+    speaker: Frank
+    mission: Tutorial
+    type: Dialogue
+    ko: First off, luck is the key.<br>You need to keep the accidents from happening.
+    en: 
+  - key: DTxt_KR_T_05
+    speaker: Frank
+    mission: Tutorial
+    type: Dialogue
+    ko: Look. See that board.<br>How many 'Days Without Incident' does it say?
+    en: 
+  - key: DTxt_KR_T_06
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: Right. 0. Another brat like you was carried out just yesterday.
+    en: 
+  - key: DTxt_KR_T_07
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: This damn Sector 7 is never quiet.
+    en: 
+  - key: DTxt_KR_T_08
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: Accidents happen every day.<br>Two days of peace? It's a long time.
+    en: 
+  - key: DTxt_KR_T_09
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: So our goal is 7 days. Just one week.
+    en: 
+  - key: DTxt_KR_T_10
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: "If you survive 7 days without an incident, you're a regular.<br>However\u2026"
+    en: 
+  - key: DTxt_KR_T_11
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: If even a single accident happens, you're packing your bags that very day.
+    en: 
+  - key: DTxt_KR_T_12
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: And we start all over again from Day 0. Got it?
+    en: 
+  - key: DTxt_KR_T_13
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: Good.
+    en: 
+  - key: DTxt_KR_T_14
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: First, let's grab what you need for the job.
+    en: 
+  - key: DTxt_KR_T_15
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: "I need to give you a nightstick\u2026<br>But there is a box piled up in
+      front of the cabinet."
+    en: 
+  - key: DTxt_KR_T_16
+    speaker: Frank
+    mission: Tutorial
+    type: BoardSee
+    ko: Press [E] in front of a box to pick it up, and [E] again to put it down.
+    en: 
+  - key: DTxt_KR_T_17
+    speaker: Frank
+    mission: Tutorial
+    type: BoxOpened
+    ko: It's the same for picking up or putting down other items.
+    en: 
+  - key: DTxt_KR_T_18
+    speaker: Frank
+    mission: Tutorial
+    type: BoxOpened
+    ko: Box is clear. Now open the cabinet and grab the nightstick.<br>Use [E] for
+      both.
+    en: 
+  - key: DTxt_KR_T_19
+    speaker: Frank
+    mission: Tutorial
+    type: BatonEquipped
+    ko: A nightstick is a must for a guard.<br>These prisoners don't understand words.
+    en: 
+  - key: DTxt_KR_T_20
+    speaker: Frank
+    mission: Tutorial
+    type: BatonEquipped
+    ko: Left-click to attack. Go on, take a swing at me.
+    en: 
+  - key: DTxt_KR_T_21
+    speaker: Frank
+    mission: Tutorial
+    type: NPCHit
+    ko: ...Better than expected.<br>Four or five strikes should be enough to subdue
+      the tough ones.
+    en: 
+  - key: DTxt_KR_T_22
+    speaker: Frank
+    mission: Tutorial
+    type: NPCHit
+    ko: But being a guard isn't just about how well you can fight.
+    en: 
+  - key: DTxt_KR_T_23
+    speaker: Frank
+    mission: Tutorial
+    type: NPCHit
+    ko: What did I say was important along with luck?
+    en: 
+  - key: DTxt_KR_T_24
+    speaker: Frank
+    mission: Tutorial
+    type: NPCHit
+    ko: Right, intuition.
+    en: 
+  - key: DTxt_KR_T_25
+    speaker: Frank
+    mission: Tutorial
+    type: NPCHit
+    ko: Here, I'll give you a Bible. Take a look.
+    en: 
+  - key: DTxt_KR_T_26
+    speaker: Frank
+    mission: Tutorial
+    type: NPCHit
+    ko: Right-click to rotate, left-click to open books.
+    en: 
+  - key: DTxt_KR_T_27
+    speaker: Frank
+    mission: Tutorial
+    type: BookRead
+    ko: An awl is inside, right?
+    en: 
+  - key: DTxt_KR_T_28
+    speaker: Frank
+    mission: Tutorial
+    type: BookRead
+    ko: This is how they hide dangerous things in plain sight.
+    en: 
+  - key: DTxt_KR_T_29
+    speaker: Frank
+    mission: Tutorial
+    type: BookRead
+    ko: "If you assume everything's fine just because it looks okay<br>\u2014then
+      you're (mimics throat-slitting) done."
+    en: 
+  - key: DTxt_KR_T_30
+    speaker: Frank
+    mission: Tutorial
+    type: BookRead
+    ko: That's why you need sharp intuition.<br>It's vital to tell what's weird and
+      what's normal.
+    en: 
+  - key: DTxt_KR_T_31
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: If you're not confident, just search the cell thoroughly.
+    en: 
+  - key: DTxt_KR_T_32
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: Every corner, every single brick.
+    en: 
+  - key: DTxt_KR_T_33
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: Right. That's about all I can tell you.
+    en: 
+  - key: DTxt_KR_T_34
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: We're short-handed, so I don't have time to teach you more.
+    en: 
+  - key: DTxt_KR_T_35
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: Learn the rest on the job.
+    en: 
+  - key: DTxt_KR_T_36
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: Go talk to the Warden, Victor.<br>Check today's mission, and get to work.
+    en: 
+  - key: DTxt_KR_T_37
+    speaker: Frank
+    mission: Tutorial
+    type: BookClose
+    ko: Try to last a bit longer and prove your worth.
+    en: 
+  - key: DTxt_KR_M01_01
+    speaker: Victor
+    mission: Mission01
+    type: Dialogue
+    ko: "You hear that, don\u2019t you?"
+    en: 
+  - key: DTxt_KR_M01_02
+    speaker: Victor
+    mission: Mission01
+    type: Dialogue
+    ko: "It seems these fools have forgotten where they are.<br>They\u2019re back
+      to their noisy antics."
+    en: 
+  - key: DTxt_KR_M01_03
+    speaker: Victor
+    mission: Mission01
+    type: Dialogue
+    ko: Leave them be, they'll surely take advantage of the chaos<br>to pull some
+      evil stunt.
+    en: 
+  - key: DTxt_KR_M01_04
+    speaker: Victor
+    mission: Mission01
+    type: Dialogue
+    ko: Go and beat some sense into everyone making noise.
+    en: 
+  - key: DTxt_KR_M01_05
+    speaker: Victor
+    mission: Mission01
+    type: Fin
+    ko: Are they all shut up now?
+    en: 
+  - key: DTxt_KR_M01_06
+    speaker: Victor
+    mission: Mission01
+    type: Complete
+    ko: Force is the only language they understand.
+    en: 
+  - key: DTxt_KR_M01_07
+    speaker: Victor
+    mission: Mission01
+    type: Fail
+    ko: You can't even maintain silence?<br>I have no use for you. You're out!
+    en: 
+  - key: DTxt_KR_M01_08
+    speaker: Frank
+    mission: Mission01
+    type: Dialogue
+    ko: I already told those bastards to shut it.<br>Why the hell are they making
+      a racket again...?
+    en: 
+  - key: DTxt_KR_M01_09
+    speaker: Frank
+    mission: Mission01
+    type: Dialogue
+    ko: I should've beaten them until they actually passed out.
+    en: 
+  - key: DTxt_KR_M02_01
+    speaker: Victor
+    mission: Mission02
+    type: Dialogue
+    ko: A snitch brought info.<br>The prisoners have hidden weapons in their cells.
+    en: 
+  - key: DTxt_KR_M02_02
+    speaker: Victor
+    mission: Mission02
+    type: Dialogue
+    ko: They're in here for causing trouble outside.<br>And now they're trying it
+      with weapons again?
+    en: 
+  - key: DTxt_KR_M02_03
+    speaker: Victor
+    mission: Mission02
+    type: Dialogue
+    ko: I won't have it. Not on my watch.
+    en: 
+  - key: DTxt_KR_M02_04
+    speaker: Victor
+    mission: Mission02
+    type: Dialogue
+    ko: Search every cell thoroughly and confiscate everything.
+    en: 
+  - key: DTxt_KR_M02_05
+    speaker: Victor
+    mission: Mission02
+    type: Fin
+    ko: Did you find all the weapons?
+    en: 
+  - key: DTxt_KR_M02_06
+    speaker: Victor
+    mission: Mission02
+    type: Complete
+    ko: Phew, at least we won't have any weapon-related accidents today.
+    en: 
+  - key: DTxt_KR_M02_07
+    speaker: Victor
+    mission: Mission02
+    type: Fail
+    ko: A prisoner was carried out because of a weapon you missed!<br>You're fired!
+    en: 
+  - key: DTxt_KR_M02_08
+    speaker: Frank
+    mission: Mission02
+    type: Dialogue
+    ko: We need to check every nook and cranny to find things.
+    en: 
+  - key: DTxt_KR_M02_09
+    speaker: Frank
+    mission: Mission02
+    type: Dialogue
+    ko: Be careful, some might jump you while you're busy searching the room.
+    en: 
+  - key: DTxt_KR_M03_01
+    speaker: Victor
+    mission: Mission03
+    type: Dialogue
+    ko: What the hell is wrong with this damn Sector 7?
+    en: 
+  - key: DTxt_KR_M03_02
+    speaker: Victor
+    mission: Mission03
+    type: Dialogue
+    ko: So many of them start pulling nonsense when they step into this prison.
+    en: 
+  - key: DTxt_KR_M03_03
+    speaker: Victor
+    mission: Mission03
+    type: Dialogue
+    ko: "I\u2019m certain some of the new arrivals today are up to no good as well."
+    en: 
+  - key: DTxt_KR_M03_04
+    speaker: Victor
+    mission: Mission03
+    type: Dialogue
+    ko: Patrol the prison and beat down anyone you find acting out.
+    en: 
+  - key: DTxt_KR_M03_05
+    speaker: Victor
+    mission: Mission03
+    type: Fin
+    ko: Did you beat some sense into all those freaks?
+    en: 
+  - key: DTxt_KR_M03_06
+    speaker: Victor
+    mission: Mission03
+    type: Complete
+    ko: You're a good fighter than I expected, aren't you?
+    en: 
+  - key: DTxt_KR_M03_07
+    speaker: Victor
+    mission: Mission03
+    type: Fail
+    ko: Was it that difficult to only beat down the crazies?<br>You're fired!
+    en: 
+  - key: DTxt_KR_M03_08
+    speaker: Mimi
+    mission: Mission03
+    type: Dialogue
+    ko: Oh, a new face? You're so cute.
+    en: 
+  - key: DTxt_KR_M03_09
+    speaker: Mimi
+    mission: Mission03
+    type: Dialogue
+    ko: Won't you pick up the soap for me? Darling?
+    en: 
+  - key: DTxt_KR_M03_10
+    speaker: Mimi
+    mission: Mission03
+    type: Dialogue
+    ko: If you don't pick up the soap, I won't play with you.<br>Hehehe...
+    en: 
+  - key: DTxt_KR_M03_11
+    speaker: Frank
+    mission: Mission03
+    type: Dialogue
+    ko: There are bastards who pretend to be fine,<br>then turn on you as soon as
+      you enter the cell.
+    en: 
+  - key: DTxt_KR_M03_12
+    speaker: Frank
+    mission: Mission03
+    type: Dialogue
+    ko: "It\u2019d be a lot easier if they just made it obvious they were trouble."
+    en: 
+  - key: DTxt_KR_M04_01
+    speaker: Victor
+    mission: Mission04
+    type: Dialogue
+    ko: Is it time for your shift already?<br>Frank hasn't shown up yet.
+    en: 
+  - key: DTxt_KR_M04_02
+    speaker: Victor
+    mission: Mission04
+    type: Dialogue
+    ko: This is strange.<br>You, do you have any idea where Frank went?
+    en: 
+  - key: DTxt_KR_M04_03
+    speaker: Victor
+    mission: Mission04
+    type: Dialogue
+    ko: He definitely went down for a patrol earlier.<br>But he still hasn't returned.
+    en: 
+  - key: DTxt_KR_M04_04
+    speaker: Victor
+    mission: Mission04
+    type: Dialogue
+    ko: Go down to the prison and find Frank.
+    en: 
+  - key: DTxt_KR_M04_05
+    speaker: Victor
+    mission: Mission04
+    type: Fin
+    ko: Did you find Frank?
+    en: 
+  - key: DTxt_KR_M04_06
+    speaker: Victor
+    mission: Mission04
+    type: Complete
+    ko: "What? Prisoners were disguised as Frank?<br>...They\u2019re trying everything
+      now."
+    en: 
+  - key: DTxt_KR_M04_07
+    speaker: Victor
+    mission: Mission04
+    type: Fail
+    ko: What? You confused a prisoner with Frank?<br>Are your eyes just for show?
+      You're fired!
+    en: 
+  - key: DTxt_KR_M04_08
+    speaker: Frank
+    mission: Mission04
+    type: Complete
+    ko: Whew. My head almost flew off.<br>At least you've got some intuition, rookie.
+    en: 
+  - key: DTxt_KR_M04_09
+    speaker: Frank
+    mission: Mission04
+    type: Fail
+    ko: Who the hell are you hitting, you moron!
+    en: 
+  - key: DTxt_KR_M04_10
+    speaker: Frank
+    mission: Mission04
+    type: FrankArgue
+    ko: Damn prisoners. Now you're even disguising yourselves as me?
+    en: 
+  - key: DTxt_KR_M04_11
+    speaker: Frank
+    mission: Mission04
+    type: FrankArgue
+    ko: What are you talking about, you fake?<br>Trying to pass yourself off as me!
+    en: 
+  - key: DTxt_KR_M04_12
+    speaker: Frank
+    mission: Mission04
+    type: FrankArgue
+    ko: Just in time, rookie. Who looks like the real deal to you?
+    en: 
+  - key: DTxt_KR_M04_13
+    speaker: Frank
+    mission: Mission04
+    type: FrankArgue
+    ko: Don't be fooled, kid. Look closely and decide who's real.
+    en: 
+  - key: DTxt_KR_M04_14
+    speaker: Frank
+    mission: Mission04
+    type: FrankArgue
+    ko: Right! I'll keep the others in check.<br>You go and suppress the impostors!
+    en: 
+  - key: DTxt_KR_M05_01
+    speaker: Victor
+    mission: Mission05
+    type: Dialogue
+    ko: Come to think of it.<br>It's about time for a shakedown, isn't it?
+    en: 
+  - key: DTxt_KR_M05_02
+    speaker: Victor
+    mission: Mission05
+    type: Dialogue
+    ko: If we don't do this regularly,<br>all sorts of junk starts circulating inside
+      the prison.
+    en: 
+  - key: DTxt_KR_M05_03
+    speaker: Victor
+    mission: Mission05
+    type: Dialogue
+    ko: It seems these inmates take me for a fool.
+    en: 
+  - key: DTxt_KR_M05_04
+    speaker: Victor
+    mission: Mission05
+    type: Dialogue
+    ko: Go and confiscate every single item that doesn't belong in this prison!
+    en: 
+  - key: DTxt_KR_M05_05
+    speaker: Victor
+    mission: Mission05
+    type: Fin
+    ko: Did you find all the contraband the prisoners were hiding?
+    en: 
+  - key: DTxt_KR_M05_06
+    speaker: Victor
+    mission: Mission05
+    type: Complete
+    ko: Seriously, I have no idea where they keep bringing this stuff in from.
+    en: 
+  - key: DTxt_KR_M05_07
+    speaker: Victor
+    mission: Mission05
+    type: Fail
+    ko: If you do your job this sloppily, the inmates will think I'm a pushover!<br>If
+      this is how you're going to work, just quit!
+    en: 
+  - key: DTxt_KR_M05_08
+    speaker: Frank
+    mission: Mission05
+    type: Dialogue
+    ko: "When searching cells, you\u2019d better check the walls and floors thoroughly."
+    en: 
+  - key: DTxt_KR_M05_09
+    speaker: Frank
+    mission: Mission05
+    type: Dialogue
+    ko: Those bastards hide their stuff in all sorts of places, I'm telling you.
+    en: 
+  - key: DTxt_KR_M06_01
+    speaker: Victor
+    mission: Mission06
+    type: Dialogue
+    ko: They've lost their minds, absolutely lost them.
+    en: 
+  - key: DTxt_KR_M06_02
+    speaker: Victor
+    mission: Mission06
+    type: Dialogue
+    ko: One of the gang in Sector 7 was caught smuggling a firearm.<br>...And has
+      fled.
+    en: 
+  - key: DTxt_KR_M06_03
+    speaker: Victor
+    mission: Mission06
+    type: Dialogue
+    ko: It's certain that one of the three is the culprit,<br>but since the face
+      was covered, I can't be sure who it is.
+    en: 
+  - key: DTxt_KR_M06_04
+    speaker: Victor
+    mission: Mission06
+    type: Dialogue
+    ko: Go talk to them and find the real criminal.<br>The one who's lying must be
+      the one.
+    en: 
+  - key: DTxt_KR_M06_05
+    speaker: Victor
+    mission: Mission06
+    type: Fin
+    ko: Did you find the culprit?
+    en: 
+  - key: DTxt_KR_M06_06
+    speaker: Victor
+    mission: Mission06
+    type: Complete
+    ko: To dare bring a gun into this sacred prison.<br>I shall educate him personally.
+    en: 
+  - key: DTxt_KR_M06_07
+    speaker: Victor
+    mission: Mission06
+    type: Fail
+    ko: "You missed the criminal! Another gun was found!<br>You\u2019re incompetent.
+      You\u2019re fired!"
+    en: 
+  - key: DTxt_KR_M06_08
+    speaker: Frank
+    mission: Mission06
+    type: Fin
+    ko: So, do you know who the culprit is?
+    en: 
+  - key: DTxt_KR_M06_09
+    speaker: Player
+    mission: Mission06
+    type: Choice
+    ko: The culprit is Anthony.
+    en: 
+  - key: DTxt_KR_M06_10
+    speaker: Player
+    mission: Mission06
+    type: Choice
+    ko: The culprit is Richard.
+    en: 
+  - key: DTxt_KR_M06_11
+    speaker: Player
+    mission: Mission06
+    type: Choice
+    ko: The culprit is Leo.
+    en: 
+  - key: DTxt_KR_M06_12
+    speaker: Suspect1
+    mission: Mission06
+    type: Dialogue
+    ko: Suspect2 is lying right now. He's the one.
+    en: 
+  - key: DTxt_KR_M06_13
+    speaker: Suspect1
+    mission: Mission06
+    type: Dialogue
+    ko: Look at the stain on his pants.<br>It's the exact same color as gun lubricant.
+    en: 
+  - key: DTxt_KR_M06_14
+    speaker: Suspect1
+    mission: Mission06
+    type: Dialogue
+    ko: I was in the infirmary all day yesterday.
+    en: 
+  - key: DTxt_KR_M06_15
+    speaker: Suspect2
+    mission: Mission06
+    type: Dialogue
+    ko: Suspect3 is an honest guy.
+    en: 
+  - key: DTxt_KR_M06_16
+    speaker: Suspect2
+    mission: Mission06
+    type: Dialogue
+    ko: "The culprit is Suspect1.<br>Suspect3 and I don\u2019t touch guns. Our vision
+      is far too poor for that."
+    en: 
+  - key: DTxt_KR_M06_17
+    speaker: Suspect2
+    mission: Mission06
+    type: Dialogue
+    ko: I was doing deadlifts in the yard yesterday.<br>The black grease on my pants
+      is just from the equipment.
+    en: 
+  - key: DTxt_KR_M06_18
+    speaker: Suspect3
+    mission: Mission06
+    type: Dialogue
+    ko: Suspect1 is a liar. Don't believe a word he says.
+    en: 
+  - key: DTxt_KR_M06_19
+    speaker: Suspect3
+    mission: Mission06
+    type: Dialogue
+    ko: Suspect2 isn't the culprit.<br>The lubricant used for cleaning guns is blue.
+    en: 
+  - key: DTxt_KR_M06_20
+    speaker: Suspect3
+    mission: Mission06
+    type: Dialogue
+    ko: I was in the laundry room yesterday.<br>These are the same clothes I wore
+      then.
+    en: 
+  - key: DTxt_KR_M06_21
+    speaker: Frank
+    mission: Mission06
+    type: AfterChoice
+    ko: Good. I'll interrogate him further. Go report to the Warden.
+    en: 
+  - key: DTxt_KR_M07_01
+    speaker: Victor
+    mission: Mission07
+    type: Dialogue
+    ko: A rat brought some vital intel.
+    en: 
+  - key: DTxt_KR_M07_02
+    speaker: Victor
+    mission: Mission07
+    type: Dialogue
+    ko: Apparently, the inmates in Sector 7 are prepping for a riot.
+    en: 
+  - key: DTxt_KR_M07_03
+    speaker: Victor
+    mission: Mission07
+    type: Dialogue
+    ko: "It's set for tonight\u2014right during your shift."
+    en: 
+  - key: DTxt_KR_M07_04
+    speaker: Victor
+    mission: Mission07
+    type: Dialogue
+    ko: Go down there and beat them all into submission<br>before they can start
+      anything!
+    en: 
+  - key: DTxt_KR_M07_05
+    speaker: Victor
+    mission: Mission07
+    type: Fin
+    ko: Did you suppress all the inmates?
+    en: 
+  - key: DTxt_KR_M07_06
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: "\u2026Excellent work."
+    en: 
+  - key: DTxt_KR_M07_07
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: 7 days without an accident. I can't believe it.
+    en: 
+  - key: DTxt_KR_M07_08
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: You've done something truly remarkable.
+    en: 
+  - key: DTxt_KR_M07_09
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: "In any other place, maybe.<br>But here in Sector 7?<br>We\u2019ve never
+      hit a 7-day streak without an incident!"
+    en: 
+  - key: DTxt_KR_M07_10
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: Every time you renewed that record, I was anxious yet hopeful.
+    en: 
+  - key: DTxt_KR_M07_11
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: To think you actually achieved a 7-day accident-free streak like this.
+    en: 
+  - key: DTxt_KR_M07_12
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: I never expected to see this happen while I was in charge.<br>Thank you,
+      truly.
+    en: 
+  - key: DTxt_KR_M07_13
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: Again, well done.
+    en: 
+  - key: DTxt_KR_M07_14
+    speaker: Victor
+    mission: Mission07
+    type: Complete
+    ko: "Let\u2019s keep this streak going and keep breaking those records!"
+    en: 
+  - key: DTxt_KR_M07_15
+    speaker: Victor
+    mission: Mission07
+    type: Fail
+    ko: "I thought we\u2019d finally hit the 7-day mark this time.<br>But I guess
+      it\u2019s a failure. Well, it is what it is."
+    en: 
+  - key: DTxt_KR_M07_16
+    speaker: Frank
+    mission: Mission07
+    type: Dialogue
+    ko: Always be careful when fighting those bastards.
+    en: 
+  - key: DTxt_KR_M07_17
+    speaker: Frank
+    mission: Mission07
+    type: Dialogue
+    ko: Avoid their attacks while landing your own.<br>Easier said than done, though.
+    en: 

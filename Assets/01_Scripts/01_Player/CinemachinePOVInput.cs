@@ -1,22 +1,27 @@
 ﻿using UnityEngine;
 using Cinemachine;
 
-/// <summary>
-/// 1인칭 카메라 POV 입력 처리
-/// - 위치 / 높이 / 클리핑은 절대 처리하지 않음
-/// - 회전(Yaw, Pitch)만 담당
-/// - QTE / CameraDirector와 충돌하지 않는 구조
-/// </summary>
 [RequireComponent(typeof(CinemachineVirtualCamera))]
-public class CinemachinePOVInput : MonoBehaviour
+public sealed class CinemachinePOVInput : MonoBehaviour
 {
-    private const float DefaultSensitivity = 0.1f;
+    // 슬라이더 0일 때 "완전 정지"를 만들기 위해 Min은 0으로 둡니다.
+    private const float MinSensitivity = 0.0f;
+
+    // 1일 때 너무 빠르면 여기만 낮추면 됨 (프로젝트마다 체감 다름)
+    // 추천 시작값: 0.16 ~ 0.20
+    private const float MaxSensitivity = 0.18f;
+
+    // 0 근처를 더 촘촘하게(미세 조절) 만들고 싶으면 키우기
+    private const float SensitivityCurvePower = 2.5f;
+
+    // 아주 작은 입력(노이즈)을 무시하는 데드존 (움직임 "미세하게 남는" 느낌 방지)
+    private const float InputDeadZone = 0.0005f;
 
     [SerializeField] private Player player;
 
-    [Header("Look Sensitivity")]
-    [SerializeField] private float horizontalSensitivity = DefaultSensitivity;
-    [SerializeField] private float verticalSensitivity = DefaultSensitivity;
+    [Header("Look Sensitivity (Runtime)")]
+    [SerializeField] private float horizontalSensitivity = MinSensitivity;
+    [SerializeField] private float verticalSensitivity = MinSensitivity;
 
     private CinemachineVirtualCamera vcam;
     private CinemachinePOV pov;
@@ -35,23 +40,54 @@ public class CinemachinePOVInput : MonoBehaviour
         if (pov == null || player == null)
             return;
 
-        // PlayerInputs에서 캐싱해 둔 Look 입력
         Vector2 look = player.LookInput;
 
-        // =====================================================
-        // 1) 좌우 회전 (Yaw)
-        // - 플레이어 Root 회전
-        // - QTE 시 CameraDirector가 이 값을 덮어씀
-        // =====================================================
-        float yawDelta = look.x * horizontalSensitivity;
-        player.transform.Rotate(Vector3.up, yawDelta, Space.World);
+        // 입력 노이즈 제거 (특히 0 감도에서 미세하게 움직이는 느낌 방지)
+        if (Mathf.Abs(look.x) < InputDeadZone) look.x = 0f;
+        if (Mathf.Abs(look.y) < InputDeadZone) look.y = 0f;
 
-        // =====================================================
-        // 2) 상하 회전 (Pitch)
-        // - Cinemachine POV Vertical Axis만 사용
-        // - Horizontal Axis는 직접 쓰지 않음
-        // =====================================================
+        // Horizontal (Yaw): 플레이어 회전
+        float yawDelta = look.x * horizontalSensitivity;
+        if (yawDelta != 0f)
+            player.transform.Rotate(Vector3.up, yawDelta, Space.World);
+
+        // Vertical (Pitch): POV 입력
         pov.m_HorizontalAxis.m_InputAxisValue = 0f;
         pov.m_VerticalAxis.m_InputAxisValue = look.y * verticalSensitivity;
+    }
+
+    // ===== Public API =====
+
+    // (호환용) 예전 1슬라이더: 둘 다 같은 값
+    public void SetLookSensitivityFromSlider(float slider01)
+    {
+        float sens = Slider01ToSensitivity(slider01);
+        horizontalSensitivity = sens;
+        verticalSensitivity = sens;
+    }
+
+    public void SetHorizontalSensitivityFromSlider(float slider01)
+    {
+        horizontalSensitivity = Slider01ToSensitivity(slider01);
+    }
+
+    public void SetVerticalSensitivityFromSlider(float slider01)
+    {
+        verticalSensitivity = Slider01ToSensitivity(slider01);
+    }
+
+    public float GetHorizontalSensitivity() => horizontalSensitivity;
+    public float GetVerticalSensitivity() => verticalSensitivity;
+
+    private static float Slider01ToSensitivity(float slider01)
+    {
+        float t = Mathf.Clamp01(slider01);
+
+        // 슬라이더 0은 확실하게 0으로 (부동소수점/곡선 영향 제거)
+        if (t <= 0f)
+            return 0f;
+
+        float curved = Mathf.Pow(t, SensitivityCurvePower);
+        return Mathf.Lerp(MinSensitivity, MaxSensitivity, curved);
     }
 }

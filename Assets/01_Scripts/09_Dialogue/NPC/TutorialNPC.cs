@@ -32,7 +32,14 @@ public class TutorialNPC : MonoBehaviour, IInteractable
         {
             UpdateStep(e.NewStep);
         };
-        book.SetActive(false);
+    }
+
+    private void Start()
+    {
+        if (currentSubStep == DialogueKeys.DialogueType.Dialogue)
+        {
+            book.SetActive(false);
+        }
     }
 
     private void OnEnable()
@@ -67,11 +74,16 @@ public class TutorialNPC : MonoBehaviour, IInteractable
         }
         else if (currentSubStep == DialogueKeys.DialogueType.Dialogue)
         {
+            TutorialOutLiner.Instance.StopCurrentHighlight();
             onComplete = () =>
             {
                 boardSequence.StartSequence();
                 finishedDialogue = true;
                 Debug.Log("자동대화진행 및 finishedDialogue 는 true로 변경됨");
+                if (TutorialOutLiner.Instance != null)
+                {
+                    TutorialOutLiner.Instance.UpdateHighlight(DialogueKeys.DialogueType.BoardSee);
+                }
             };
         }
         dialogueManager.StartDialogueByKeys(speakerKey, textType, onComplete);
@@ -81,11 +93,16 @@ public class TutorialNPC : MonoBehaviour, IInteractable
     {
         if (currentSubStep == DialogueKeys.DialogueType.BatonEquipped)
         {
+            book.SetActive(true);
+            //TutorialOutLiner.Instance.StopCurrentHighlight();
+            if (TutorialOutLiner.Instance != null)
+            {
+                TutorialOutLiner.Instance.UpdateHighlight(DialogueKeys.DialogueType.NPCHit);
+            }
             EventBus.Publish(new DialogueStepChangedEvent(DialogueKeys.DialogueType.NPCHit));
             Debug.Log("이벤트 발행: NPCHit");
             StartCoroutine(DelayedDialogue());
             finishedDialogue = true;
-            book.SetActive(true);
         }
     }
 

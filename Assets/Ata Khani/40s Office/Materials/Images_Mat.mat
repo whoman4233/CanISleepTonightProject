@@ -13,10 +13,16 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _MK_ALBEDO_MAP
+  - _MK_ENVIRONMENT_REFLECTIONS_ADVANCED
+  - _MK_LIGHT_TRANSMISSION_SUB_SURFACE_SCATTERING
   - _MK_PBS_MAP_0
+  - _MK_SPECULAR_ANISOTROPIC
+  - _MK_WORKFLOW_ROUGHNESS
   m_InvalidKeywords:
   - _MK_ARTISTIC_ANIMATION_STUTTER
   - _MK_DETAIL_BLEND_MIX
+  - _MK_WRAPPED_DIFFUSE
+  - _WRAPPEDLIGHTING_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -286,7 +292,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AdditionalLightsFalloff: 1
     - _AdditionalLightsThreshold: 0.5
-    - _AdvancedTab: 0
+    - _AdvancedTab: 1
     - _AlbedoAffectEmissive: 0
     - _AlbedoMapIntensity: 1
     - _AlembicMotionVectors: 0
@@ -356,7 +362,7 @@ Material:
     - _EnableFogOnTransparent: 1
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
-    - _EnvironmentReflections: 0
+    - _EnvironmentReflections: 2
     - _FresnelHighlights: 0
     - _GoochDarkRemapFadeWithIndirect: 0
     - _GoochDarkRemapMax: 1
@@ -373,7 +379,7 @@ Material:
     - _HeightTessAmplitude: 2
     - _HeightTessCenter: 0.5
     - _Hue: 0
-    - _IndirectFade: 1
+    - _IndirectFade: 0
     - _Initialized: 0
     - _InputTab: 1
     - _InvTilingScale: 1
@@ -388,7 +394,7 @@ Material:
     - _LightBands: 4
     - _LightBandsScale: 0.5
     - _LightThreshold: 0.5
-    - _LightTransmission: 0
+    - _LightTransmission: 2
     - _LightTransmissionDistortion: 0.25
     - _LightTransmissionIntensity: 1
     - _LightTransmissionSmoothness: 0.5
@@ -434,18 +440,18 @@ Material:
     - _RenderFace: 2
     - _RenderPriority: 0
     - _Rim: 0
-    - _RimSize: 1
+    - _RimSize: 5
     - _RimSmoothness: 0.5
     - _RimThresholdOffset: 0.25
-    - _Roughness: 0.5
+    - _Roughness: 0.262
     - _SPECULAR_IOR: 1.5
     - _SPECULAR_ROUGHNESS: 0
     - _Saturation: 1
     - _SketchMapScale: 1
-    - _Smoothness: 0.5
+    - _Smoothness: 0.708
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
-    - _Specular: 0
+    - _Specular: 2
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2
     - _SpecularIntensity: 1
@@ -462,7 +468,7 @@ Material:
     - _StencilRefDepth: 8
     - _StencilRefGBuffer: 10
     - _StencilRefMV: 40
-    - _StencilWriteMask: 6
+    - _StencilWriteMask: 255
     - _StencilWriteMaskDepth: 9
     - _StencilWriteMaskGBuffer: 15
     - _StencilWriteMaskMV: 41
@@ -494,8 +500,8 @@ Material:
     - _VertexAnimation: 0
     - _VertexAnimationIntensity: 0.05
     - _VertexAnimationStutter: 0
-    - _Workflow: 0
-    - _WrappedLighting: 0
+    - _Workflow: 2
+    - _WrappedLighting: 1
     - _ZTest: 4
     - _ZTestDepthEqualForOpaque: 3
     - _ZTestGBuffer: 4

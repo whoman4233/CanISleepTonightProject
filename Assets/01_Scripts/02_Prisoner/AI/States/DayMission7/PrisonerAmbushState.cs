@@ -3,12 +3,20 @@ using UnityEngine.AI;
 
 public class PrisonerAmbushState : BasePrisonerState
 {
-    private const float AmbushDistance = 4.0f;
-    private const float ArrivalDistance = 0.5f; // 도착 허용 오차
+    // 기습 인식 범위 (방 중심으로부터의 거리)
+    // 방 크기에 맞춰 4.0f ~ 6.0f 정도로 조절하세요.
+    private const float AmbushDistance = 6.0f;
+    private const float ArrivalDistance = 0.5f;
     private bool _hasArrivedAtSpot = false;
 
     private const string STATE_ACTION = "Action";
     private const string STATE_RUN = "Run";
+
+    // Animator Hashes (최적화 적용)
+    private static readonly int IsActionHash = Animator.StringToHash("IsAction");
+    private static readonly int IsntStandingHash = Animator.StringToHash("IsntStanding");
+    private static readonly int ActionTypeHash = Animator.StringToHash("ActionType");
+    private static readonly int RunHash = Animator.StringToHash("Run");
 
     public PrisonerAmbushState(PrisonerFSM fsm) : base(fsm) { }
 
@@ -17,24 +25,21 @@ public class PrisonerAmbushState : BasePrisonerState
         base.Enter();
         _hasArrivedAtSpot = false;
 
-        anim.SetBool("IsAction", false);
-        anim.SetBool("IsntStanding", false);
-        anim.SetInteger("ActionType", 0);
-        anim.SetBool("Run", true);
+        anim.SetBool(IsActionHash, false);
+        anim.SetBool(IsntStandingHash, false);
+        anim.SetInteger(ActionTypeHash, 0);
+        anim.SetBool(RunHash, true);
 
-        // Enter 시점에 플레이어 찾기 시도
         if (player == null)
         {
             var pObj = GameObject.FindWithTag("Player");
             if (pObj != null) player = pObj.transform;
         }
 
-        // 이동 명령
         if (agent != null && agent.isOnNavMesh)
         {
             if (fsm.InspectionPoint != null)
             {
-                // 이미 아주 가까우면 바로 대기
                 float dist = Vector3.Distance(fsm.transform.position, fsm.InspectionPoint.position);
                 if (dist <= ArrivalDistance)
                 {
@@ -45,7 +50,6 @@ public class PrisonerAmbushState : BasePrisonerState
                 agent.isStopped = false;
                 agent.SetDestination(fsm.InspectionPoint.position);
                 anim.CrossFade(STATE_RUN, 0.1f);
-                Debug.Log($"[Ambush] {Controller.name} -> 매복 위치로 이동 시작");
             }
             else
             {
@@ -60,44 +64,58 @@ public class PrisonerAmbushState : BasePrisonerState
 
     public override void Update()
     {
-        // 1. 도착 판정 (플레이어 유무와 상관없이 항상 체크)
-        if (!_hasArrivedAtSpot && fsm.InspectionPoint != null)
-        {
-            CheckArrival();
-        }
+        if (!_hasArrivedAtSpot && fsm.InspectionPoint != null) CheckArrival();
 
-        // 2. 플레이어 재탐색 로직 (★ 중요: 없으면 찾을 때까지 시도)
         if (player == null)
         {
             var pObj = GameObject.FindWithTag("Player");
-            if (pObj != null)
-            {
-                player = pObj.transform;
-            }
-            else
-            {
-                // 이번 프레임에도 없으면 기습 로직 실행 불가 -> 리턴
-                return;
-            }
+            if (pObj != null) player = pObj.transform;
+            if (player == null) return;
         }
 
-        // 3. 기습 공격 판정 (플레이어가 존재할 때만)
-        float distToPlayer = Vector3.Distance(fsm.transform.position, player.position);
-        if (distToPlayer <= AmbushDistance)
+        Vector3 detectionOrigin = (Controller.AssignedCell != null)
+            ? Controller.AssignedCell.transform.position
+            : fsm.transform.position;
+
+        // [로그 1] Y축(층) 차이 판정 로그
+        float heightDiff = Mathf.Abs(detectionOrigin.y - player.position.y);
+        if (heightDiff > 3f)
         {
-            Debug.Log($"<color=red>[Ambush] {Controller.Data.ID} : 기습 개시!</color>");
-            PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
-
-            Controller.StartActionBehavior(0);
-            fsm.ChangeState(fsm.CombatState);
+            // 너무 자주 찍히지 않도록 거리 정도만 체크하고 싶을 때 사용
+            // Debug.Log($"[Ambush] {Controller.Data.ID}: 층 차이 과다 ({heightDiff:F1}m)");
+            return;
         }
+
+        Vector3 originPos = detectionOrigin;
+        Vector3 playerPos = player.position;
+        originPos.y = playerPos.y = 0;
+
+        float distToRoom = Vector3.Distance(originPos, playerPos);
+
+        // [로그 2] 거리 실시간 체크 (필요 시 주석 해제하여 거리 확인)
+        // Debug.Log($"[Ambush] {Controller.Data.ID} -> Player Dist: {distToRoom:F2}");
+
+        if (distToRoom <= AmbushDistance)
+        {
+            ExecuteAmbush();
+        }
+    }
+
+    private void ExecuteAmbush()
+    {
+        // [로그 3] 감지 성공 및 이벤트 발행 로그
+        Debug.Log($"<color=cyan>[Ambush] {Controller.Data.ID} 감지 성공! CellID: {Controller.Data.CellID}로 강제 개방 이벤트 발행</color>");
+
+        PrisonerEventBus.PublishForceOpenDoor(Controller.Data.CellID);
+
+        Controller.StartActionBehavior(0);
+        fsm.ChangeState(fsm.CombatState);
     }
 
     private void CheckArrival()
     {
         if (agent.pathPending) return;
 
-        // 1. NavMeshAgent가 도착했다고 하는가?
         if (agent.remainingDistance <= agent.stoppingDistance + ArrivalDistance)
         {
             if (!agent.hasPath || agent.velocity.sqrMagnitude <= 0.1f)
@@ -107,18 +125,14 @@ public class PrisonerAmbushState : BasePrisonerState
             }
         }
 
-        // 2. 물리적 거리가 가까운가? (Y축 무시)
         Vector3 myPos = fsm.transform.position;
         Vector3 targetPos = fsm.InspectionPoint.position;
-        myPos.y = targetPos.y = 0; // 높이 오차 무시
+        myPos.y = targetPos.y = 0;
 
-        float distance = Vector3.Distance(myPos, targetPos);
-        if (distance <= ArrivalDistance)
+        if (Vector3.Distance(myPos, targetPos) <= ArrivalDistance)
         {
             EnterAmbushPose();
         }
-
-        // ★ 3. 이상한 곳에서 멈추는 원인이었던 'StuckDistance(끼임 보정)' 로직 삭제함
     }
 
     private void EnterAmbushPose()
@@ -133,40 +147,34 @@ public class PrisonerAmbushState : BasePrisonerState
             agent.ResetPath();
         }
 
-        // 0. 도착 후 회전 맞춤 (목적지에 도착했을 때만 돌려야 함)
         if (fsm.InspectionPoint != null)
         {
             Controller.transform.rotation = fsm.InspectionPoint.rotation;
         }
 
-        anim.SetBool("Run", false);
-        anim.SetBool("IsntStanding", true);
+        anim.SetBool(RunHash, false);
+        anim.SetBool(IsntStandingHash, true);
 
         Controller.StartActionBehavior(PrisonerAIType.Ambusher);
-        anim.SetInteger("ActionType", 9);
-
+        anim.SetInteger(ActionTypeHash, 9);
         anim.CrossFade(STATE_ACTION, 0.2f);
-        Debug.Log($"[Ambush] 도착 완료. 매복 대기");
     }
 
     public override void Exit()
     {
-        anim.SetBool("Run", false);
-        anim.SetInteger("ActionType", 0);
-        anim.SetBool("IsntStanding", false);
-        anim.SetBool("IsAction", false);
+        anim.SetInteger(ActionTypeHash, 0);
+        anim.SetBool(IsntStandingHash, false);
+        anim.SetBool(IsActionHash, false);
 
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = false;
-            agent.ResetPath();
         }
         base.Exit();
     }
 
     public override void OnDamaged(int damage, Vector3 hitPoint, Vector3 hitDir)
     {
-        Controller.StartActionBehavior(0);
-        fsm.ChangeState(fsm.CombatState);
+        ExecuteAmbush();
     }
 }

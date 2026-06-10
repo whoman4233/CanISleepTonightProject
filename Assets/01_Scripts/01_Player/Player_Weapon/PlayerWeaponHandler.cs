@@ -57,16 +57,11 @@ public sealed class PlayerWeaponHandler : MonoBehaviour
             }
         }
 
-        if (_weaponHitCollider == null) return;
-
-        // ✅ 스윙 시작/종료 훅
         if (_weaponHitbox != null)
         {
             if (enabled) _weaponHitbox.BeginSwing();
             else _weaponHitbox.EndSwing();
         }
-
-        _weaponHitCollider.enabled = enabled;
     }
 
     private static void SetLayerRecursively(GameObject root, int layer)

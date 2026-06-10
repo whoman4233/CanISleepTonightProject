@@ -21,6 +21,9 @@ public class VignetteFadeController : MonoBehaviour
     {
         if (volume == null)
             return;
+
+        volume.weight = 1f;
+
         if (!volume.profile.TryGet(out _vignette))
         {
             return;

@@ -6,6 +6,9 @@ public class AnomalyDistributor : MonoBehaviour
 {
     public static AnomalyDistributor Instance;
 
+    [Header("Debug")]
+    public bool enableDebugLogs = true; // 로그 온오프용 변수 추가
+
     [Header("Database")]
     [SerializeField] private AnomalyDatabaseSO masterDatabase;
     [SerializeField] private CellAnchorRegistry anchorRegistry;
@@ -34,7 +37,9 @@ public class AnomalyDistributor : MonoBehaviour
                 currentDayPool.Add(anomaly);
             }
         }
-        Debug.Log($"[AnomalyDistributor] 테마({dayTheme}) 필터링 결과: {currentDayPool.Count}개 후보 등록됨.");
+
+        if (enableDebugLogs)
+            Debug.Log($"[AnomalyDistributor] 테마({dayTheme}) 필터링 결과: {currentDayPool.Count}개 후보 등록됨.");
     }
 
     public void DistributeAnomalies()
@@ -42,7 +47,8 @@ public class AnomalyDistributor : MonoBehaviour
         // 1. 거주민 생성 체크
         if (scheduleManager.GetActiveCellIds().Count == 0)
         {
-            Debug.LogWarning("[Anomaly] 거주민이 없어서 새로 생성합니다.");
+            if (enableDebugLogs)
+                Debug.LogWarning("[Anomaly] 거주민이 없어서 새로 생성합니다.");
             scheduleManager.GenerateNewResidents();
         }
 
@@ -52,19 +58,23 @@ public class AnomalyDistributor : MonoBehaviour
         {
             currentTheme = DailyMissionManager.Instance.CurrentMission.missionTheme;
         }
-        Debug.Log($"<color=cyan>[Anomaly] 오늘의 미션 테마: {currentTheme} (Day {DailyMissionManager.Instance?.CurrentMission?.missionId})</color>");
+
+        if (enableDebugLogs)
+            Debug.Log($"<color=cyan>[Anomaly] 오늘의 미션 테마: {currentTheme} (Day {DailyMissionManager.Instance?.CurrentMission?.missionId})</color>");
 
         // 3. 오늘의 풀(Pool) 필터링 상태 확인 (핵심 로그)
         // currentDayPool은 StartDay 등에서 미리 채워져 있어야 함. 확인 차 여기서 다시 필터링 로직 체크
         int commonCount = currentDayPool.Count(x => x.category == AnomalyCategory.Common);
         int indivCount = currentDayPool.Count(x => x.category == AnomalyCategory.Individual);
 
-        Debug.Log($"[Anomaly] 현재 풀 상태 -> 공용: {commonCount}개, 전용: {indivCount}개");
+        if (enableDebugLogs)
+            Debug.Log($"[Anomaly] 현재 풀 상태 -> 공용: {commonCount}개, 전용: {indivCount}개");
 
         // 만약 풀이 비어있다면 데이터 설정 문제임
         if (currentDayPool.Count == 0)
         {
-            Debug.Log($"<color=red>[Fatal] {currentTheme} 테마에 해당하는 아이템이 하나도 없습니다! 아이템 데이터(SO)의 Valid Theme를 확인하세요.</color>");
+            if (enableDebugLogs)
+                Debug.Log($"<color=red>[Fatal] {currentTheme} 테마에 해당하는 아이템이 하나도 없습니다! 아이템 데이터(SO)의 Valid Theme를 확인하세요.</color>");
             return;
         }
 
@@ -77,11 +87,13 @@ public class AnomalyDistributor : MonoBehaviour
             {
                 commonDeck.AddRange(commons);
                 ShuffleList(commonDeck);
-                Debug.Log($"[Anomaly] 공용 덱 리필됨 ({commons.Count}개)");
+                if (enableDebugLogs)
+                    Debug.Log($"[Anomaly] 공용 덱 리필됨 ({commons.Count}개)");
             }
             else
             {
-                Debug.LogWarning($"[Anomaly] 리필할 공용(Common) 아이템이 없습니다. (테마: {currentTheme})");
+                if (enableDebugLogs)
+                    Debug.LogWarning($"[Anomaly] 리필할 공용(Common) 아이템이 없습니다. (테마: {currentTheme})");
             }
         }
         RefillDeck();
@@ -100,7 +112,6 @@ public class AnomalyDistributor : MonoBehaviour
             // 용의자가 아니면 배정 안 함 (기획 의도에 따라 변경 가능)
             if (!dailyRole.isSuspicious)
             {
-                // Debug.Log($"[Anomaly] {cellId}: 용의자 아님 -> 스킵");
                 continue;
             }
 
@@ -136,16 +147,19 @@ public class AnomalyDistributor : MonoBehaviour
             if (selectedItem != null)
             {
                 anchor.currentDailyAnomalies.Add(selectedItem);
-                Debug.Log($"[Anomaly] {cellId} ({pType}) -> <color=yellow>{selectedItem.name}</color> 배정완료 ({assignSource})");
+                if (enableDebugLogs)
+                    Debug.Log($"[Anomaly] {cellId} ({pType}) -> <color=yellow>{selectedItem.name}</color> 배정완료 ({assignSource})");
                 assignedCount++;
             }
             else
             {
-                Debug.LogError($"[Anomaly] {cellId} ({pType}) -> 배정 실패! (줄 아이템이 없음)");
+                if (enableDebugLogs)
+                    Debug.LogError($"[Anomaly] {cellId} ({pType}) -> 배정 실패! (줄 아이템이 없음)");
             }
         }
 
-        Debug.Log($"[Anomaly] 총 {assignedCount}개의 이상현상 아이템이 배정되었습니다.");
+        if (enableDebugLogs)
+            Debug.Log($"[Anomaly] 총 {assignedCount}개의 이상현상 아이템이 배정되었습니다.");
     }
 
     // 리스트 섞기 함수 (Fisher-Yates Shuffle)
@@ -166,7 +180,8 @@ public class AnomalyDistributor : MonoBehaviour
         {
             anchor.ClearDailyAnomalies();
             anchor.currentDailyAnomalies.Add(itemDef);
-            Debug.Log($"[Mission] {cellId}에 미션 아이템 강제 배정: {itemDef.name}");
+            if (enableDebugLogs)
+                Debug.Log($"[Mission] {cellId}에 미션 아이템 강제 배정: {itemDef.name}");
         }
     }
 }
